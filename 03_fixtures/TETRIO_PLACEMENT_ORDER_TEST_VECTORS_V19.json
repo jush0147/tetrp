@@ -1,0 +1,74 @@
+{
+  "version": 19,
+  "current_tetra_league": {
+    "are": 0,
+    "lineclear_are": 0,
+    "garbageblocking": "combo blocking"
+  },
+  "vectors": [
+    {
+      "name": "tl_zero_attack_single_blocks_tank",
+      "placement": "single",
+      "base_attack": 0,
+      "has_mature_incoming": true,
+      "expected": [
+        "commit_piece",
+        "remove_line",
+        "resolve_clear_pipeline",
+        "set_nextWillTank_false",
+        "do_not_tank_on_this_transition",
+        "spawn_next_immediately"
+      ]
+    },
+    {
+      "name": "tl_no_clear_tanks_before_next_spawn",
+      "placement": "no_clear",
+      "has_mature_incoming": true,
+      "expected": [
+        "commit_piece",
+        "resolve_no_clear_pipeline",
+        "TakeAllDamage",
+        "spawn_next_immediately"
+      ]
+    },
+    {
+      "name": "all_clear_bonus_is_second_defense_phase",
+      "placement": "all_clear",
+      "has_mature_incoming": true,
+      "expected": [
+        "ordinary_clear_FightLines",
+        "all_clear_FightLines_separately",
+        "tank_decision",
+        "next_transition"
+      ]
+    },
+    {
+      "name": "positive_are_instant_defers_tank",
+      "placement": "no_clear",
+      "are": 10,
+      "garbageentry": "instant",
+      "has_mature_incoming": true,
+      "expected": [
+        "commit_piece",
+        "leave_nextWillTank_true",
+        "schedule_are",
+        "on_are_TakeAllDamage",
+        "spawn_next"
+      ]
+    },
+    {
+      "name": "positive_are_delayed_can_tank_inside_clear_pipeline",
+      "placement": "no_clear",
+      "are": 10,
+      "garbageentry": "delayed",
+      "has_mature_incoming": true,
+      "expected": [
+        "commit_piece",
+        "TakeAllDamage_in_ClearLines",
+        "possibly_extend_transition_delay_from_lastReceivedCount",
+        "schedule_are_without_pending_nextWillTank",
+        "spawn_next_on_are"
+      ]
+    }
+  ]
+}

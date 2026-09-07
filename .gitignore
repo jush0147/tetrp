@@ -1,0 +1,9 @@
+node_modules/
+__pycache__/
+*.pyc
+.cache/
+coverage/
+TETRIO_Package.zip
+01_Official_Standalone/
+tetrio.beautified.js
+tetrp_codex_handoff_*.zip

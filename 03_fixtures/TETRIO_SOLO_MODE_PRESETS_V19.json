@@ -1,0 +1,38 @@
+{
+  "engine_version": 19,
+  "40l": {
+    "seed_random": true,
+    "anchorseed": true,
+    "g": 0.02,
+    "allow180": true,
+    "spinbonuses": "all-mini+",
+    "objective_type": "lines",
+    "objective_count": 40,
+    "can_retry": true,
+    "nolockout": true,
+    "notes": [
+      "handling inherited from player config",
+      "standard engine defaults such as SRS+ apply unless overridden",
+      "stride option may set no_szo"
+    ]
+  },
+  "blitz": {
+    "seed_random": true,
+    "anchorseed": true,
+    "allow180": true,
+    "objective_type": "timed",
+    "objective_time_ms": 120000,
+    "levels": true,
+    "levelspeed": 0.42,
+    "levelgbase": 0.65,
+    "levelgspeed_inherited": 0.007,
+    "gravitymay20g": false,
+    "can_retry": true,
+    "nolockout": true,
+    "notes": [
+      "handling inherited from player config",
+      "levelstatic inherits false",
+      "startinglevel inherits 1"
+    ]
+  }
+}

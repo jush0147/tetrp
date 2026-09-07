@@ -1,0 +1,219 @@
+{
+  "engine_version": 19,
+  "mode": "blitz",
+  "levelspeed": 0.42,
+  "levelgbase": 0.65,
+  "levelgspeed": 0.007,
+  "levels": [
+    {
+      "level": 1,
+      "lines_needed": 3,
+      "g_cells_per_frame": 0.016666666666666666,
+      "nominal_cells_per_second": 1.0,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 2,
+      "lines_needed": 5,
+      "g_cells_per_frame": 0.025920165889061687,
+      "nominal_cells_per_second": 1.5552099533437012,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 3,
+      "lines_needed": 7,
+      "g_cells_per_frame": 0.04120353888954814,
+      "nominal_cells_per_second": 2.4722123333728883,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 4,
+      "lines_needed": 9,
+      "g_cells_per_frame": 0.06697254662842003,
+      "nominal_cells_per_second": 4.018352797705202,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 5,
+      "lines_needed": 11,
+      "g_cells_per_frame": 0.11134922812764769,
+      "nominal_cells_per_second": 6.680953687658862,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 6,
+      "lines_needed": 13,
+      "g_cells_per_frame": 0.1894406480644541,
+      "nominal_cells_per_second": 11.366438883867247,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 7,
+      "lines_needed": 15,
+      "g_cells_per_frame": 0.3299341532207246,
+      "nominal_cells_per_second": 19.796049193243476,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 8,
+      "lines_needed": 17,
+      "g_cells_per_frame": 0.5884742249637246,
+      "nominal_cells_per_second": 35.30845349782348,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 9,
+      "lines_needed": 19,
+      "g_cells_per_frame": 1.0753682001828349,
+      "nominal_cells_per_second": 64.52209201097008,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 10,
+      "lines_needed": 21,
+      "g_cells_per_frame": 2.014215058079242,
+      "nominal_cells_per_second": 120.85290348475452,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 11,
+      "lines_needed": 24,
+      "g_cells_per_frame": 3.868733498825457,
+      "nominal_cells_per_second": 232.12400992952743,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 12,
+      "lines_needed": 26,
+      "g_cells_per_frame": 7.6233859600736595,
+      "nominal_cells_per_second": 457.40315760441956,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 13,
+      "lines_needed": 28,
+      "g_cells_per_frame": 15.418835510000612,
+      "nominal_cells_per_second": 925.1301306000368,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 14,
+      "lines_needed": 30,
+      "g_cells_per_frame": 32.02545045870264,
+      "nominal_cells_per_second": 1921.5270275221585,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 15,
+      "lines_needed": 32,
+      "g_cells_per_frame": 68.34419955104546,
+      "nominal_cells_per_second": 4100.651973062728,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 16,
+      "lines_needed": 34,
+      "g_cells_per_frame": 149.93437562913732,
+      "nominal_cells_per_second": 8996.06253774824,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 17,
+      "lines_needed": 36,
+      "g_cells_per_frame": 338.3236355180556,
+      "nominal_cells_per_second": 20299.418131083337,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 18,
+      "lines_needed": 38,
+      "g_cells_per_frame": 785.6731131613744,
+      "nominal_cells_per_second": 47140.38678968247,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 19,
+      "lines_needed": 40,
+      "g_cells_per_frame": 1878.8217707676656,
+      "nominal_cells_per_second": 112729.30624605993,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 20,
+      "lines_needed": 42,
+      "g_cells_per_frame": 4629.439691388225,
+      "nominal_cells_per_second": 277766.3814832935,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 21,
+      "lines_needed": 45,
+      "g_cells_per_frame": 11761.026476418574,
+      "nominal_cells_per_second": 705661.5885851145,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 22,
+      "lines_needed": 47,
+      "g_cells_per_frame": 30826.27606661075,
+      "nominal_cells_per_second": 1849576.563996645,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 23,
+      "lines_needed": 49,
+      "g_cells_per_frame": 83416.48139237908,
+      "nominal_cells_per_second": 5004988.883542744,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 24,
+      "lines_needed": 51,
+      "g_cells_per_frame": 233208.82981561724,
+      "nominal_cells_per_second": 13992529.788937034,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 25,
+      "lines_needed": 53,
+      "g_cells_per_frame": 674093.0226246915,
+      "nominal_cells_per_second": 40445581.35748149,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 26,
+      "lines_needed": 55,
+      "g_cells_per_frame": 2016083.470764441,
+      "nominal_cells_per_second": 120965008.24586646,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 27,
+      "lines_needed": 57,
+      "g_cells_per_frame": 6243909.068273519,
+      "nominal_cells_per_second": 374634544.09641117,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 28,
+      "lines_needed": 59,
+      "g_cells_per_frame": 20041201.939154126,
+      "nominal_cells_per_second": 1202472116.3492475,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 29,
+      "lines_needed": 61,
+      "g_cells_per_frame": 66724429.5614142,
+      "nominal_cells_per_second": 4003465773.6848516,
+      "natural_20g_special_path_enabled": false
+    },
+    {
+      "level": 30,
+      "lines_needed": 63,
+      "g_cells_per_frame": 230637848.8704116,
+      "nominal_cells_per_second": 13838270932.224697,
+      "natural_20g_special_path_enabled": false
+    }
+  ]
+}
