@@ -66,8 +66,9 @@ can package these modules without Node or Python runtime code.
 
 The engine implements the specified standard pieces and the supplied TL
 gameplay subset. Solo preset values and Blitz progression formulas are tested,
-but solo placement/scoring currently throws an explicit `UnknownBehavior`
-because the supplied presets omit their inherited attack/B2B defaults.
+and solo placements can reconstruct boards across checkpoints. Solo aggregate
+score/B2B/attack remain explicitly unknown (`stats.score` and `attack` are null);
+known drop points are recorded separately. Checkpoints now use schema v2.
 Nonzero line-clear ARE also fails explicitly because its RNG jitter is unspecified.
 See the handoff for all unsupported cases and test limitations.
 

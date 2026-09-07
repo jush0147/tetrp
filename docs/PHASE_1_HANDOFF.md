@@ -6,6 +6,12 @@
   zero residues to 2147483646. All safe integer seeds are accepted; noninteger
   and unsafe Number inputs remain rejected. Boundary seeds and 150 pulls per
   seed are compared against the independent Python normalization/queue/RNG oracle.
+- Issue #3: shared placement now commits/clears/counts/progresses/spawns for
+  40L and Blitz. Only the existing TL transaction enters attack/garbage/scoring.
+  Solo `stats.score` and `attack` are null, with explicit unknown conformance
+  markers; known drop points are accumulated in `stats.dropScore`. Unknown
+  aggregates do not block board reconstruction. Checkpoint schema is now
+  `tetrp-engine/2`; v1 is explicitly rejected rather than silently reinterpreted.
 
 Status: implemented for the documented TL/standard-piece subset; the scoped
 exit criteria below pass. Stop here for review. Phase 2 has not started.
@@ -80,10 +86,11 @@ subsystem comparisons cannot validate interactions they do not represent.
 
 ## Unknown and unsupported boundaries
 
-1. **Solo placement policy:** the handoff gives launcher overrides but not all
-   inherited solo attack/B2B/scoring options. `mode: '40l'`/`'blitz'` supports
-   preset/physics inspection; `lock()` fails explicitly before board mutation.
-   Do not use those modes as complete game presets yet.
+1. **Solo aggregates:** 40L/Blitz board placement, progression, objectives and
+   continuation are supported. Aggregate score/B2B/attack remain unknown and
+   are not computed. `stats.score`/`attack` are null; `conformance` records why.
+   Known drop points are separate from a total score. Solo garbage APIs reject
+   unsupported input explicitly; reconstruction of board placements continues.
 2. **Nonzero line-clear ARE:** visual timing consumes `rngex`, but its jitter
    formula is not supplied. Such rules are rejected. Ordinary positive ARE with
    instant/delayed tanking is implemented and tested.

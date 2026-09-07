@@ -21,24 +21,26 @@ export class Engine {
     }
     if (!['off','tap','hold'].includes(h.irs) || !['off','tap','hold'].includes(h.ihs)) throw new TypeError('Invalid initial input mode');
     this.state = {
-      schema: 'tetrp-engine/1', rules: config, handling: h,
+      schema: 'tetrp-engine/2', rules: config, handling: h,
+      conformance: { aggregateScore: mode === 'tl' ? 'covered-tl' : 'unknown',
+        attack: mode === 'tl' ? 'covered-tl' : 'unknown', b2b: mode === 'tl' ? 'covered-tl' : 'unknown' },
       frame: 0, subframe: 0, phase: 'ready', eventCursor: 0, queuedInputs: [],
       board: B.createBoard(config.boardwidth, config.boardheight, config.buffer),
       bag: createBag(seed), holes: createHoles(seed), hold: { piece: null, locked: false },
       piece: null, input: { held: {}, left: { das: 0, arr: h.arr }, right: { das: 0, arr: h.arr }, last: null },
       initial: { irs: 0, ihs: false }, waiting: [], nextWillTank: false, garbageLockedUntil: 0,
-      attack: A.createAttack(), g: mode === 'blitz' ? blitzGravity(1) : config.g, glock: 0,
-      stats: { pieces: 0, lines: 0, score: 0, holds: 0, level: 1, levelLines: 0 },
+      attack: mode === 'tl' ? A.createAttack() : null, g: mode === 'blitz' ? blitzGravity(1) : config.g, glock: 0,
+      stats: { pieces: 0, lines: 0, score: mode === 'tl' ? 0 : null, dropScore: 0, holds: 0, level: 1, levelLines: 0 },
       lastClear: false, lastReceived: 0, playing: true, success: false, reason: null,
     };
-    this.state.attack.multiplier = config.garbagemultiplier;
+    if (this.state.attack) this.state.attack.multiplier = config.garbagemultiplier;
     this.trace = []; this.spawn();
   }
   emit(type, data = {}) { this.trace.push({ type, frame: this.state.frame, subframe: this.state.subframe, ...data }); }
   serialize() { return JSON.stringify(sorted(this.state)); }
   static restore(bytes) {
     const s = JSON.parse(bytes);
-    if (s.schema !== 'tetrp-engine/1') throw new TypeError('Unsupported checkpoint version');
+    if (s.schema !== 'tetrp-engine/2') throw new TypeError('Unsupported checkpoint version');
     if (!Array.isArray(s.board?.rows) || s.board.rows.length !== s.board.height + s.board.buffer || s.board.rows.some(row => row.length !== s.board.width || row.some(c => c !== null && !['z','l','o','s','i','j','t','gb','gbd'].includes(c)))) throw new TypeError('Invalid checkpoint board');
     const check = value => {
       if (typeof value === 'number' && !Number.isFinite(value)) throw new TypeError('Non-finite state');
@@ -48,8 +50,13 @@ export class Engine {
     ruleset(s.rules.mode, s.rules);
     for (const name of ['frame','eventCursor']) if (!Number.isInteger(s[name]) || s[name] < 0) throw new TypeError(`Invalid checkpoint ${name}`);
     for (const name of ['g','glock','subframe','garbageLockedUntil']) if (typeof s[name] !== 'number' || s[name] < 0) throw new TypeError(`Invalid checkpoint ${name}`);
-    if (s.subframe >= 1 || !s.input || !s.handling || !s.attack || !s.stats || !s.initial || !s.hold) throw new TypeError('Incomplete checkpoint');
+    if (s.subframe >= 1 || !s.input || !s.handling || !s.stats || !s.initial || !s.hold || !s.conformance) throw new TypeError('Incomplete checkpoint');
+    const solo = s.rules.mode !== 'tl';
+    for (const key of ['aggregateScore','attack','b2b']) if (s.conformance[key] !== (solo ? 'unknown' : 'covered-tl')) throw new TypeError('Invalid conformance marker');
+    if (solo ? s.attack !== null || s.stats.score !== null || s.nextWillTank : !s.attack || typeof s.stats.score !== 'number') throw new TypeError('Invalid mode-specific checkpoint');
+    if (typeof s.stats.dropScore !== 'number' || s.stats.dropScore < 0) throw new TypeError('Invalid drop score');
     if (!Array.isArray(s.queuedInputs) || s.eventCursor > s.queuedInputs.length || !Array.isArray(s.waiting) || s.waiting.some(w => !Number.isInteger(w.target) || !['are','incoming-attack-hit'].includes(w.type))) throw new TypeError('Invalid checkpoint events');
+    if (solo && s.waiting.some(w => w.type !== 'are')) throw new TypeError('Unsupported solo garbage wait');
     if (!s.piece || !Number.isInteger(s.piece.x) || typeof s.piece.y !== 'number' || !Number.isInteger(s.piece.r)) throw new TypeError('Invalid checkpoint piece');
     B.cells(s.piece); // Validate the type/rotation without rejecting terminal overlap.
     if (!Array.isArray(s.bag?.queue) || s.bag.queue.some(type => ![...'zlosijt'].includes(type))) throw new TypeError('Invalid checkpoint bag');
@@ -143,7 +150,7 @@ export class Engine {
     const crossed = Math.ceil(y) - Math.ceil(old);
     if (crossed && !preserveSpin) this.clearSpin();
     if (Math.ceil(y) > p.hy) { p.hy = Math.ceil(y); p.resets = 0; p.rotationResets = 0; }
-    if (crossed && s.input.held.softDrop && !preserveSpin) { s.stats.score += crossed; p.softDropped = true; }
+    if (crossed && s.input.held.softDrop && !preserveSpin) { this.scoreDrop(crossed); p.softDropped = true; }
     return true;
   }
   slam(preserveSpin = false) {
@@ -178,7 +185,12 @@ export class Engine {
   hardDrop() {
     const s = this.state;
     if (!s.playing || s.piece.sleeping || s.piece.safelock) return false;
-    s.stats.score += 2 * this.slam(true); this.emit('hard-drop'); this.lock(); return true;
+    this.scoreDrop(2 * this.slam(true)); this.emit('hard-drop'); this.lock(); return true;
+  }
+  scoreDrop(points) {
+    const stats = this.state.stats;
+    stats.dropScore += points;
+    if (stats.score !== null) stats.score += points;
   }
   shifts(dt) {
     const s = this.state, h = s.handling;
@@ -248,13 +260,14 @@ export class Engine {
     }
     // Late growth: gameplay at F uses the value from the start of F.
     if (s.frame > s.rules.gmargin_frames + 1) s.g += s.rules.gincrease / 60;
-    if (s.frame > s.rules.garbagemargin_frames + 1) s.attack.multiplier += s.rules.garbageincrease_per_second / 60;
+    if (s.attack && s.frame > s.rules.garbagemargin_frames + 1) s.attack.multiplier += s.rules.garbageincrease_per_second / 60;
     s.subframe = 0; s.phase = 'ready'; s.eventCursor = 0; s.queuedInputs = [];
     return this;
   }
   step(events = []) { this.beginFrame(events); return this.finishFrame(); }
   schedule(delay,type,data = {}) {
     if (!Number.isInteger(delay) || delay < 0 || !['are','incoming-attack-hit'].includes(type)) throw new TypeError('Unsupported deterministic wait');
+    if (type === 'incoming-attack-hit') this.requireTL();
     this.state.waiting.push({target:this.state.frame+delay,type,data:clone(data)});
   }
   executeWait(wait) {
@@ -264,8 +277,12 @@ export class Engine {
       const p = s.attack.pending.find(p => p.cid === wait.data.cid); if (p) p.active = true;
     } else throw new TypeError('Unsupported wait in checkpoint');
   }
-  receive(event) { return A.receive(this.state.attack,event); }
+  requireTL() {
+    if (this.state.rules.mode !== 'tl') throw new UnknownBehavior('Solo attack/garbage semantics are unsupported');
+  }
+  receive(event) { this.requireTL(); return A.receive(this.state.attack,event); }
   confirm(cid) {
+    this.requireTL();
     const s = this.state, packet = s.attack.pending.find(p => p.cid === cid);
     if (!packet) return;
     packet.confirmFrame = s.frame; packet.activeFrame = s.frame+s.rules.garbagespeed_frames;
@@ -278,12 +295,13 @@ export class Engine {
     return true;
   }
   takeDamage() {
+    this.requireTL();
     const s = this.state; this.emit('tank');
     s.lastReceived = A.tank(s.attack,s.rules,s.holes,hole => this.insertGarbage(hole));
   }
   continuousGarbage() {
     const s = this.state;
-    if (!s.playing || s.piece.sleeping || s.frame < s.garbageLockedUntil || !s.attack.are.length) return;
+    if (!s.attack || !s.playing || s.piece.sleeping || s.frame < s.garbageLockedUntil || !s.attack.are.length) return;
     const packet = s.attack.are[0];
     if (!Number.isInteger(packet.column)) throw new UnknownBehavior('Continuous ARE entry requires a resolved column');
     if (this.insertGarbage(packet.column)) {
@@ -294,13 +312,26 @@ export class Engine {
   lock() {
     const s = this.state, p = s.piece;
     if (!s.playing || p.sleeping) return;
-    if (s.rules.mode !== 'tl') throw new UnknownBehavior('Solo inherited scoring/B2B defaults are not supplied');
     p.sleeping = true; s.stats.pieces++; this.emit('lock');
     const lockout = B.commit(s.board,p); this.emit('commit');
     const rows = B.fullLines(s.board), garbageRows = rows.filter(y => s.board.rows[y].includes('gb')).length;
     B.removeLines(s.board,rows); if (rows.length) this.emit('remove-lines',{rows});
     const lines = rows.length, allClear = lines > 0 && B.emptyWithPerma(s.board);
     s.lastClear = lines > 0; s.lastReceived = 0; s.stats.lines += lines;
+    // Geometry/counters/progression are independent of unknown solo aggregates.
+    const delay = s.rules.mode === 'tl' ? this.resolveTLPlacement(lines,allClear,garbageRows)
+      : (lines ? s.rules.lineclear_are : s.rules.are);
+    if (lockout && !s.rules.nolockout && (!lines || !s.rules.clutch)) { this.die('lockout'); return; }
+    if (s.rules.levels) {
+      s.stats.levelLines += lines;
+      while (s.stats.levelLines >= blitzLines(s.stats.level)) { s.stats.levelLines -= blitzLines(s.stats.level); s.stats.level++; }
+      s.g = blitzGravity(s.stats.level);
+    }
+    if (delay > 0) { this.schedule(delay,'are'); this.emit('schedule-are',{delay}); }
+    else this.spawn();
+  }
+  resolveTLPlacement(lines,allClear,garbageRows) {
+    const s = this.state, p = s.piece;
     const result = A.resolveAttack(s.attack,{lines,spin:p.spin,allClear,garbageRows},s.rules,s.holes,phase => this.emit('attack',{phase}));
     s.nextWillTank = !result.blocked;
     this.emit('tank-decision',{blocked:result.blocked});
@@ -311,13 +342,6 @@ export class Engine {
     // Score tables are specified; exact finesse indexing is intentionally deferred.
     const scoreTable = p.spin === 'full' ? [400,800,1200,1600,2600] : p.spin === 'mini' ? [100,200,400,800,1600] : [0,100,300,500,800];
     s.stats.score += ((scoreTable[lines] ?? 0)*(result.b2bBonus ? 1.5 : 1) + 50*Math.max(0,s.attack.combo-1) + (allClear ? 3500 : 0))*s.stats.level;
-    if (lockout && !s.rules.nolockout && (!lines || !s.rules.clutch)) { this.die('lockout'); return; }
-    if (s.rules.levels) {
-      s.stats.levelLines += lines;
-      while (s.stats.levelLines >= blitzLines(s.stats.level)) { s.stats.levelLines -= blitzLines(s.stats.level); s.stats.level++; }
-      s.g = blitzGravity(s.stats.level);
-    }
-    if (delay > 0) { this.schedule(delay,'are'); this.emit('schedule-are',{delay}); }
-    else this.spawn();
+    return delay;
   }
 }
