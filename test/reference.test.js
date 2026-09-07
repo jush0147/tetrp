@@ -23,6 +23,24 @@ test('bag reference: every pull and RNG checkpoint, 20 seeds x 150 pulls', () =>
     }
   });
 });
+test('#2 seed normalization: Python modulo, bag sequence and both RNG streams', () => {
+  const MOD = 2147483647;
+  const seeds = [0,-1,-MOD,MOD,MOD+1,1,42,12345,MOD-1,-MOD-1,
+    Number.MIN_SAFE_INTEGER,Number.MAX_SAFE_INTEGER];
+  const normalized = oracle(seeds.map(seed=>({kind:'seed',seed})));
+  const bags = oracle(seeds.map(seed=>({kind:'bag',seed,count:150})));
+  seeds.forEach((seed,i)=>{
+    assert.equal(R.seedState(seed).seed,normalized[i],`normalization ${seed}`);
+    assert.equal(R.createHoles(seed).rng.seed,normalized[i]);
+    const bag=R.createBag(seed);
+    for(const expected of bags[i]) {
+      assert.deepEqual({piece:R.pullBag(bag),queue:bag.queue,bagId:bag.bagId,seed:bag.rng.seed},expected,`bag ${seed}`);
+    }
+  });
+  for(const seed of [NaN,Infinity,-Infinity,0.1,Number.MAX_SAFE_INTEGER+1,'1',null]) {
+    assert.throws(()=>R.seedState(seed),RangeError);
+  }
+});
 test('board reference: mixed-material boards and epsilon boundary probes', () => {
   const rng=R.seedState(45231), boards=[];
   for(let i=0;i<40;i++) {

@@ -1,10 +1,13 @@
 // Original implementation of the specified Park–Miller sequence and bag policy.
 const MOD = 2147483647;
 export function seedState(seed) {
-  if (!Number.isSafeInteger(seed) || seed < 1 || seed >= MOD) {
-    throw new RangeError('Seed must be an integer in 1..2147483646');
+  if (!Number.isSafeInteger(seed)) {
+    throw new RangeError('Seed must be a safe integer');
   }
-  return { seed };
+  // Python modulo is nonnegative for a positive modulus; JS remainder is not.
+  const remainder = seed % MOD;
+  const normalized = remainder < 0 ? remainder + MOD : remainder;
+  return { seed: normalized === 0 ? MOD - 1 : normalized };
 }
 export function random(state) {
   state.seed = state.seed * 16807 % MOD;

@@ -54,7 +54,7 @@ test('malformed input/checkpoint and unsupported options fail explicitly', () =>
   assert.throws(()=>new Engine({rules:{garbagequeue:true}}),/Unsupported/);
   assert.throws(()=>new Engine({rules:{lineclear_are:10}}),/Unknown/);
   assert.throws(()=>new Engine({rules:{madeUp:1}}),/Unknown/);
-  assert.throws(()=>new Engine({seed:0}),RangeError);
+  assert.throws(()=>new Engine({seed:0.5}),RangeError);
 });
 test('canonical bytes disregard object property order and restore has no shared references', () => {
   const e=new Engine(), s=JSON.parse(e.serialize());

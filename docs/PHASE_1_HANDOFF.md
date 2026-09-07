@@ -1,5 +1,12 @@
 # Phase 1 review handoff
 
+## Phase 1.1 correction log
+
+- Issue #2: seed creation now uses Python-compatible nonnegative modulo, mapping
+  zero residues to 2147483646. All safe integer seeds are accepted; noninteger
+  and unsafe Number inputs remain rejected. Boundary seeds and 150 pulls per
+  seed are compared against the independent Python normalization/queue/RNG oracle.
+
 Status: implemented for the documented TL/standard-piece subset; the scoped
 exit criteria below pass. Stop here for review. Phase 2 has not started.
 
