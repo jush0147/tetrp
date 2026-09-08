@@ -7,12 +7,16 @@ import * as R from '../src/random.js';
 import * as P from '../src/physics.js';
 import * as A from '../src/attack.js';
 import { ruleset } from '../src/rules.js';
+import contract from './fixtures/data-contract.json' with { type: 'json' };
 const python = process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
 const oracle = requests => {
   const result = spawnSync(python,[fileURLToPath(new URL('./oracle.py',import.meta.url))],{input:JSON.stringify(requests),encoding:'utf8',maxBuffer:32*1024*1024,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
   assert.equal(result.status,0,`Python reference failed. Set PYTHON to a Python 3 executable. ${result.error ?? result.stderr}`);
   return JSON.parse(result.stdout);
 };
+test('#5 oracle algorithms retain the reviewed pre-cleanup AST',()=>{
+  assert.deepEqual(oracle([{kind:'reference-audit'}])[0],contract.reference_ast);
+});
 test('bag reference: every pull and RNG checkpoint, 20 seeds x 150 pulls', () => {
   const seeds = [1,42,12345,2147483646,...Array.from({length:16},(_,i)=>(i+1)*97123)];
   const results = oracle(seeds.map(seed=>({kind:'bag',seed,count:150})));

@@ -1,4 +1,4 @@
-import pieces from '../03_fixtures/TETRIO_STANDARD_PIECES_V19.json' with { type: 'json' };
+import pieces from './data/pieces.json' with { type: 'json' };
 
 export function createBoard(width = 10, height = 20, buffer = 20) {
   for (const n of [width, height, buffer]) {
@@ -11,9 +11,10 @@ export function occupied(board, x, y) {
   return x < 0 || x >= board.width || y < 0 || Math.ceil(y) >= board.rows.length || board.rows[Math.ceil(y)][x] !== null;
 }
 export function cells(piece) {
-  const matrix = pieces[piece.type]?.matrix;
-  if (!matrix || !Number.isInteger(piece.r) || piece.r < 0 || piece.r > 3) throw new TypeError('Unsupported piece');
-  return matrix.data[piece.r].map(([x, y]) => [piece.x + x - matrix.dx, piece.y + y - matrix.dy]);
+  const definition = pieces[piece.type];
+  if (!definition || !Number.isInteger(piece.r) || piece.r < 0 || piece.r > 3) throw new TypeError('Unsupported piece');
+  // Preserve the arithmetic ordering used before metadata removal.
+  return definition.rotations[piece.r].map(([x, y]) => [piece.x + x - definition.pivot[0], piece.y + y - definition.pivot[1]]);
 }
 export function legal(board, piece) {
   return cells(piece).every(([x, y]) => !occupied(board, x, y));

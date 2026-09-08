@@ -1,170 +1,136 @@
-# Phase 1 review handoff
+# Phase 1.1 correction handoff
 
-## Phase 1.1 correction log
+Scope: corrections for issues #2–#5 on `codex/phase-1-engine`. Stop for review
+after validation. No Phase 2 parser, UI, bot, PWA or deployment is included.
+This report supersedes the original Phase 1 completeness claims.
 
-- Issue #2: seed creation now uses Python-compatible nonnegative modulo, mapping
-  zero residues to 2147483646. All safe integer seeds are accepted; noninteger
-  and unsafe Number inputs remain rejected. Boundary seeds and 150 pulls per
-  seed are compared against the independent Python normalization/queue/RNG oracle.
-- Issue #3: shared placement now commits/clears/counts/progresses/spawns for
-  40L and Blitz. Only the existing TL transaction enters attack/garbage/scoring.
-  Solo `stats.score` and `attack` are null, with explicit unknown conformance
-  markers; known drop points are accumulated in `stats.dropScore`. Unknown
-  aggregates do not block board reconstruction. Checkpoint schema is now
-  `tetrp-engine/2`; v1 is explicitly rejected rather than silently reinterpreted.
-- Issue #4: no reset semantics changed. Focused grounded movement/rotation/mixed
-  tests, new-low reset, force-lock, anti-stall and actual kick-base tests record
-  the current interpretation. These tests prove implementation consistency, not
-  production equivalence.
+## Corrections and traceability
 
-Status: implemented for the documented TL/standard-piece subset; the scoped
-exit criteria below pass. Stop here for review. Phase 2 has not started.
-
-## Exit criteria
-
-| Criterion | Evidence | Result |
+| Issue | Change | Regression evidence |
 | --- | --- | --- |
-| Imported fixture tests pass | All 11 JSON files are imported by tests/runtime; behavioral vectors run against engine operations. Finesse is schema-only, explicitly excluded from stats compatibility. | PASS for the declared coverage |
-| Relevant reference comparisons pass | All five supplied Python models compared to JavaScript; no skips | PASS |
-| Same seed/rules/inputs produce byte-equivalent canonical state | Independent engines compared after every frame of a 160-frame input/garbage run | PASS |
-| Save/restore does not change future covered behavior | Restored at each frame, including between same-frame inputs; future queue, garbage travel, RNG and piece state compared | PASS |
-| Architecture and unknowns documented | This report and README | PASS |
+| #2 | Match Python nonnegative modulo and zero-residue normalization for all safe integer seeds | `test/reference.test.js`: zero, -1, -MOD, MOD, MOD+1, normal positives, ±safe-integer extrema; initial RNG and 150 bag pulls/checkpoints per seed |
+| #3 | Keep shared lock/commit/clear/counters/progression/spawn independent of TL offence and unknown solo aggregates | `test/solo.test.js`: 12 seeded placements per solo mode with live continuation, clear, hold and repeated restore; 40L completion, Blitz level/gravity/timed objective |
+| #4 | Preserve existing reset interpretation; make its uncertainty explicit | `test/lock-accounting.test.js`: grounded moves, rotations, mixed actions, new-low reset, force-lock, anti-stall and actual kick-base boundary |
+| #5 | Replace the raw research tree with minimal runtime data, behavioral test fixtures, test-only models and project docs | `test/provenance.test.js` and reference AST audit: projected data hashes, 1120 geometry cases, table-domain restrictions, tracked-tree exclusion, unchanged oracle algorithms |
 
-This is conformance to the supplied behavioral material, not proof of complete
-production-client equivalence. No official client bundle was used as an oracle.
+Issue-specific commits preserve reviewability; the hygiene change relocates data
+and removes source narrative without redesigning the engine. Details of each
+removed artifact are in [PROVENANCE.md](PROVENANCE.md).
+
+## Conformance claims changed
+
+- Seeds outside the Park–Miller state range now normalize correctly, including
+  negatives. Noninteger/unsafe Number seeds remain rejected. Restored live RNG
+  checkpoints must still contain valid normalized states.
+- 40L and Blitz can now reconstruct board placements across many pieces. Solo
+  aggregate `stats.score` and `attack` are null. `conformance.aggregateScore`,
+  `conformance.attack` and `conformance.b2b` explicitly say `unknown`. Known drop
+  points accumulate separately in `stats.dropScore`; this is not a total score.
+- TL attack/garbage/scoring follows its existing isolated transaction and all
+  reference comparisons continue to run. Solo placements do not enter it;
+  unsupported solo garbage input fails explicitly instead of guessing policy.
+  TL policy keys retained in the shared rules object are inactive in solo and
+  must not be interpreted as recovered solo defaults; the conformance markers
+  and null attack state are authoritative about this limitation.
+- Checkpoints use `tetrp-engine/2`; v1 is rejected instead of inventing a migration
+  for state that did not encode the solo aggregate boundary. Mid-frame remaining
+  input/cursor, both RNG streams, board, timers and progression are preserved.
+- Reset tests establish the current interpretation, not production correctness.
+- No claim of conformance comes from validating an unused extracted table. The
+  finesse schema-only test and unused finesse data were removed. Required data
+  are now checked by behavioral tests and frozen projection contracts.
 
 ## Architecture
 
-- `src/board.js`: material grid, hard storage bounds, ceil-Y occupancy, pivot
-  translation, line removal, insertion and one-row live-piece repair. No cache
-  means there is no stale legality across board/piece changes.
-- `src/random.js`: Park–Miller states, shuffled 7-bag with prefill, independent
-  garbage-hole stream and packet-depletion consumption.
-- `src/physics.js`: the errata's exact epsilon/probe, gravity-lock, soft-drop,
-  anti-stall and kick-base formulas.
-- `src/rotation.js`: ordered SRS+ candidates and spin classification from
-  fixture tables. Mini remains distinct for base attack but counts as a
-  recognized spin for B2B and garbage-special bonus.
-- `src/rules.js`: resolved configuration with explicit unsupported-option
-  errors; tested solo metadata and Blitz numerical formulas.
-- `src/attack.js`: ordered surge/ordinary/AC offence, two cancellation budgets,
-  packet queues, capped tanking and acknowledgement reconciliation.
-- `src/engine.js`: spawn/hold/initial actions, fractional input timeline,
-  handling, fall/lock/placement transaction, typed waits and canonical state.
+The architecture remains small: `board.js` owns occupancy/mutation, `random.js`
+owns deterministic streams, `physics.js` owns exact numerical formulas,
+`rotation.js` handles ordered kicks/spins, `rules.js` resolves supported options,
+`attack.js` implements TL arithmetic/packet bookkeeping, and `engine.js` sequences
+frames and placements. The new `resolveTLPlacement` method isolates the previous
+TL-only block. Shared placement and the existing Blitz progression loop remain
+in `lock()`; there is no new parser or general mode framework.
 
-Runtime modules contain no filesystem, clock, network, browser UI, randomness
-from the platform, or Python calls. The only platform arithmetic is JavaScript
-Number/Math. Tables are specification data, not official runtime code.
+Runtime imports only five JSON tables in `src/data`. Python and filesystem/Git
+calls are test-only. Diagnostics/render state are excluded from canonical state.
+[ENGINE_SPEC.md](ENGINE_SPEC.md) describes the public behavioral contract.
 
-The checkpoint is sorted-key JSON with an explicit schema tag. It includes
-board materials, full pre-generated bag, both RNG states, input accumulators,
-pending initial actions, falling-piece counters/flags, rules/handling, gravity
-lock, combo/B2B, packet and acknowledgement queues, waits, scores and lifecycle.
-It also includes current-frame inputs/cursor so a mid-frame restore cannot
-replay already-consumed input. Diagnostics and rendering metadata are excluded.
+## Validation matrix
 
-## Test matrix
+The final validation command is `npm test` with Python 3.12 available (or `PYTHON`
+set). Every test runs; no skip or swallowed failure is permitted. Local and CI
+results are reported with the review revision.
 
-Validation on Node.js 24.15.0 and the bundled Python 3 runtime on Windows:
-**293 tests passed, 0 failed, 0 skipped**, including verification of every supplied
-handoff file against the corrected archive's SHA256 manifest.
+Local full suite and clean checkout: **309 passed, 0 failed, 0 skipped** on Node
+24.15.0 and Python 3.12.14 (Windows), including the repository-index hygiene audit.
+The clean checkout has no private handoff backup. GitHub Actions is checked
+before handing the revision back; its result is linked in the review report.
 
-| Area | Imported data / independent evidence | Coverage |
-| --- | --- | --- |
-| Board/materials | Board core JSON + BoardReference | Bounds, ceil probes, gbd, all empty predicates, clear/insert/repair invariants; 40 mixed-material oracle boards |
-| Pieces | Standard pieces JSON | All 7 types x 4 orientations; pivot/commit/collision |
-| Bag | SevenBag Python | 20 seeds x 150 pulls; each queue, bag id and RNG checkpoint |
-| Rotation/spin | SRS+ and spin-rule JSON | Every standard JLSTZ/I transition; ordered fallback geometry, O no-kick, T corners, all modes on standard types |
-| Fall | Exact precision JSON + fall Python | Every supplied vector; 600 cross-language cases; probe collision, gravity lock and soft-drop call splitting |
-| Input/handling | Input-frame JSON | All six vectors; DAS/ARR=0, DCD at spawn, opposing inputs, repeat suppression |
-| Lifecycle | Prose scenarios | Empty/full hold, tap/hold IHS before IRS, direct/ARE blockout difference, clutch, lockout, 20G, reset threshold, safelock |
-| Placement | Placement-order JSON | All five vectors, real board mutation, immediate/deferred tank, separate AC cancellation |
-| Attack/garbage | TL rules JSON + updated TL Python | 300 mixed placements plus travel/growth; minis, opener, hardened, cap, surge, AC, acknowledgement traffic |
-| Hole RNG | Hole Python | Four seeds, mixed tank/cancel packet boundaries; explicit columns and partial packets |
-| Solo numerical data | Solo presets + Blitz level JSON | Both preset records, all 30 level thresholds/gravity values and natural-20G gating |
-| Finesse | Finesse JSON | Domain/schema validation only; no claim of implemented finesse accounting |
-| Canonical restore | Independent reruns + mutation/error tests | Sorted bytes, no shared references, frame/input cursor, future garbage and RNG, explicit malformed errors |
+| Domain | Cases / evidence |
+| --- | --- |
+| Seeds/bags | 20 existing seeds × 150 pulls plus 12 normalization cases × 150 pulls; independent Python initial and evolved states |
+| Board | 40 mixed-material oracle boards, bounds/epsilon probes, mutation and garbage-repair cases |
+| Geometry/kicks/spins | All 7 types × 4 rotations; every standard kick transition; all supported spin modes; 1120 old/new projection cases |
+| Precision | Every retained exact fall vector; 600 Python formula combinations; gravity lock and soft-drop call boundaries |
+| Input/placement | All six input vectors and five placement-order vectors; actual commit/clear/tank/spawn transitions |
+| TL and garbage holes | 300 mixed reference placements plus travel/growth/acknowledgements; four seeds with tank/cancel boundaries |
+| Solo | Both modes stay live through 12 seeded placements and repeated restore; real seeded continuations start from a synthetic one-line well; objective/level tests use explicitly constructed checkpoints |
+| Reset interpretation | Six focused scenario tests, with no speculative quota change |
+| Serialization | Per-frame and between-input restore, sorted bytes, no shared references, null unknown markers and malformed checkpoint rejection |
+| Hygiene | Ten projected data files, five normalized oracle ASTs, geometry boundary digest, allowed public file/table domains |
 
-These references deliberately do not model the entire engine. Passing their
-subsystem comparisons cannot validate interactions they do not represent.
+Tests cover the declared behavioral subset. No real `.ttr` files or official
+runtime were used. Deterministic self-consistency is not evidence of matching
+an external replay, and an oracle comparison cannot validate behavior that the
+oracle does not model.
 
-## Unknown and unsupported boundaries
+## Issue #4: reset-accounting boundary
 
-1. **Solo aggregates:** 40L/Blitz board placement, progression, objectives and
-   continuation are supported. Aggregate score/B2B/attack remain unknown and
-   are not computed. `stats.score`/`attack` are null; `conformance` records why.
-   Known drop points are separate from a total score. Solo garbage APIs reject
-   unsupported input explicitly; reconstruction of board placements continues.
-2. **Nonzero line-clear ARE:** visual timing consumes `rngex`, but its jitter
-   formula is not supplied. Such rules are rejected. Ordinary positive ARE with
-   instant/delayed tanking is implemented and tested.
-3. **Finesse stats:** no documented conversion from destination X to the supplied
-   table's 11 indices, nor complete special soft-drop accounting. The table is
-   retained and validated; finesse faults/combos are not synthesized.
-4. Exotic piece types appearing in supplemental kick/spin tables have no supplied
-   standard geometry. They are outside the seven-piece runtime domain.
-5. Nonzero garbage phase, queued-garbage progression, weighted messiness,
-   nonzero passthrough modes, nonunit receive/cancel multipliers, absolute caps,
-   target bonuses, infinite-movement variants and nonzero cap growth are unsupported.
-6. No official connected-skin edge bytes or render actors are canonical. No
-   renderer is present; gameplay occupancy is independent of those visual fields.
-7. No private coordinator, FFA policy, KO attribution, stock/revive, Zenith,
-   unsafe callbacks, hesitated/animated attacks or online replay verifier.
-8. Score tables are implemented for covered TL placements; exact aggregate/finesse
-   and visual-stat parity has no independent reference. No cross-browser
-   byte-equivalence claim is made for transcendental Math operations.
-9. The supplied notes describe move and rotational reset domains but do not
-   include a complete reset-accounting oracle. Boundary tests cover the stated
-   limits and new-low reset; official frame-by-frame comparison remains future work.
+Current interpretation, intentionally unchanged:
 
-### Issue #4: explicit reset-accounting conformance boundary
+| Operation | Effect |
+| --- | --- |
+| Successful horizontal move | Increment `piece.resets`, reset `locking` |
+| Successful rotation | Reset `locking`; increment `rotationResets` capped at 63 and `totalRotations`; do not increment `resets` |
+| Failed move/rotation | Do not consume these counters |
+| New `ceil(y) > hy` | Clear `resets` and `rotationResets`; retain `totalRotations` |
+| Grounded `resets >= lockresets` | Force-lock on Fall |
+| `rotationResets > lockresets + 15` | Extra fall budget `0.5 * dt * excess` |
+| `totalRotations > lockresets + 15` | Switch kicked Y base from floor(Y)+0.1 to Y |
 
-Current interpretation: each successful horizontal move increments `resets`
-and resets `locking`. A successful rotation resets `locking`, increments
-`rotationResets` (capped at 63) and `totalRotations`, but does not increment
-`resets`. Failed actions do not consume these counters. Reaching a new
-`ceil(y) > hy` clears `resets` and `rotationResets`, not `totalRotations`.
-Grounded reset exhaustion at `resets >= lockresets` forces a lock on Fall.
-Anti-stall uses `rotationResets > lockresets + 15`; kick-Y switching uses
-`totalRotations > lockresets + 15`. Both thresholds are strict.
+Whether rotations must also consume the ordinary reset quota is still unknown.
+Future replay differential validation must locate the first differing frame and
+compare all three counters, Y/hy, locking and forceLock. That validation requires
+representative replay evidence; this pass implements neither parsing nor a
+replay divergence tool.
 
-The unresolved question is whether successful rotations must also consume the
-ordinary reset quota in production. No behavioral change was made without an
-oracle. `test/lock-accounting.test.js` intentionally labels interpretation tests.
-Future replay differential validation must report the first differing frame and
-these three counters plus Y/hy/locking/forceLock. No parser or diagnostics for
-real replay files have been implemented in this correction pass.
+## Remaining unknowns and limitations
 
-## Proposed Phase 2 interface (design only)
+- Solo aggregate score/B2B/attack, exact aggregate/finesse stats and unprovided
+  inherited solo policies remain unknown. These no longer block board placement.
+- Nonzero line-clear ARE remains unsupported because its RNG jitter is unspecified.
+  Ordinary positive ARE with instant/delayed TL tanking is tested.
+- Nonzero garbage phases, queued progression, weighted messiness, nonzero
+  passthrough, nonunit multipliers, absolute caps, target bonuses, infinite
+  movement, cap growth and exotic piece types remain unsupported.
+- No renderer/connectivity bytes, private coordinator, FFA, revive/Zenith,
+  online verifier, unsafe callbacks or animated/hesitated attacks are modeled.
+- Cross-browser equality for transcendental Math operations has not been tested.
+- **Publication boundary:** this revision removes the research tree, but prior
+  commits and the unmerged base branch still expose its earlier publication.
+  This correction does not erase Git history or force-push other branches.
+  Repository-wide historical removal is a separate approval/review decision.
 
-The parser should own file/schema validation and translate supported replay data
-to a resolved ruleset, integer seed, frame input arrays and semantic interaction
-events. It should not mutate gameplay rules to make a mismatching replay appear
-valid.
+## Public/private boundary and review gate
 
-Suggested boundary:
+The public revision needs no handoff ZIP or private research paths to build or
+test. The raw originals remain in ignored local storage for provenance checks;
+they are not runtime or CI dependencies. The five retained independent models
+are behavioral test oracles, not official client code. No official bundle,
+beautified source, font, sound or visual asset was introduced.
 
-```ts
-type EngineCheckpoint = string; // versioned canonical JSON, not replay `full`
-type Input = {
-  frame: number;
-  subframe: number;
-  type: 'keydown' | 'keyup';
-  key: 'moveLeft' | 'moveRight' | 'rotateCW' | 'rotateCCW' |
-       'rotate180' | 'softDrop' | 'hardDrop' | 'hold';
-  hoisted?: boolean;
-};
+After review, a future adapter may translate supported replay input into rules,
+seed, ordered per-frame inputs and semantic garbage events, retaining its own
+source cursor alongside engine checkpoints. Replay display anchors must not be
+treated as complete RNG checkpoints. This is an interface boundary only.
 
-// Future parser/reconstruction adapter, not implemented:
-// parseReplay(bytes) -> supported schema, immutable source, rounds/players
-// inputsAtFrame(round, player, frame) -> Input[] in stored order
-// seekFrame / seekPlacement -> EngineCheckpoint + source cursor
-// forkState(checkpoint) -> Engine.restore(checkpoint)
-```
-
-Store semantic interaction/confirmation cursor alongside the engine checkpoint.
-Use the engine's typed wait stage for travel/ARE; do not infer packet maturity
-from a visual garbage counter. Preserve replay `full` separately: it lacks RNG
-and queue fields required for this engine's restore contract.
-
-Do not implement this adapter, replay viewer or bots until the Phase 1 review.
+Stop at Phase 1.1 for review. Do not start Phase 2 or merge automatically.

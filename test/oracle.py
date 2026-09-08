@@ -1,18 +1,23 @@
 """Test-only JSON bridge to the supplied independent reference programs."""
 import json
+import ast
+import hashlib
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / '04_reference'))
-from tetrio_bag_reference import SevenBag, RNG
-from tetrio_board_reference import BoardReference
-from tetrio_tl_hole_reference import TLGarbageHoles
-from tetrio_fall_precision_reference import fall_probes, softdrop_budget, anti_stall_extra, kick_y
-from tetrio_tl_v19_reference import TetraLeagueV19
+sys.path.insert(0, str(Path(__file__).resolve().parent / 'reference'))
+from bag_reference import SevenBag, RNG
+from board_reference import BoardReference
+from tl_hole_reference import TLGarbageHoles
+from fall_precision_reference import fall_probes, softdrop_budget, anti_stall_extra, kick_y
+from tl_v19_reference import TetraLeagueV19
 
 
 def evaluate(req):
     kind = req['kind']
+    if kind == 'reference-audit':
+        return {p.name: hashlib.sha256(ast.dump(ast.parse(p.read_text(encoding='utf8')), include_attributes=False).encode()).hexdigest()
+                for p in (Path(__file__).resolve().parent / 'reference').glob('*.py')}
     if kind == 'seed':
         return RNG(req['seed']).seed
     if kind == 'bag':

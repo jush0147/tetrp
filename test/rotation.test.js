@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import kicks from '../03_fixtures/TETRIO_SRSPLUS_KICKS_V19.json' with { type: 'json' };
-import spinTables from '../03_fixtures/TETRIO_SPIN_RULE_TABLES_V19.json' with { type: 'json' };
+import kicks from '../src/data/kicks.json' with { type: 'json' };
+import spinTables from '../src/data/spins.json' with { type: 'json' };
 import { createBoard, cells, legal } from '../src/board.js';
 import { rotationCandidates, rotate, classifySpin } from '../src/rotation.js';
 

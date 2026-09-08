@@ -1,9 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import vectors from '../03_fixtures/TETRIO_FALL_SOFTDROP_ANTISTALL_TEST_VECTORS_V19.json' with { type: 'json' };
-import levels from '../03_fixtures/TETRIO_BLITZ_LEVEL_TABLE_V19.json' with { type: 'json' };
-import presets from '../03_fixtures/TETRIO_SOLO_MODE_PRESETS_V19.json' with { type: 'json' };
-import finesse from '../03_fixtures/TETRIO_FINESSE_TABLE_V19.json' with { type: 'json' };
+import vectors from './fixtures/fall.json' with { type: 'json' };
+import levels from './fixtures/blitz.json' with { type: 'json' };
+import presets from '../src/data/solo.json' with { type: 'json' };
 import { fallProbes, effectiveGravity, softDropBudget, antiStallExtra, kickY } from '../src/physics.js';
 import { blitzGravity, blitzLines, ruleset } from '../src/rules.js';
 import { Engine } from '../src/engine.js';
@@ -51,15 +50,4 @@ test('anti-stall uses rotresets, totalRotations survives new low', () => {
   const e = new Engine({rules:{g:0}}); Object.assign(e.state.piece,{rotationResets:35,totalRotations:50});
   e.fall(0.4); near(e.state.piece.y,18.96); assert.equal(e.state.piece.rotationResets,0);
   assert.equal(e.state.piece.totalRotations,50);
-});
-// Finesse table is preserved as reference data. The handoff does not specify
-// destination-index mapping; validating shape does not claim stats parity.
-test('finesse fixture has complete standard piece/rotation domains', () => {
-  assert.deepEqual(Object.keys(finesse).sort(),[...'zlosijt'].sort());
-  for (const rows of Object.values(finesse)) {
-    assert.deepEqual(Object.keys(rows),['0','1','2','3']);
-    for (const row of Object.values(rows)) {
-      assert.equal(row.length,11); assert.ok(row.every(n => Number.isInteger(n) && n >= 0 && n <= 9));
-    }
-  }
 });

@@ -1,5 +1,5 @@
-import kicks from '../03_fixtures/TETRIO_SRSPLUS_KICKS_V19.json' with { type: 'json' };
-import spinTables from '../03_fixtures/TETRIO_SPIN_RULE_TABLES_V19.json' with { type: 'json' };
+import kicks from './data/kicks.json' with { type: 'json' };
+import spinTables from './data/spins.json' with { type: 'json' };
 import { legal, occupied } from './board.js';
 import { kickY } from './physics.js';
 

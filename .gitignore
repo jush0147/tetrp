@@ -7,3 +7,13 @@ TETRIO_Package.zip
 01_Official_Standalone/
 tetrio.beautified.js
 tetrp_codex_handoff_*.zip
+# Raw handoff/research stays local; reviewed projections live in src/data and test.
+/01_core_spec/
+/02_engine_details/
+/03_fixtures/
+/04_reference/
+/05_phase2_replay/
+/README_FOR_CODEX.md
+/ROADMAP_FOR_CODEX.md
+/ERRATA_FOR_CODEX.md
+/SHA256SUMS.txt

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import inputVectors from '../03_fixtures/TETRIO_INPUT_FRAME_TEST_VECTORS_V19.json' with { type: 'json' };
-import placementVectors from '../03_fixtures/TETRIO_PLACEMENT_ORDER_TEST_VECTORS_V19.json' with { type: 'json' };
+import inputVectors from './fixtures/input.json' with { type: 'json' };
+import placementVectors from './fixtures/placement.json' with { type: 'json' };
 import { Engine } from '../src/engine.js';
 import * as B from '../src/board.js';
 const event = (e,key,subframe=0,type='keydown',extra={}) => ({frame:e.state.frame,subframe,type,key,...extra});

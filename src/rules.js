@@ -1,5 +1,5 @@
-import tl from '../03_fixtures/TETRIO_TETRA_LEAGUE_V19_RULESET.json' with { type: 'json' };
-import solo from '../03_fixtures/TETRIO_SOLO_MODE_PRESETS_V19.json' with { type: 'json' };
+import tl from './data/tl.json' with { type: 'json' };
+import solo from './data/solo.json' with { type: 'json' };
 
 export const defaultHandling = Object.freeze({ arr: 2, das: 10, dcd: 2, sdf: 6, safelock: true, cancel: false, may20g: true, irs: 'tap', ihs: 'tap' });
 export function blitzGravity(level) { return (1 / 60) / Math.max(1e-9, 0.65 - (level - 1) * 0.007) ** (level - 1); }
@@ -7,7 +7,7 @@ export function blitzLines(level) { return Math.ceil(level * 0.42 * 5); }
 export function ruleset(mode = 'tl', overrides = {}) {
   if (!['tl', '40l', 'blitz'].includes(mode)) throw new TypeError('Unsupported mode');
   const base = {
-    ...tl.inherited_defaults_relevant_to_versus, ...tl.explicit,
+    ...tl,
     buffer: 20, mode, hold: true, infinite_hold: false,
     garbageare: 0, garbagearebump: 0, objective_type: null,
   };

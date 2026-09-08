@@ -1,15 +1,58 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import pieces from '../src/data/pieces.json' with { type: 'json' };
+import kicks from '../src/data/kicks.json' with { type: 'json' };
+import spins from '../src/data/spins.json' with { type: 'json' };
+import contract from './fixtures/data-contract.json' with { type: 'json' };
+import { cells } from '../src/board.js';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-test('all supplied handoff files match the corrected archive SHA256 manifest', () => {
-  const root = new URL('../',import.meta.url);
-  const manifest = readFileSync(new URL('SHA256SUMS.txt',root),'utf8');
-  for(const line of manifest.trim().split(/\r?\n/)) {
-    const [,expected,path] = line.match(/^([0-9a-f]{64})\s+(.+)$/) ?? [];
-    assert.ok(expected && path && !path.includes('..'),`Invalid manifest line: ${line}`);
-    const bytes = readFileSync(new URL(path,root));
+test('#5 public data preserves the behavioral projections frozen before cleanup',()=>{
+  for(const [path,expected] of Object.entries(contract.data)) {
+    const bytes=readFileSync(new URL(`../${path}`,import.meta.url));
     assert.equal(createHash('sha256').update(bytes).digest('hex'),expected,path);
+  }
+});
+test('#5 geometry has only pivots and xy cells; kick/spin domain is seven pieces',()=>{
+  assert.deepEqual(Object.keys(pieces).sort(),[...'zlosijt'].sort());
+  for(const piece of Object.values(pieces)) {
+    assert.deepEqual(Object.keys(piece).sort(),['pivot','rotations']);
+    assert.equal(piece.pivot.length,2); assert.equal(piece.rotations.length,4);
+    for(const rotation of piece.rotations) {
+      assert.equal(rotation.length,4);
+      for(const cell of rotation) { assert.equal(cell.length,2); assert.ok(cell.every(Number.isInteger)); }
+    }
+  }
+  assert.deepEqual(Object.keys(kicks).sort(),['i_kicks','kicks']);
+  for(const rule of Object.values(spins.spinbonuses_rules)) {
+    assert.ok(Object.keys(rule).every(key=>key==='types'));
+    assert.ok((rule.types ?? []).every(type=>type in pieces));
+  }
+});
+test('#5 geometry arithmetic matches pre-cleanup projections at integer and epsilon boundaries',()=>{
+  const output=[];
+  for(const type of [...'zlosijt']) for(let r=0;r<4;r++) {
+    for(const x of contract.geometry.x) for(const y of contract.geometry.y) output.push(cells({type,r,x,y}));
+  }
+  assert.equal(createHash('sha256').update(JSON.stringify(output)).digest('hex'),contract.geometry.sha256);
+});
+test('#5 public tree excludes research directories and binary assets',()=>{
+  const root=new URL('../',import.meta.url);
+  const tracked=execFileSync('git',['ls-files','-z'],{cwd:fileURLToPath(root),encoding:'utf8'}).split('\0').filter(Boolean);
+  for(const path of tracked) {
+    assert.ok(!/^(01_core_spec|02_engine_details|03_fixtures|04_reference|05_phase2_replay|\.cache)\//.test(path),`Research tracked: ${path}`);
+    assert.ok(!/\.(zip|png|jpg|svg|webp|woff2?|ttf|mp3|wav|exe)$/i.test(path),`Unexpected binary/asset tracked: ${path}`);
+    assert.ok(!/tetrio\.beautified|01_Official_Standalone|production.bundle/i.test(path),`Forbidden artifact: ${path}`);
+  }
+  for(const name of ['01_core_spec','02_engine_details','03_fixtures','04_reference','05_phase2_replay',
+    'README_FOR_CODEX.md','ROADMAP_FOR_CODEX.md','ERRATA_FOR_CODEX.md','SHA256SUMS.txt']) {
+    assert.equal(existsSync(new URL(name,root)),false,`${name} must remain outside the public tree`);
+  }
+  // Audit publication, not untracked user files or temporary test output.
+  for(const path of tracked) {
+    assert.ok(/\.(js|json|py|md|yml|yaml)$/.test(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
   }
 });

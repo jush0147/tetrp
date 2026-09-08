@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import vectors from '../03_fixtures/TETRIO_BOARD_CORE_TEST_VECTORS_V19.json' with { type: 'json' };
-import definitions from '../03_fixtures/TETRIO_STANDARD_PIECES_V19.json' with { type: 'json' };
+import vectors from './fixtures/board.json' with { type: 'json' };
+import definitions from '../src/data/pieces.json' with { type: 'json' };
 import * as board from '../src/board.js';
 import { createBag, pullBag, populateBag, createHoles, nextHole, completePacket } from '../src/random.js';
 
@@ -21,9 +21,9 @@ for (const v of vectors.empty_predicate_vectors) test(`empty: ${v.name}`, () => 
   assert.equal(board.emptyWithPerma(b), v.empty_with_perma);
   assert.equal(board.emptyWithUnclearable(b), v.empty_with_unclearable);
 });
-for (const [type, { matrix }] of Object.entries(definitions)) for (let r = 0; r < 4; r++) test(`piece ${type}/${r}: pivot, collision and commit`, () => {
+for (const [type, { pivot, rotations }] of Object.entries(definitions)) for (let r = 0; r < 4; r++) test(`piece ${type}/${r}: pivot, collision and commit`, () => {
   const b = board.createBoard(), p = { type, x: 4, y: 17.96, r };
-  const expected = matrix.data[r].map(([x, y]) => [4 + x - matrix.dx, Math.ceil(17.96 + y - matrix.dy)]);
+  const expected = rotations[r].map(([x, y]) => [4 + x - pivot[0], Math.ceil(17.96 + y - pivot[1])]);
   assert.equal(board.legal(b, p), true);
   assert.equal(board.commit(b, p), expected.every(([, y]) => y < 20));
   assert.equal(board.legal(b, p), false);

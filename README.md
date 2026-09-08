@@ -4,13 +4,13 @@ Independent, MIT-licensed deterministic gameplay engine for future post-game
 TETR.IO replay review and offline practice. Not affiliated with TETR.IO.
 No official client code or visual/audio/font assets are included.
 
-**Phase 1 review checkpoint.** No replay parser, UI, PWA, bot, network client,
+**Phase 1.1 correction review checkpoint.** No replay parser, UI, PWA, bot, network client,
 live-match integration or deployment has been built. Read
 [the Phase 1 handoff](docs/PHASE_1_HANDOFF.md) before extending the engine.
 
 ## Run tests
 
-Requires Node.js 22+ and Python 3.10+ for the independent test oracles.
+Requires Node.js 22+ and Python 3.12 for the independent test oracles and AST audit.
 There are no npm packages to install and no Python packages to install.
 
 ```sh
@@ -24,7 +24,7 @@ $env:PYTHON = 'C:/path/to/python.exe'
 npm test
 ```
 
-`npm run test:reference` runs just the five cross-language comparisons.
+`npm run test:reference` runs the five oracle domains, seed boundaries and AST audit.
 Python is never imported or invoked by the simulation runtime.
 
 ## Engine API
@@ -72,7 +72,14 @@ known drop points are recorded separately. Checkpoints now use schema v2.
 Nonzero line-clear ARE also fails explicitly because its RNG jitter is unspecified.
 See the handoff for all unsupported cases and test limitations.
 
-Behavior is based on the user-supplied clean-room handoff, with
-[ERRATA_FOR_CODEX.md](ERRATA_FOR_CODEX.md) taking precedence. Original references
-and fixture files are retained unchanged and hash-checked. The source material
-describes a particular v19 snapshot, not today's live service.
+Behavioral inputs came from a user-supplied clean-room handoff and its precision
+and mini-spin corrections. The public tree now contains project-facing
+[engine documentation](docs/ENGINE_SPEC.md), minimal runtime tables in `src/data`,
+behavioral test vectors and five independent test-only Python models. It does
+not need the raw handoff archive to build or test.
+
+Unused per-mino metadata, preview data, exotic kick tables, finesse tables and
+source-level research narrative were removed from this revision. See the
+[artifact-by-artifact provenance review](docs/PROVENANCE.md) for the public/private
+boundary and the remaining historical-publication limitation. This describes a
+particular v19 behavioral snapshot, not today's live service.
