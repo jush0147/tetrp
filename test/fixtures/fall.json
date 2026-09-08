@@ -1,0 +1,123 @@
+{
+  "engine_version": 19,
+  "fall_precision": [
+    {
+      "name": "integer_to_integer_step",
+      "current_y": 17.0,
+      "requested_step": 1.0,
+      "expected_candidate_y": 18.000001,
+      "expected_probe_y": 17.999998,
+      "expected_candidate_ceil_row": 19,
+      "expected_probe_ceil_row": 18
+    },
+    {
+      "name": "fraction_reaches_integer",
+      "current_y": 17.96,
+      "requested_step": 0.04,
+      "expected_candidate_y": 18.000001,
+      "expected_probe_y": 18.96,
+      "expected_candidate_ceil_row": 19,
+      "expected_probe_ceil_row": 19
+    },
+    {
+      "name": "ordinary_fractional_step",
+      "current_y": 17.96,
+      "requested_step": 0.3,
+      "expected_candidate_y": 18.26,
+      "expected_probe_y": 18.96,
+      "expected_candidate_ceil_row": 19,
+      "expected_probe_ceil_row": 19
+    }
+  ],
+  "softdrop_budget": [
+    {
+      "name": "low_g_sdf6_full_frame_hits_floor",
+      "effective_g": 0.02,
+      "dt": 1.0,
+      "sdf": 6,
+      "expected_budget": 0.3
+    },
+    {
+      "name": "low_g_sdf6_subframe_floor_not_scaled_by_dt",
+      "effective_g": 0.02,
+      "dt": 0.4,
+      "sdf": 6,
+      "expected_budget": 0.3
+    },
+    {
+      "name": "higher_g_sdf6_uses_scaled_gravity",
+      "effective_g": 0.2,
+      "dt": 0.4,
+      "sdf": 6,
+      "expected_budget": 0.48
+    },
+    {
+      "name": "infinite_sdf_sentinel_full_frame",
+      "effective_g": 0.02,
+      "dt": 1.0,
+      "sdf": 41,
+      "expected_budget": 400.0
+    },
+    {
+      "name": "infinite_sdf_sentinel_subframe",
+      "effective_g": 0.02,
+      "dt": 0.4,
+      "sdf": 41,
+      "expected_budget": 160.0
+    }
+  ],
+  "anti_stall_extra": [
+    {
+      "name": "standard_threshold_not_exceeded",
+      "lockresets": 15,
+      "rotresets": 30,
+      "dt": 1.0,
+      "expected_should_fall_faster": false,
+      "expected_extra_budget": 0.0
+    },
+    {
+      "name": "first_excess_rotation_reset",
+      "lockresets": 15,
+      "rotresets": 31,
+      "dt": 1.0,
+      "expected_should_fall_faster": true,
+      "expected_extra_budget": 0.5
+    },
+    {
+      "name": "first_excess_rotation_reset_subframe",
+      "lockresets": 15,
+      "rotresets": 31,
+      "dt": 0.4,
+      "expected_should_fall_faster": true,
+      "expected_extra_budget": 0.2
+    },
+    {
+      "name": "five_excess_rotation_resets_subframe",
+      "lockresets": 15,
+      "rotresets": 35,
+      "dt": 0.4,
+      "expected_should_fall_faster": true,
+      "expected_extra_budget": 1.0
+    }
+  ],
+  "kick_y_base": [
+    {
+      "name": "normal_kick_base_at_threshold",
+      "current_y": 17.96,
+      "kick_y": 1.0,
+      "rotation_offset_delta_y": 0.0,
+      "lockresets": 15,
+      "total_rotations": 30,
+      "expected_y": 18.1
+    },
+    {
+      "name": "unrounded_kick_base_after_threshold",
+      "current_y": 17.96,
+      "kick_y": 1.0,
+      "rotation_offset_delta_y": 0.0,
+      "lockresets": 15,
+      "total_rotations": 31,
+      "expected_y": 18.96
+    }
+  ]
+}

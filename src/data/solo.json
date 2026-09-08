@@ -1,0 +1,18 @@
+{
+  "40l": {
+    "g": 0.02,
+    "allow180": true,
+    "spinbonuses": "all-mini+",
+    "objective_type": "lines",
+    "objective_count": 40,
+    "nolockout": true
+  },
+  "blitz": {
+    "allow180": true,
+    "objective_type": "timed",
+    "objective_time_ms": 120000,
+    "levels": true,
+    "gravitymay20g": false,
+    "nolockout": true
+  }
+}

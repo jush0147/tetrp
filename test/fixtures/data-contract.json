@@ -1,0 +1,41 @@
+{
+  "data": {
+    "src/data/pieces.json": "90b69a1577f1aa2af5a07caa4fb85fab10e6774c4a5a86d9e886886727714a95",
+    "src/data/kicks.json": "1837cbb6b0470fc3e6a46c99d41d9195207b18026491dcfcfa003fbc2719a84b",
+    "src/data/spins.json": "da813320e69fca4cc6322dc94c397ae3dd4c69999774dd3eec62a842bc712213",
+    "src/data/tl.json": "fd76494ffa1b70175c4a5dece4be58d758d5c408bd66d675e1346ce03bef012b",
+    "src/data/solo.json": "2dfbfd1791b94eb625b24904d1705754d1d17a1a1e4bd2edb008f834b87a588f",
+    "test/fixtures/board.json": "2f9e292815fd6a7ed3dd8947327340a2f0a298eea23ca0d25fc567fdf01c906f",
+    "test/fixtures/blitz.json": "f86395befc0861df414d9be04ec84fc5c84276f3ec8004fffbfc32a0c63b3d51",
+    "test/fixtures/fall.json": "cae0aeac5d1d0bc0f9d673f4758be4c386d3a18902ccc410fe90afcc2c6eac56",
+    "test/fixtures/input.json": "115e47f6f6e0bc5c0a0d2cb64808619acc27c95157af7c64d0baf5c8abe5da75",
+    "test/fixtures/placement.json": "9e78214b55c0a105e38aa9b18ab8980cb4f87abf68160709ad1920f69505d60f"
+  },
+  "reference_ast": {
+    "bag_reference.py": "0a7673eb50b27c4e25c6334658a24eb827b7b840f435272d9b82456eaf39114d",
+    "board_reference.py": "b374c1c3bc6bfe3c43a28b5e29cb2ec495e6d365a474362a18ca5ab07001de66",
+    "fall_precision_reference.py": "51f533f1a87f65534364e805074e5d0da6d69107529063c8f02d594dc349d888",
+    "tl_hole_reference.py": "eeccefba61c213e0f7ea525e4503c915c859347c8d434dc07960019a9698d6a1",
+    "tl_v19_reference.py": "7f5d90c7e0195cba6363ead8e2c32d8d8af37175c136e41cd27bdae1514552d2"
+  },
+  "geometry": {
+    "x": [
+      -1,
+      0,
+      4,
+      9,
+      10
+    ],
+    "y": [
+      -0.000001,
+      0,
+      0.1,
+      17,
+      17.96,
+      18.000001,
+      38.999998,
+      39
+    ],
+    "sha256": "ccb2b7ed719edf4f72809a59046d33a49c8bc2063c94ecc3a481db8de9ba1da8"
+  }
+}

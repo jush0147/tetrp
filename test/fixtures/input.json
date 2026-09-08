@@ -1,0 +1,109 @@
+{
+  "vectors": [
+    {
+      "name": "rotate_then_harddrop",
+      "events": [
+        {
+          "frame": 100,
+          "subframe": 0.2,
+          "type": "keydown",
+          "key": "rotateCW"
+        },
+        {
+          "frame": 100,
+          "subframe": 0.7,
+          "type": "keydown",
+          "key": "hardDrop"
+        }
+      ]
+    },
+    {
+      "name": "softdrop_midframe",
+      "events": [
+        {
+          "frame": 200,
+          "subframe": 0.4,
+          "type": "keydown",
+          "key": "softDrop"
+        }
+      ]
+    },
+    {
+      "name": "softdrop_release_midframe",
+      "precondition": "inputSoftdrop=true at frame start",
+      "events": [
+        {
+          "frame": 300,
+          "subframe": 0.6,
+          "type": "keyup",
+          "key": "softDrop"
+        }
+      ]
+    },
+    {
+      "name": "same_subframe_insertion_order",
+      "events": [
+        {
+          "frame": 400,
+          "subframe": 0.5,
+          "type": "keydown",
+          "key": "rotateCW"
+        },
+        {
+          "frame": 400,
+          "subframe": 0.5,
+          "type": "keydown",
+          "key": "moveLeft"
+        }
+      ]
+    },
+    {
+      "name": "decreasing_subframe_malformed_replay",
+      "events": [
+        {
+          "frame": 500,
+          "subframe": 0.8,
+          "type": "keydown",
+          "key": "rotateCW"
+        },
+        {
+          "frame": 500,
+          "subframe": 0.2,
+          "type": "keydown",
+          "key": "hardDrop"
+        }
+      ]
+    },
+    {
+      "name": "safelock_call_count_quirk",
+      "precondition": "piece.safelock=7 at frame start",
+      "events": [
+        {
+          "frame": 600,
+          "subframe": 0.2,
+          "type": "keydown",
+          "key": "rotateCW"
+        },
+        {
+          "frame": 600,
+          "subframe": 0.4,
+          "type": "keyup",
+          "key": "rotateCW"
+        },
+        {
+          "frame": 600,
+          "subframe": 0.6,
+          "type": "keydown",
+          "key": "moveLeft"
+        },
+        {
+          "frame": 600,
+          "subframe": 0.8,
+          "type": "keyup",
+          "key": "moveLeft"
+        }
+      ],
+      "expected_safelock_decrements": 5
+    }
+  ]
+}
