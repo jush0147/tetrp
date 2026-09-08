@@ -12,6 +12,10 @@
   markers; known drop points are accumulated in `stats.dropScore`. Unknown
   aggregates do not block board reconstruction. Checkpoint schema is now
   `tetrp-engine/2`; v1 is explicitly rejected rather than silently reinterpreted.
+- Issue #4: no reset semantics changed. Focused grounded movement/rotation/mixed
+  tests, new-low reset, force-lock, anti-stall and actual kick-base tests record
+  the current interpretation. These tests prove implementation consistency, not
+  production equivalence.
 
 Status: implemented for the documented TL/standard-piece subset; the scoped
 exit criteria below pass. Stop here for review. Phase 2 has not started.
@@ -112,6 +116,24 @@ subsystem comparisons cannot validate interactions they do not represent.
 9. The supplied notes describe move and rotational reset domains but do not
    include a complete reset-accounting oracle. Boundary tests cover the stated
    limits and new-low reset; official frame-by-frame comparison remains future work.
+
+### Issue #4: explicit reset-accounting conformance boundary
+
+Current interpretation: each successful horizontal move increments `resets`
+and resets `locking`. A successful rotation resets `locking`, increments
+`rotationResets` (capped at 63) and `totalRotations`, but does not increment
+`resets`. Failed actions do not consume these counters. Reaching a new
+`ceil(y) > hy` clears `resets` and `rotationResets`, not `totalRotations`.
+Grounded reset exhaustion at `resets >= lockresets` forces a lock on Fall.
+Anti-stall uses `rotationResets > lockresets + 15`; kick-Y switching uses
+`totalRotations > lockresets + 15`. Both thresholds are strict.
+
+The unresolved question is whether successful rotations must also consume the
+ordinary reset quota in production. No behavioral change was made without an
+oracle. `test/lock-accounting.test.js` intentionally labels interpretation tests.
+Future replay differential validation must report the first differing frame and
+these three counters plus Y/hy/locking/forceLock. No parser or diagnostics for
+real replay files have been implemented in this correction pass.
 
 ## Proposed Phase 2 interface (design only)
 
