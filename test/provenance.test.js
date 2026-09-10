@@ -43,7 +43,8 @@ test('#5 public tree excludes research directories and binary assets',()=>{
   const root=new URL('../',import.meta.url);
   const tracked=execFileSync('git',['ls-files','-z'],{cwd:fileURLToPath(root),encoding:'utf8'}).split('\0').filter(Boolean);
   for(const path of tracked) {
-    assert.ok(!/^(01_core_spec|02_engine_details|03_fixtures|04_reference|05_phase2_replay|\.cache)\//.test(path),`Research tracked: ${path}`);
+    assert.ok(!/^(01_core_spec|02_engine_details|03_fixtures|04_reference|05_phase2_replay|\.cache|\.private-replays)\//.test(path),`Research/private data tracked: ${path}`);
+    assert.ok(!/\.ttrm?$/i.test(path),`Private replay tracked: ${path}`);
     assert.ok(!/\.(zip|png|jpg|svg|webp|woff2?|ttf|mp3|wav|exe)$/i.test(path),`Unexpected binary/asset tracked: ${path}`);
     assert.ok(!/tetrio\.beautified|01_Official_Standalone|production.bundle/i.test(path),`Forbidden artifact: ${path}`);
   }
@@ -52,7 +53,8 @@ test('#5 public tree excludes research directories and binary assets',()=>{
     assert.equal(existsSync(new URL(name,root)),false,`${name} must remain outside the public tree`);
   }
   // Audit publication, not untracked user files or temporary test output.
+  const publicReplayScripts = new Set(['scripts/inspect-replays.mjs','scripts/validate-replays.mjs']);
   for(const path of tracked) {
-    assert.ok(/\.(js|json|py|md|yml|yaml)$/.test(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
+    assert.ok(/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
   }
 });
