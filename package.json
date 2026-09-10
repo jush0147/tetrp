@@ -4,6 +4,18 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "engines": { "node": ">=22" },
-  "scripts": { "test": "node --test", "test:reference": "node --test test/reference.test.js" }
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test",
+    "test:reference": "node --test test/reference.test.js",
+    "build": "node scripts/build-viewer.js",
+    "preview": "node scripts/serve-viewer.js",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "esbuild": "^0.28.2"
+  }
 }

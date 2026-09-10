@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 .cache/
 coverage/
+dist/
+test-results/
+playwright-report/
 # Private replay inputs and derived state/identity-bearing diagnostics.
 *.ttr
 *.ttrm

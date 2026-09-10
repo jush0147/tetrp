@@ -4,17 +4,18 @@ Independent, MIT-licensed deterministic gameplay engine for future post-game
 TETR.IO replay review and offline practice. Not affiliated with TETR.IO.
 No official client code or visual/audio/font assets are included.
 
-**Phase 2 replay reconstruction.** JSON `.ttr`/`.ttrm` parsing, ordered timelines,
-seek, checkpoints, local forks and sparse-anchor diagnostics are available. Read
-[the Phase 2 handoff](docs/PHASE_2_HANDOFF.md) for verified variants and remaining
-conformance differences. No UI, PWA, bot, network
-client, live-match integration or deployment has been built. Read
+**Phase 3 mobile-first viewer.** Open local `.ttr`/`.ttrm` files, select a stream,
+and navigate by placement or frame. Replay data stays on the device.
+See [the viewer handoff](docs/PHASE_3_HANDOFF.md) and
+[Phase 2 conformance findings](docs/PHASE_2_HANDOFF.md).
+No bot, practice UI, or live-match integration is included. Read
 [the Phase 1 handoff](docs/PHASE_1_HANDOFF.md) before extending the engine.
 
 ## Run tests
 
 Requires Node.js 22+ and Python 3.12 for the independent test oracles and AST audit.
-There are no npm packages to install and no Python packages to install.
+The engine/replay unit tests need no npm or Python packages. Viewer builds and
+browser tests use the development dependencies installed by `npm ci`.
 
 ```sh
 npm test
@@ -29,6 +30,27 @@ npm test
 
 `npm run test:reference` runs the five oracle domains, seed boundaries and AST audit.
 Python is never imported or invoked by the simulation runtime.
+
+## Browser viewer
+
+```sh
+npm ci
+npm run build
+npm run preview
+```
+
+Open `http://127.0.0.1:4173/tetrp/`. Production consists only of `dist/` static
+assets; the preview server is a development convenience. All assets use relative
+paths for GitHub Pages project sites. `.github/workflows/pages.yml` runs tests,
+builds, checks Chromium/WebKit, and deploys `main` through GitHub Pages Actions.
+
+```sh
+npx playwright install chromium webkit
+npm run test:browser -- --grep-invert "real private"
+```
+
+Private browser acceptance is opt-in via `TETRP_TTR` and `TETRP_TTRM` environment
+variables pointing to local sample files. Never commit those files or test output.
 
 ## Engine API
 

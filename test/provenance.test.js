@@ -54,7 +54,8 @@ test('#5 public tree excludes research directories and binary assets',()=>{
   }
   // Audit publication, not untracked user files or temporary test output.
   const publicReplayScripts = new Set(['scripts/inspect-replays.mjs','scripts/validate-replays.mjs']);
+  const publicViewerAssets = new Set(['viewer/index.html','viewer/style.css']);
   for(const path of tracked) {
-    assert.ok(/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
+    assert.ok(/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||publicViewerAssets.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
   }
 });

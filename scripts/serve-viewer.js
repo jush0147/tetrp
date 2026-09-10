@@ -1,0 +1,12 @@
+// Local preview only. The deployed artifact requires no Node server.
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+const port=Number(process.env.PORT||4173);
+const files=new Map([['index.html','text/html; charset=utf-8'],['app.js','text/javascript; charset=utf-8'],['worker.js','text/javascript; charset=utf-8'],['app.css','text/css; charset=utf-8']]);
+createServer(async(req,res)=>{
+  const pathname=new URL(req.url,'http://localhost').pathname;
+  const name=pathname==='/tetrp/'||pathname==='/'?'index.html':pathname.replace(/^\/tetrp\//,'').replace(/^\//,'');
+  if(!files.has(name)){res.writeHead(404);res.end('Not found');return;}
+  try{const data=await readFile(new URL(`../dist/${name}`,import.meta.url));res.writeHead(200,{'Content-Type':files.get(name),'Cache-Control':'no-store'});res.end(data);}
+  catch{res.writeHead(404);res.end('Run npm run build first');}
+}).listen(port,'127.0.0.1',()=>console.log(`Viewer: http://127.0.0.1:${port}/tetrp/`));
