@@ -1,5 +1,10 @@
 # Phase 1.1 correction handoff
 
+Historical report. The Phase 2 direct v19 evidence supersedes issue #4's unknown
+below: successful rotations **do** increment the ordinary reset quota. Engine and
+regression tests are corrected; see [Phase 2](PHASE_2_HANDOFF.md). The rest of this
+document records what was known at the Phase 1 handoff.
+
 Scope: corrections for issues #2–#5 on `codex/phase-1-engine`. Stop for review
 after validation. No Phase 2 parser, UI, bot, PWA or deployment is included.
 This report supersedes the original Phase 1 completeness claims.

@@ -117,8 +117,7 @@ export class Engine {
     const s = this.state, p = s.piece;
     if (!s.playing || p.sleeping) return false;
     if (!B.legal(s.board,{...p,x:p.x+direction})) { p.wall = true; return false; }
-    // Current interpretation: only successful horizontal moves consume resets.
-    // Rotation interaction with this quota remains unvalidated (issue #4).
+    // Successful movement and rotation share the ordinary lock-reset quota.
     p.x += direction; p.wall = false; p.locking = 0; p.resets++; this.clearSpin();
     if (this.is20G()) this.slam();
     this.emit('move',{direction}); return true;
@@ -130,8 +129,8 @@ export class Engine {
     const candidate = rotate(s.board,p,direction,s.rules.lockresets);
     if (!candidate) return false;
     this.dcd(); Object.assign(p,candidate);
-    // Separate rotational counters; deliberately do not speculate about resets.
-    p.rotated = true; p.totalRotations++; p.rotationResets = Math.min(63,p.rotationResets+1); p.locking = 0; p.keys += direction === 2 ? 2 : 1;
+    // Direct v19 behavioral evidence: rotation also consumes the ordinary quota.
+    p.rotated = true; p.resets++; p.totalRotations++; p.rotationResets = Math.min(63,p.rotationResets+1); p.locking = 0; p.keys += direction === 2 ? 2 : 1;
     p.spin = classifySpin(s.board,p,s.rules.spinbonuses);
     if (this.is20G()) this.slam();
     this.emit('rotate',{direction}); return true;

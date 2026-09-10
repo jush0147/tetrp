@@ -3,6 +3,10 @@ __pycache__/
 *.pyc
 .cache/
 coverage/
+# Private replay inputs and derived state/identity-bearing diagnostics.
+*.ttr
+*.ttrm
+/.private-replays/
 TETRIO_Package.zip
 01_Official_Standalone/
 tetrio.beautified.js

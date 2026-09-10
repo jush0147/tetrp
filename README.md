@@ -4,8 +4,11 @@ Independent, MIT-licensed deterministic gameplay engine for future post-game
 TETR.IO replay review and offline practice. Not affiliated with TETR.IO.
 No official client code or visual/audio/font assets are included.
 
-**Phase 1.1 correction review checkpoint.** No replay parser, UI, PWA, bot, network client,
-live-match integration or deployment has been built. Read
+**Phase 2 replay reconstruction.** JSON `.ttr`/`.ttrm` parsing, ordered timelines,
+seek, checkpoints, local forks and sparse-anchor diagnostics are available. Read
+[the Phase 2 handoff](docs/PHASE_2_HANDOFF.md) for verified variants and remaining
+conformance differences. No UI, PWA, bot, network
+client, live-match integration or deployment has been built. Read
 [the Phase 1 handoff](docs/PHASE_1_HANDOFF.md) before extending the engine.
 
 ## Run tests

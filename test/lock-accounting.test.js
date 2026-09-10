@@ -17,33 +17,35 @@ test('#4 interpretation: 14 grounded moves survive; fifteenth force-locks on Fal
   assert.equal(e.state.stats.pieces,0); e.fall(.1);
   assert.equal(old.forceLock,true); assert.equal(e.state.stats.pieces,1);
 });
-test('#4 interpretation: grounded rotations reset timer but not movement quota',()=>{
+test('#4 correction: fifteenth successful grounded rotation exhausts ordinary quota',()=>{
   const e=grounded();
-  for(let i=0;i<70;i++) {
+  for(let i=0;i<14;i++) {
     e.state.piece.locking=29;
     assert.equal(e.rotate(1),true); assert.equal(e.state.piece.locking,0);
     e.fall(.1);
-    assert.equal(e.state.stats.pieces,0); assert.equal(e.state.piece.resets,0);
+    assert.equal(e.state.stats.pieces,0); assert.equal(e.state.piece.resets,i+1);
     assert.equal(e.state.piece.rotationResets,Math.min(63,i+1));
     assert.equal(e.state.piece.totalRotations,i+1);
   }
+  const old=e.state.piece; e.rotate(1); assert.equal(old.resets,15);
+  e.fall(.1); assert.equal(old.forceLock,true); assert.equal(e.state.stats.pieces,1);
 });
 test('#4 interpretation: mixed actions preserve distinct counters and force-lock quota',()=>{
   const e=grounded();
-  for(let i=0;i<14;i++) { e.move(i%2 ? 1 : -1); e.rotate(1); e.fall(.1); }
-  assert.equal(e.state.piece.resets,14); assert.equal(e.state.piece.rotationResets,14);
-  assert.equal(e.state.piece.totalRotations,14); assert.equal(e.state.stats.pieces,0);
-  e.rotate(1); assert.equal(e.state.piece.resets,14);
-  e.move(-1); e.fall(.1); assert.equal(e.state.stats.pieces,1);
+  for(let i=0;i<7;i++) { e.move(i%2 ? 1 : -1); e.rotate(1); e.fall(.1); }
+  assert.equal(e.state.piece.resets,14); assert.equal(e.state.piece.rotationResets,7);
+  assert.equal(e.state.piece.totalRotations,7); assert.equal(e.state.stats.pieces,0);
+  e.rotate(1); assert.equal(e.state.piece.resets,15);
+  e.fall(.1); assert.equal(e.state.stats.pieces,1);
 });
 test('#4 new low clears move/rotation reset counters but preserves total rotations',()=>{
   const e=new Engine(); Object.assign(e.state.piece,{y:30.96,hy:31});
   e.state.board.rows[32][4]=e.state.board.rows[32][5]='gb';
   for(let i=0;i<31;i++) e.rotate(1);
   e.move(-1); e.move(-1);
-  assert.equal(e.state.piece.resets,2); assert.equal(e.state.piece.rotationResets,31);
+  assert.equal(e.state.piece.resets,33); assert.equal(e.state.piece.rotationResets,31);
   assert.equal(e.descend(.01),true); // Same ceil row is not a new historical low.
-  assert.equal(e.state.piece.resets,2); assert.equal(e.state.piece.rotationResets,31);
+  assert.equal(e.state.piece.resets,33); assert.equal(e.state.piece.rotationResets,31);
   assert.equal(e.descend(1),true);
   assert.equal(e.state.piece.resets,0); assert.equal(e.state.piece.rotationResets,0);
   assert.equal(e.state.piece.totalRotations,31); assert.equal(e.state.piece.hy,32);
@@ -66,4 +68,14 @@ test('#4 totalRotations kick-base switch: actual kicked rotation at 30 versus 31
     assert.equal(e.rotate(1),true); assert.equal(e.state.piece.x,3); assert.equal(e.state.piece.y,y);
     assert.equal(e.state.piece.rotationResets,1); assert.equal(e.state.piece.totalRotations,total+1);
   }
+});
+test('#4 failed move/rotation leave all reset counters unchanged; rotation counters remain separate',()=>{
+  const e=new Engine();
+  for(const row of e.state.board.rows)row.fill('gb');
+  const before={...e.state.piece};assert.equal(e.move(1),false);assert.equal(e.rotate(1),false);
+  for(const key of ['resets','rotationResets','totalRotations'])assert.equal(e.state.piece[key],before[key]);
+  const free=new Engine();
+  for(let i=0;i<70;i++)assert.equal(free.rotate(1),true);
+  assert.equal(free.state.piece.resets,70);assert.equal(free.state.piece.rotationResets,63);assert.equal(free.state.piece.totalRotations,70);
+  assert.equal(Engine.restore(free.serialize()).serialize(),free.serialize());
 });

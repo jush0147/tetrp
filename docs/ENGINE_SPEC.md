@@ -68,8 +68,13 @@ Lock time uses strict `>30` by default. Natural locking sets safelock to 7;
 every Fall invocation decrements it once, independent of dt. Row crossings
 invalidate retained spin except during hard drop. Known soft/hard drop points
 are one per crossed row and two per successful internal drop cell respectively.
-Reset-counter interpretation is separately documented as unvalidated; do not
-infer production equivalence from these deterministic tests.
+Direct v19 behavioral evidence supplied for Phase 2 corrects ordinary reset
+accounting: successful moves and successful rotations each increment `resets`.
+Rotations also increment `rotationResets` (capped at 63) and `totalRotations`.
+Failed actions consume neither quota. A genuinely lower `ceil(y) > hy` clears
+`resets` and `rotationResets`, while retaining `totalRotations`. The ordinary
+quota controls force-lock; the rotation counters serve anti-stall and kick Y-base
+selection respectively. See the Phase 2 report for real replay evidence limits.
 
 ## Placement and modes
 
