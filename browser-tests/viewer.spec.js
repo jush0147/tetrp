@@ -7,7 +7,7 @@ const synthetic=()=>({version:1,gamemode:'40l',replay:{frames:90,options:{versio
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}}]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>document.addEventListener('tetrp:position',e=>{window.observedPosition=e.detail;}));await page.goto('./');});
 async function upload(page,object){await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});}
-async function placement(page,n){await page.locator('#placement-input').fill(String(n));await page.locator('#placement-form button').click();await expect(page.locator('#pieces')).toHaveText(String(n));}
+async function placement(page,n){await page.locator('#scrubber').evaluate((el,n)=>{el.value=String(n);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},n);await expect(page.locator('#pieces')).toHaveText(String(n));}
 async function consistent(page,reference,n){await placement(page,n);const expected=reference.seekPlacement(n);
   await expect.poll(()=>page.evaluate(()=>window.observedPosition?.state)).toEqual(expected);
   expect(await page.evaluate(()=>window.observedPosition.model)).toEqual(boardModel(expected));
@@ -20,15 +20,14 @@ async function consistent(page,reference,n){await placement(page,n);const expect
     const p=ctx.getImageData(x*30+15,y*30+15,1,1).data;out.push('#'+[...p].slice(0,3).map(v=>v.toString(16).padStart(2,'0')).join(''));}return out;});
   expect(pixels).toEqual(colors);
 }
-test('local open, placement navigation, frame seek, playback and refresh',async({page})=>{
+test('local open, scrubber navigation, playback and refresh',async({page})=>{
   const external=[];page.on('request',r=>{if(/^https?:/.test(r.url())&&(r.method()!=='GET'||!r.url().startsWith('http://127.0.0.1:4173/')))external.push(r.url());});
   const x=synthetic();await upload(page,x);await expect(page.locator('#viewer')).toBeVisible();
   const reference=new Reconstruction(prepareReplay(selectPlayer(parseReplay(JSON.stringify(x)))));
   for(const n of [0,3,6,3,0])await consistent(page,reference,n);
   await page.locator('#next-placement').click();await expect(page.locator('#pieces')).toHaveText('1');
   await page.locator('#previous').click();await expect(page.locator('#pieces')).toHaveText('0');
-  await page.locator('.frame-tools summary').click();await page.locator('#frame-input').fill('42');await page.locator('#frame-form button').click();await expect(page.locator('#frame')).toHaveText('42');
-  expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(reference.seekFrame(42));
+  await expect(page.locator('#frame-form')).toHaveCount(0);await expect(page.locator('#placement-form')).toHaveCount(0);
   await page.locator('#play').click();await expect(page.locator('#pieces')).toHaveText('6');await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
   expect(external).toEqual([]);await page.reload();await expect(page.locator('#welcome')).toBeVisible();await upload(page,x);await expect(page.locator('#pieces')).toHaveText('0');
 });
@@ -51,7 +50,8 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     const b=await page.locator(`#${prefix}board`).boundingBox(),h=await page.locator(`#${prefix}hold`).boundingBox(),n=await page.locator(`#${prefix}next`).boundingBox();
     expect(h.x+h.width).toBeLessThan(b.x);expect(n.x).toBeGreaterThan(b.x+b.width);
     expect(Math.abs(b.height/b.width-2)).toBeLessThan(.03);
-    const stats=await page.locator(`#${prefix}lines`).boundingBox();expect(stats.y+stats.height).toBeLessThanOrEqual(b.y+b.height+1);
+    await expect(page.locator(`#${prefix}lines`)).toBeHidden();
+    const stats=await page.locator(`#${prefix}apm`).boundingBox();expect(stats.y+stats.height).toBeLessThanOrEqual(b.y+b.height+1);
   }
   const ref=new Reconstruction(prepareReplay(selectPlayer(parseReplay(JSON.stringify(x)),0,1)));
   await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});
@@ -71,11 +71,11 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     expect(pos.views[0].state.frame).toBe(pos.views[1].state.frame);
   }
   const stateBeforeCollapse=await page.evaluate(()=>window.observedPosition.state),oldBoard=await page.locator('#board').boundingBox();
-  await page.locator('#stream-tools>summary').click();await page.locator('#playback-tools>summary').click();
+  await page.locator('#toggle-selectors').click();await page.locator('#toggle-playback').click();
   await expect(page.locator('#player')).toBeHidden();await expect(page.locator('#scrubber')).toBeHidden();
   expect((await page.locator('#board').boundingBox()).height).toBeGreaterThan(oldBoard.height);
   expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(stateBeforeCollapse);
-  await page.locator('#stream-tools>summary').click();await page.locator('#playback-tools>summary').click();
+  await page.locator('#toggle-selectors').click();await page.locator('#toggle-playback').click();
   await expect(page.locator('#player')).toBeVisible();await expect(page.locator('#scrubber')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -83,6 +83,8 @@ test('malformed file and responsive touch targets',async({page})=>{
   await page.locator('#file').setInputFiles({name:'broken.ttr',mimeType:'text/plain',buffer:Buffer.from('{')});
   await expect(page.locator('#error')).toBeVisible();await expect(page.locator('#error-detail')).toContainText('MALFORMED_JSON');
   await upload(page,synthetic());await expect(page.locator('#viewer')).toBeVisible();
+  await expect(page.locator('#lines')).toBeVisible();await expect(page.locator('#conformance')).toBeHidden();
+  expect((await page.locator('.transport').boundingBox()).height).toBeLessThanOrEqual(48);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   for(const id of ['previous','next-placement','play']){const b=await page.locator(`#${id}`).boundingBox();expect(b.height).toBeGreaterThanOrEqual(44);expect(b.width).toBeGreaterThanOrEqual(44);}
   const board=await page.locator('#board').boundingBox();expect(Math.abs(board.height/board.width-2)).toBeLessThan(.03);
@@ -114,19 +116,19 @@ test('real private files, all TL streams and known conformance states',async({pa
   await page.locator('#file').setInputFiles(process.env.TETRP_TTR);await expect(page.locator('#viewer')).toBeVisible();
   const reference=new Reconstruction(prepareReplay(selectPlayer(solo)));reference.run();const total=reference.state.stats.pieces;
   for(const n of [0,Math.floor(total/2),total,Math.floor(total/2)])await consistent(page,reference,n);
-  await expect(page.locator('#status-text')).toHaveText('未發現已知差異');
+  await expect(page.locator('#conformance')).toBeHidden();
   const multi=parseReplay(readFileSync(process.env.TETRP_TTRM,'utf8'));
   let checkedSpins=0,checkedGarbage=0;
   await page.locator('#file').setInputFiles(process.env.TETRP_TTRM);
   for(const r of multi.rounds){await expect(page.locator('#round')).toBeVisible();await page.locator('#round').selectOption(String(r.index));
     for(const p of r.players){await page.locator('#player').selectOption(String(p.index));
       let ref;try{ref=new Reconstruction(prepareReplay(selectPlayer(multi,r.index,p.index)));}catch(e){expect(e.code).toBe('UNSUPPORTED_PROFILE');await expect(page.locator('#lane-error')).toBeVisible();await expect(page.locator('#lane-error')).toContainText('retry');continue;}
-      let spin=null,garbageFrame=null;
+      let spin=null,garbagePlacement=null;
       while(ref.advance()){
         for(const t of ref.transitions)if(!spin&&t.type==='lock'&&t.spin!=='none')spin=t;
-        if(garbageFrame===null&&ref.state.attack.pending.length>=2&&ref.state.frame<ref.timeline.frames)garbageFrame=ref.state.frame+1;
+        if(garbagePlacement===null&&ref.state.attack.pending.length>=2)garbagePlacement=ref.state.stats.pieces+1;
       }
-      const count=ref.state.stats.pieces,first=ref.diagnostics.first;await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#total')).toHaveText(`/ ${count}`);
+      const count=ref.state.stats.pieces,first=ref.diagnostics.first;await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#scrubber')).toHaveAttribute('max',String(count));
       for(const n of [0,Math.floor(count/2),count,Math.floor(count/2)])await consistent(page,ref,n);
       const stats=ref.state;
       await expect(page.locator('#b2b')).toHaveText(String(Math.max(0,stats.attack.btb-1)));
@@ -136,12 +138,10 @@ test('real private files, all TL streams and known conformance states',async({pa
         const rgb=palette[spin.piece].slice(1).match(/../g).map(x=>parseInt(x,16)).join(', ');
         await expect(page.locator('#spin')).toHaveCSS('color',`rgb(${rgb})`);checkedSpins++;}
       await expect(page.locator('#player-id')).toHaveText(p.username);
-      if(garbageFrame!==null){
+      if(garbagePlacement!==null&&garbagePlacement<=count){
         const totalBefore=await page.locator('#garbage-total').boundingBox(),nextBefore=await page.locator('#next').boundingBox();
-        await page.locator('.frame-tools').evaluate(el=>{el.open=true;});
-        await page.locator('#frame-input').fill(String(garbageFrame));await page.locator('#frame-form button').click();
-        await expect(page.locator('#frame')).toHaveText(String(garbageFrame));
-        const expected=ref.seekFrame(garbageFrame),packets=[...expected.attack.are,...expected.attack.pending].filter(p=>p.amt>0);
+        await placement(page,garbagePlacement);
+        const expected=ref.seekPlacement(garbagePlacement),packets=[...expected.attack.are,...expected.attack.pending].filter(p=>p.amt>0);
         await expect(page.locator('#garbage-total')).toHaveText(String(packets.reduce((sum,p)=>sum+p.amt,0)));
         const totalAfter=await page.locator('#garbage-total').boundingBox(),nextAfter=await page.locator('#next').boundingBox();
         expect(Math.abs((totalAfter.y-nextAfter.y-nextAfter.height)-(totalBefore.y-nextBefore.y-nextBefore.height))).toBeLessThan(1);
@@ -149,9 +149,9 @@ test('real private files, all TL streams and known conformance states',async({pa
         expect(rows.map(r=>r.amount)).toEqual(packets.slice(0,rows.length).map(p=>p.amt));
         for(let i=1;i<rows.length;i++)expect(rows[i].bottom).toBeLessThanOrEqual(rows[i-1].top);
         const panel=await page.locator('#garbage-panel').boundingBox();for(const row of rows){expect(row.top).toBeGreaterThanOrEqual(panel.y);expect(row.bottom).toBeLessThanOrEqual(panel.y+panel.height+.1);}
-        await page.locator('.frame-tools').evaluate(el=>{el.open=false;});checkedGarbage++;
+        checkedGarbage++;
       }
-      await expect(page.locator('#status-text')).toHaveText(first?'終局比對有差異':'未發現已知差異');
+      if(first)await expect(page.locator('#status-text')).toHaveText('終局比對有差異');else await expect(page.locator('#conformance')).toBeHidden();
     }
   }
   expect(checkedSpins).toBeGreaterThan(0);

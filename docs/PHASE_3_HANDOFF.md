@@ -52,8 +52,9 @@ preserving x and rotation and translating its display cells down only enough to
 fit its upper edge. `model.active` retains the true visible collision cells;
 `model.displayActive` is the presentation projection. Neither changes state. On the board,
 active cells have a bright edge; sleeping/committed pieces are not drawn a second
-time. Left counters show lines, pieces, time/frame, reconstructed B2B/combo,
-generated attack and elapsed-time mean PPS/APM. Right-side cumulative stats and
+time. Left counters show pieces, time/frame, reconstructed B2B/combo,
+generated attack and elapsed-time mean PPS/APM.
+Lines are shown only for `.ttr`, and hidden for `.ttrm`. Right-side cumulative stats and
 score were removed in favor of incoming garbage. Solo B2B/attack remain unknown,
 rather than substituting TL rules. The most recent placement's
 spin (including non-T and mini) and line clear persist until the next placement.
@@ -78,8 +79,10 @@ intake, shared across packets, not 8 per packet and not an 8-row pending-queue c
 The cap label reads `floor(min(garbagecap, garbagecapmax))` from reconstructed rules.
 The viewer neither splits nor clamps the displayed remaining packet amounts.
 
-Primary navigation consists of large Previous / Next buttons, a native touch range
-scrubber, an editable placement number with submit, and placement/total count.
+Primary navigation is one compact row: previous/play/next icons, a native range
+scrubber and speed selector. Primary icon targets are 44 × 44 px. Placement forms,
+placement labels and the visible frame-jump form have been removed; the range's
+accessible value still exposes its position and total.
 `PlaybackClock` drives original-time playback at 60 source frames/second, with
 0.5×, 1× and 1.5× speeds. It uses elapsed monotonic time rather than accumulating
 Worker response latency. Only one playback seek is outstanding; slow devices may
@@ -90,8 +93,8 @@ continue playback. At the end the
 play button restarts from zero. Desktop also supports left/right arrows and Space
 outside editable controls.
 
-A collapsible frame form seeks to the start of a source frame, before its events,
-as specified by Phase 2. Placement zero is initial state; placement N is the state
+Frame seek remains available through the Worker/ViewerSession API and timed playback,
+without a dedicated UI form. Placement zero is initial state; placement N is the state
 after the atomic operation producing the Nth placement, not necessarily terminal
 end state. Total comes from reconstruction, not untrusted aggregate metadata.
 Frame playback seeks both players to the same round frame, clamping shorter streams
@@ -103,15 +106,15 @@ still consumes all terminal events and anchors for conformance reporting.
 
 Portrait shows only the selected player; landscape shows both players side by side.
 The startup screen is a compact local file picker; there is no hero, banner or
-promotional footer. Round/player controls and playback controls are independent
-native disclosure panels. Closing either frees vertical space for the board;
+promotional footer. Round/player dropdowns share a single row with their collapse
+icon, with no additional heading or disclosure level. Playback is a single icon row
+with its own collapse button. Closing either frees vertical space for the board;
 closing controls does not alter progress or pause playback. Reopen the playback
 panel to use touch controls; keyboard Space remains available while collapsed.
 Each has its own name, Hold, Next, counters, spin and conformance details. Short landscape
 screens use compact rails. A sticky transport provides single-hand placement buttons.
-Primary buttons are 50 px in portrait and compact in short landscape. Native inputs support
-keyboard, touch and screen zoom; controls do not depend on hover. Reduced-motion
-preferences disable the short entrance transition. No swipe-only interaction exists.
+Native inputs support keyboard, touch and screen zoom; controls do not depend on
+hover. There are no entrance transitions or swipe-only interactions.
 
 ## Conformance and errors
 
@@ -120,10 +123,9 @@ preferences disable the short entrance transition. No swipe-only interaction exi
   unsupported and is not silently omitted or treated as Engine reset.
 - Known terminal mismatch: short warning with expandable canonical fields and
   expected/actual values. It does not stop viewing the stream.
-- No known mismatch: states only that none was found in available observations.
-  The details explicitly say sparse anchors do not verify every intermediate frame.
-- Files without terminal board anchors disclose that only available counters can
-  be compared. Empty projections are labeled as lacking comparison records.
+- No known mismatch: no status row is rendered. The viewer never claims full
+  verification. Sparse-anchor coverage remains in the detached conformance API;
+  known mismatch details explain the limits of their comparison.
 
 Diagnostics are collected during initial forward reconstruction and retained for
 all display seeks. Navigating backwards cannot erase an already known mismatch.
