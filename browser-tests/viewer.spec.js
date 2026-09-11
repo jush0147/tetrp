@@ -14,7 +14,7 @@ async function consistent(page,reference,n){await placement(page,n);const expect
   await expect(page.locator('#next canvas')).toHaveCount(expected.rules.nextcount);
   await expect(page.locator('#hold')).toHaveAttribute('aria-label',expected.hold.piece?.toUpperCase()||'空');
   expect(await page.locator('#next canvas').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('aria-label')))).toEqual(expected.bag.queue.slice(0,expected.rules.nextcount).map(t=>t.toUpperCase()));
-  const model=boardModel(expected),active=new Set(model.active.map(([x,y])=>`${x},${y}`));
+  const model=boardModel(expected),active=new Set(model.displayActive.map(([x,y])=>`${x},${y}`));
   const colors=model.rows.flatMap((row,y)=>row.map((type,x)=>palette[active.has(`${x},${y}`)?model.type:type]||'#10191f'));
   const pixels=await page.locator('#board').evaluate(c=>{const ctx=c.getContext('2d'),out=[];for(let y=0;y<20;y++)for(let x=0;x<10;x++){
     const p=ctx.getImageData(x*30+15,y*30+15,1,1).data;out.push('#'+[...p].slice(0,3).map(v=>v.toString(16).padStart(2,'0')).join(''));}return out;});
@@ -35,7 +35,7 @@ test('local open, placement navigation, frame seek, playback and refresh',async(
 
 test('orientation preserves both timelines, player IDs and frame-clock speeds',async({page})=>{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  const make=id=>{const s=synthetic().replay;s.options.version=19;s.frames=600;s.events.at(-1).frame=600;return {id,replay:s};};
+  const make=id=>{const s=synthetic().replay;s.options.version=19;s.frames=600;s.events.at(-1).frame=600;return {id:`opaque-${id}`,username:id,replay:s};};
   const x={version:1,gamemode:'league',replay:{rounds:[[make('player-alpha'),make('player-beta')]]}};
   await upload(page,x);await expect(page.locator('#viewer')).toBeVisible();
   await page.setViewportSize({width:390,height:844});await expect(page.locator('#peer-lane')).toBeHidden();
@@ -45,6 +45,7 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     const b=await page.locator(`#${prefix}board`).boundingBox(),h=await page.locator(`#${prefix}hold`).boundingBox(),n=await page.locator(`#${prefix}next`).boundingBox();
     expect(h.x+h.width).toBeLessThan(b.x);expect(n.x).toBeGreaterThan(b.x+b.width);
     expect(Math.abs(b.height/b.width-2)).toBeLessThan(.03);
+    const stats=await page.locator(`#${prefix}lines`).boundingBox();expect(stats.y+stats.height).toBeLessThanOrEqual(b.y+b.height+1);
   }
   const ref=new Reconstruction(prepareReplay(selectPlayer(parseReplay(JSON.stringify(x)),0,1)));
   await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});
@@ -89,7 +90,7 @@ test('native scrubber interaction and compact portrait controls',async({page},te
   if(testInfo.project.use.hasTouch)await page.touchscreen.tap(range.x+range.width/2,range.y+range.height/2);
   else await page.mouse.click(range.x+range.width/2,range.y+range.height/2);
   await expect(page.locator('#pieces')).toHaveText('3');
-  expect(await page.locator('#active-preview').getAttribute('aria-label')).not.toBe('空');
+  expect(await page.evaluate(()=>window.observedPosition.model.displayActive.length)).toBe(4);
   await page.evaluate(()=>scrollTo(0,0));const controls=await page.locator('.transport').boundingBox();expect(controls.y+controls.height).toBeLessThanOrEqual(641);
 });
 test('real private files, all TL streams and known conformance states',async({page})=>{
@@ -100,22 +101,39 @@ test('real private files, all TL streams and known conformance states',async({pa
   for(const n of [0,Math.floor(total/2),total,Math.floor(total/2)])await consistent(page,reference,n);
   await expect(page.locator('#status-text')).toHaveText('未發現已知差異');
   const multi=parseReplay(readFileSync(process.env.TETRP_TTRM,'utf8'));
-  let checkedSpins=0;
+  let checkedSpins=0,checkedGarbage=0;
   await page.locator('#file').setInputFiles(process.env.TETRP_TTRM);
   for(const r of multi.rounds){await expect(page.locator('#round')).toBeVisible();await page.locator('#round').selectOption(String(r.index));
     for(const p of r.players){await page.locator('#player').selectOption(String(p.index));
       let ref;try{ref=new Reconstruction(prepareReplay(selectPlayer(multi,r.index,p.index)));}catch(e){expect(e.code).toBe('UNSUPPORTED_PROFILE');await expect(page.locator('#lane-error')).toBeVisible();await expect(page.locator('#lane-error')).toContainText('retry');continue;}
-      let spin=null;
-      while(ref.advance())for(const t of ref.transitions)if(!spin&&t.type==='lock'&&t.spin!=='none')spin=t;
+      let spin=null,garbageFrame=null;
+      while(ref.advance()){
+        for(const t of ref.transitions)if(!spin&&t.type==='lock'&&t.spin!=='none')spin=t;
+        if(garbageFrame===null&&ref.state.attack.pending.length>=2&&ref.state.frame<ref.timeline.frames)garbageFrame=ref.state.frame+1;
+      }
       const count=ref.state.stats.pieces,first=ref.diagnostics.first;await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#total')).toHaveText(`/ ${count}`);
       for(const n of [0,Math.floor(count/2),count,Math.floor(count/2)])await consistent(page,ref,n);
       const stats=ref.state;
-      await expect(page.locator('#b2b')).toHaveText(String(stats.attack.btb));
+      await expect(page.locator('#b2b')).toHaveText(String(Math.max(0,stats.attack.btb-1)));
       await expect(page.locator('#attack')).toHaveText(String(stats.attack.totals.generated));
-      await expect(page.locator('#received')).toHaveText(String(stats.attack.totals.received));
+      await expect(page.locator('#garbage-total')).toHaveText(String([...stats.attack.are,...stats.attack.pending].reduce((sum,p)=>sum+p.amt,0)));
       if(spin){await placement(page,spin.placementIndex);await expect(page.locator('#spin')).toContainText(`${spin.piece.toUpperCase()}-SPIN${spin.spin==='mini'?' MINI':''}`);checkedSpins++;}
+      await expect(page.locator('#player-id')).toHaveText(p.username);
+      if(garbageFrame!==null){
+        await page.locator('.frame-tools').evaluate(el=>{el.open=true;});
+        await page.locator('#frame-input').fill(String(garbageFrame));await page.locator('#frame-form button').click();
+        await expect(page.locator('#frame')).toHaveText(String(garbageFrame));
+        const expected=ref.seekFrame(garbageFrame),packets=[...expected.attack.are,...expected.attack.pending].filter(p=>p.amt>0);
+        await expect(page.locator('#garbage-total')).toHaveText(String(packets.reduce((sum,p)=>sum+p.amt,0)));
+        const rows=await page.locator('#garbage-packets .garbage-packet').evaluateAll(nodes=>nodes.map(n=>({amount:Number(n.textContent),top:n.getBoundingClientRect().top,bottom:n.getBoundingClientRect().bottom})));
+        expect(rows.map(r=>r.amount)).toEqual(packets.slice(0,rows.length).map(p=>p.amt));
+        for(let i=1;i<rows.length;i++)expect(rows[i].bottom).toBeLessThanOrEqual(rows[i-1].top);
+        const panel=await page.locator('#garbage-panel').boundingBox();for(const row of rows){expect(row.top).toBeGreaterThanOrEqual(panel.y);expect(row.bottom).toBeLessThanOrEqual(panel.y+panel.height+.1);}
+        await page.locator('.frame-tools').evaluate(el=>{el.open=false;});checkedGarbage++;
+      }
       await expect(page.locator('#status-text')).toHaveText(first?'終局比對有差異':'未發現已知差異');
     }
   }
   expect(checkedSpins).toBeGreaterThan(0);
+  expect(checkedGarbage).toBeGreaterThan(0);
 });

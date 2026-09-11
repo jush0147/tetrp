@@ -38,19 +38,39 @@ fixtures, checkpoints or reports. Build fails if unexpected files exist in dist.
 
 Open a local `.ttr` or `.ttrm` from the header or initial file picker. Solo enters
 its single stream automatically. Multiplayer exposes Round / Player selectors;
-changing either constructs fresh round sessions. Player labels use persisted IDs,
-with gameid/index fallback only when absent. Expand an ID to read its full value.
-File names and IDs are inserted as text, never HTML. Reopening the same file is supported.
+changing either constructs fresh round sessions. Player labels use the replay's
+in-game `username`, with `Player N` fallback when absent; opaque account IDs are
+never used as display names. File names and player names are inserted as text,
+never HTML. Reopening the same file is supported.
 
 The board is the main visual. Hold sits left and the vertical Next queue sits right.
-Hold's lock status is shown; active shape/orientation is previewed above the board when it is wholly
-above the visible field, with an up arrow marking buffer presence. On the board,
+Hold's lock status is shown. A buffer piece is drawn inside the top of the board,
+preserving x and rotation and translating its display cells down only enough to
+fit its upper edge. `model.active` retains the true visible collision cells;
+`model.displayActive` is the presentation projection. Neither changes state. On the board,
 active cells have a bright edge; sleeping/committed pieces are not drawn a second
-time. Counters show lines, pieces, time/frame, reconstructed B2B/combo, generated
-attack, sent/received garbage, score and elapsed-time mean PPS/APM. VS Score has no
-reliable implementation and is explicitly marked unrebuilt. Solo score/B2B/attack
-remain unknown, rather than substituting TL rules. The most recent placement's
+time. Left counters show lines, pieces, time/frame, reconstructed B2B/combo,
+generated attack and elapsed-time mean PPS/APM. Right-side cumulative stats and
+score were removed in favor of incoming garbage. Solo B2B/attack remain unknown,
+rather than substituting TL rules. The most recent placement's
 spin (including non-T and mini) and line clear persist until the next placement.
+
+The displayed B2B is `max(0, attack.btb - 1)`: the internal counter's first
+qualifying clear establishes the chain; the second is B2B 1. Zero-line spins do
+not build the chain, no-clear placements preserve it, and ordinary nonqualifying
+line clears break it. All-clear contributions remain those of the replay profile,
+including its additional contribution, rather than current live-client defaults.
+This fixes presentation, not the Phase 2 engine's attack computation.
+
+Incoming garbage is read from remaining `are` / `pending` packets, including
+unconfirmed packets, in canonical queue order. Oldest is at the bottom; partially
+tanked/cancelled packets shrink and exhausted packets disappear. Total above the
+list includes every packet, even rows omitted for lack of space. A ResizeObserver
+fits only complete 24 px rows, retaining earliest packets first. Dim entries are
+not yet active. The current supported TL profile tanks at most 8 rows per eligible
+intake, shared across packets, not 8 per packet and not an 8-row pending-queue cap.
+The cap label reads `floor(min(garbagecap, garbagecapmax))` from reconstructed rules.
+The viewer neither splits nor clamps the displayed remaining packet amounts.
 
 Primary navigation consists of large Previous / Next buttons, a native touch range
 scrubber, an editable placement number with submit, and placement/total count.
@@ -75,7 +95,7 @@ Frame-end seek retains the stable API's beginning-of-frame semantics; initial in
 still consumes all terminal events and anchors for conformance reporting.
 
 Portrait shows only the selected player; landscape shows both players side by side.
-Each has its own ID, Hold, Next, counters, spin and conformance details. Short landscape
+Each has its own name, Hold, Next, counters, spin and conformance details. Short landscape
 screens use compact rails. A sticky transport provides single-hand placement buttons.
 Primary buttons are 50 px in portrait and compact in short landscape. Native inputs support
 keyboard, touch and screen zoom; controls do not depend on hover. Reduced-motion
@@ -100,9 +120,10 @@ claims remain subject to Phase 2's sparse-anchor limitations.
 
 ## Validation
 
-Unit suite: **330 passed, 0 failed, 0 skipped**. This includes all 325 existing tests
-and five viewer tests for stable-API seeks/copy isolation, diagnostic checkpoint
-isolation, rendering coordinates, cancellable indexing, clock rates and spin/stats labels.
+Unit suite: **333 passed, 0 failed, 0 skipped**. This includes all 325 existing tests
+and eight viewer tests for stable-API seeks/copy isolation, diagnostic checkpoint
+isolation, rendering coordinates, cancellable indexing, clock rates, spin/stats labels,
+B2B chain boundaries, shared garbage cap/cancellation and buffer display immutability.
 
 Browser acceptance: **12 checks passed** across Chromium desktop and touch-enabled
 WebKit mobile, including orientation and controlled-clock playback checks.
@@ -114,9 +135,9 @@ Browser tests use behavior and canonical state, not screenshot snapshots:
   Hold and ordered Next preview labels;
 - malformed input, unsupported stream, rapid round/player switching;
 - native range track tap, touch next button and 360×640 controls;
-- portrait single-player / landscape two-player visibility, ID labels, Hold/Next
+- portrait single-player / landscape two-player visibility, username labels, Hold/Next
   positions, all three clock speeds and peer canonical frame-state equality;
-- real-sample spin labels and B2B/attack values from reconstruction observations;
+- real-sample spin labels and B2B/attack/garbage values from reconstruction observations;
 - no external HTTP requests or non-GET network requests during local replay use;
 - reload starts with no retained replay, and reopening works from local data.
 
@@ -191,7 +212,7 @@ Loading the static site itself still naturally requests its public assets.
 stream bounds within the worker-owned view layer. `boardModel(state)` is a pure
 read-only projection usable by later presentation components. The main document
 emits `tetrp:position` with detached `{state, model, views, roundFrame}` on accepted
-navigation results. `views` contains each player's ID, canonical state, bounds,
+navigation results. `views` contains each player's display name (legacy `id` field), canonical state, bounds,
 conformance and last placement, or an explicit unsupported error.
 Listeners cannot mutate the actual Reconstruction by modifying that event detail.
 Worker commands are limited to `load`, `select`, and `seek`; no action-injection or

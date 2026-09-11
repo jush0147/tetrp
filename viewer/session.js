@@ -4,7 +4,7 @@ export const MAX_FILE_BYTES = 32 * 1024 * 1024;
 export const MAX_FRAMES = 216000; // One hour at 60 source frames/second.
 export function catalog(replay) {
   return replay.rounds.map(round => ({index:round.index, players:round.players.map(p => ({
-    index:p.index, name:p.id || String(p.stream.options.gameid??`ID ${p.index+1}`),
+    index:p.index, name:typeof p.username==='string'&&p.username.trim()?p.username:`Player ${p.index+1}`,
   }))}));
 }
 export function parseLocalText(text) {

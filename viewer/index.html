@@ -11,7 +11,7 @@
 <main>
 <section id="welcome" class="welcome" aria-labelledby="welcome-title"><div class="intro"><p class="eyebrow">LOCAL REPLAY / 01</p><h1 id="welcome-title">逐顆，<br>回看每一步。</h1><p class="intro-copy">原速回放，或停在每一次落子。檔案只在此裝置處理。</p><label class="primary file-cta" for="file">選擇 replay <span aria-hidden="true">＋</span></label><p class="privacy">.ttr / .ttrm · 無需上傳</p></div><div class="empty-board" aria-hidden="true"><div class="outline-piece"><i></i><i></i><i></i><i></i></div><span>YOUR NEXT LOOK</span><div class="floor-motif"></div></div></section>
 <section id="workspace" hidden aria-label="Replay 工作區">
-<div class="stream-bar"><div class="file-info"><span class="eyebrow">正在回看</span><strong id="filename"></strong></div><div id="selectors" class="selectors" hidden><label>Round<select id="round" aria-label="選擇 round"></select></label><label>Player ID<select id="player" aria-label="選擇 player"></select></label></div></div>
+<div class="stream-bar"><div class="file-info"><span class="eyebrow">正在回看</span><strong id="filename"></strong></div><div id="selectors" class="selectors" hidden><label>Round<select id="round" aria-label="選擇 round"></select></label><label>Player<select id="player" aria-label="選擇 player"></select></label></div></div>
 <p id="busy" role="status" hidden>正在讀取…</p>
 <div id="error" class="error" role="alert" hidden><strong id="error-title">無法開啟 replay</strong><p id="error-message"></p><details><summary>錯誤細節</summary><pre id="error-detail"></pre></details></div>
 <div id="viewer" hidden>
@@ -21,13 +21,13 @@
 <div id="lane-display">
 <div class="lane-field">
 <aside class="left-rail"><span class="eyebrow">HOLD <b id="hold-lock"></b></span><canvas id="hold" width="80" height="40" role="img"></canvas><div class="chain"><span>B2B</span><strong id="b2b">—</strong><small>COMBO <b id="combo">—</b></small></div><dl class="rail-stats"><dt>PIECES</dt><dd id="pieces">0</dd><dt>PPS</dt><dd id="pps">0.00</dd><dt>ATTACK</dt><dd id="attack">—</dd><dt>APM</dt><dd id="apm">—</dd><dt>LINES</dt><dd id="lines">0</dd></dl></aside>
-<div class="board-wrap"><canvas id="board" width="300" height="600" role="img"></canvas><div class="active-buffer"><canvas id="active-preview" width="80" height="40" role="img"></canvas><b id="buffer-note" hidden aria-label="位於上方緩衝區">↑</b></div></div>
-<aside class="right-rail"><span class="eyebrow">NEXT</span><div id="next"></div><dl class="rail-stats"><dt>SENT</dt><dd id="sent">—</dd><dt>RECEIVED</dt><dd id="received">—</dd><dt>SCORE</dt><dd id="score">—</dd><dt>VS SCORE</dt><dd>— <small>未重建</small></dd></dl><p id="spin" class="spin" role="status">—</p></aside>
+<div class="board-wrap"><canvas id="board" width="300" height="600" role="img"></canvas></div>
+<aside class="right-rail"><span class="eyebrow">NEXT</span><div id="next"></div><section class="garbage-panel" id="garbage-panel" aria-label="待接收垃圾"><small id="garbage-cap"></small><div class="garbage-stack"><div class="garbage-total"><span>待接收</span><strong id="garbage-total">0</strong></div><div id="garbage-packets" class="garbage-packets"></div></div></section><p id="spin" class="spin" role="status">—</p></aside>
 </div>
 <div class="lane-clock"><span id="time">0:00.000</span><span>FRAME <b id="frame">0</b></span></div>
 </div>
 <details class="identity"><summary id="player-id"></summary><p id="full-id"></p></details>
-<details id="conformance" class="conformance"><summary><span id="status-dot" aria-hidden="true"></span><span id="status-text">檢查 replay…</span><span class="detail-caret" aria-hidden="true">＋</span></summary><div class="details-body"><p id="coverage"></p><p id="uncertainty">比對點稀疏，無法確認每個中間 frame。</p><p>數據為引擎重建；PPS／APM 為當前時間的均值。Solo 未定義的數據顯示 —，VS score 尚未重建。</p><div id="differences"></div></div></details>
+<details id="conformance" class="conformance"><summary><span id="status-dot" aria-hidden="true"></span><span id="status-text">檢查 replay…</span><span class="detail-caret" aria-hidden="true">＋</span></summary><div class="details-body"><p id="coverage"></p><p id="uncertainty">比對點稀疏，無法確認每個中間 frame。</p><p>數據為引擎重建；PPS／APM 為當前時間的均值。Solo 未定義的數據顯示 —。待接收垃圾由下往上依接收順序排列，暗色表示尚未可入盤；僅列出空間能完整容納的封包，總量包含未顯示的封包。</p><div id="differences"></div></div></details>
 </section>
 </div>
 <nav class="transport" aria-label="Replay 導覽">

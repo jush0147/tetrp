@@ -5,7 +5,8 @@ import {cells} from '../src/board.js';
 import {parseReplay,prepareReplay,Reconstruction,selectPlayer} from '../src/replay/index.js';
 import {ViewerSession,catalog,MAX_FRAMES} from '../viewer/session.js';
 import {boardModel} from '../viewer/render.js';
-import {PlaybackClock,displayStats,placementLabel} from '../viewer/playback.js';
+import {PlaybackClock,displayStats,placementLabel,incomingGarbage,visibleGarbage} from '../viewer/playback.js';
+import {receive,tank,fight,resolveAttack} from '../src/attack.js';
 
 test('playback clock uses 60 source frames per second with continuous speed changes',()=>{
   for(const speed of [.5,1,1.5]){
@@ -22,7 +23,7 @@ test('playback clock uses 60 source frames per second with continuous speed chan
 test('stats disclose unknown values and spin labels include non-T and mini spins',()=>{
   const state=new Engine().state;state.frame=120;state.subframe=0;state.stats.pieces=8;
   assert.equal(displayStats(state).pps,4);
-  assert.equal(displayStats(state).b2b,state.attack.btb);
+  assert.equal(displayStats(state).b2b,Math.max(0,state.attack.btb-1));
   state.attack.totals.received=9;state.attack.totals.tanked=3;
   assert.equal(displayStats(state).received,9);
   state.attack=null;state.stats.score=null;
@@ -39,7 +40,7 @@ export function syntheticReplay(){return {version:1,gamemode:'40l',replay:{frame
   ]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}};}
 test('viewer index and repeated placement/frame seeks use the stable reconstruction state',async()=>{
   const replay=parseReplay(JSON.stringify(syntheticReplay()));
-  assert.deepEqual(catalog(replay),[{index:0,players:[{index:0,name:'ID 1'}]}]);
+  assert.deepEqual(catalog(replay),[{index:0,players:[{index:0,name:'Player 1'}]}]);
   const viewer=new ViewerSession(replay,0,0);assert.equal(await viewer.initialize(),true);assert.equal(viewer.total,6);
   const reference=new Reconstruction(prepareReplay(selectPlayer(replay)));
   reference.seekPlacement(1);
@@ -65,6 +66,36 @@ test('render model clips buffer rows, uses engine cells/ceil, and never mutates 
   assert.deepEqual(m.next,e.state.bag.queue.slice(0,e.state.rules.nextcount));
   m.rows[0][0]=null;m.hold.piece='i';assert.equal(e.serialize(),bytes);
   e.state.piece.sleeping=true;assert.deepEqual(boardModel(e.state).active,[]);
+});
+test('B2B display starts on the second qualifying clear and respects profile AC contribution',()=>{
+  const e=new Engine(),s=e.state;
+  const clear=(lines,spin,allClear=false)=>resolveAttack(s.attack,{lines,spin,allClear,garbageRows:0},s.rules,s.holes);
+  clear(2,'full');assert.equal(displayStats(s).b2b,0);assert.equal(s.attack.btb,1);
+  clear(0,'full');assert.equal(displayStats(s).b2b,0);
+  clear(1,'mini');assert.equal(displayStats(s).b2b,1);
+  clear(0,'none');assert.equal(displayStats(s).b2b,1);
+  clear(1,'none');assert.equal(displayStats(s).b2b,0);
+  clear(4,'none',true);assert.equal(displayStats(s).b2b,s.rules.allclear_b2b);
+});
+test('incoming packet display preserves FIFO, shared tank cap, partial cancellation and full-slot limits',()=>{
+  const s=new Engine().state;s.attack.pieces=20;
+  receive(s.attack,{from:'peer',iid:1,amt:12});receive(s.attack,{from:'peer',iid:2,amt:3});
+  assert.deepEqual(incomingGarbage(s).packets.map(p=>p.amount),[12,3]);assert.equal(incomingGarbage(s).total,15);
+  assert.equal(tank(s.attack,s.rules,s.holes),0); // unconfirmed packets are still pending
+  for(const p of s.attack.pending)p.active=true;
+  assert.equal(tank(s.attack,s.rules,s.holes),8);
+  assert.deepEqual(incomingGarbage(s).packets.map(p=>p.amount),[4,3]);
+  fight(s.attack,2,s.rules,s.holes);assert.deepEqual(incomingGarbage(s).packets.map(p=>p.amount),[2,3]);
+  assert.equal(tank(s.attack,s.rules,s.holes),5);assert.equal(incomingGarbage(s).total,0);
+  const packets=[{amount:2},{amount:3},{amount:4}];assert.deepEqual(visibleGarbage(packets,47),packets.slice(0,1));
+  assert.deepEqual(visibleGarbage(packets,23),[]);assert.equal(visibleGarbage(packets,72).length,3);
+});
+test('buffer piece is drawn at board top without changing canonical coordinates',()=>{
+  const e=new Engine();Object.assign(e.state.piece,{type:'t',x:4,y:17.96,r:0});
+  const before=e.serialize(),m=boardModel(e.state);
+  assert.equal(m.above,true);assert.equal(m.displayActive.length,4);
+  assert.equal(Math.min(...m.displayActive.map(([,y])=>y)),0);
+  assert.equal(e.serialize(),before);
 });
 test('viewer cancellation yields and stream replacement does not reuse state',async()=>{
   const x=syntheticReplay();x.replay.frames=1000;x.replay.events.at(-1).frame=1000;

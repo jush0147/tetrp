@@ -10,10 +10,21 @@ export class PlaybackClock {
 export function displayStats(state){
   const time=(state.frame+state.subframe)/60;
   return {time,pieces:state.stats.pieces,lines:state.stats.lines,score:state.stats.score,
-    b2b:state.attack?.btb??null,combo:state.attack?.combo??null,
+    b2b:state.attack?Math.max(0,state.attack.btb-1):null,combo:state.attack?.combo??null,
     attack:state.attack?.totals.generated??null,sent:state.attack?.totals.sent??null,
     received:state.attack?.totals.received??null,pps:time?state.stats.pieces/time:0,
     apm:state.attack?time?state.attack.totals.generated*60/time:0:null};
+}
+export function incomingGarbage(state){
+  if(!state.attack)return {total:null,cap:null,packets:[]};
+  const packets=[...state.attack.are,...state.attack.pending].filter(p=>p.amt>0).map(p=>({
+    amount:p.amt,active:Boolean(p.active),id:p.cid,
+  }));
+  return {total:packets.reduce((sum,p)=>sum+p.amount,0),
+    cap:Math.floor(Math.min(state.rules.garbagecap,state.rules.garbagecapmax)),packets};
+}
+export function visibleGarbage(packets,height,rowHeight=24){
+  return packets.slice(0,Math.max(0,Math.floor(height/rowHeight)));
 }
 export function placementLabel(p){
   if(!p)return '—';

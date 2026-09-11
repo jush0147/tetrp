@@ -5,10 +5,15 @@ import pieces from '../src/data/pieces.json' with {type:'json'};
 export const palette={i:'#82daca',o:'#e8cc83',t:'#b9a3df',s:'#a9c884',z:'#e99391',j:'#91b4dc',l:'#dea67a',gb:'#7c8892',gbd:'#535d68'};
 export function boardModel(state) {
   const {board,piece}=state;
+  const raw=piece&&!piece.sleeping?cells(piece).map(([x,y])=>[x,Math.ceil(y)-board.buffer]):[];
+  // Presentation only: show a buffer piece at the field's top, keeping its x and
+  // rotation. Canonical coordinates and collision geometry remain untouched.
+  const lift=raw.length?Math.max(0,-Math.min(...raw.map(([,y])=>y))):0;
+  const displayActive=raw.map(([x,y])=>[x,y+lift]).filter(([x,y])=>x>=0&&x<board.width&&y>=0&&y<board.height);
   const active=piece&&!piece.sleeping ? cells(piece).map(([x,y])=>[x,Math.ceil(y)-board.buffer])
     .filter(([x,y])=>x>=0&&x<board.width&&y>=0&&y<board.height) : [];
   return {width:board.width,height:board.height,rows:board.rows.slice(board.buffer).map(row=>[...row]),
-    active,type:piece?.type??null,rotation:piece?.r??0,above:piece&&!piece.sleeping&&cells(piece).some(([,y])=>Math.ceil(y)<board.buffer),
+    active,displayActive,type:piece?.type??null,rotation:piece?.r??0,above:piece&&!piece.sleeping&&cells(piece).some(([,y])=>Math.ceil(y)<board.buffer),
     hold:structuredClone(state.hold),next:state.bag.queue.slice(0,state.rules.nextcount),
     frame:state.frame,placement:state.stats.pieces,lines:state.stats.lines};
 }
@@ -24,7 +29,7 @@ export function drawBoard(canvas,model) {
   for(let x=0;x<=model.width;x++){ctx.beginPath();ctx.moveTo(x*unit+.5,0);ctx.lineTo(x*unit+.5,canvas.height);ctx.stroke();}
   for(let y=0;y<=model.height;y++){ctx.beginPath();ctx.moveTo(0,y*unit+.5);ctx.lineTo(canvas.width,y*unit+.5);ctx.stroke();}
   model.rows.forEach((row,y)=>row.forEach((type,x)=>{if(type)tile(ctx,x*unit,y*unit,unit,type);}));
-  model.active.forEach(([x,y])=>tile(ctx,x*unit,y*unit,unit,model.type,true));
+  model.displayActive.forEach(([x,y])=>tile(ctx,x*unit,y*unit,unit,model.type,true));
   canvas.setAttribute('aria-label',`棋盤 ${model.width} × ${model.height}，第 ${model.placement} 顆，${model.lines} 行。${model.above?'目前方塊位於上方緩衝區。':''}`);
 }
 export function drawPreview(canvas,type,rotation=0) {

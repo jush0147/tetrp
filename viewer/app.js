@@ -1,9 +1,22 @@
 import {boardModel,drawBoard,drawPreview} from './render.js';
-import {PlaybackClock,displayStats,placementLabel} from './playback.js';
+import {PlaybackClock,displayStats,placementLabel,incomingGarbage,visibleGarbage} from './playback.js';
 const $=id=>document.getElementById(id);
 const peer=$('focus-lane').cloneNode(true);peer.id='peer-lane';peer.setAttribute('aria-label','另一位玩家');
 for(const node of peer.querySelectorAll('[id]'))node.id=`peer-${node.id}`;
 $('boards').append(peer);
+const garbageViews=new Map();
+function fitGarbage(prefix){
+  const g=garbageViews.get(prefix);if(!g)return;
+  const panel=$(prefix+'garbage-panel'),list=$(prefix+'garbage-packets');
+  const height=panel.clientHeight-$(prefix+'garbage-cap').offsetHeight-$(prefix+'garbage-total').parentElement.offsetHeight;
+  const visible=visibleGarbage(g.packets,height);
+  list.replaceChildren(...visible.map(p=>{const row=document.createElement('div');row.className='garbage-packet';
+    row.textContent=String(p.amount);row.classList.toggle('waiting',!p.active);
+    row.title=p.active?'待入盤':'等待確認／抵達';return row;}));
+  list.setAttribute('aria-label',`最早收到的在下方，另有 ${g.packets.length-visible.length} 筆未顯示`);
+}
+const garbageResize=new ResizeObserver(()=>{for(const prefix of garbageViews.keys())fitGarbage(prefix);});
+for(const prefix of ['', 'peer-'])garbageResize.observe($(prefix+'garbage-panel'));
 const clock=new PlaybackClock();
 let worker=null,serial=0,active=0,rounds=[],state=null,total=0,frames=0,desired=0,roundFrame=0,playing=false,raf=null,inflight=false,scrubTimer=null,available=false;
 const request=(type,data={})=>{active=++serial;worker.postMessage({id:active,type,...data});return active;};
@@ -54,12 +67,13 @@ function renderLane(prefix,view,initial){
   if(view.error){el('lane-error').textContent=`此 stream 暫不支援 · ${view.error.code}\n${view.error.message}`;return null;}
   const s=view.state,model=boardModel(s),stats=displayStats(s);
   drawBoard(el('board'),model);drawPreview(el('hold'),model.hold.piece);el('hold-lock').textContent=model.hold.locked?'鎖定':'';
-  drawPreview(el('active-preview'),s.piece?.sleeping?null:model.type,model.rotation);el('buffer-note').hidden=!model.above;
-  el('active-preview').parentElement.hidden=!model.above;
   el('next').replaceChildren(...model.next.map(type=>{const c=document.createElement('canvas');c.setAttribute('role','img');drawPreview(c,type);return c;}));
-  for(const key of ['pieces','lines','b2b','combo','attack','sent','received','score'])el(key).textContent=number(stats[key]);
+  for(const key of ['pieces','lines','b2b','combo','attack'])el(key).textContent=number(stats[key]);
+  const garbage=incomingGarbage(s);garbageViews.set(prefix,garbage);
+  el('garbage-total').textContent=number(garbage.total);el('garbage-cap').textContent=garbage.cap===null?'':`入盤上限 ${garbage.cap}`;
   el('pps').textContent=number(stats.pps,2);el('apm').textContent=number(stats.apm,1);el('time').textContent=timeLabel(stats.time);el('frame').textContent=String(s.frame);
   const label=placementLabel(view.lastPlacement);el('spin').textContent=label;el('spin').classList.toggle('is-spin',label.includes('SPIN'));
+  fitGarbage(prefix);
   if(initial)conformance(prefix,view.conformance);
   return model;
 }
