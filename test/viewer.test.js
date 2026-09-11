@@ -31,6 +31,24 @@ test('stats disclose unknown values and spin labels include non-T and mini spins
   assert.equal(placementLabel({piece:'t',spin:'mini',lines:1}),'T-SPIN MINI · SINGLE');
   assert.equal(placementLabel({piece:'j',spin:'full',lines:2}),'J-SPIN · DOUBLE');
   assert.equal(placementLabel({piece:'i',spin:'none',lines:4}),'QUAD');
+  assert.equal(placementLabel({piece:'o',spin:'none',lines:2,allClear:true}),'ALL CLEAR · DOUBLE');
+  assert.equal(placementLabel({piece:'t',spin:'full',lines:2,allClear:true}),'ALL CLEAR · T-SPIN · DOUBLE');
+});
+test('All Clear observation survives repeated seeks and does not leak onto the next placement',async()=>{
+  const viewer=new ViewerSession(parseReplay(JSON.stringify(syntheticReplay())),0,0);
+  // Synthetic pre-placement checkpoint: O completes and empties the last two rows.
+  const e=new Engine({mode:'40l',seed:1});
+  for(const y of [38,39]){e.state.board.rows[y].fill('gb');e.state.board.rows[y][4]=e.state.board.rows[y][5]=null;}
+  viewer.session=new Reconstruction({...viewer.session.timeline,initial:e.serialize()});
+  await viewer.initialize();
+  for(const n of [1,2,1,0,1]){
+    viewer.seek('placement',n);const result=viewer.result();
+    assert.equal(Boolean(result.lastPlacement?.allClear),n===1);
+    assert.equal(placementLabel(result.lastPlacement).includes('ALL CLEAR'),n===1);
+    if(n===1){assert.equal(result.lastPlacement.lines,2);assert.equal(result.state.board.rows.flat().filter(Boolean).length,0);}
+  }
+  viewer.seek('frame',0);assert.equal(viewer.result().lastPlacement,null);
+  viewer.seek('frame',3);assert.equal(viewer.result().lastPlacement.allClear,true);
 });
 
 export function syntheticReplay(){return {version:1,gamemode:'40l',replay:{frames:90,options:{version:15,seed:42,handling:{safelock:false}},

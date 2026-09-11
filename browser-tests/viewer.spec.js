@@ -118,14 +118,15 @@ test('real private files, all TL streams and known conformance states',async({pa
   for(const n of [0,Math.floor(total/2),total,Math.floor(total/2)])await consistent(page,reference,n);
   await expect(page.locator('#conformance')).toBeHidden();
   const multi=parseReplay(readFileSync(process.env.TETRP_TTRM,'utf8'));
-  let checkedSpins=0,checkedGarbage=0;
+  let checkedSpins=0,checkedGarbage=0,checkedAllClears=0;
   await page.locator('#file').setInputFiles(process.env.TETRP_TTRM);
   for(const r of multi.rounds){await expect(page.locator('#round')).toBeVisible();await page.locator('#round').selectOption(String(r.index));
     for(const p of r.players){await page.locator('#player').selectOption(String(p.index));
       let ref;try{ref=new Reconstruction(prepareReplay(selectPlayer(multi,r.index,p.index)));}catch(e){expect(e.code).toBe('UNSUPPORTED_PROFILE');await expect(page.locator('#lane-error')).toBeVisible();await expect(page.locator('#lane-error')).toContainText('retry');continue;}
-      let spin=null,garbagePlacement=null;
+      let spin=null,garbagePlacement=null;const allClears=new Set();
       while(ref.advance()){
         for(const t of ref.transitions)if(!spin&&t.type==='lock'&&t.spin!=='none')spin=t;
+        for(const t of ref.transitions)if(t.type==='remove-lines'&&t.allClear)allClears.add(ref.state.stats.pieces);
         if(garbagePlacement===null&&ref.state.attack.pending.length>=2)garbagePlacement=ref.state.stats.pieces+1;
       }
       const count=ref.state.stats.pieces,first=ref.diagnostics.first;await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#scrubber')).toHaveAttribute('max',String(count));
@@ -138,6 +139,14 @@ test('real private files, all TL streams and known conformance states',async({pa
         const rgb=palette[spin.piece].slice(1).match(/../g).map(x=>parseInt(x,16)).join(', ');
         await expect(page.locator('#spin')).toHaveCSS('color',`rgb(${rgb})`);checkedSpins++;}
       await expect(page.locator('#player-id')).toHaveText(p.username);
+      if(allClears.size){
+        const ac=[...allClears][0];
+        for(const n of [ac,ac-1,ac,Math.min(ac+1,count)]){
+          await placement(page,n);
+          await expect.poll(()=>page.locator('#spin').textContent()).toMatch(allClears.has(n)?/ALL CLEAR/:/^(?!.*ALL CLEAR)/);
+        }
+        checkedAllClears++;
+      }
       if(garbagePlacement!==null&&garbagePlacement<=count){
         const totalBefore=await page.locator('#garbage-total').boundingBox(),nextBefore=await page.locator('#next').boundingBox();
         await placement(page,garbagePlacement);
@@ -156,4 +165,5 @@ test('real private files, all TL streams and known conformance states',async({pa
   }
   expect(checkedSpins).toBeGreaterThan(0);
   expect(checkedGarbage).toBeGreaterThan(0);
+  expect(checkedAllClears).toBeGreaterThan(0);
 });

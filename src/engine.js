@@ -318,8 +318,9 @@ export class Engine {
     this.emit('lock',{piece:p.type,spin:p.spin,placementIndex:s.stats.pieces});
     const lockout = B.commit(s.board,p); this.emit('commit');
     const rows = B.fullLines(s.board), garbageRows = rows.filter(y => s.board.rows[y].includes('gb')).length;
-    B.removeLines(s.board,rows); if (rows.length) this.emit('remove-lines',{rows});
+    B.removeLines(s.board,rows);
     const lines = rows.length, allClear = lines > 0 && B.emptyWithPerma(s.board);
+    if (lines) this.emit('remove-lines',{rows,allClear});
     s.lastClear = lines > 0; s.lastReceived = 0; s.stats.lines += lines;
     // Geometry/counters/progression are independent of unknown solo aggregates.
     const delay = s.rules.mode === 'tl' ? this.resolveTLPlacement(lines,allClear,garbageRows)

@@ -75,6 +75,7 @@ function renderLane(prefix,view,initial){
   el('garbage-total').textContent=number(garbage.total);el('garbage-cap').textContent=garbage.cap===null?'':`入盤上限 ${garbage.cap}`;
   el('pps').textContent=number(stats.pps,2);el('apm').textContent=number(stats.apm,1);el('time').textContent=timeLabel(stats.time);el('frame').textContent=String(s.frame);
   const label=placementLabel(view.lastPlacement);el('spin').textContent=label;el('spin').classList.toggle('is-spin',label.includes('SPIN'));
+  el('spin').classList.toggle('is-all-clear',Boolean(view.lastPlacement?.allClear));
   el('spin').dataset.piece=label.includes('SPIN')?view.lastPlacement.piece:'';
   fitGarbage(prefix);
   if(initial)conformance(prefix,view.conformance);

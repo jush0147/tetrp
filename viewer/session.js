@@ -25,10 +25,10 @@ export class ViewerSession {
       let placed=null;
       for(const event of this.session.transitions??[]){
         if(event.type==='lock'){
-          placed={piece:event.piece,spin:event.spin,index:event.placementIndex,frame:event.frame,subframe:event.subframe,lines:0};
+          placed={piece:event.piece,spin:event.spin,index:event.placementIndex,frame:event.frame,subframe:event.subframe,lines:0,allClear:false};
           this.placements.set(placed.index,placed);
         }
-        if(event.type==='remove-lines'&&placed)placed.lines=event.rows.length;
+        if(event.type==='remove-lines'&&placed){placed.lines=event.rows.length;placed.allClear=event.allClear;}
       }
       if(++steps%256===0) {
         progress(Math.min(99,Math.floor(this.session.state.frame/Math.max(1,this.frames)*100)));

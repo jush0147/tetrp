@@ -57,7 +57,10 @@ generated attack and elapsed-time mean PPS/APM.
 Lines are shown only for `.ttr`, and hidden for `.ttrm`. Right-side cumulative stats and
 score were removed in favor of incoming garbage. Solo B2B/attack remain unknown,
 rather than substituting TL rules. The most recent placement's
-spin (including non-T and mini) and line clear persist until the next placement.
+spin (including non-T and mini), line clear and All Clear persist until the next placement.
+All Clear is the engine's clear-time observation, retained before subsequent
+spawn/garbage changes; it is never inferred from a later displayed board. It appears
+as `ALL CLEAR` alongside the spin/clear label and resets on the next placement.
 These labels sit beside B2B in the upper left rail; spin labels use the matching
 piece palette color and non-spin clears use neutral text.
 
@@ -134,10 +137,11 @@ claims remain subject to Phase 2's sparse-anchor limitations.
 
 ## Validation
 
-Unit suite: **333 passed, 0 failed, 0 skipped**. This includes all 325 existing tests
-and eight viewer tests for stable-API seeks/copy isolation, diagnostic checkpoint
+Unit suite: **334 passed, 0 failed, 0 skipped**. This includes all 325 existing tests
+and nine viewer tests for stable-API seeks/copy isolation, diagnostic checkpoint
 isolation, rendering coordinates, cancellable indexing, clock rates, spin/stats labels,
-B2B chain boundaries, shared garbage cap/cancellation and buffer display immutability.
+B2B chain boundaries, shared garbage cap/cancellation, buffer display immutability
+and All Clear retention/reset across repeated seeks.
 
 Browser acceptance: **12 checks passed** across Chromium desktop and touch-enabled
 WebKit mobile, including orientation and controlled-clock playback checks.
@@ -235,7 +239,8 @@ in Phase 4 explicitly, preserving this separation.
 
 The additive replay observation API is `Reconstruction.transitions`, the detached
 diagnostic events from the last `advance()`. `lock` includes `piece`, `spin` and
-`placementIndex`; a subsequent `remove-lines` observation includes removed row indices.
+`placementIndex`; a subsequent `remove-lines` observation includes removed row indices
+and the engine's `allClear` boolean.
 These facts never enter canonical state or checkpoint bytes, are cleared on reset
 and exhausted advance, and are empty immediately after restore. ViewerSession indexes
 these observations for seek-stable presentation. No new gameplay rule was introduced.

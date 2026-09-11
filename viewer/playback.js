@@ -30,5 +30,5 @@ export function placementLabel(p){
   if(!p)return '—';
   const spin=p.spin!=='none'?`${p.piece.toUpperCase()}-SPIN${p.spin==='mini'?' MINI':''}`:'';
   const clear=['','SINGLE','DOUBLE','TRIPLE','QUAD'][p.lines]??`${p.lines} LINES`;
-  return [spin,clear].filter(Boolean).join(' · ')||'—';
+  return [p.allClear?'ALL CLEAR':'',spin,clear].filter(Boolean).join(' · ')||'—';
 }
