@@ -17,7 +17,8 @@ zero-ARE spawn replaces the active piece. Stop after this viewer; Phase 4 is not
   Indexing yields every 256 transitions so stream changes can
   cancel obsolete work. Opening another file terminates the previous Worker.
 - `viewer/app.js` coordinates DOM controls and request IDs. Only the latest response
-  can update the display; changing streams resets the session and navigation.
+  can update the display; changing rounds/files resets the session and navigation.
+  Changing the focused player reuses both sessions at their existing progress.
   The scrubber debounces requests and invalidates stale replies immediately.
 - `viewer/render.js` is a read-only Canvas adapter. It uses existing `board.cells()`
   and piece geometry, clips rows at `board.buffer`, and uses `ceil(y)` for occupied
@@ -38,7 +39,9 @@ fixtures, checkpoints or reports. Build fails if unexpected files exist in dist.
 
 Open a local `.ttr` or `.ttrm` from the header or initial file picker. Solo enters
 its single stream automatically. Multiplayer exposes Round / Player selectors;
-changing either constructs fresh round sessions. Player labels use the replay's
+Changing round constructs fresh sessions. Changing player sends `focus`, retaining
+the existing round frame, each exact canonical state and the running playback clock.
+Player labels use the replay's
 in-game `username`, with `Player N` fallback when absent; opaque account IDs are
 never used as display names. File names and player names are inserted as text,
 never HTML. Reopening the same file is supported.
@@ -54,6 +57,8 @@ generated attack and elapsed-time mean PPS/APM. Right-side cumulative stats and
 score were removed in favor of incoming garbage. Solo B2B/attack remain unknown,
 rather than substituting TL rules. The most recent placement's
 spin (including non-T and mini) and line clear persist until the next placement.
+These labels sit beside B2B in the upper left rail; spin labels use the matching
+piece palette color and non-spin clears use neutral text.
 
 The displayed B2B is `max(0, attack.btb - 1)`: the internal counter's first
 qualifying clear establishes the chain; the second is B2B 1. Zero-line spins do
@@ -64,8 +69,9 @@ This fixes presentation, not the Phase 2 engine's attack computation.
 
 Incoming garbage is read from remaining `are` / `pending` packets, including
 unconfirmed packets, in canonical queue order. Oldest is at the bottom; partially
-tanked/cancelled packets shrink and exhausted packets disappear. Total above the
-list includes every packet, even rows omitted for lack of space. A ResizeObserver
+tanked/cancelled packets shrink and exhausted packets disappear. The total has a
+fixed position below Next, independent of packet count. It includes every packet,
+even rows omitted for lack of space. A ResizeObserver
 fits only complete 24 px rows, retaining earliest packets first. Dim entries are
 not yet active. The current supported TL profile tanks at most 8 rows per eligible
 intake, shared across packets, not 8 per packet and not an 8-row pending-queue cap.
@@ -79,7 +85,8 @@ scrubber, an editable placement number with submit, and placement/total count.
 Worker response latency. Only one playback seek is outstanding; slow devices may
 skip displayed frames to catch up, while reconstruction consumes every source event.
 Speed changes preserve the current clock position. Playback pauses on
-manual navigation, stream/file changes, hidden tabs and errors. At the end the
+manual navigation, round/file changes, hidden tabs and errors. Player focus changes
+continue playback. At the end the
 play button restarts from zero. Desktop also supports left/right arrows and Space
 outside editable controls.
 
@@ -95,6 +102,11 @@ Frame-end seek retains the stable API's beginning-of-frame semantics; initial in
 still consumes all terminal events and anchors for conformance reporting.
 
 Portrait shows only the selected player; landscape shows both players side by side.
+The startup screen is a compact local file picker; there is no hero, banner or
+promotional footer. Round/player controls and playback controls are independent
+native disclosure panels. Closing either frees vertical space for the board;
+closing controls does not alter progress or pause playback. Reopen the playback
+panel to use touch controls; keyboard Space remains available while collapsed.
 Each has its own name, Hold, Next, counters, spin and conformance details. Short landscape
 screens use compact rails. A sticky transport provides single-hand placement buttons.
 Primary buttons are 50 px in portrait and compact in short landscape. Native inputs support
@@ -215,7 +227,7 @@ emits `tetrp:position` with detached `{state, model, views, roundFrame}` on acce
 navigation results. `views` contains each player's display name (legacy `id` field), canonical state, bounds,
 conformance and last placement, or an explicit unsupported error.
 Listeners cannot mutate the actual Reconstruction by modifying that event detail.
-Worker commands are limited to `load`, `select`, and `seek`; no action-injection or
+Worker commands are limited to `load`, `select`, `focus`, and `seek`; no action-injection or
 bot command has been added. Any future offline analysis boundary must be designed
 in Phase 4 explicitly, preserving this separation.
 

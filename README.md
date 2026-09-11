@@ -9,6 +9,8 @@ and navigate by placement or frame. Play at 0.5× / 1× / 1.5× source speed;
 portrait shows the selected player and landscape shows both players by in-game name.
 Hold, vertical Next, B2B, counters and placement spin/clear labels accompany each
 board, with a bottom-first incoming garbage queue and total. Replay data stays on the device.
+Round/player and playback controls can collapse. Switching players preserves the
+round's current progress and ongoing playback.
 See [the viewer handoff](docs/PHASE_3_HANDOFF.md) and
 [Phase 2 conformance findings](docs/PHASE_2_HANDOFF.md).
 No bot, practice UI, or live-match integration is included. Read

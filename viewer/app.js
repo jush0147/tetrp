@@ -42,10 +42,10 @@ function load(file){
     if(m.type==='catalog'){
       rounds=m.rounds;$('round').replaceChildren(...rounds.map(r=>new Option(`Round ${r.index+1}`,String(r.index))));fillPlayers();$('selectors').hidden=m.variant==='ttr';select();return;
     }
-    if(m.type==='ready'||m.type==='state'){
+    if(m.type==='ready'||m.type==='state'||m.type==='focused'){
       inflight=false;frames=m.roundFrames;available=m.views.some(v=>!v.error);$('frame-input').max=String(frames);
       $('frame-limit').textContent=`0 – ${frames} · 每秒 60 frames`;
-      $('busy').hidden=true;$('viewer').hidden=false;renderRound(m,m.type==='ready');
+      $('busy').hidden=true;$('viewer').hidden=false;renderRound(m,m.type!=='state');
       if(playing&&m.frame>=frames)stop();
     }
   };
@@ -73,6 +73,7 @@ function renderLane(prefix,view,initial){
   el('garbage-total').textContent=number(garbage.total);el('garbage-cap').textContent=garbage.cap===null?'':`入盤上限 ${garbage.cap}`;
   el('pps').textContent=number(stats.pps,2);el('apm').textContent=number(stats.apm,1);el('time').textContent=timeLabel(stats.time);el('frame').textContent=String(s.frame);
   const label=placementLabel(view.lastPlacement);el('spin').textContent=label;el('spin').classList.toggle('is-spin',label.includes('SPIN'));
+  el('spin').dataset.piece=label.includes('SPIN')?view.lastPlacement.piece:'';
   fitGarbage(prefix);
   if(initial)conformance(prefix,view.conformance);
   return model;
@@ -100,7 +101,10 @@ function tick(now){
   raf=requestAnimationFrame(tick);
 }
 $('file').addEventListener('change',e=>{load(e.target.files[0]);e.target.value='';});
-$('round').addEventListener('change',()=>{fillPlayers();select();});$('player').addEventListener('change',select);
+$('round').addEventListener('change',()=>{fillPlayers();select();});$('player').addEventListener('change',()=>{
+  if($('viewer').hidden){select();return;}
+  clearTimeout(scrubTimer);inflight=true;request('focus',{player:Number($('player').value)});
+});
 $('previous').addEventListener('click',()=>seek('placement',Math.max(0,desired-1)));$('next-placement').addEventListener('click',()=>seek('placement',Math.min(total,desired+1)));
 $('scrubber').addEventListener('input',e=>{stop();active=++serial;inflight=false;desired=Number(e.target.value);$('placement-input').value=String(desired);clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>seek('placement',desired),45);});
 $('scrubber').addEventListener('change',()=>seek('placement',desired));

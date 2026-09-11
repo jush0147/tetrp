@@ -1,8 +1,8 @@
 import {MAX_FILE_BYTES,parseLocalText,catalog,ViewerSession} from './session.js';
-let replay=null,sessions=[],epoch=0,focus=0,roundFrames=0;
+let replay=null,sessions=[],epoch=0,focus=0,roundFrames=0,currentFrame=0;
 const send=(id,type,data)=>postMessage({id,type,...data});
 const errorData=error=>({code:error.code||'VIEWER_ERROR',path:error.path||null,message:error.message});
-function snapshot(frame){return {focus,roundFrames,frame,views:sessions.map(s=>s.error?s:{player:s.player,id:s.id,...s.session.result()})};}
+function snapshot(frame){currentFrame=frame;return {focus,roundFrames,frame,views:sessions.map(s=>s.error?s:{player:s.player,id:s.id,...s.session.result()})};}
 self.onmessage=async({data:m})=>{
   try{
     if(m.type==='load'){
@@ -27,6 +27,9 @@ self.onmessage=async({data:m})=>{
       if(generation!==epoch)return;sessions=next;
       roundFrames=Math.max(0,...sessions.filter(s=>s.session).map(s=>s.session.frames));
       send(m.id,'ready',snapshot(0));
+    }else if(m.type==='focus'){
+      if(!sessions.some(s=>s.player===m.player))throw new Error('Unknown player');
+      focus=m.player;send(m.id,'focused',snapshot(currentFrame));
     }else if(m.type==='seek'){
       if(!sessions.length)throw new Error('Replay 尚未準備完成。');
       let frame=m.value;

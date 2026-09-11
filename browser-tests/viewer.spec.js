@@ -39,6 +39,12 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
   const x={version:1,gamemode:'league',replay:{rounds:[[make('player-alpha'),make('player-beta')]]}};
   await upload(page,x);await expect(page.locator('#viewer')).toBeVisible();
   await page.setViewportSize({width:390,height:844});await expect(page.locator('#peer-lane')).toBeHidden();
+  await placement(page,3);const before=await page.evaluate(()=>window.observedPosition);
+  await page.locator('#player').selectOption('1');await expect(page.locator('#player-id')).toHaveText('player-beta');
+  expect(await page.evaluate(()=>window.observedPosition.roundFrame)).toBe(before.roundFrame);
+  expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(before.views[1].state);
+  await page.locator('#player').selectOption('0');await expect(page.locator('#player-id')).toHaveText('player-alpha');
+  expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(before.state);
   await page.setViewportSize({width:844,height:390});await expect(page.locator('#peer-board')).toBeVisible();
   await expect(page.locator('#player-id')).toHaveText('player-alpha');await expect(page.locator('#peer-player-id')).toHaveText('player-beta');
   for(const prefix of ['', 'peer-']){
@@ -54,7 +60,9 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     await placement(page,0);await expect.poll(()=>page.evaluate(()=>window.observedPosition?.roundFrame)).toBe(0);
     await page.locator('#speed').selectOption(speed);
     // Browser clock controls rAF/performance without relying on CI wall-clock speed.
-    await page.evaluate(()=>document.getElementById('play').click());await page.clock.runFor(1000);
+    await page.evaluate(()=>document.getElementById('play').click());await page.clock.runFor(500);
+    await page.locator('#player').selectOption('1');await expect(page.locator('#player-id')).toHaveText('player-beta');
+    await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');await page.clock.runFor(500);
     await page.evaluate(()=>document.getElementById('play').click());
     const pos=await page.evaluate(()=>window.observedPosition);
     expect(pos.roundFrame).toBeGreaterThanOrEqual(Number(speed)*60-5);
@@ -62,6 +70,13 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     expect(pos.views[1].state).toEqual(ref.seekFrame(pos.roundFrame));
     expect(pos.views[0].state.frame).toBe(pos.views[1].state.frame);
   }
+  const stateBeforeCollapse=await page.evaluate(()=>window.observedPosition.state),oldBoard=await page.locator('#board').boundingBox();
+  await page.locator('#stream-tools>summary').click();await page.locator('#playback-tools>summary').click();
+  await expect(page.locator('#player')).toBeHidden();await expect(page.locator('#scrubber')).toBeHidden();
+  expect((await page.locator('#board').boundingBox()).height).toBeGreaterThan(oldBoard.height);
+  expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(stateBeforeCollapse);
+  await page.locator('#stream-tools>summary').click();await page.locator('#playback-tools>summary').click();
+  await expect(page.locator('#player')).toBeVisible();await expect(page.locator('#scrubber')).toBeVisible();
   expect(errors).toEqual([]);
 });
 test('malformed file and responsive touch targets',async({page})=>{
@@ -117,14 +132,19 @@ test('real private files, all TL streams and known conformance states',async({pa
       await expect(page.locator('#b2b')).toHaveText(String(Math.max(0,stats.attack.btb-1)));
       await expect(page.locator('#attack')).toHaveText(String(stats.attack.totals.generated));
       await expect(page.locator('#garbage-total')).toHaveText(String([...stats.attack.are,...stats.attack.pending].reduce((sum,p)=>sum+p.amt,0)));
-      if(spin){await placement(page,spin.placementIndex);await expect(page.locator('#spin')).toContainText(`${spin.piece.toUpperCase()}-SPIN${spin.spin==='mini'?' MINI':''}`);checkedSpins++;}
+      if(spin){await placement(page,spin.placementIndex);await expect(page.locator('.left-rail .chain #spin')).toContainText(`${spin.piece.toUpperCase()}-SPIN${spin.spin==='mini'?' MINI':''}`);
+        const rgb=palette[spin.piece].slice(1).match(/../g).map(x=>parseInt(x,16)).join(', ');
+        await expect(page.locator('#spin')).toHaveCSS('color',`rgb(${rgb})`);checkedSpins++;}
       await expect(page.locator('#player-id')).toHaveText(p.username);
       if(garbageFrame!==null){
+        const totalBefore=await page.locator('#garbage-total').boundingBox(),nextBefore=await page.locator('#next').boundingBox();
         await page.locator('.frame-tools').evaluate(el=>{el.open=true;});
         await page.locator('#frame-input').fill(String(garbageFrame));await page.locator('#frame-form button').click();
         await expect(page.locator('#frame')).toHaveText(String(garbageFrame));
         const expected=ref.seekFrame(garbageFrame),packets=[...expected.attack.are,...expected.attack.pending].filter(p=>p.amt>0);
         await expect(page.locator('#garbage-total')).toHaveText(String(packets.reduce((sum,p)=>sum+p.amt,0)));
+        const totalAfter=await page.locator('#garbage-total').boundingBox(),nextAfter=await page.locator('#next').boundingBox();
+        expect(Math.abs((totalAfter.y-nextAfter.y-nextAfter.height)-(totalBefore.y-nextBefore.y-nextBefore.height))).toBeLessThan(1);
         const rows=await page.locator('#garbage-packets .garbage-packet').evaluateAll(nodes=>nodes.map(n=>({amount:Number(n.textContent),top:n.getBoundingClientRect().top,bottom:n.getBoundingClientRect().bottom})));
         expect(rows.map(r=>r.amount)).toEqual(packets.slice(0,rows.length).map(p=>p.amt));
         for(let i=1;i<rows.length;i++)expect(rows[i].bottom).toBeLessThanOrEqual(rows[i-1].top);
