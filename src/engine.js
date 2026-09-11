@@ -314,7 +314,8 @@ export class Engine {
   lock() {
     const s = this.state, p = s.piece;
     if (!s.playing || p.sleeping) return;
-    p.sleeping = true; s.stats.pieces++; this.emit('lock');
+    p.sleeping = true; s.stats.pieces++;
+    this.emit('lock',{piece:p.type,spin:p.spin,placementIndex:s.stats.pieces});
     const lockout = B.commit(s.board,p); this.emit('commit');
     const rows = B.fullLines(s.board), garbageRows = rows.filter(y => s.board.rows[y].includes('gb')).length;
     B.removeLines(s.board,rows); if (rows.length) this.emit('remove-lines',{rows});

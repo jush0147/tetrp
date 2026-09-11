@@ -28,7 +28,7 @@ export class Reconstruction {
   constructor(timeline) {
     validate(timeline); this.timeline = copy(timeline); this.engine = Engine.restore(timeline.initial);
     if (this.engine.state.frame !== 0 || this.engine.state.phase !== 'ready') bad('Initial engine must be ready at frame zero');
-    this.cursor = 0; this.packetIds = {}; this.diagnostics = new DivergenceDiagnostics();
+    this.cursor = 0; this.packetIds = {}; this.transitions = []; this.diagnostics = new DivergenceDiagnostics();
   }
   get state() { return copy(this.engine.state); }
   checkpoint() {
@@ -52,6 +52,7 @@ export class Reconstruction {
   }
   /** One source event or frame boundary, never reorders equal/decreasing subframes. */
   advance() {
+    this.transitions = [];
     const s = this.engine.state, event = this.timeline.events[this.cursor];
     if (s.frame === this.timeline.frames && (!event || event.frame !== s.frame)) return false;
     if (s.phase === 'ready') this.engine.beginFrame([]);
@@ -80,10 +81,13 @@ export class Reconstruction {
       }
       this.cursor++;
     } else this.engine.finishFrame();
+    // Noncanonical observation for consumers such as replay viewers. Never restored
+    // as gameplay state; preserves placement facts before zero-ARE spawn replaces p.
+    this.transitions = copy(this.engine.trace);
     this.engine.trace.length = 0;
     return true;
   }
-  reset() { this.engine = Engine.restore(this.timeline.initial); this.cursor=0; this.packetIds={}; this.diagnostics=new DivergenceDiagnostics(); }
+  reset() { this.engine = Engine.restore(this.timeline.initial); this.cursor=0; this.packetIds={}; this.transitions=[]; this.diagnostics=new DivergenceDiagnostics(); }
   seekFrame(frame) {
     if (!Number.isSafeInteger(frame) || frame<0 || frame>this.timeline.frames) throw new RangeError('Frame out of range');
     this.reset();
