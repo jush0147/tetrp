@@ -45,7 +45,7 @@ function renderPlayers(focus=Number($('player').value),frame=0){
   for(const label of host.querySelectorAll('.player-tab')){
     const p=round.players.find(p=>String(p.index)===label.dataset.player),score=frame>=round.scoreFrame?p.scoreAfter:p.scoreBefore;
     const badge=label.querySelector('.player-score');badge.hidden=variant!=='ttrm';badge.textContent=score==null?'—':String(score);
-    badge.setAttribute('aria-label',`FT ${score==null?'未確認':score}`);label.title=`${p.name} · FT ${score==null?'未確認':score}`;
+    badge.setAttribute('aria-label',`比分 ${score==null?'未確認':score}`);label.title=`${p.name} · ${score==null?'比分未確認':score}`;
   }
 }
 function fillPlayers(){const r=rounds[Number($('round').value)];$('player').replaceChildren(...r.players.map(p=>new Option(p.name,String(p.index))));
@@ -155,7 +155,7 @@ for(const [buttonId,targetId,containerId,label] of [['toggle-selectors','selecto
   $(buttonId).addEventListener('click',()=>{
     const expanded=$(buttonId).getAttribute('aria-expanded')!=='true';
     $(buttonId).setAttribute('aria-expanded',String(expanded));$(buttonId).setAttribute('aria-label',`${expanded?'收合':'展開'}${label}`);
-    $(buttonId).textContent=expanded?'⌄':'⌃';$(containerId).classList.toggle('collapsed',!expanded);
+    $(buttonId).textContent=buttonId==='toggle-selectors'?(expanded?'⌃':'⌄'):(expanded?'⌄':'⌃');$(containerId).classList.toggle('collapsed',!expanded);
     (targetId?$(targetId):document.querySelector('.transport-body')).hidden=!expanded||(targetId==='selectors'&&variant==='ttr');
   });
 }
