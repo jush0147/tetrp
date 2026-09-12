@@ -98,9 +98,9 @@ function renderRound(m,initial){
   state=primary.state??null;total=primary.total??0;desired=state?.stats.pieces??0;
   $('scrubber').max=String(total);$('scrubber').value=String(desired);$('scrubber').disabled=!state;
   $('scrubber').setAttribute('aria-valuetext',state?`${desired} / ${total}`:'此玩家不支援');
-  $('previous').disabled=!state||desired===0;$('next-placement').disabled=!state||desired>=total;$('play').disabled=!available;
+  $('previous').disabled=!state||(desired===0&&!primary.navigationStop);$('next-placement').disabled=!state||desired>=total;$('play').disabled=!available;
   $('position-status').textContent=`Frame ${roundFrame}${state?`，第 ${desired} / ${total} 顆`:''}`;
-  $('playback-position').textContent=`${timeLabel(roundFrame/60)} / Piece ${desired}`;
+  $('playback-position').textContent=`${timeLabel(roundFrame/60)} / Piece ${desired}${primary.navigationStop?' · 垃圾入盤前':''}`;
   $('playback-position').title=`Frame ${roundFrame}`;
   document.dispatchEvent(new CustomEvent('tetrp:position',{detail:structuredClone({state,model,views:m.views,roundFrame})}));
 }
@@ -109,6 +109,7 @@ function seek(kind,value,pause=true){
   if(!Number.isSafeInteger(value)||value<0||value>(kind==='frame'?frames:total))return;
   if(kind==='placement')desired=value;inflight=true;request('seek',{kind,value});
 }
+function step(direction){if(!state)return;stop();clearTimeout(scrubTimer);inflight=true;request('seek',{kind:'step',value:direction});}
 function tick(now){
   if(!playing)return;
   const target=clock.target(now,frames);if(!inflight&&target>roundFrame)seek('frame',target,false);
@@ -119,7 +120,7 @@ $('round').addEventListener('change',()=>{fillPlayers();select();});$('player').
   if($('viewer').hidden){select();return;}
   clearTimeout(scrubTimer);inflight=true;request('focus',{player:Number($('player').value)});
 });
-$('previous').addEventListener('click',()=>seek('placement',Math.max(0,desired-1)));$('next-placement').addEventListener('click',()=>seek('placement',Math.min(total,desired+1)));
+$('previous').addEventListener('click',()=>step(-1));$('next-placement').addEventListener('click',()=>step(1));
 $('scrubber').addEventListener('input',e=>{stop();active=++serial;inflight=false;desired=Number(e.target.value);clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>seek('placement',desired),45);});
 $('scrubber').addEventListener('change',()=>seek('placement',desired));
 $('play').addEventListener('click',()=>{if(playing){stop();return;}if(!available)return;
@@ -137,7 +138,7 @@ for(const [buttonId,targetId,containerId,label] of [['toggle-selectors','selecto
 }
 $('speed').addEventListener('change',()=>clock.setSpeed(Number($('speed').value),performance.now()));
  document.addEventListener('keydown',e=>{if(!available||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,button,summary'))return;
-  if(e.key==='ArrowLeft'){e.preventDefault();seek('placement',Math.max(0,desired-1));}if(e.key==='ArrowRight'){e.preventDefault();seek('placement',Math.min(total,desired+1));}if(e.code==='Space'){e.preventDefault();$('play').click();}
+  if(e.key==='ArrowLeft'){e.preventDefault();step(-1);}if(e.key==='ArrowRight'){e.preventDefault();step(1);}if(e.code==='Space'){e.preventDefault();$('play').click();}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});window.addEventListener('pagehide',()=>worker?.terminate());
 if(!('Worker'in window)){$('welcome').hidden=true;$('compatibility').hidden=false;}

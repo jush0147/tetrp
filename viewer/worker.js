@@ -33,10 +33,10 @@ self.onmessage=async({data:m})=>{
     }else if(m.type==='seek'){
       if(!sessions.length)throw new Error('Replay 尚未準備完成。');
       let frame=m.value;
-      if(m.kind==='placement'){
+      if(m.kind==='placement'||m.kind==='step'){
         const primary=sessions.find(s=>s.player===focus);
         if(!primary?.session)throw new Error('請選擇支援的玩家以逐塊操作。');
-        frame=primary.session.seek('placement',m.value).frame;
+        frame=(m.kind==='step'?primary.session.step(m.value):primary.session.seek('placement',m.value)).frame;
         for(const other of sessions)if(other.session&&other!==primary)other.session.seek('frame',Math.min(frame,other.session.frames));
       }else if(m.kind==='frame'){
         if(!Number.isSafeInteger(frame)||frame<0||frame>roundFrames)throw new RangeError('Frame 超出 round 範圍。');

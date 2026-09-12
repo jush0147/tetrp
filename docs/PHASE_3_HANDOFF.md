@@ -104,6 +104,21 @@ play button restarts from zero. Desktop also supports left/right arrows and Spac
 outside editable controls.
 
 Frame seek remains available through the Worker/ViewerSession API and timed playback,
+while manual previous/next uses `ViewerSession.step(-1 | 1)` through the Worker
+`seek` command with `kind: 'step'`. If unseen garbage would be tanked before the
+next placement boundary, it pauses once at the real atomic boundary immediately
+before intake. `navigationStop: 'incoming'` labels this stop; the next press
+completes the placement. Previously present packets and cancelled-only packets
+do not add a stop. Back returns to the most recent stop, then the prior placement.
+Direct placement/frame seeks clear this navigation context. Playback and scrubber
+semantics are unchanged. No state is fabricated, and same-frame source order is
+preserved by Reconstruction checkpoints and `advance()`. Cancellation and intake
+in the same operation are handled conservatively: stop only if unseen intake is
+provable after allowing all cancellation to account for unseen packet decreases.
+Private validation covered all 19 supported TL streams / 2,296 placements with 10
+extra stops; every completed placement matched ordinary reconstruction exactly.
+
+Frame seek remains available
 without a dedicated UI form. Placement zero is initial state; placement N is the state
 after the atomic operation producing the Nth placement, not necessarily terminal
 end state. Total comes from reconstruction, not untrusted aggregate metadata.

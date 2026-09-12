@@ -44,6 +44,7 @@ export class ViewerSession {
     this.session.seekPlacement(0);return true;
   }
   seek(kind,value) {
+    this.garbageStop=null;
     if(!Number.isSafeInteger(value)||value<0 || value>(kind==='frame'?this.frames:this.total))throw new RangeError('位置超出 replay 範圍。');
     if(kind==='frame'){
       // Forward playback consumes existing ordered actions; reverse/arbitrary seek
@@ -54,6 +55,50 @@ export class ViewerSession {
     if(kind==='placement')return this.session.seekPlacement(value);
     throw new Error('Unknown seek kind');
   }
+  /** Manual navigation only: expose unseen garbage just before its actual intake. */
+  step(direction) {
+    if(![-1,1].includes(direction))throw new RangeError('Unknown step direction');
+    const start=this.session.state,stop=this.garbageStop;
+    if(stop&&direction===-1&&start.stats.pieces===stop.target){
+      this.session=Reconstruction.restore(stop.checkpoint);stop.paused=true;return this.session.state;
+    }
+    if(stop?.paused){
+      const target=direction===1?stop.target:stop.target-1;
+      this.session.seekPlacement(target);stop.paused=false;
+      if(direction===-1)this.garbageStop=null;
+      return this.session.state;
+    }
+    this.garbageStop=null;
+    if(direction===-1)return this.session.seekPlacement(Math.max(0,start.stats.pieces-1));
+    const target=Math.min(this.total,start.stats.pieces+1);
+    if(target===start.stats.pieces)return start;
+    const packets=s=>[...(s.attack?.are??[]),...(s.attack?.pending??[])];
+    const shown=new Set(packets(start).filter(p=>p.amt>0).map(p=>p.cid));
+    const checkpoint=this.session.checkpoint();
+    const scan=Reconstruction.restore(checkpoint);
+    let count=0,boundary=null,previous=start;
+    while(scan.advance()){
+      const current=scan.state;
+      if(boundary===null&&(current.attack?.totals.tanked??0)>(previous.attack?.totals.tanked??0)){
+        const remaining=new Map(packets(current).map(p=>[p.cid,p.amt]));
+        const unseenDecrease=packets(previous).filter(p=>!shown.has(p.cid))
+          .reduce((n,p)=>n+Math.max(0,p.amt-(remaining.get(p.cid)??0)),0);
+        // Cancellation and intake can share one atomic operation. Only pause if
+        // unseen intake is proven even after attributing all cancellation to it.
+        const cancelled=current.attack.totals.cancelled-previous.attack.totals.cancelled;
+        if(unseenDecrease>cancelled)boundary=count;
+      }
+      count++;previous=current;
+      if(current.stats.pieces>=target)break;
+    }
+    if(boundary!==null){
+      this.session=Reconstruction.restore(checkpoint);
+      for(let i=0;i<boundary;i++)this.session.advance();
+      this.garbageStop={target,checkpoint:this.session.checkpoint(),paused:true};
+    }else this.session=scan;
+    return this.session.state;
+  }
   result() {const state=this.session.state;return {state,total:this.total,frames:this.frames,conformance:this.conformance,
+    navigationStop:this.garbageStop?.paused?'incoming':null,
     lastPlacement:structuredClone(this.placements.get(state.stats.pieces)??null)};}
 }

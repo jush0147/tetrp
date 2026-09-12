@@ -81,6 +81,29 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
   await expect(page.locator('#player-tabs')).toBeVisible();await expect(page.locator('#scrubber')).toBeVisible();
   expect(errors).toEqual([]);
 });
+test('manual next pauses once before unseen garbage intake; scrubber remains placement based',async({page})=>{
+  const stream={frames:80,options:{version:19,seed:42,handling:{safelock:false}},events:[
+    {frame:0,type:'start',data:{}},
+    {frame:0,type:'ige',data:{id:10,frame:0,type:'target',data:{targets:[101]}}},
+    {frame:1,type:'keydown',data:{key:'hardDrop',subframe:.2}},{frame:2,type:'keyup',data:{key:'hardDrop',subframe:.2}},
+    ...['interaction','interaction_confirm'].map((type,i)=>({frame:5,type:'ige',data:{id:i,frame:5,type,data:{type:'garbage',amt:3,gameid:101,frame:5,cid:1,iid:1,ackiid:0}}})),
+    {frame:40,type:'keydown',data:{key:'hardDrop',subframe:.2}},{frame:41,type:'keyup',data:{key:'hardDrop',subframe:.2}},
+    {frame:80,type:'end',data:{reason:'clear'}}]};
+  await upload(page,{version:1,gamemode:'league',replay:{rounds:[[{id:'alpha',username:'Alpha',replay:stream}]]}});
+  await expect(page.locator('#viewer')).toBeVisible();await placement(page,1);
+  await page.locator('#next-placement').click();
+  await expect(page.locator('#playback-position')).toContainText('垃圾入盤前');
+  await expect(page.locator('#pieces')).toHaveText('1');await expect(page.locator('#garbage-total')).toHaveText('3');
+  const paused=await page.evaluate(()=>window.observedPosition.state);
+  await page.locator('#next-placement').click();await expect(page.locator('#pieces')).toHaveText('2');
+  await expect(page.locator('#garbage-total')).toHaveText('0');
+  const completed=await page.evaluate(()=>window.observedPosition.state);
+  await page.locator('#previous').click();await expect(page.locator('#playback-position')).toContainText('垃圾入盤前');
+  expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(paused);
+  await page.locator('#previous').click();await expect(page.locator('#playback-position')).not.toContainText('垃圾入盤前');
+  await placement(page,2);expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(completed);
+});
+
 test('malformed file and responsive touch targets',async({page})=>{
   await page.locator('#file').setInputFiles({name:'broken.ttr',mimeType:'text/plain',buffer:Buffer.from('{')});
   await expect(page.locator('#error')).toBeVisible();await expect(page.locator('#error-detail')).toContainText('MALFORMED_JSON');

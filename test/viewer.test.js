@@ -56,6 +56,42 @@ export function syntheticReplay(){return {version:1,gamemode:'40l',replay:{frame
     {frame:i*12+1,type:'keydown',data:{key:'hardDrop',subframe:.2}},
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}},
   ]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}};}
+
+async function garbageNavigation(events,engine=new Engine({mode:'tl',seed:42,safelock:false})){
+  const viewer=new ViewerSession(parseReplay(JSON.stringify(syntheticReplay())),0,0);
+  viewer.session=new Reconstruction({schema:'tetrp-timeline/1',id:'synthetic-navigation',frames:100,initial:engine.serialize(),events});
+  await viewer.initialize();return viewer;
+}
+const drops=[{frame:1,type:'keydown',key:'hardDrop',subframe:.2},{frame:2,type:'keyup',key:'hardDrop',subframe:.2},
+  {frame:40,type:'keydown',key:'hardDrop',subframe:.2},{frame:41,type:'keyup',key:'hardDrop',subframe:.2}];
+const packet=(frame,cid,amt)=>[{frame,type:'receive',remoteCid:cid,data:{from:'peer',iid:cid,ackiid:0,amt}},
+  {frame,type:'confirm',remoteCid:cid}];
+test('manual navigation exposes unseen tank once, restores both directions, and leaves direct seeks unchanged',async()=>{
+  const viewer=await garbageNavigation([...drops.slice(0,2),...packet(5,1,2),...packet(6,2,3),...drops.slice(2)]);
+  viewer.seek('placement',1);const before=viewer.result().state;
+  const paused=viewer.step(1);assert.equal(paused.stats.pieces,1);assert.equal(incomingGarbage(paused).total,5);
+  assert.equal(paused.attack.totals.tanked,0);assert.equal(viewer.result().navigationStop,'incoming');
+  const finished=viewer.step(1);assert.equal(finished.stats.pieces,2);assert.equal(finished.attack.totals.tanked,5);
+  assert.equal(viewer.result().navigationStop,null);
+  assert.deepEqual(viewer.step(-1),paused);assert.deepEqual(viewer.step(-1),before);
+  assert.deepEqual(viewer.step(1),paused);assert.deepEqual(viewer.step(1),finished);
+  assert.deepEqual(viewer.seek('placement',2),finished);assert.equal(viewer.result().navigationStop,null);
+  viewer.seek('frame',30);assert.equal(incomingGarbage(viewer.result().state).total,5);
+  assert.deepEqual(viewer.step(1),finished);assert.equal(viewer.result().navigationStop,null);
+});
+test('manual navigation does not stop for packets that stay pending or never tank',async()=>{
+  const viewer=await garbageNavigation([...drops.slice(0,2),...packet(39,1,2),...drops.slice(2)]);
+  viewer.seek('placement',1);assert.equal(viewer.step(1).stats.pieces,2);
+  assert.equal(viewer.result().navigationStop,null);assert.equal(incomingGarbage(viewer.result().state).total,2);
+});
+test('manual navigation skips cancelled garbage instead of inventing an intake stop',async()=>{
+  const engine=new Engine({mode:'tl',seed:1,safelock:false});
+  for(const y of [38,39]){engine.state.board.rows[y].fill('gb');engine.state.board.rows[y][4]=engine.state.board.rows[y][5]=null;}
+  const viewer=await garbageNavigation([...packet(5,1,2),...drops.slice(2)],engine);
+  const result=viewer.step(1);
+  assert.equal(result.stats.pieces,1);assert.equal(result.attack.totals.cancelled,2);
+  assert.equal(result.attack.totals.tanked,0);assert.equal(viewer.result().navigationStop,null);
+});
 test('viewer index and repeated placement/frame seeks use the stable reconstruction state',async()=>{
   const replay=parseReplay(JSON.stringify(syntheticReplay()));
   assert.deepEqual(catalog(replay),[{index:0,players:[{index:0,name:'Player 1'}]}]);

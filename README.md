@@ -13,6 +13,8 @@ A round dropdown and player tabs sit above the board; counters and a collapsible
 playback panel sit below it.
 Lines are displayed for `.ttr` only. Switching players preserves the
 round's current progress and ongoing playback.
+Manual next adds at most one pre-intake stop when otherwise-unseen garbage would
+enter the board before the next placement. Playback and scrubber seeks stay unchanged.
 See [the viewer handoff](docs/PHASE_3_HANDOFF.md) and
 [Phase 2 conformance findings](docs/PHASE_2_HANDOFF.md).
 No bot, practice UI, or live-match integration is included. Read
