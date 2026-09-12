@@ -76,7 +76,14 @@ unconfirmed packets, in canonical queue order. Oldest is at the bottom; partiall
 tanked/cancelled packets shrink and exhausted packets disappear. The total has a
 fixed position below Next, independent of packet count. It includes every packet,
 even rows omitted for lack of space. A ResizeObserver
-fits only complete 24 px rows, retaining earliest packets first. Dim entries are
+fits only complete 24 px rows, retaining earliest packets first. Packets marked dim are
+not yet active. Next previews shrink when necessary to reserve at least one full
+packet row. Regression: at 844 × 390 the previous layout left only 9 px, hiding
+every packet despite a nonzero total. The private TL Round 1 first-player packets
+at source frames 281 (7 rows) and 324 (5 rows) were present until intake at 318
+and 362 respectively; this was a layout omission, not reconstruction loss.
+Portrait, short landscape and 800 × 600 queue space are checked in browser tests.
+Dim entries are
 not yet active. The current supported TL profile tanks at most 8 rows per eligible
 intake, shared across packets, not 8 per packet and not an 8-row pending-queue cap.
 The intake cap remains available from reconstructed rules; it is not an extra visible label.

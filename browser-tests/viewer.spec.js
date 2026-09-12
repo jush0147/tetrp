@@ -51,6 +51,7 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     const b=await page.locator(`#${prefix}board`).boundingBox(),h=await page.locator(`#${prefix}hold`).boundingBox(),n=await page.locator(`#${prefix}next`).boundingBox();
     expect(h.x+h.width).toBeLessThan(b.x);expect(n.x).toBeGreaterThan(b.x+b.width);
     expect(Math.abs(b.height/b.width-2)).toBeLessThan(.03);
+    expect((await page.locator(`#${prefix}garbage-packets`).boundingBox()).height).toBeGreaterThanOrEqual(24);
     await expect(page.locator(`#${prefix}lines`)).toBeHidden();
     const stats=await page.locator(`#${prefix}apm`).boundingBox();expect(stats.y).toBeGreaterThanOrEqual(b.y+b.height);
   }
@@ -159,9 +160,20 @@ test('real private files, all TL streams and known conformance states',async({pa
         const totalAfter=await page.locator('#garbage-total').boundingBox(),nextAfter=await page.locator('#next').boundingBox();
         expect(Math.abs((totalAfter.y-nextAfter.y-nextAfter.height)-(totalBefore.y-nextBefore.y-nextBefore.height))).toBeLessThan(1);
         const rows=await page.locator('#garbage-packets .garbage-packet').evaluateAll(nodes=>nodes.map(n=>({amount:Number(n.textContent),top:n.getBoundingClientRect().top,bottom:n.getBoundingClientRect().bottom})));
+        if(packets.length)expect(rows.length).toBeGreaterThan(0);
         expect(rows.map(r=>r.amount)).toEqual(packets.slice(0,rows.length).map(p=>p.amt));
         for(let i=1;i<rows.length;i++)expect(rows[i].bottom).toBeLessThanOrEqual(rows[i-1].top);
         const panel=await page.locator('#garbage-panel').boundingBox();for(const row of rows){expect(row.top).toBeGreaterThanOrEqual(panel.y);expect(row.bottom).toBeLessThanOrEqual(panel.y+panel.height+.1);}
+        if(packets.length&&checkedGarbage===0){
+          const original=page.viewportSize();
+          for(const size of [{width:844,height:390},{width:800,height:600},{width:360,height:640}]){
+            await page.setViewportSize(size);
+            await expect(page.locator('#garbage-packets .garbage-packet').first()).toHaveText(String(packets[0].amt));
+            const list=await page.locator('#garbage-packets').boundingBox();
+            expect(list.height).toBeGreaterThanOrEqual(24);
+          }
+          await page.setViewportSize(original);
+        }
         checkedGarbage++;
       }
       if(first)await expect(page.locator('#status-text')).toHaveText('終局比對有差異');else await expect(page.locator('#conformance')).toBeHidden();
