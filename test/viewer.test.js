@@ -92,6 +92,21 @@ test('manual navigation skips cancelled garbage instead of inventing an intake s
   assert.equal(result.stats.pieces,1);assert.equal(result.attack.totals.cancelled,2);
   assert.equal(result.attack.totals.tanked,0);assert.equal(viewer.result().navigationStop,null);
 });
+test('placement sent counts actual outgoing rows after cancellation and resets on the next placement',async()=>{
+  const engine=new Engine({mode:'tl',seed:1,safelock:false});
+  for(const y of [38,39]){engine.state.board.rows[y].fill('gb');engine.state.board.rows[y][4]=engine.state.board.rows[y][5]=null;}
+  const viewer=await garbageNavigation([...packet(5,1,2),...drops.slice(2),
+    {frame:70,type:'keydown',key:'hardDrop',subframe:.2}],engine);
+  for(const index of [1,2,1,0,1]){
+    viewer.seek('placement',index);const {state,lastPlacement}=viewer.result();
+    if(index===0){assert.equal(lastPlacement,null);continue;}
+    if(index===1){assert.ok(lastPlacement.sent>0);assert.equal(lastPlacement.sent,state.attack.totals.sent);
+      assert.ok(lastPlacement.sent<state.attack.totals.generated);assert.equal(state.attack.totals.cancelled,2);}
+    else assert.equal(lastPlacement.sent,0);
+  }
+  const solo=new ViewerSession(parseReplay(JSON.stringify(syntheticReplay())),0,0);await solo.initialize();
+  solo.seek('placement',1);assert.equal(solo.result().lastPlacement.sent,null);
+});
 test('viewer index and repeated placement/frame seeks use the stable reconstruction state',async()=>{
   const replay=parseReplay(JSON.stringify(syntheticReplay()));
   assert.deepEqual(catalog(replay),[{index:0,players:[{index:0,name:'Player 1'}]}]);

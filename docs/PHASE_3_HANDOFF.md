@@ -64,6 +64,13 @@ as `ALL CLEAR` alongside the spin/clear label and resets on the next placement.
 These labels sit beside B2B in the upper left rail; spin labels use the matching
 piece palette color. Quad uses the I-piece color (#82daca). All Clear uses bright green (#42f58a), distinct from S-spin green (#a9c884), including combined clear labels.
 
+The bottom of the B2B panel shows the most recent placement's actual outgoing
+garbage rows as a number. `lastPlacement.sent` is the change in canonical
+`attack.totals.sent` across that placement, including all attack phases after
+cancellation. It persists until the next placement, which may show zero. Solo
+profiles without attack semantics show an em dash. It is not cumulative attack
+or raw generated attack, and repeated seeks restore the same value.
+
 The displayed B2B is `max(0, attack.btb - 1)`: the internal counter's first
 qualifying clear establishes the chain; the second is B2B 1. Zero-line spins do
 not build the chain, no-clear placements preserve it, and ordinary nonqualifying

@@ -86,6 +86,9 @@ function renderLane(prefix,view,initial){
   el('spin').hidden=label==='—';
   el('spin').classList.toggle('is-all-clear',Boolean(view.lastPlacement?.allClear));
   el('spin').dataset.piece=label.includes('SPIN')?view.lastPlacement.piece:'';
+  const sent=s.attack?(view.lastPlacement?.sent??0):null;
+  el('placement-sent').textContent=number(sent);
+  el('placement-sent').setAttribute('aria-label',sent===null?'本次送出：未定義':`本次送出 ${sent} 行`);
   fitGarbage(prefix);
   if(initial)conformance(prefix,view.conformance);
   return model;

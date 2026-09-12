@@ -148,7 +148,7 @@ test('phone viewport contains both layouts and Hold never changes rail position'
     const bounds=await page.evaluate(()=>({width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight,x:scrollX,y:scrollY}));
     expect(bounds.width).toBeLessThanOrEqual(size.width);expect(bounds.height).toBeLessThanOrEqual(size.height+1);
     expect(bounds.x).toBe(0);expect(bounds.y).toBe(0);
-    for(const selector of ['#board','#hold','#next','#garbage-total','.rail-stats','#playback-tools']){
+    for(const selector of ['#board','#hold','#next','#garbage-total','#placement-sent','.rail-stats','#playback-tools']){
       const r=await page.locator(selector).first().boundingBox();expect(r.y).toBeGreaterThanOrEqual(0);expect(r.y+r.height).toBeLessThanOrEqual(size.height);
     }
     if(size.width>size.height){
@@ -181,6 +181,8 @@ test('real private files, all TL streams and known conformance states',async({pa
       const count=ref.state.stats.pieces,first=ref.diagnostics.first;await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#scrubber')).toHaveAttribute('max',String(count));
       for(const n of [0,Math.floor(count/2),count,Math.floor(count/2)])await consistent(page,ref,n);
       const stats=ref.state;
+      const sentHere=stats.attack.totals.sent-ref.seekPlacement(Math.max(0,stats.stats.pieces-1)).attack.totals.sent;
+      await expect(page.locator('#placement-sent')).toHaveText(String(sentHere));
       await expect(page.locator('#b2b')).toHaveText(String(Math.max(0,stats.attack.btb-1)));
       await expect(page.locator('#attack')).toHaveText(String(stats.attack.totals.generated));
       await expect(page.locator('#garbage-total')).toHaveText(String([...stats.attack.are,...stats.attack.pending].reduce((sum,p)=>sum+p.amt,0)));

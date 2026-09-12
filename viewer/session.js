@@ -20,13 +20,16 @@ export class ViewerSession {
     this.total=0;this.conformance=null;this.placements=new Map();
   }
   async initialize({yieldTask=()=>new Promise(resolve=>setTimeout(resolve,0)), cancelled=()=>false, progress=()=>{}}={}) {
-    let steps=0;
+    let steps=0,previousSent=this.session.state.attack?.totals.sent??null;
     while(this.session.advance()) {
       let placed=null;
       for(const event of this.session.transitions??[]){
         if(event.type==='lock'){
-          placed={piece:event.piece,spin:event.spin,index:event.placementIndex,frame:event.frame,subframe:event.subframe,lines:0,allClear:false};
+          const current=this.session.state;
+          placed={piece:event.piece,spin:event.spin,index:event.placementIndex,frame:event.frame,subframe:event.subframe,lines:0,allClear:false,
+            sent:current.attack?current.attack.totals.sent-previousSent:null};
           this.placements.set(placed.index,placed);
+          previousSent=current.attack?.totals.sent??null;
         }
         if(event.type==='remove-lines'&&placed){placed.lines=event.rows.length;placed.allClear=event.allClear;}
       }
