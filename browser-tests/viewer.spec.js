@@ -7,6 +7,29 @@ const synthetic=()=>({version:1,gamemode:'40l',replay:{frames:90,options:{versio
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}}]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>document.addEventListener('tetrp:position',e=>{window.observedPosition=e.detail;}));await page.goto('./');});
 async function upload(page,object){await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});}
+test('long press latches one-second steps, direction switching and cancellation',async({page})=>{
+  await upload(page,synthetic());await expect(page.locator('#viewer')).toBeVisible();
+  const next=page.locator('#next-placement'),previous=page.locator('#previous');
+  async function hold(button){const box=await button.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.waitForTimeout(500);await page.mouse.up();}
+  await next.click();await expect(page.locator('#pieces')).toHaveText('1');await expect(next).toHaveAttribute('aria-pressed','false');
+  await hold(next);await expect(next).toHaveAttribute('aria-pressed','true');await expect(page.locator('#pieces')).toHaveText('2');
+  await expect(page.locator('#pieces')).toHaveText('3');
+  await next.click();await expect(next).toHaveAttribute('aria-pressed','false');await page.waitForTimeout(1100);await expect(page.locator('#pieces')).toHaveText('3');
+  await hold(next);await expect(page.locator('#pieces')).toHaveText('4');await previous.click();
+  await expect(previous).toHaveAttribute('aria-pressed','true');await expect(next).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('#pieces')).toHaveText('3');
+  await page.locator('#scrubber').dispatchEvent('pointerdown');await expect(previous).toHaveAttribute('aria-pressed','false');
+  await placement(page,5);await hold(next);await expect(page.locator('#pieces')).toHaveText('6');await expect(next).toHaveAttribute('aria-pressed','false');
+  await placement(page,1);await hold(previous);await expect(page.locator('#pieces')).toHaveText('0');await expect(previous).toHaveAttribute('aria-pressed','false');
+  await hold(next);await page.locator('#play').click();await expect(next).toHaveAttribute('aria-pressed','false');
+  const player=name=>{const replay=synthetic().replay;replay.options.version=19;return {id:name,username:name,replay};};
+  await upload(page,{version:1,gamemode:'league',replay:{rounds:[[player('a'),player('b')],[player('a'),player('b')]]}});
+  await expect(page.locator('#viewer')).toBeVisible();await hold(next);await page.locator('#player-swap').click();
+  await expect(next).toHaveAttribute('aria-pressed','false');await expect(page.locator('#player-id')).toHaveText('b');
+  await hold(next);await page.locator('#round').selectOption('1');await expect(next).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('#viewer')).toBeVisible();const stopped=await page.locator('#pieces').textContent();
+  await page.waitForTimeout(1100);await expect(page.locator('#pieces')).toHaveText(stopped);
+});
 async function choosePlayer(page,index){if(await page.locator('#player').inputValue()!==String(index))await page.locator('#player-swap').evaluate(el=>el.click());}
 async function placement(page,n){await page.locator('#scrubber').evaluate((el,n)=>{el.value=String(n);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},n);await expect(page.locator('#pieces')).toHaveText(String(n));}
 async function consistent(page,reference,n){await placement(page,n);const expected=reference.seekPlacement(n);

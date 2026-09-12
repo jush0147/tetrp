@@ -1,7 +1,9 @@
 import './pwa.js';
+import {bindAutoStep} from './auto-step.js';
 import {boardModel,drawBoard,drawPreview} from './render.js';
 import {PlaybackClock,displayStats,placementLabel,incomingGarbage,visibleGarbage} from './playback.js';
 const $=id=>document.getElementById(id);
+const autoStep=bindAutoStep($('previous'),$('next-placement'),direction=>step(direction),()=>!!state&&!inflight);
 const peer=$('focus-lane').cloneNode(true);peer.id='peer-lane';peer.setAttribute('aria-label','另一位玩家');
 for(const node of peer.querySelectorAll('[id]'))node.id=`peer-${node.id}`;
 $('boards').append(peer);
@@ -21,7 +23,7 @@ for(const prefix of ['', 'peer-'])garbageResize.observe($(prefix+'garbage-panel'
 const clock=new PlaybackClock();
 let worker=null,serial=0,active=0,rounds=[],state=null,total=0,frames=0,desired=0,roundFrame=0,playing=false,raf=null,inflight=false,scrubTimer=null,available=false,variant=null;
 const request=(type,data={})=>{active=++serial;worker.postMessage({id:active,type,...data});return active;};
-function stop(){if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
+function stop(cancelAuto=true){if(cancelAuto)autoStep.stop();if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
 function busy(message){stop();inflight=false;state=null;available=false;$('viewer').hidden=true;$('error').hidden=true;$('busy').textContent=message;$('busy').hidden=false;}
 function showError(error){stop();inflight=false;state=null;$('viewer').hidden=true;$('busy').hidden=true;$('error').hidden=false;
   $('error-title').textContent=/UNSUPPORTED/.test(error.code||'')?'此 replay 暫不支援':'無法開啟 replay';
@@ -121,6 +123,7 @@ function renderRound(m,initial){
   $('scrubber').max=String(total);$('scrubber').value=String(desired);$('scrubber').disabled=!state;
   $('scrubber').setAttribute('aria-valuetext',state?`${desired} / ${total}`:'此玩家不支援');
   $('previous').disabled=!state||(desired===0&&!primary.navigationStop);$('next-placement').disabled=!state||desired>=total;$('play').disabled=!available;
+  autoStep.check();
   $('position-status').textContent=`Frame ${roundFrame}${state?`，第 ${desired} / ${total} 顆`:''}`;
   $('playback-position').textContent=`${timeLabel(roundFrame/60)} / Piece ${desired}${primary.navigationStop?' · 垃圾入盤前':''}`;
   $('playback-position').title=`Frame ${roundFrame}`;
@@ -131,7 +134,7 @@ function seek(kind,value,pause=true){
   if(!Number.isSafeInteger(value)||value<0||value>(kind==='frame'?frames:total))return;
   if(kind==='placement')desired=value;inflight=true;request('seek',{kind,value});
 }
-function step(direction){if(!state)return;stop();clearTimeout(scrubTimer);inflight=true;request('seek',{kind:'step',value:direction});}
+function step(direction){if(!state||inflight)return;stop(false);clearTimeout(scrubTimer);inflight=true;request('seek',{kind:'step',value:direction});}
 function tick(now){
   if(!playing)return;
   const target=clock.target(now,frames);if(!inflight&&target>roundFrame)seek('frame',target,false);
@@ -139,15 +142,16 @@ function tick(now){
 }
 $('file').addEventListener('change',e=>{load(e.target.files[0]);e.target.value='';});
 $('round').addEventListener('change',()=>{fillPlayers();select();});$('player').addEventListener('change',()=>{
+  autoStep.stop();
   swapped=Number($('player').value)===rounds[Number($('round').value)].players[1]?.index;
   renderPlayers(Number($('player').value),roundFrame);
   if($('viewer').hidden){select();return;}
   clearTimeout(scrubTimer);inflight=true;request('focus',{player:Number($('player').value)});
 });
-$('previous').addEventListener('click',()=>step(-1));$('next-placement').addEventListener('click',()=>step(1));
+$('scrubber').addEventListener('pointerdown',()=>autoStep.stop());
 $('scrubber').addEventListener('input',e=>{stop();active=++serial;inflight=false;desired=Number(e.target.value);clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>seek('placement',desired),45);});
 $('scrubber').addEventListener('change',()=>seek('placement',desired));
-$('play').addEventListener('click',()=>{if(playing){stop();return;}if(!available)return;
+$('play').addEventListener('click',()=>{autoStep.stop();if(playing){stop();return;}if(!available)return;
   const at=roundFrame>=frames?0:state?Math.max(roundFrame,state.frame+state.subframe):roundFrame;
   if(roundFrame>=frames)seek('frame',0);
   playing=true;clock.start(at,performance.now());$('play').textContent='Ⅱ';$('play').setAttribute('aria-label','暫停');$('play').title='暫停';$('play').setAttribute('aria-pressed','true');raf=requestAnimationFrame(tick);
