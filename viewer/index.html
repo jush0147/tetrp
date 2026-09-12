@@ -7,11 +7,11 @@
 <link rel="stylesheet" href="./app.css"><script type="module" src="./app.js"></script>
 </head>
 <body>
-<header class="topbar"><a class="brand" href="./" aria-label="Tetrp 首頁">tetrp<span class="brand-dot">.</span></a><label class="open-file" for="file">開啟 replay <span aria-hidden="true">↗</span></label><input id="file" type="file" accept=".ttr,.ttrm" aria-label="選擇本機 replay"></header>
+<header class="topbar"><a class="brand" href="./" aria-label="Tetrp 首頁">tetrp<span class="brand-dot">.</span></a><details class="file-menu"><summary aria-label="檔案選單">⋮</summary><label class="open-file" for="file">開啟 replay</label></details><input id="file" type="file" accept=".ttr,.ttrm" aria-label="選擇本機 replay"></header>
 <main>
 <section id="welcome" class="welcome"><label class="file-cta" for="file">選擇 .ttr / .ttrm</label><p>本機讀取，不上傳。</p></section>
 <section id="workspace" hidden aria-label="Replay 工作區">
-<div id="stream-tools" class="stream-tools"><div id="selectors" class="selectors" hidden><select id="round" aria-label="選擇 round"></select><select id="player" aria-label="選擇 player"></select></div><button id="toggle-selectors" class="icon" aria-label="收合選單" aria-expanded="true">⌃</button></div>
+<div id="stream-tools" class="stream-tools"><div id="selectors" class="selectors" hidden><select id="round" aria-label="選擇 round"></select><select id="player" aria-label="選擇 player" hidden></select><div id="player-tabs" class="player-tabs" role="group" aria-label="切換玩家"></div></div><button id="toggle-selectors" class="icon" aria-label="收合選單" aria-expanded="true">⌃</button></div>
 <p id="busy" role="status" hidden>正在讀取…</p>
 <div id="error" class="error" role="alert" hidden><strong id="error-title">無法開啟 replay</strong><p id="error-message"></p><details><summary>錯誤細節</summary><pre id="error-detail"></pre></details></div>
 <div id="viewer" hidden>
@@ -20,17 +20,17 @@
 <p id="lane-error" class="error" hidden role="alert"></p>
 <div id="lane-display">
 <div class="lane-field">
-<aside class="left-rail"><span class="eyebrow">HOLD <b id="hold-lock"></b></span><canvas id="hold" width="80" height="40" role="img"></canvas><div class="chain"><span>B2B</span><strong id="b2b">—</strong><small>COMBO <b id="combo">—</b></small><p id="spin" class="spin" role="status">—</p></div><dl class="rail-stats"><dt>PIECES</dt><dd id="pieces">0</dd><dt>PPS</dt><dd id="pps">0.00</dd><dt>ATTACK</dt><dd id="attack">—</dd><dt>APM</dt><dd id="apm">—</dd><dt id="lines-label">LINES</dt><dd id="lines">0</dd></dl></aside>
+<aside class="left-rail"><div class="hold-panel"><span class="eyebrow">HOLD <b id="hold-lock"></b></span><canvas id="hold" width="80" height="40" role="img"></canvas></div><div class="chain"><span>B2B</span><strong id="b2b">—</strong><div class="combo-block"><span>COMBO</span><b id="combo">—</b></div><p id="spin" class="spin" role="status">—</p></div></aside>
 <div class="board-wrap"><canvas id="board" width="300" height="600" role="img"></canvas></div>
-<aside class="right-rail"><span class="eyebrow">NEXT</span><div id="next"></div><section class="garbage-panel" id="garbage-panel" aria-label="待接收垃圾"><small id="garbage-cap"></small><div class="garbage-stack"><div class="garbage-total"><span>待接收</span><strong id="garbage-total">0</strong></div><div id="garbage-packets" class="garbage-packets"></div></div></section></aside>
+<aside class="right-rail"><div class="next-panel"><span class="eyebrow">NEXT</span><div id="next"></div></div><section class="garbage-panel" id="garbage-panel" aria-label="待接收垃圾"><small id="garbage-cap"></small><div class="garbage-stack"><div class="garbage-total"><span>INCOMING</span><strong id="garbage-total">0</strong></div><div id="garbage-packets" class="garbage-packets"></div></div></section></aside>
 </div>
-<div class="lane-clock"><span id="time">0:00.000</span><span>FRAME <b id="frame">0</b></span></div>
+<dl class="rail-stats"><div><dt>PIECES</dt><dd id="pieces">0</dd></div><div><dt>PPS</dt><dd id="pps">0.00</dd></div><div><dt>ATTACK</dt><dd id="attack">—</dd></div><div><dt>APM</dt><dd id="apm">—</dd></div><div class="solo-lines"><dt id="lines-label">LINES</dt><dd id="lines">0</dd></div></dl><div class="lane-clock"><span id="time">0:00.000</span><span>FRAME <b id="frame">0</b></span></div>
 </div>
 <details class="identity"><summary id="player-id"></summary><p id="full-id"></p></details>
 <details id="conformance" class="conformance"><summary><span id="status-dot" aria-hidden="true"></span><span id="status-text">檢查 replay…</span><span class="detail-caret" aria-hidden="true">＋</span></summary><div class="details-body"><p id="coverage"></p><p id="uncertainty">比對點稀疏，無法確認每個中間 frame。</p><p>數據為引擎重建；PPS／APM 為當前時間的均值。Solo 未定義的數據顯示 —。待接收垃圾由下往上依接收順序排列，暗色表示尚未可入盤；僅列出空間能完整容納的封包，總量包含未顯示的封包。</p><div id="differences"></div></div></details>
 </section>
 </div>
-<div id="playback-tools" class="transport"><nav class="transport-body" aria-label="Replay 導覽"><button id="previous" class="icon" aria-label="上一顆" title="上一顆">▏◀</button><button id="play" class="icon play" aria-label="播放" aria-pressed="false" title="播放">▶</button><button id="next-placement" class="icon" aria-label="下一顆" title="下一顆">▶▕</button><input id="scrubber" type="range" min="0" max="0" value="0" step="1" aria-label="Replay 進度"><select id="speed" aria-label="播放速度"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select></nav><button id="toggle-playback" class="icon" aria-label="收合播放列" aria-expanded="true">⌄</button></div><p id="position-status" class="sr-only" role="status"></p>
+<div id="playback-tools" class="transport"><nav class="transport-body" aria-label="Replay 導覽"><div id="playback-position" class="playback-position"></div><button id="previous" class="icon" aria-label="上一顆" title="上一顆">←</button><button id="play" class="icon play" aria-label="播放" aria-pressed="false" title="播放">▶</button><button id="next-placement" class="icon" aria-label="下一顆" title="下一顆">→</button><input id="scrubber" type="range" min="0" max="0" value="0" step="1" aria-label="Replay 進度"><select id="speed" aria-label="播放速度"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select></nav><button id="toggle-playback" class="icon" aria-label="收合播放列" aria-expanded="true">⌄</button></div><p id="position-status" class="sr-only" role="status"></p>
 </div></section>
 <p id="compatibility" class="error" hidden>此瀏覽器不支援 Worker。請使用新版 Safari、Chrome、Firefox 或 Edge。</p>
 </main>

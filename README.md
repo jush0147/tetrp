@@ -9,7 +9,8 @@ and navigate by placement or frame. Play at 0.5× / 1× / 1.5× source speed;
 portrait shows the selected player and landscape shows both players by in-game name.
 Hold, vertical Next, B2B, counters and placement spin/clear labels accompany each
 board, with a bottom-first incoming garbage queue and total. Replay data stays on the device.
-Round/player dropdowns and icon playback controls each occupy one collapsible row.
+A round dropdown and player tabs sit above the board; counters and a collapsible
+playback panel sit below it.
 Lines are displayed for `.ttr` only. Switching players preserves the
 round's current progress and ongoing playback.
 See [the viewer handoff](docs/PHASE_3_HANDOFF.md) and

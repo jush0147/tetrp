@@ -8,7 +8,7 @@ const garbageViews=new Map();
 function fitGarbage(prefix){
   const g=garbageViews.get(prefix);if(!g)return;
   const panel=$(prefix+'garbage-panel'),list=$(prefix+'garbage-packets');
-  const height=panel.clientHeight-$(prefix+'garbage-cap').offsetHeight-$(prefix+'garbage-total').parentElement.offsetHeight;
+  const height=list.clientHeight;
   const visible=visibleGarbage(g.packets,height);
   list.replaceChildren(...visible.map(p=>{const row=document.createElement('div');row.className='garbage-packet';
     row.textContent=String(p.amount);row.classList.toggle('waiting',!p.active);
@@ -27,7 +27,14 @@ function showError(error){stop();inflight=false;state=null;$('viewer').hidden=tr
   $('error-message').textContent='請選擇其他 replay，或確認檔案是否完整。';
   $('error-detail').textContent=`${error.code||'ERROR'}${error.path?` · ${error.path}`:''}\n${error.message}`;
 }
-function fillPlayers(){const r=rounds[Number($('round').value)];$('player').replaceChildren(...r.players.map(p=>new Option(p.name,String(p.index))));}
+function fillPlayers(){const r=rounds[Number($('round').value)];$('player').replaceChildren(...r.players.map(p=>new Option(p.name,String(p.index))));
+  $('player-tabs').replaceChildren(...r.players.flatMap((p,i)=>{
+    const button=document.createElement('button');button.type='button';button.className='player-tab';button.dataset.player=String(p.index);button.textContent=p.name;button.title=p.name;
+    button.setAttribute('aria-pressed',String(p.index===Number($('player').value)));
+    button.addEventListener('click',()=>{$('player').value=String(p.index);$('player').dispatchEvent(new Event('change'));});
+    if(!i)return [button];const swap=document.createElement('span');swap.textContent='⇄';swap.setAttribute('aria-hidden','true');return [swap,button];
+  }));
+}
 function select(){clearTimeout(scrubTimer);busy('正在建立雙方時間軸…');request('select',{round:Number($('round').value),player:Number($('player').value)});}
 function load(file){
   if(!file)return;stop();clearTimeout(scrubTimer);worker?.terminate();
@@ -75,6 +82,8 @@ function renderLane(prefix,view,initial){
   el('garbage-total').textContent=number(garbage.total);el('garbage-cap').textContent=garbage.cap===null?'':`入盤上限 ${garbage.cap}`;
   el('pps').textContent=number(stats.pps,2);el('apm').textContent=number(stats.apm,1);el('time').textContent=timeLabel(stats.time);el('frame').textContent=String(s.frame);
   const label=placementLabel(view.lastPlacement);el('spin').textContent=label;el('spin').classList.toggle('is-spin',label.includes('SPIN'));
+  el('spin').classList.toggle('is-quad',view.lastPlacement?.lines===4&&view.lastPlacement?.spin==='none');
+  el('spin').hidden=label==='—';
   el('spin').classList.toggle('is-all-clear',Boolean(view.lastPlacement?.allClear));
   el('spin').dataset.piece=label.includes('SPIN')?view.lastPlacement.piece:'';
   fitGarbage(prefix);
@@ -83,6 +92,7 @@ function renderLane(prefix,view,initial){
 }
 function renderRound(m,initial){
   roundFrame=m.frame;const primary=m.views.find(v=>v.player===m.focus),other=m.views.find(v=>v.player!==m.focus);
+  for(const button of $('player-tabs').querySelectorAll('button'))button.setAttribute('aria-pressed',String(Number(button.dataset.player)===m.focus));
   $('boards').classList.toggle('dual',Boolean(other));$('peer-lane').hidden=!other;
   const model=renderLane('',primary,initial);if(other)renderLane('peer-',other,initial);
   state=primary.state??null;total=primary.total??0;desired=state?.stats.pieces??0;
@@ -90,6 +100,8 @@ function renderRound(m,initial){
   $('scrubber').setAttribute('aria-valuetext',state?`${desired} / ${total}`:'此玩家不支援');
   $('previous').disabled=!state||desired===0;$('next-placement').disabled=!state||desired>=total;$('play').disabled=!available;
   $('position-status').textContent=`Frame ${roundFrame}${state?`，第 ${desired} / ${total} 顆`:''}`;
+  $('playback-position').textContent=`${timeLabel(roundFrame/60)} / Piece ${desired}`;
+  $('playback-position').title=`Frame ${roundFrame}`;
   document.dispatchEvent(new CustomEvent('tetrp:position',{detail:structuredClone({state,model,views:m.views,roundFrame})}));
 }
 function seek(kind,value,pause=true){

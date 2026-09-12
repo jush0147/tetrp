@@ -38,7 +38,7 @@ fixtures, checkpoints or reports. Build fails if unexpected files exist in dist.
 ## UX and controls
 
 Open a local `.ttr` or `.ttrm` from the header or initial file picker. Solo enters
-its single stream automatically. Multiplayer exposes Round / Player selectors;
+its single stream automatically. The header menu opens another local file. Multiplayer exposes a round dropdown and in-game-name player tabs;
 Changing round constructs fresh sessions. Changing player sends `focus`, retaining
 the existing round frame, each exact canonical state and the running playback clock.
 Player labels use the replay's
@@ -52,7 +52,7 @@ preserving x and rotation and translating its display cells down only enough to
 fit its upper edge. `model.active` retains the true visible collision cells;
 `model.displayActive` is the presentation projection. Neither changes state. On the board,
 active cells have a bright edge; sleeping/committed pieces are not drawn a second
-time. Left counters show pieces, time/frame, reconstructed B2B/combo,
+time. The left rail shows reconstructed B2B/combo and clear labels. A horizontal panel below the board shows pieces,
 generated attack and elapsed-time mean PPS/APM.
 Lines are shown only for `.ttr`, and hidden for `.ttrm`. Right-side cumulative stats and
 score were removed in favor of incoming garbage. Solo B2B/attack remain unknown,
@@ -62,7 +62,7 @@ All Clear is the engine's clear-time observation, retained before subsequent
 spawn/garbage changes; it is never inferred from a later displayed board. It appears
 as `ALL CLEAR` alongside the spin/clear label and resets on the next placement.
 These labels sit beside B2B in the upper left rail; spin labels use the matching
-piece palette color and non-spin clears use neutral text.
+piece palette color. Quad uses the I-piece color (#82daca). All Clear uses bright green (#42f58a), distinct from S-spin green (#a9c884), including combined clear labels.
 
 The displayed B2B is `max(0, attack.btb - 1)`: the internal counter's first
 qualifying clear establishes the chain; the second is B2B 1. Zero-line spins do
@@ -79,12 +79,12 @@ even rows omitted for lack of space. A ResizeObserver
 fits only complete 24 px rows, retaining earliest packets first. Dim entries are
 not yet active. The current supported TL profile tanks at most 8 rows per eligible
 intake, shared across packets, not 8 per packet and not an 8-row pending-queue cap.
-The cap label reads `floor(min(garbagecap, garbagecapmax))` from reconstructed rules.
+The intake cap remains available from reconstructed rules; it is not an extra visible label.
 The viewer neither splits nor clamps the displayed remaining packet amounts.
 
-Primary navigation is one compact row: previous/play/next icons, a native range
-scrubber and speed selector. Primary icon targets are 44 × 44 px. Placement forms,
-placement labels and the visible frame-jump form have been removed; the range's
+Primary navigation is a framed bottom panel: time and piece position, a native range
+scrubber, previous/play/next icons and speed selector. Portrait icon targets are at least 44 × 48 px. Placement forms,
+and the visible frame-jump form remain removed; the range's
 accessible value still exposes its position and total.
 `PlaybackClock` drives original-time playback at 60 source frames/second, with
 0.5×, 1× and 1.5× speeds. It uses elapsed monotonic time rather than accumulating
@@ -109,13 +109,13 @@ still consumes all terminal events and anchors for conformance reporting.
 
 Portrait shows only the selected player; landscape shows both players side by side.
 The startup screen is a compact local file picker; there is no hero, banner or
-promotional footer. Round/player dropdowns share a single row with their collapse
-icon, with no additional heading or disclosure level. Playback is a single icon row
+promotional footer. A round dropdown and player tabs share a single row with their collapse
+icon, with no additional heading or disclosure level. Playback follows the supplied reference layout
 with its own collapse button. Closing either frees vertical space for the board;
 closing controls does not alter progress or pause playback. Reopen the playback
 panel to use touch controls; keyboard Space remains available while collapsed.
 Each has its own name, Hold, Next, counters, spin and conformance details. Short landscape
-screens use compact rails. A sticky transport provides single-hand placement buttons.
+screens use compact rails and a single-row transport. Dynamic viewport height allocates space to the board, readable counters and bottom controls without a large empty footer.
 Native inputs support keyboard, touch and screen zoom; controls do not depend on
 hover. There are no entrance transitions or swipe-only interactions.
 

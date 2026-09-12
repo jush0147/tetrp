@@ -7,6 +7,7 @@ const synthetic=()=>({version:1,gamemode:'40l',replay:{frames:90,options:{versio
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}}]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>document.addEventListener('tetrp:position',e=>{window.observedPosition=e.detail;}));await page.goto('./');});
 async function upload(page,object){await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});}
+async function choosePlayer(page,index){await page.locator(`.player-tab[data-player="${index}"]`).evaluate(el=>el.click());}
 async function placement(page,n){await page.locator('#scrubber').evaluate((el,n)=>{el.value=String(n);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},n);await expect(page.locator('#pieces')).toHaveText(String(n));}
 async function consistent(page,reference,n){await placement(page,n);const expected=reference.seekPlacement(n);
   await expect.poll(()=>page.evaluate(()=>window.observedPosition?.state)).toEqual(expected);
@@ -39,10 +40,10 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
   await upload(page,x);await expect(page.locator('#viewer')).toBeVisible();
   await page.setViewportSize({width:390,height:844});await expect(page.locator('#peer-lane')).toBeHidden();
   await placement(page,3);const before=await page.evaluate(()=>window.observedPosition);
-  await page.locator('#player').selectOption('1');await expect(page.locator('#player-id')).toHaveText('player-beta');
+  await choosePlayer(page,'1');await expect(page.locator('#player-id')).toHaveText('player-beta');
   expect(await page.evaluate(()=>window.observedPosition.roundFrame)).toBe(before.roundFrame);
   expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(before.views[1].state);
-  await page.locator('#player').selectOption('0');await expect(page.locator('#player-id')).toHaveText('player-alpha');
+  await choosePlayer(page,'0');await expect(page.locator('#player-id')).toHaveText('player-alpha');
   expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(before.state);
   await page.setViewportSize({width:844,height:390});await expect(page.locator('#peer-board')).toBeVisible();
   await expect(page.locator('#player-id')).toHaveText('player-alpha');await expect(page.locator('#peer-player-id')).toHaveText('player-beta');
@@ -51,7 +52,7 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     expect(h.x+h.width).toBeLessThan(b.x);expect(n.x).toBeGreaterThan(b.x+b.width);
     expect(Math.abs(b.height/b.width-2)).toBeLessThan(.03);
     await expect(page.locator(`#${prefix}lines`)).toBeHidden();
-    const stats=await page.locator(`#${prefix}apm`).boundingBox();expect(stats.y+stats.height).toBeLessThanOrEqual(b.y+b.height+1);
+    const stats=await page.locator(`#${prefix}apm`).boundingBox();expect(stats.y).toBeGreaterThanOrEqual(b.y+b.height);
   }
   const ref=new Reconstruction(prepareReplay(selectPlayer(parseReplay(JSON.stringify(x)),0,1)));
   await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});
@@ -61,7 +62,7 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     await page.locator('#speed').selectOption(speed);
     // Browser clock controls rAF/performance without relying on CI wall-clock speed.
     await page.evaluate(()=>document.getElementById('play').click());await page.clock.runFor(500);
-    await page.locator('#player').selectOption('1');await expect(page.locator('#player-id')).toHaveText('player-beta');
+    await choosePlayer(page,'1');await expect(page.locator('#player-id')).toHaveText('player-beta');
     await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');await page.clock.runFor(500);
     await page.evaluate(()=>document.getElementById('play').click());
     const pos=await page.evaluate(()=>window.observedPosition);
@@ -72,11 +73,11 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
   }
   const stateBeforeCollapse=await page.evaluate(()=>window.observedPosition.state),oldBoard=await page.locator('#board').boundingBox();
   await page.locator('#toggle-selectors').click();await page.locator('#toggle-playback').click();
-  await expect(page.locator('#player')).toBeHidden();await expect(page.locator('#scrubber')).toBeHidden();
+  await expect(page.locator('#player-tabs')).toBeHidden();await expect(page.locator('#scrubber')).toBeHidden();
   expect((await page.locator('#board').boundingBox()).height).toBeGreaterThan(oldBoard.height);
   expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(stateBeforeCollapse);
   await page.locator('#toggle-selectors').click();await page.locator('#toggle-playback').click();
-  await expect(page.locator('#player')).toBeVisible();await expect(page.locator('#scrubber')).toBeVisible();
+  await expect(page.locator('#player-tabs')).toBeVisible();await expect(page.locator('#scrubber')).toBeVisible();
   expect(errors).toEqual([]);
 });
 test('malformed file and responsive touch targets',async({page})=>{
@@ -84,7 +85,7 @@ test('malformed file and responsive touch targets',async({page})=>{
   await expect(page.locator('#error')).toBeVisible();await expect(page.locator('#error-detail')).toContainText('MALFORMED_JSON');
   await upload(page,synthetic());await expect(page.locator('#viewer')).toBeVisible();
   await expect(page.locator('#lines')).toBeVisible();await expect(page.locator('#conformance')).toBeHidden();
-  expect((await page.locator('.transport').boundingBox()).height).toBeLessThanOrEqual(48);
+  expect((await page.locator('.transport').boundingBox()).height).toBeLessThanOrEqual(140);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   for(const id of ['previous','next-placement','play']){const b=await page.locator(`#${id}`).boundingBox();expect(b.height).toBeGreaterThanOrEqual(44);expect(b.width).toBeGreaterThanOrEqual(44);}
   const board=await page.locator('#board').boundingBox();expect(Math.abs(board.height/board.width-2)).toBeLessThan(.03);
@@ -93,9 +94,9 @@ test('selection races preserve the latest stream and unsupported retry is visibl
   const make=(retry=false)=>{const s=synthetic().replay;s.options.version=19;if(retry)s.events.splice(1,0,{frame:0,type:'keydown',data:{key:'retry',subframe:0}});return {replay:s};};
   const x={version:1,gamemode:'league',replay:{rounds:[[make(),make(true)],[make()]]}};
   await upload(page,x);await expect(page.locator('#viewer')).toBeVisible();await placement(page,3);
-  await page.locator('#player').selectOption('1');await expect(page.locator('#lane-error')).toContainText('此 stream 暫不支援');await expect(page.locator('#lane-error')).toContainText('retry');
+  await choosePlayer(page,'1');await expect(page.locator('#lane-error')).toContainText('此 stream 暫不支援');await expect(page.locator('#lane-error')).toContainText('retry');
   await page.locator('#round').selectOption('1');await expect(page.locator('#pieces')).toHaveText('0');await expect(page.locator('#viewer')).toBeVisible();
-  await page.locator('#round').selectOption('0');await page.locator('#player').selectOption('1');await page.locator('#player').selectOption('0');
+  await page.locator('#round').selectOption('0');await choosePlayer(page,'1');await choosePlayer(page,'0');
   await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#pieces')).toHaveText('0');
 });
 test('native scrubber interaction and compact portrait controls',async({page},testInfo)=>{
@@ -121,12 +122,13 @@ test('real private files, all TL streams and known conformance states',async({pa
   let checkedSpins=0,checkedGarbage=0,checkedAllClears=0;
   await page.locator('#file').setInputFiles(process.env.TETRP_TTRM);
   for(const r of multi.rounds){await expect(page.locator('#round')).toBeVisible();await page.locator('#round').selectOption(String(r.index));
-    for(const p of r.players){await page.locator('#player').selectOption(String(p.index));
+    for(const p of r.players){await choosePlayer(page,String(p.index));
       let ref;try{ref=new Reconstruction(prepareReplay(selectPlayer(multi,r.index,p.index)));}catch(e){expect(e.code).toBe('UNSUPPORTED_PROFILE');await expect(page.locator('#lane-error')).toBeVisible();await expect(page.locator('#lane-error')).toContainText('retry');continue;}
-      let spin=null,garbagePlacement=null;const allClears=new Set();
+      let spin=null,garbagePlacement=null,quad=null;const allClears=new Set();
       while(ref.advance()){
         for(const t of ref.transitions)if(!spin&&t.type==='lock'&&t.spin!=='none')spin=t;
         for(const t of ref.transitions)if(t.type==='remove-lines'&&t.allClear)allClears.add(ref.state.stats.pieces);
+        if(quad===null&&ref.transitions.some(t=>t.type==='lock'&&t.spin==='none')&&ref.transitions.some(t=>t.type==='remove-lines'&&t.rows.length===4&&!t.allClear))quad=ref.state.stats.pieces;
         if(garbagePlacement===null&&ref.state.attack.pending.length>=2)garbagePlacement=ref.state.stats.pieces+1;
       }
       const count=ref.state.stats.pieces,first=ref.diagnostics.first;await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#scrubber')).toHaveAttribute('max',String(count));
@@ -136,14 +138,16 @@ test('real private files, all TL streams and known conformance states',async({pa
       await expect(page.locator('#attack')).toHaveText(String(stats.attack.totals.generated));
       await expect(page.locator('#garbage-total')).toHaveText(String([...stats.attack.are,...stats.attack.pending].reduce((sum,p)=>sum+p.amt,0)));
       if(spin){await placement(page,spin.placementIndex);await expect(page.locator('.left-rail .chain #spin')).toContainText(`${spin.piece.toUpperCase()}-SPIN${spin.spin==='mini'?' MINI':''}`);
-        const rgb=palette[spin.piece].slice(1).match(/../g).map(x=>parseInt(x,16)).join(', ');
+        const rgb=(allClears.has(spin.placementIndex)?'#42f58a':palette[spin.piece]).slice(1).match(/../g).map(x=>parseInt(x,16)).join(', ');
         await expect(page.locator('#spin')).toHaveCSS('color',`rgb(${rgb})`);checkedSpins++;}
       await expect(page.locator('#player-id')).toHaveText(p.username);
+      if(quad!==null){await placement(page,quad);await expect(page.locator('#spin')).toHaveText('QUAD');await expect(page.locator('#spin')).toHaveCSS('color','rgb(130, 218, 202)');}
       if(allClears.size){
         const ac=[...allClears][0];
         for(const n of [ac,ac-1,ac,Math.min(ac+1,count)]){
           await placement(page,n);
           await expect.poll(()=>page.locator('#spin').textContent()).toMatch(allClears.has(n)?/ALL CLEAR/:/^(?!.*ALL CLEAR)/);
+          if(allClears.has(n))await expect(page.locator('#spin')).toHaveCSS('color','rgb(66, 245, 138)');
         }
         checkedAllClears++;
       }
