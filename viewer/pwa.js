@@ -13,8 +13,16 @@ install.addEventListener('click',async()=>{
 });
 document.getElementById('close-install-help').addEventListener('click',()=>help.close());
 if('serviceWorker' in navigator){
+  let registration,checking=false;
+  async function update(){
+    if(!registration||checking||!navigator.onLine)return;
+    checking=true;try{await registration.update();}catch{/* Offline: keep the complete cached version. */}finally{checking=false;}
+  }
+  window.addEventListener('online',update);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)update();});
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'})
+      .then(value=>{registration=value;return update();})
       .catch(()=>{document.getElementById('offline-note').textContent='離線準備未完成，請連線後重新開啟。';});
   });
 }

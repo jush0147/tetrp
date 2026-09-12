@@ -3,16 +3,25 @@ const VERSION=__VERSION__;
 const ASSETS=__ASSETS__;
 const PREFIX=`tetrp:${self.registration.scope}:`;
 const CACHE=PREFIX+VERSION;
+const replacing=Boolean(self.registration.active);
 const urls=ASSETS.map(name=>new URL(name,self.registration.scope).href);
 const allowed=new Set(urls);
 self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(urls)));
-  // Wait for existing windows to close; never interrupt a loaded replay for an update.
+  event.waitUntil((async()=>{
+    await (await caches.open(CACHE)).addAll(urls.map(url=>new Request(url,{cache:'reload'})));
+    await self.skipWaiting();
+  })());
 });
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
-    for(const key of await caches.keys())if(key.startsWith(PREFIX)&&key!==CACHE)await caches.delete(key);
+    const previous=(await caches.keys()).filter(key=>key.startsWith(PREFIX)&&key!==CACHE);
+    for(const key of previous)await caches.delete(key);
     await self.clients.claim();
+    // Also upgrades old pages that have no controllerchange/update listener.
+    if(replacing||previous.length)for(const client of await self.clients.matchAll({type:'window',includeUncontrolled:true})){
+      // Navigation waits for activation to finish: do not await it inside activate.
+      if(client.url.startsWith(self.registration.scope))client.navigate(client.url).catch(()=>{});
+    }
   })());
 });
 self.addEventListener('fetch',event=>{

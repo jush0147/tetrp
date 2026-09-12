@@ -2,6 +2,37 @@ import {test,expect} from '@playwright/test';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 
+test('legacy cached app upgrades without closing tabs or clearing storage',async({page,context})=>{
+  let current=false;
+  const server=createServer(async(req,res)=>{
+    const name=new URL(req.url,'http://localhost').pathname.replace('/tetrp/','')||'index.html';
+    if(!/^(index\.html|app\.(js|css)|worker\.js|sw\.js|manifest\.webmanifest|icon-(180|192|512)\.png)$/.test(name)){res.writeHead(404).end();return;}
+    res.setHeader('Cache-Control','no-store');
+    res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.webmanifest')?'application/manifest+json':'text/html');
+    if(!current&&name==='index.html'){res.end('<p id="legacy">Old app</p><script src="./app.js"></script>');return;}
+    if(!current&&name==='app.js'){res.end("navigator.serviceWorker.register('./sw.js')");return;}
+    if(!current&&name==='sw.js'){
+      res.end(`const cache='tetrp:'+self.registration.scope+':legacy';self.addEventListener('install',e=>e.waitUntil(caches.open(cache).then(c=>c.addAll(['./','./app.js']))));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`);return;
+    }
+    res.end(await readFile(new URL('../dist/'+name,import.meta.url)));
+  });
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${server.address().port}/tetrp/`;
+  try{
+    await page.goto(base);await page.evaluate(()=>navigator.serviceWorker.ready);
+    await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
+    const other=await context.newPage();await other.goto(base);await expect(other.locator('#legacy')).toBeVisible();
+    // Reproduce clearing caches while the old worker remains registered.
+    await page.evaluate(async()=>{for(const key of await caches.keys())await caches.delete(key);});
+    current=true;
+    await page.evaluate(async()=>{await (await navigator.serviceWorker.getRegistration()).update();});
+    await expect(page.locator('#welcome')).toBeVisible();await expect(other.locator('#welcome')).toBeVisible();
+    await expect(page.locator('#legacy')).toHaveCount(0);
+    const initial=await page.evaluate(()=>performance.timeOrigin);
+    await page.evaluate(async()=>{await (await navigator.serviceWorker.getRegistration()).update();});
+    await page.waitForTimeout(500);expect(await page.evaluate(()=>performance.timeOrigin)).toBe(initial);
+  }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
+
 test('PWA manifest, offline reopening and local worker playback',async({page,context,browserName})=>{
   // Stop a dedicated origin instead of Playwright's WebKit offline emulation,
   // which throws an internal navigation error on both Windows and Linux.
