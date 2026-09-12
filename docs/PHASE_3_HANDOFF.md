@@ -47,12 +47,12 @@ never used as display names. File names and player names are inserted as text,
 never HTML. Reopening the same file is supported.
 
 The board is the main visual. Hold sits left and the vertical Next queue sits right.
-Hold's lock status is shown. A buffer piece is drawn inside the top of the board,
+Hold's lock status is not shown; its panel has stable dimensions. A buffer piece is drawn inside the top of the board,
 preserving x and rotation and translating its display cells down only enough to
 fit its upper edge. `model.active` retains the true visible collision cells;
 `model.displayActive` is the presentation projection. Neither changes state. On the board,
 active cells have a bright edge; sleeping/committed pieces are not drawn a second
-time. The left rail shows reconstructed B2B/combo and clear labels. A horizontal panel below the board shows pieces,
+time. The left rail shows reconstructed B2B/combo and clear labels. Portrait uses a horizontal counter panel below the board; landscape uses a vertical counter rail left of Hold, showing pieces,
 generated attack and elapsed-time mean PPS/APM.
 Lines are shown only for `.ttr`, and hidden for `.ttrm`. Right-side cumulative stats and
 score were removed in favor of incoming garbage. Solo B2B/attack remain unknown,
@@ -137,7 +137,7 @@ with its own collapse button. Closing either frees vertical space for the board;
 closing controls does not alter progress or pause playback. Reopen the playback
 panel to use touch controls; keyboard Space remains available while collapsed.
 Each has its own name, Hold, Next, counters, spin and conformance details. Short landscape
-screens use compact rails and a single-row transport. Dynamic viewport height allocates space to the board, readable counters and bottom controls without a large empty footer.
+screens use a single header row (brand, round, players, file menu), vertical stats / Hold / board / Next columns for each player, and one bottom transport row. A 100dvh shell and container-relative board sizing allocate the actual remaining space, including browser toolbar changes. Primary information and controls fit without page scrolling; expandable diagnostic details use an overlay. Portrait retains its below-board stats and playback panel. Browser geometry tests cover 360×640, 390×664, 430×740, 667×320, 844×390 and 1280×720, including stable Hold geometry across seeks.
 Native inputs support keyboard, touch and screen zoom; controls do not depend on
 hover. There are no entrance transitions or swipe-only interactions.
 

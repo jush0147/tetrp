@@ -7,11 +7,11 @@
 <link rel="stylesheet" href="./app.css"><script type="module" src="./app.js"></script>
 </head>
 <body>
-<header class="topbar"><a class="brand" href="./" aria-label="Tetrp 首頁">tetrp<span class="brand-dot">.</span></a><details class="file-menu"><summary aria-label="檔案選單">⋮</summary><label class="open-file" for="file">開啟 replay</label></details><input id="file" type="file" accept=".ttr,.ttrm" aria-label="選擇本機 replay"></header>
+<header class="topbar"><a class="brand" href="./" aria-label="Tetrp 首頁">tetrp<span class="brand-dot">.</span></a><div id="stream-tools" class="stream-tools" hidden><div id="selectors" class="selectors" hidden><select id="round" aria-label="選擇 round"></select><select id="player" aria-label="選擇 player" hidden></select><div id="player-tabs" class="player-tabs" role="group" aria-label="切換玩家"></div></div><button id="toggle-selectors" class="icon" aria-label="收合選單" aria-expanded="true">⌃</button></div><details class="file-menu"><summary aria-label="檔案選單">⋮</summary><label class="open-file" for="file">開啟 replay</label></details><input id="file" type="file" accept=".ttr,.ttrm" aria-label="選擇本機 replay"></header>
 <main>
 <section id="welcome" class="welcome"><label class="file-cta" for="file">選擇 .ttr / .ttrm</label><p>本機讀取，不上傳。</p></section>
 <section id="workspace" hidden aria-label="Replay 工作區">
-<div id="stream-tools" class="stream-tools"><div id="selectors" class="selectors" hidden><select id="round" aria-label="選擇 round"></select><select id="player" aria-label="選擇 player" hidden></select><div id="player-tabs" class="player-tabs" role="group" aria-label="切換玩家"></div></div><button id="toggle-selectors" class="icon" aria-label="收合選單" aria-expanded="true">⌃</button></div>
+
 <p id="busy" role="status" hidden>正在讀取…</p>
 <div id="error" class="error" role="alert" hidden><strong id="error-title">無法開啟 replay</strong><p id="error-message"></p><details><summary>錯誤細節</summary><pre id="error-detail"></pre></details></div>
 <div id="viewer" hidden>
@@ -20,7 +20,7 @@
 <p id="lane-error" class="error" hidden role="alert"></p>
 <div id="lane-display">
 <div class="lane-field">
-<aside class="left-rail"><div class="hold-panel"><span class="eyebrow">HOLD <b id="hold-lock"></b></span><canvas id="hold" width="80" height="40" role="img"></canvas></div><div class="chain"><span>B2B</span><strong id="b2b">—</strong><div class="combo-block"><span>COMBO</span><b id="combo">—</b></div><p id="spin" class="spin" role="status">—</p></div></aside>
+<aside class="left-rail"><div class="hold-panel"><span class="eyebrow">HOLD</span><canvas id="hold" width="80" height="40" role="img"></canvas></div><div class="chain"><span>B2B</span><strong id="b2b">—</strong><div class="combo-block"><span>COMBO</span><b id="combo">—</b></div><p id="spin" class="spin" role="status">—</p></div></aside>
 <div class="board-wrap"><canvas id="board" width="300" height="600" role="img"></canvas></div>
 <aside class="right-rail"><div class="next-panel"><span class="eyebrow">NEXT</span><div id="next"></div></div><section class="garbage-panel" id="garbage-panel" aria-label="待接收垃圾"><small id="garbage-cap"></small><div class="garbage-stack"><div class="garbage-total"><span>INCOMING</span><strong id="garbage-total">0</strong></div><div id="garbage-packets" class="garbage-packets"></div></div></section></aside>
 </div>

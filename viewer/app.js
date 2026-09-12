@@ -74,7 +74,7 @@ function renderLane(prefix,view,initial){
   el('lane-display').hidden=Boolean(view.error);el('lane-error').hidden=!view.error;el('conformance').hidden=Boolean(view.error)||!view.conformance?.first;
   if(view.error){el('lane-error').textContent=`此 stream 暫不支援 · ${view.error.code}\n${view.error.message}`;return null;}
   const s=view.state,model=boardModel(s),stats=displayStats(s);
-  drawBoard(el('board'),model);drawPreview(el('hold'),model.hold.piece);el('hold-lock').textContent=model.hold.locked?'鎖定':'';
+  drawBoard(el('board'),model);drawPreview(el('hold'),model.hold.piece);
   el('next').replaceChildren(...model.next.map(type=>{const c=document.createElement('canvas');c.setAttribute('role','img');drawPreview(c,type);return c;}));
   for(const key of ['pieces','lines','b2b','combo','attack'])el(key).textContent=number(stats[key]);
   el('lines').hidden=variant!=='ttr';el('lines-label').hidden=variant!=='ttr';

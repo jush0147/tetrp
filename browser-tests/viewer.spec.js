@@ -53,7 +53,7 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     expect(Math.abs(b.height/b.width-2)).toBeLessThan(.03);
     expect((await page.locator(`#${prefix}garbage-packets`).boundingBox()).height).toBeGreaterThanOrEqual(24);
     await expect(page.locator(`#${prefix}lines`)).toBeHidden();
-    const stats=await page.locator(`#${prefix}apm`).boundingBox();expect(stats.y).toBeGreaterThanOrEqual(b.y+b.height);
+    const stats=await page.locator(`#${prefix}apm`).boundingBox();expect(stats.x+stats.width).toBeLessThan(h.x);
   }
   const ref=new Reconstruction(prepareReplay(selectPlayer(parseReplay(JSON.stringify(x)),0,1)));
   await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});
@@ -135,6 +135,29 @@ test('native scrubber interaction and compact portrait controls',async({page},te
   expect(await page.evaluate(()=>window.observedPosition.model.displayActive.length)).toBe(4);
   await page.evaluate(()=>scrollTo(0,0));const controls=await page.locator('.transport').boundingBox();expect(controls.y+controls.height).toBeLessThanOrEqual(641);
 });
+test('phone viewport contains both layouts and Hold never changes rail position',async({page})=>{
+  const stream=synthetic().replay;stream.options.version=19;
+  stream.events.splice(3,0,{frame:3,type:'keydown',data:{key:'hold',subframe:.2}},{frame:4,type:'keyup',data:{key:'hold',subframe:.2}});
+  await upload(page,{version:1,gamemode:'league',replay:{rounds:[[{id:'a',username:'Alpha',replay:stream},{id:'b',username:'Beta',replay:stream}]]}});
+  await expect(page.locator('#viewer')).toBeVisible();
+  await expect(page.locator('#hold-lock')).toHaveCount(0);
+  for(const size of [{width:360,height:640},{width:390,height:664},{width:430,height:740},{width:667,height:320},{width:844,height:390},{width:1280,height:720}]){
+    await page.setViewportSize(size);await placement(page,1);
+    const before=await page.locator('#focus-lane .chain').boundingBox();
+    await placement(page,2);expect(await page.locator('#focus-lane .chain').boundingBox()).toEqual(before);
+    const bounds=await page.evaluate(()=>({width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight,x:scrollX,y:scrollY}));
+    expect(bounds.width).toBeLessThanOrEqual(size.width);expect(bounds.height).toBeLessThanOrEqual(size.height+1);
+    expect(bounds.x).toBe(0);expect(bounds.y).toBe(0);
+    for(const selector of ['#board','#hold','#next','#garbage-total','.rail-stats','#playback-tools']){
+      const r=await page.locator(selector).first().boundingBox();expect(r.y).toBeGreaterThanOrEqual(0);expect(r.y+r.height).toBeLessThanOrEqual(size.height);
+    }
+    if(size.width>size.height){
+      const r=await page.locator('#peer-board').boundingBox();expect(r.x+r.width).toBeLessThanOrEqual(size.width);
+      const header=await page.locator('.topbar').boundingBox();expect(header.height).toBeLessThanOrEqual(48);
+    }
+  }
+});
+
 test('real private files, all TL streams and known conformance states',async({page})=>{
   test.skip(!process.env.TETRP_TTR||!process.env.TETRP_TTRM,'Private samples are opt-in; never CI artifacts.');test.setTimeout(180000);
   const solo=parseReplay(readFileSync(process.env.TETRP_TTR,'utf8'));
