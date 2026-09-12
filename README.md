@@ -9,7 +9,7 @@ and navigate by placement or frame. Play at 0.5× / 1× / 1.5× source speed;
 portrait shows the selected player and landscape shows both players by in-game name.
 Hold, vertical Next, B2B, counters and placement spin/clear labels accompany each
 board, with a bottom-first incoming garbage queue and total. Replay data stays on the device.
-A round dropdown and player names with FT scores sit above the board; the center button swaps both sides and keeps that choice across rounds. Portrait counters and a collapsible
+A round dropdown and player names with scores sit above the board; the center button swaps both sides and keeps that choice across rounds. Portrait counters and a collapsible
 playback panel sit below it. Phone landscape up to 500px high uses state / board / queue columns and a compact PPS / APM / APP line below each board, with one-row playback controls. APP is generated attack divided by pieces, shown to two decimals. Both layouts fit the available viewport height.
 Lines are displayed for `.ttr` only. Switching players preserves the
 round's current progress and ongoing playback.
@@ -117,3 +117,7 @@ source-level research narrative were removed from this revision. See the
 [artifact-by-artifact provenance review](docs/PROVENANCE.md) for the public/private
 boundary and the remaining historical-publication limitation. This describes a
 particular v19 behavioral snapshot, not today's live service.
+
+## Install on your phone
+
+Open [tetrp](https://jush0147.github.io/tetrp/) and choose **⋮ → 安裝 App**. On iPhone, use Safari → Share → Add to Home Screen. After the first online load, the viewer works offline; choose your replay from the device each time. Updates apply after all app windows close. Replay files are never uploaded or cached.

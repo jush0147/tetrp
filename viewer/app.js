@@ -1,3 +1,4 @@
+import './pwa.js';
 import {boardModel,drawBoard,drawPreview} from './render.js';
 import {PlaybackClock,displayStats,placementLabel,incomingGarbage,visibleGarbage} from './playback.js';
 const $=id=>document.getElementById(id);

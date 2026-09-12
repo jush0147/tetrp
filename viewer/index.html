@@ -1,13 +1,14 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#10171c">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; worker-src 'self'; connect-src 'none'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#061923">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; worker-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Tetrp · Replay viewer</title><meta name="description" content="在自己的裝置上同步回看 replay。檔案留在本機。">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="tetrp">
 <link rel="stylesheet" href="./app.css"><script type="module" src="./app.js"></script>
 </head>
 <body>
-<header id="topbar" class="topbar"><a class="brand" href="./" aria-label="Tetrp 首頁">tetrp<span class="brand-dot">.</span></a><div id="stream-tools" class="stream-tools" hidden><div id="selectors" class="selectors" hidden><select id="round" aria-label="選擇 round"></select><select id="player" aria-label="選擇 player" hidden></select><div id="player-tabs" class="player-tabs" role="group" aria-label="切換玩家"></div></div><button id="toggle-selectors" class="icon" aria-label="收合選單" aria-expanded="true">⌃</button></div><details class="file-menu"><summary aria-label="檔案選單">⋮</summary><label class="open-file" for="file">開啟 replay</label></details><input id="file" type="file" accept=".ttr,.ttrm" aria-label="選擇本機 replay"></header>
+<header id="topbar" class="topbar"><a class="brand" href="./" aria-label="Tetrp 首頁">tetrp<span class="brand-dot">.</span></a><div id="stream-tools" class="stream-tools" hidden><div id="selectors" class="selectors" hidden><select id="round" aria-label="選擇 round"></select><select id="player" aria-label="選擇 player" hidden></select><div id="player-tabs" class="player-tabs" role="group" aria-label="切換玩家"></div></div><button id="toggle-selectors" class="icon" aria-label="收合選單" aria-expanded="true">⌃</button></div><details class="file-menu"><summary aria-label="檔案選單">⋮</summary><div class="file-menu-panel"><label class="open-file" for="file">開啟 replay</label><button id="install-app" type="button">安裝 App</button></div></details><input id="file" type="file" accept=".ttr,.ttrm" aria-label="選擇本機 replay"></header>
 <main>
 <section id="welcome" class="welcome"><label class="file-cta" for="file">選擇 .ttr / .ttrm</label><p>本機讀取，不上傳。</p></section>
 <section id="workspace" hidden aria-label="Replay 工作區">
@@ -34,4 +35,5 @@
 </div></section>
 <p id="compatibility" class="error" hidden>此瀏覽器不支援 Worker。請使用新版 Safari、Chrome、Firefox 或 Edge。</p>
 </main>
+<dialog id="install-help" aria-labelledby="install-title"><h2 id="install-title">安裝 tetrp</h2><p>Android Chrome：開啟瀏覽器選單，選擇「新增至主畫面」或「安裝應用程式」。</p><p>iPhone／iPad：在 Safari 開啟本站，按分享，再選「加入主畫面」。</p><p id="offline-note">首次連線開啟後即可離線使用。Replay 每次從裝置選取，不會上傳或保存到 App 快取。</p><p>新版會在關閉所有 tetrp 視窗後套用，不會中斷播放。</p><button id="close-install-help" type="button">關閉</button></dialog>
 </body></html>

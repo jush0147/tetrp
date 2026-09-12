@@ -305,3 +305,13 @@ The private ten-round sample reaches 7:3. No new replay parser or engine rules w
 The header collapse button hides the entire header, including brand, file menu
 and selectors, and reserves zero header height. A small fixed reopen button
 remains available. Playback and exact reconstructed state are preserved.
+
+## Installable PWA
+
+Open https://jush0147.github.io/tetrp/ and choose **⋮ → 安裝 App**. Chrome uses its native installation prompt when available; otherwise the menu explains the browser installation steps. On iPhone/iPad, open in Safari and use Share → Add to Home Screen.
+
+The standalone app supports both orientations. After the first successful online load, the viewer and reconstruction worker can reopen offline. Replay files remain in memory only and must be selected again after reopening. Browser storage eviction can remove the offline app cache; reconnect to prepare it again.
+
+The service worker caches only eight explicit public build assets, never replay files. Its scope/start URL are relative to the GitHub Pages subdirectory. Original icons are generated from source at build time; no binary assets or private samples enter Git. Content-hashed cache versions wait until existing app windows close before activating, so updates never reload an active replay. Close all browser tabs and installed app windows after an update has downloaded, then reopen to use it.
+
+Validation: 340 unit tests pass, including cache isolation and update lifecycle coverage. Chromium verifies offline reload/reopen, local-file reconstruction with the cached worker, manifest/icon sizes and the installation entry. Windows WebKit offline navigation reports an internal browser error and is skipped there; Linux CI runs this check. Actual OS installation and iPhone standalone behavior still require device verification.
