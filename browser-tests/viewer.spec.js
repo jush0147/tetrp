@@ -149,6 +149,13 @@ test('swap aligns IDs and boards across rounds, FT follows progress, and header 
   await expect(page.locator('.brand')).toBeHidden();await expect(page.locator('.file-menu')).toBeHidden();
   expect((await page.locator('#topbar').boundingBox()).height).toBe(0);
   expect((await page.locator('#board').boundingBox()).height).toBeGreaterThanOrEqual(before.height+40);
+  await page.setViewportSize({width:390,height:664});
+  await expect(page.locator('.brand')).toBeVisible();await expect(page.locator('.file-menu')).toBeVisible();
+  await expect(page.locator('#selectors')).toBeHidden();
+  expect((await page.locator('#topbar').boundingBox()).height).toBe(44);
+  expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);
+  await page.setViewportSize({width:844,height:390});
+  await expect(page.locator('.brand')).toBeHidden();expect((await page.locator('#topbar').boundingBox()).height).toBe(0);
   await page.locator('#toggle-selectors').click();await expect(page.locator('.brand')).toBeVisible();
   await expect(page.locator('#toggle-selectors')).toHaveText('⌃');
   await expect(page.locator('.player-name')).toHaveText(['Beta','Alpha']);
