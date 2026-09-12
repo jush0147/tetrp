@@ -13,7 +13,8 @@ export function displayStats(state){
     b2b:state.attack?Math.max(0,state.attack.btb-1):null,combo:state.attack?.combo??null,
     attack:state.attack?.totals.generated??null,sent:state.attack?.totals.sent??null,
     received:state.attack?.totals.received??null,pps:time?state.stats.pieces/time:0,
-    apm:state.attack?time?state.attack.totals.generated*60/time:0:null};
+    apm:state.attack?time?state.attack.totals.generated*60/time:0:null,
+    app:state.attack?state.stats.pieces?state.attack.totals.generated/state.stats.pieces:0:null};
 }
 export function incomingGarbage(state){
   if(!state.attack)return {total:null,cap:null,packets:[]};

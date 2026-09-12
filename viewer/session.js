@@ -3,9 +3,20 @@ import { parseReplay, selectPlayer, prepareReplay, Reconstruction } from '../src
 export const MAX_FILE_BYTES = 32 * 1024 * 1024;
 export const MAX_FRAMES = 216000; // One hour at 60 source frames/second.
 export function catalog(replay) {
-  return replay.rounds.map(round => ({index:round.index, players:round.players.map(p => ({
-    index:p.index, name:typeof p.username==='string'&&p.username.trim()?p.username:`Player ${p.index+1}`,
-  }))}));
+  const scores=new Map();
+  const identity=p=>p.id??p.username??`slot-${p.index}`;
+  return replay.rounds.map(round=>{
+    const multi=replay.variant==='ttrm';
+    const winners=round.players.filter(p=>p.stream.results?.gameoverreason==='winner'||p.stream.events.some(e=>e.type==='end'&&e.data.gameoverreason==='winner'));
+    const players=round.players.map(p=>{
+      const name=typeof p.username==='string'&&p.username.trim()?p.username:`Player ${p.index+1}`;
+      if(!multi)return {index:p.index,name};
+      const key=identity(p),before=scores.has(key)?scores.get(key):0;
+      const after=winners.length===1&&before!==null?before+Number(winners[0]===p):null;
+      scores.set(key,after);return {index:p.index,name,scoreBefore:before,scoreAfter:after};
+    });
+    return {index:round.index,players,...(multi?{scoreFrame:Math.max(...round.players.map(p=>p.stream.frames))}:{})};
+  });
 }
 export function parseLocalText(text) {
   if(text.length>MAX_FILE_BYTES)throw new Error('檔案超過 32 MB，請選擇較小的 replay。');

@@ -23,11 +23,15 @@ test('playback clock uses 60 source frames per second with continuous speed chan
 test('stats disclose unknown values and spin labels include non-T and mini spins',()=>{
   const state=new Engine().state;state.frame=120;state.subframe=0;state.stats.pieces=8;
   assert.equal(displayStats(state).pps,4);
+  state.attack.totals.generated=23;
+  assert.equal(displayStats(state).app,23/8);
+  state.stats.pieces=0;assert.equal(displayStats(state).app,0);state.stats.pieces=8;
   assert.equal(displayStats(state).b2b,Math.max(0,state.attack.btb-1));
   state.attack.totals.received=9;state.attack.totals.tanked=3;
   assert.equal(displayStats(state).received,9);
   state.attack=null;state.stats.score=null;
   assert.equal(displayStats(state).apm,null);assert.equal(displayStats(state).score,null);
+  assert.equal(displayStats(state).app,null);
   assert.equal(placementLabel({piece:'t',spin:'mini',lines:1}),'T-SPIN MINI · SINGLE');
   assert.equal(placementLabel({piece:'j',spin:'full',lines:2}),'J-SPIN · DOUBLE');
   assert.equal(placementLabel({piece:'i',spin:'none',lines:4}),'QUAD');
@@ -125,6 +129,19 @@ test('viewer index and repeated placement/frame seeks use the stable reconstruct
   for(const n of [0,20,90,20])assert.deepEqual(viewer.seek('frame',n),reference.seekFrame(n));
   assert.throws(()=>viewer.seek('placement',7),RangeError);
   const copy=viewer.result();copy.state.board.rows[39][0]='gb';assert.notDeepEqual(viewer.result().state,copy.state);
+});
+test('round FT scores follow recorded winners and player identity, with unknown results explicit',()=>{
+  const player=(id,reason)=>({id,username:id,replay:{...syntheticReplay().replay,results:{gameoverreason:reason}}});
+  const replay=parseReplay(JSON.stringify({version:1,gamemode:'league',replay:{rounds:[
+    [player('a','winner'),player('b','topout')],
+    [player('b','winner'),player('a','topout')],
+    [player('a','unknown'),player('b','unknown')],
+  ]}}));
+  const rounds=catalog(replay);
+  assert.deepEqual(rounds.map(r=>r.players.map(p=>[p.scoreBefore,p.scoreAfter])),[
+    [[0,1],[0,0]],[[0,1],[1,1]],[[1,null],[1,null]],
+  ]);
+  assert.equal(rounds[0].scoreFrame,90);
 });
 test('render model clips buffer rows, uses engine cells/ceil, and never mutates state',()=>{
   const e=new Engine();e.state.board.rows[0][0]='gb';e.state.board.rows[20][0]='t';

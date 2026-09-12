@@ -7,7 +7,7 @@ const synthetic=()=>({version:1,gamemode:'40l',replay:{frames:90,options:{versio
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}}]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>document.addEventListener('tetrp:position',e=>{window.observedPosition=e.detail;}));await page.goto('./');});
 async function upload(page,object){await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});}
-async function choosePlayer(page,index){await page.locator(`.player-tab[data-player="${index}"]`).evaluate(el=>el.click());}
+async function choosePlayer(page,index){if(await page.locator('#player').inputValue()!==String(index))await page.locator('#player-swap').evaluate(el=>el.click());}
 async function placement(page,n){await page.locator('#scrubber').evaluate((el,n)=>{el.value=String(n);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},n);await expect(page.locator('#pieces')).toHaveText(String(n));}
 async function consistent(page,reference,n){await placement(page,n);const expected=reference.seekPlacement(n);
   await expect.poll(()=>page.evaluate(()=>window.observedPosition?.state)).toEqual(expected);
@@ -53,7 +53,7 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
     expect(Math.abs(b.height/b.width-2)).toBeLessThan(.03);
     expect((await page.locator(`#${prefix}garbage-packets`).boundingBox()).height).toBeGreaterThanOrEqual(24);
     await expect(page.locator(`#${prefix}lines`)).toBeHidden();
-    const stats=await page.locator(`#${prefix}apm`).boundingBox();expect(stats.x+stats.width).toBeLessThan(h.x);
+    const stats=await page.locator(`#${prefix}apm`).boundingBox();expect(stats.y).toBeGreaterThanOrEqual(b.y+b.height);
   }
   const ref=new Reconstruction(prepareReplay(selectPlayer(parseReplay(JSON.stringify(x)),0,1)));
   await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});
@@ -104,6 +104,31 @@ test('manual next pauses once before unseen garbage intake; scrubber remains pla
   await placement(page,2);expect(await page.evaluate(()=>window.observedPosition.state)).toEqual(completed);
 });
 
+test('swap aligns IDs and boards across rounds, FT follows progress, and header collapses completely',async({page})=>{
+  const player=(id,reason)=>({id,username:id,replay:{...synthetic().replay,options:{version:19,seed:42,handling:{safelock:false}},results:{gameoverreason:reason}}});
+  await page.setViewportSize({width:844,height:390});
+  await upload(page,{version:1,gamemode:'league',replay:{rounds:[
+    [player('Alpha','winner'),player('Beta','topout')],[player('Alpha','topout'),player('Beta','winner')],
+  ]}});await expect(page.locator('#viewer')).toBeVisible();
+  await expect(page.locator('.player-name')).toHaveText(['Alpha','Beta']);
+  await expect(page.locator('.player-score')).toHaveText(['0','0']);
+  await page.locator('#player-swap').click();await expect(page.locator('#player-swap')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.player-name')).toHaveText(['Beta','Alpha']);await expect(page.locator('#player-id')).toHaveText('Beta');
+  await expect(page.locator('.player-tab[aria-pressed]')).toHaveCount(0);
+  await page.locator('#round').selectOption('1');await expect(page.locator('#viewer')).toBeVisible();
+  await expect(page.locator('#player-id')).toHaveText('Beta');await expect(page.locator('.player-name')).toHaveText(['Beta','Alpha']);
+  await expect(page.locator('.player-score')).toHaveText(['0','1']);await expect(page.locator('#player-swap')).toHaveAttribute('aria-pressed','true');
+  await page.locator('#play').click();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('.player-score')).toHaveText(['1','1']);
+  await placement(page,0);await expect(page.locator('.player-score')).toHaveText(['0','1']);
+  const before=await page.locator('#board').boundingBox();await page.locator('#toggle-selectors').click();
+  await expect(page.locator('.brand')).toBeHidden();await expect(page.locator('.file-menu')).toBeHidden();
+  expect((await page.locator('#topbar').boundingBox()).height).toBe(0);
+  expect((await page.locator('#board').boundingBox()).height).toBeGreaterThanOrEqual(before.height+40);
+  await page.locator('#toggle-selectors').click();await expect(page.locator('.brand')).toBeVisible();
+  await expect(page.locator('.player-name')).toHaveText(['Beta','Alpha']);
+});
+
 test('malformed file and responsive touch targets',async({page})=>{
   await page.locator('#file').setInputFiles({name:'broken.ttr',mimeType:'text/plain',buffer:Buffer.from('{')});
   await expect(page.locator('#error')).toBeVisible();await expect(page.locator('#error-detail')).toContainText('MALFORMED_JSON');
@@ -141,7 +166,7 @@ test('phone viewport contains both layouts and Hold never changes rail position'
   await upload(page,{version:1,gamemode:'league',replay:{rounds:[[{id:'a',username:'Alpha',replay:stream},{id:'b',username:'Beta',replay:stream}]]}});
   await expect(page.locator('#viewer')).toBeVisible();
   await expect(page.locator('#hold-lock')).toHaveCount(0);
-  for(const size of [{width:360,height:640},{width:390,height:664},{width:430,height:740},{width:667,height:320},{width:844,height:390},{width:1280,height:720}]){
+  for(const size of [{width:360,height:640},{width:390,height:664},{width:430,height:740},{width:667,height:280},{width:667,height:320},{width:844,height:390},{width:915,height:412},{width:900,height:500},{width:1280,height:720}]){
     await page.setViewportSize(size);await placement(page,1);
     const before=await page.locator('#focus-lane .chain').boundingBox();
     await placement(page,2);expect(await page.locator('#focus-lane .chain').boundingBox()).toEqual(before);
@@ -159,6 +184,22 @@ test('phone viewport contains both layouts and Hold never changes rail position'
       const chain=await page.locator('#focus-lane .chain').boundingBox(),sent=await page.locator('#placement-sent').boundingBox(),spin=await page.locator('#spin').boundingBox();
       expect(sent.y+sent.height).toBeLessThanOrEqual(chain.y+chain.height);
       expect(spin.y+spin.height).toBeLessThanOrEqual(sent.y);
+      if(size.height<=500){
+        for(const prefix of ['', 'peer-']){
+          await expect(page.locator(`#${prefix}pieces`)).toBeHidden();await expect(page.locator(`#${prefix}attack`)).toBeHidden();
+          await expect(page.locator(`#${prefix}app`)).toBeVisible();
+          const values=await page.locator(`#${prefix}lane-display .rail-stats dt:visible`).allTextContents();
+          expect(values).toEqual(['PPS','APM','APP']);
+        }
+        const board=await page.locator('#board').boundingBox(),area=await page.locator('#boards').boundingBox();
+        expect(board.height).toBeGreaterThanOrEqual(area.height-24);
+        for(const id of ['previous','play','next-placement','speed']){
+          const hit=await page.locator(`#${id}`).boundingBox();expect(hit.height).toBeGreaterThanOrEqual(44);expect(hit.width).toBeGreaterThanOrEqual(44);
+        }
+        const controls=await page.locator('#playback-tools').boundingBox();expect(controls.height).toBeLessThanOrEqual(50);
+        const s=await page.evaluate(()=>window.observedPosition.state);
+        await expect(page.locator('#app')).toHaveText((s.attack.totals.generated/s.stats.pieces).toFixed(2));
+      }
     }
   }
 });

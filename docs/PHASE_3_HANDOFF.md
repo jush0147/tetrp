@@ -38,8 +38,8 @@ fixtures, checkpoints or reports. Build fails if unexpected files exist in dist.
 ## UX and controls
 
 Open a local `.ttr` or `.ttrm` from the header or initial file picker. Solo enters
-its single stream automatically. The header menu opens another local file. Multiplayer exposes a round dropdown and in-game-name player tabs;
-Changing round constructs fresh sessions. Changing player sends `focus`, retaining
+its single stream automatically. The header menu opens another local file. Multiplayer exposes a round dropdown, in-game-name labels with FT scores, and a center swap button;
+Changing round constructs fresh sessions. The center swap button sends `focus`, retaining
 the existing round frame, each exact canonical state and the running playback clock.
 Player labels use the replay's
 in-game `username`, with `Player N` fallback when absent; opaque account IDs are
@@ -52,7 +52,7 @@ preserving x and rotation and translating its display cells down only enough to
 fit its upper edge. `model.active` retains the true visible collision cells;
 `model.displayActive` is the presentation projection. Neither changes state. On the board,
 active cells have a bright edge; sleeping/committed pieces are not drawn a second
-time. The left rail shows reconstructed B2B/combo and clear labels. Portrait uses a horizontal counter panel below the board; landscape uses a vertical counter rail left of Hold, showing pieces,
+time. The left rail shows reconstructed B2B/combo and clear labels. Portrait uses a horizontal counter panel below the board; desktop landscape uses a vertical counter rail left of Hold, showing pieces,
 generated attack and elapsed-time mean PPS/APM.
 Lines are shown only for `.ttr`, and hidden for `.ttrm`. Right-side cumulative stats and
 score were removed in favor of incoming garbage. Solo B2B/attack remain unknown,
@@ -138,13 +138,13 @@ still consumes all terminal events and anchors for conformance reporting.
 
 Portrait shows only the selected player; landscape shows both players side by side.
 The startup screen is a compact local file picker; there is no hero, banner or
-promotional footer. A round dropdown and player tabs share a single row with their collapse
+promotional footer. A round dropdown, player labels and a center swap button share a single row with their collapse
 icon, with no additional heading or disclosure level. Playback follows the supplied reference layout
 with its own collapse button. Closing either frees vertical space for the board;
 closing controls does not alter progress or pause playback. Reopen the playback
 panel to use touch controls; keyboard Space remains available while collapsed.
 Each has its own name, Hold, Next, counters, spin and conformance details. Short landscape
-screens use a single header row (brand, round, players, file menu), vertical stats / Hold / board / Next columns for each player, and one bottom transport row. A 100dvh shell and container-relative board sizing allocate the actual remaining space, including browser toolbar changes. Primary information and controls fit without page scrolling; expandable diagnostic details use an overlay. Portrait retains its below-board stats and playback panel. Browser geometry tests cover 360×640, 390×664, 430×740, 667×320, 844×390 and 1280×720, including stable Hold geometry across seeks.
+screens use a single header row (brand, round, players, file menu), vertical stats / Hold / board / Next columns for each player, and one bottom transport row. A 100dvh shell and container-relative board sizing allocate the actual remaining space, including browser toolbar changes. Primary information and controls fit without page scrolling; expandable diagnostic details use an overlay. Portrait retains its below-board stats and playback panel. Browser geometry tests cover portrait and landscape, including 667×280, 667×320, 844×390, 915×412, 900×500 and desktop 1280×720, with stable Hold geometry across seeks.
 Native inputs support keyboard, touch and screen zoom; controls do not depend on
 hover. There are no entrance transitions or swipe-only interactions.
 
@@ -273,3 +273,35 @@ and the engine's `allClear` boolean.
 These facts never enter canonical state or checkpoint bytes, are cleared on reset
 and exhausted advance, and are empty immediately after restore. ViewerSession indexes
 these observations for seek-stable presentation. No new gameplay rule was introduced.
+
+## Phone landscape, height up to 500px
+
+A dedicated media query replaces the desktop stats rail with three columns:
+state (Hold, B2B, Combo, clear label, SENT), board, and queue (Next, Incoming).
+Each board has one 20px PPS / APM / APP line, with no duplicate piece or attack
+totals. APP uses canonical generated attack / placed pieces, formatted to two
+decimals; zero pieces yields zero, and unsupported solo attack semantics remain
+an em dash. The only visible piece count is the shared playback position.
+
+The board uses the full remaining container height minus 22px for its stats line,
+subject only to the available horizontal space and its exact 1:2 aspect ratio.
+The header is 44px, playback is a single 50px row, and previous/play/next/speed
+targets are at least 44px. Known conformance details use a small warning indicator
+and overlay, without reserving a footer row. Tests assert both document dimensions
+fit the viewport, all principal controls are visible, and board height consumes
+the available vertical space. Actual Chrome/Chromium viewport tests include
+280–500px heights; no physical-device browser measurement is claimed.
+
+## Player positions, FT scores and full header collapse
+
+The center swap button reverses both boards and the corresponding header labels;
+only this button is highlighted when swapped. Round selection preserves this
+orientation; opening a new file resets it. Names are no longer clickable/highlighted.
+FT scores accumulate explicit recorded winner results by player identity. Each
+round shows its starting score until its replay end frame, then its ending score.
+Unknown/ambiguous winners produce an unknown score rather than inferred results.
+The private ten-round sample reaches 7:3. No new replay parser or engine rules were added.
+
+The header collapse button hides the entire header, including brand, file menu
+and selectors, and reserves zero header height. A small fixed reopen button
+remains available. Playback and exact reconstructed state are preserved.
