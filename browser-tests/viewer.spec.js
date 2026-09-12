@@ -154,6 +154,11 @@ test('phone viewport contains both layouts and Hold never changes rail position'
     if(size.width>size.height){
       const r=await page.locator('#peer-board').boundingBox();expect(r.x+r.width).toBeLessThanOrEqual(size.width);
       const header=await page.locator('.topbar').boundingBox();expect(header.height).toBeLessThanOrEqual(48);
+      // Stress layout with the combined label also covered by private real replays.
+      await page.locator('#spin').evaluate(el=>{el.hidden=false;el.textContent='ALL CLEAR · TRIPLE';});
+      const chain=await page.locator('#focus-lane .chain').boundingBox(),sent=await page.locator('#placement-sent').boundingBox(),spin=await page.locator('#spin').boundingBox();
+      expect(sent.y+sent.height).toBeLessThanOrEqual(chain.y+chain.height);
+      expect(spin.y+spin.height).toBeLessThanOrEqual(sent.y);
     }
   }
 });
@@ -197,6 +202,16 @@ test('real private files, all TL streams and known conformance states',async({pa
           await placement(page,n);
           await expect.poll(()=>page.locator('#spin').textContent()).toMatch(allClears.has(n)?/ALL CLEAR/:/^(?!.*ALL CLEAR)/);
           if(allClears.has(n))await expect(page.locator('#spin')).toHaveCSS('color','rgb(66, 245, 138)');
+        }
+        if(checkedAllClears===0){
+          const original=page.viewportSize();await placement(page,ac);
+          for(const size of [{width:667,height:320},{width:844,height:390}]){
+            await page.setViewportSize(size);
+            const chain=await page.locator('#focus-lane .chain').boundingBox(),sent=await page.locator('#placement-sent').boundingBox();
+            expect(sent.y+sent.height).toBeLessThanOrEqual(chain.y+chain.height);
+            const spin=await page.locator('#spin').boundingBox();expect(spin.y+spin.height).toBeLessThanOrEqual(sent.y);
+          }
+          await page.setViewportSize(original);
         }
         checkedAllClears++;
       }
