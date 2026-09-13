@@ -1,8 +1,11 @@
 import './pwa.js';
 import {bindAutoStep} from './auto-step.js';
+import {bindPlayModes,nextRound} from './play-modes.js';
 import {boardModel,drawBoard,drawPreview} from './render.js';
 import {PlaybackClock,displayStats,placementLabel,incomingGarbage,visibleGarbage} from './playback.js';
 const $=id=>document.getElementById(id);
+const playbackMode=bindPlayModes($('play-mode'),$('mode-menu'),$('mode-toast'),()=>{if(transitionTimer)finishRound();});
+let transitionTimer=null,resumeRound=false;
 const autoStep=bindAutoStep($('previous'),$('next-placement'),direction=>step(direction),()=>!!state&&!inflight);
 const peer=$('focus-lane').cloneNode(true);peer.id='peer-lane';peer.setAttribute('aria-label','另一位玩家');
 for(const node of peer.querySelectorAll('[id]'))node.id=`peer-${node.id}`;
@@ -23,7 +26,7 @@ for(const prefix of ['', 'peer-'])garbageResize.observe($(prefix+'garbage-panel'
 const clock=new PlaybackClock();
 let worker=null,serial=0,active=0,rounds=[],state=null,total=0,frames=0,desired=0,roundFrame=0,playing=false,raf=null,inflight=false,scrubTimer=null,available=false,variant=null;
 const request=(type,data={})=>{active=++serial;worker.postMessage({id:active,type,...data});return active;};
-function stop(cancelAuto=true){if(cancelAuto)autoStep.stop();if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
+function stop(cancelAuto=true){clearTimeout(transitionTimer);transitionTimer=null;resumeRound=false;$('boards').classList.remove('round-transition');if(cancelAuto)autoStep.stop();if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
 function busy(message){stop();inflight=false;state=null;available=false;$('viewer').hidden=true;$('error').hidden=true;$('busy').textContent=message;$('busy').hidden=false;}
 function showError(error){stop();inflight=false;state=null;$('viewer').hidden=true;$('busy').hidden=true;$('error').hidden=false;
   $('error-title').textContent=/UNSUPPORTED/.test(error.code||'')?'此 replay 暫不支援':'無法開啟 replay';
@@ -55,7 +58,7 @@ function fillPlayers(){const r=rounds[Number($('round').value)];$('player').repl
   $('player').value=String(r.players[swapped&&r.players.length>1?1:0].index);
   $('player-tabs').dataset.round='';renderPlayers();
 }
-function select(){clearTimeout(scrubTimer);busy('正在建立雙方時間軸…');request('select',{round:Number($('round').value),player:Number($('player').value)});}
+function select(autoplay=false){clearTimeout(scrubTimer);busy('正在建立雙方時間軸…');resumeRound=autoplay;request('select',{round:Number($('round').value),player:Number($('player').value)});}
 function load(file){
   if(!file)return;swapped=false;stop();clearTimeout(scrubTimer);worker?.terminate();
   $('welcome').hidden=true;$('workspace').hidden=false;$('selectors').hidden=true;busy('正在本機讀取 replay…');
@@ -73,7 +76,8 @@ function load(file){
     if(m.type==='ready'||m.type==='state'||m.type==='focused'){
       inflight=false;frames=m.roundFrames;available=m.views.some(v=>!v.error);
       $('busy').hidden=true;$('viewer').hidden=false;renderRound(m,m.type!=='state');
-      if(playing&&m.frame>=frames)stop();
+      if(m.type==='ready'&&resumeRound){resumeRound=false;if(available&&frames>0)startPlayback(0);}
+      else if(playing&&m.frame>=frames)finishRound();
     }
   };
   request('load',{file});
@@ -140,21 +144,30 @@ function tick(now){
   const target=clock.target(now,frames);if(!inflight&&target>roundFrame)seek('frame',target,false);
   raf=requestAnimationFrame(tick);
 }
+function startPlayback(at){playing=true;clock.start(at,performance.now());$('play').textContent='Ⅱ';$('play').setAttribute('aria-label','暫停');$('play').title='暫停';$('play').setAttribute('aria-pressed','true');raf=requestAnimationFrame(tick);}
+function finishRound(){
+  const next=nextRound(playbackMode(),Number($('round').value),rounds.length);stop();
+  if(next===null)return;
+  playing=true;$('play').textContent='Ⅱ';$('play').setAttribute('aria-label','暫停');$('play').setAttribute('aria-pressed','true');
+  $('boards').dataset.transition=`Round ${next+1}`;$('boards').classList.add('round-transition');
+  transitionTimer=setTimeout(()=>{$('round').value=String(next);fillPlayers();select(true);},500);
+}
 $('file').addEventListener('change',e=>{load(e.target.files[0]);e.target.value='';});
 $('round').addEventListener('change',()=>{fillPlayers();select();});$('player').addEventListener('change',()=>{
   autoStep.stop();
+  if(transitionTimer||resumeRound)stop();
   swapped=Number($('player').value)===rounds[Number($('round').value)].players[1]?.index;
   renderPlayers(Number($('player').value),roundFrame);
   if($('viewer').hidden){select();return;}
   clearTimeout(scrubTimer);inflight=true;request('focus',{player:Number($('player').value)});
 });
-$('scrubber').addEventListener('pointerdown',()=>autoStep.stop());
+$('scrubber').addEventListener('pointerdown',()=>{autoStep.stop();if(transitionTimer)stop();});
 $('scrubber').addEventListener('input',e=>{stop();active=++serial;inflight=false;desired=Number(e.target.value);clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>seek('placement',desired),45);});
 $('scrubber').addEventListener('change',()=>seek('placement',desired));
 $('play').addEventListener('click',()=>{autoStep.stop();if(playing){stop();return;}if(!available)return;
   const at=roundFrame>=frames?0:state?Math.max(roundFrame,state.frame+state.subframe):roundFrame;
   if(roundFrame>=frames)seek('frame',0);
-  playing=true;clock.start(at,performance.now());$('play').textContent='Ⅱ';$('play').setAttribute('aria-label','暫停');$('play').title='暫停';$('play').setAttribute('aria-pressed','true');raf=requestAnimationFrame(tick);
+  startPlayback(at);
 });
 for(const [buttonId,targetId,containerId,label] of [['toggle-selectors','selectors','topbar','頂欄'],['toggle-playback',null,'playback-tools','播放列']]){
   $(buttonId).addEventListener('click',()=>{

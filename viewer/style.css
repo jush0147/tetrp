@@ -86,3 +86,16 @@ main{width:100%;max-width:1440px;margin:0 auto;flex:1;min-height:0;display:flex;
 #install-help::backdrop{background:#0009}#install-help h2{margin-top:0;font-size:22px}#close-install-help{min-height:44px;width:100%;font:inherit}
 
 #previous,#next-placement{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}#previous[aria-pressed=true],#next-placement[aria-pressed=true]{background:var(--accent);color:#04262c;border-color:var(--accent)}
+
+/* Playback modes share the existing control row. */
+.transport-body{grid-template-columns:1fr 44px 62px 44px minmax(0,1fr) 56px 44px}
+#play-mode{grid-column:7;grid-row:3;width:44px;min-width:44px;height:44px;order:3;touch-action:none;user-select:none;-webkit-touch-callout:none;color:var(--muted)}
+#play-mode:not([data-mode="0"]){color:var(--accent);border-color:var(--accent);background:#0a353a}
+#play-mode svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#mode-menu{position:absolute;right:24px;bottom:calc(100% + 6px);z-index:30;min-width:180px;padding:4px;border:1px solid var(--line);border-radius:8px;background:#0c2635;box-shadow:0 4px 20px #0006}
+#mode-menu button{display:block;width:100%;min-height:44px;text-align:left;padding:8px 12px;border:0;background:transparent;font-size:15px}
+#mode-menu button[aria-checked=true]{color:var(--accent);background:#0a353a}
+#mode-toast{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);z-index:29;background:#0c2635;border:1px solid var(--line);border-radius:8px;padding:8px 14px;color:var(--ink);font-size:14px;white-space:nowrap;pointer-events:none}
+.boards{position:relative}.boards.round-transition::after{content:attr(data-transition);position:absolute;inset:0;display:grid;place-items:center;background:#061923d9;color:var(--accent);font-size:28px;z-index:15;animation:round-arrival .2s ease-out}
+@keyframes round-arrival{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.boards.round-transition::after{animation:none}}

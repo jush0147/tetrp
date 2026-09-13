@@ -7,6 +7,32 @@ const synthetic=()=>({version:1,gamemode:'40l',replay:{frames:90,options:{versio
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}}]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>document.addEventListener('tetrp:position',e=>{window.observedPosition=e.detail;}));await page.goto('./');});
 async function upload(page,object){await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});}
+test('playback modes cycle, select by hold, transition and retain speed',async({page})=>{
+  const player=name=>{const replay=synthetic().replay;replay.options.version=19;return {id:name,username:name,replay};};
+  await upload(page,{version:1,gamemode:'league',replay:{rounds:[[player('a'),player('b')],[player('a'),player('b')]]}});
+  await expect(page.locator('#viewer')).toBeVisible();const mode=page.locator('#play-mode'),play=page.locator('#play');
+  await expect(mode).toHaveAttribute('data-mode','0');
+  await page.locator('#speed').selectOption('1.5');
+  await play.click();await expect(play).toHaveAttribute('aria-pressed','false');await expect(page.locator('#round')).toHaveValue('0');
+  await mode.click();await expect(page.locator('#mode-toast')).toHaveText('Continuous');
+  await play.click();await expect(page.locator('#boards')).toHaveClass(/round-transition/);
+  await expect(page.locator('#round')).toHaveValue('1');await expect(page.locator('#speed')).toHaveValue('1.5');
+  await expect(play).toHaveAttribute('aria-pressed','false');await expect(mode).toHaveAttribute('data-mode','1');
+  await mode.click();await play.click();await expect(page.locator('#round')).toHaveValue('0');
+  await expect(play).toHaveAttribute('aria-pressed','true');await play.click();await expect(mode).toHaveAttribute('data-mode','2');
+  await mode.click();await expect(page.locator('#mode-toast')).toHaveText('Repeat Round');
+  await page.locator('#round').selectOption('1');await expect(page.locator('#viewer')).toBeVisible();await placement(page,3);
+  await expect(mode).toHaveAttribute('data-mode','3');await play.click();
+  await expect(page.locator('#boards')).toHaveClass(/round-transition/);await expect(page.locator('#boards')).not.toHaveClass(/round-transition/);
+  await expect(page.locator('#round')).toHaveValue('1');await expect(play).toHaveAttribute('aria-pressed','true');await play.click();
+  await mode.click();await expect(mode).toHaveAttribute('data-mode','0');
+  const box=await mode.boundingBox();await page.mouse.move(box.x+22,box.y+22);await page.mouse.down();await page.waitForTimeout(500);await page.mouse.up();
+  await expect(page.locator('#mode-menu')).toBeVisible();await expect(mode).toHaveAttribute('data-mode','0');
+  await page.getByRole('menuitemradio',{name:'Repeat All',exact:true}).click();await expect(mode).toHaveAttribute('data-mode','2');
+  await placement(page,6);await expect(play).toHaveAttribute('aria-pressed','false');await expect(page.locator('#round')).toHaveValue('1');
+  await page.setViewportSize({width:667,height:280});expect((await page.locator('#playback-tools').boundingBox()).height).toBe(50);
+  expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight&&document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
 test('long press latches one-second steps, direction switching and cancellation',async({page})=>{
   await upload(page,synthetic());await expect(page.locator('#viewer')).toBeVisible();
   const next=page.locator('#next-placement'),previous=page.locator('#previous');
