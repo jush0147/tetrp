@@ -13,7 +13,8 @@ export function catalog(replay) {
       if(!multi)return {index:p.index,name};
       const key=identity(p),before=scores.has(key)?scores.get(key):0;
       const after=winners.length===1&&before!==null?before+Number(winners[0]===p):null;
-      scores.set(key,after);return {index:p.index,name,scoreBefore:before,scoreAfter:after};
+      const outcome=winners.length===1?(winners[0]===p?'win':'lose'):null;
+      scores.set(key,after);return {index:p.index,name,scoreBefore:before,scoreAfter:after,outcome};
     });
     return {index:round.index,players,...(multi?{scoreFrame:Math.max(...round.players.map(p=>p.stream.frames))}:{})};
   });

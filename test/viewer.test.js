@@ -142,6 +142,7 @@ test('round FT scores follow recorded winners and player identity, with unknown 
     [[0,1],[0,0]],[[0,1],[1,1]],[[1,null],[1,null]],
   ]);
   assert.equal(rounds[0].scoreFrame,90);
+  assert.deepEqual(rounds.map(r=>r.players.map(p=>p.outcome)),[['win','lose'],['win','lose'],[null,null]]);
 });
 test('render model clips buffer rows, uses engine cells/ceil, and never mutates state',()=>{
   const e=new Engine();e.state.board.rows[0][0]='gb';e.state.board.rows[20][0]='t';

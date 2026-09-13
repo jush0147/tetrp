@@ -7,6 +7,23 @@ const synthetic=()=>({version:1,gamemode:'40l',replay:{frames:90,options:{versio
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}}]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>document.addEventListener('tetrp:position',e=>{window.observedPosition=e.detail;}));await page.goto('./');});
 async function upload(page,object){await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});}
+test('round transition aligns WIN LOSE and score changes with swapped sides',async({page})=>{
+  const player=(id,reason)=>({id,username:id,replay:{...synthetic().replay,options:{version:19,seed:42,handling:{safelock:false}},results:{gameoverreason:reason}}});
+  await upload(page,{version:1,gamemode:'league',replay:{rounds:[
+    [player('Alpha','winner'),player('Beta','topout')],[player('Alpha','topout'),player('Beta','winner')],
+  ]}});await expect(page.locator('#viewer')).toBeVisible();
+  await page.locator('#player-swap').click();await page.locator('#play-mode').click();await page.locator('#play').click();
+  await expect(page.locator('#round-result')).toBeVisible();
+  await expect(page.locator('.result-name')).toHaveText(['Beta','Alpha']);
+  await expect(page.locator('.result-outcome')).toHaveText(['LOSE','WIN']);
+  await expect(page.locator('.result-score')).toHaveText(['0 → 0','0 → 1']);
+  await expect(page.locator('#round')).toHaveValue('1');await expect(page.locator('.player-name')).toHaveText(['Beta','Alpha']);
+  await page.locator('#play').click();await page.locator('#play-mode').click();await page.locator('#play').click();
+  await expect(page.locator('#round-result')).toBeVisible();await expect(page.locator('.result-outcome')).toHaveText(['WIN','LOSE']);
+  await expect(page.locator('.result-score')).toHaveText(['0 → 1','1 → 1']);
+  await page.locator('#play').click();await expect(page.locator('#round-result')).toBeHidden();
+  await page.waitForTimeout(1300);await expect(page.locator('#round')).toHaveValue('1');
+});
 test('playback modes cycle, select by hold, transition and retain speed',async({page})=>{
   const player=name=>{const replay=synthetic().replay;replay.options.version=19;return {id:name,username:name,replay};};
   await upload(page,{version:1,gamemode:'league',replay:{rounds:[[player('a'),player('b')],[player('a'),player('b')]]}});

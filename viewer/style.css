@@ -96,6 +96,8 @@ main{width:100%;max-width:1440px;margin:0 auto;flex:1;min-height:0;display:flex;
 #mode-menu button{display:block;width:100%;min-height:44px;text-align:left;padding:8px 12px;border:0;background:transparent;font-size:15px}
 #mode-menu button[aria-checked=true]{color:var(--accent);background:#0a353a}
 #mode-toast{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);z-index:29;background:#0c2635;border:1px solid var(--line);border-radius:8px;padding:8px 14px;color:var(--ink);font-size:14px;white-space:nowrap;pointer-events:none}
-.boards{position:relative}.boards.round-transition::after{content:attr(data-transition);position:absolute;inset:0;display:grid;place-items:center;background:#061923d9;color:var(--accent);font-size:28px;z-index:15;animation:round-arrival .2s ease-out}
+.boards{position:relative}#round-result{display:none}.boards.round-transition #round-result{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:16px;background:#061923ed;color:var(--ink);z-index:15;animation:round-arrival .2s ease-out;text-align:center;padding:12px}
+.result-title,.result-next{color:var(--muted);font-size:14px}.result-sides{display:flex;gap:12px}.result-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}.result-name{font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.result-outcome{font-size:clamp(24px,5vw,40px)}.result-side[data-outcome=win] .result-outcome,.result-side[data-outcome=win] .result-score b{color:var(--accent)}.result-side[data-outcome=lose] .result-outcome{color:#f2a3a3}.result-score{font-size:26px;font-variant-numeric:tabular-nums}.result-score>span{color:var(--muted)}
+@media(orientation:landscape) and (max-height:330px){.boards.round-transition #round-result{gap:6px;padding:4px}.result-side{gap:3px}.result-outcome{font-size:24px}.result-score{font-size:22px}}
 @keyframes round-arrival{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){.boards.round-transition::after{animation:none}}
+@media(prefers-reduced-motion:reduce){.boards.round-transition #round-result{animation:none}}

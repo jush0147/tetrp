@@ -10,6 +10,7 @@ const autoStep=bindAutoStep($('previous'),$('next-placement'),direction=>step(di
 const peer=$('focus-lane').cloneNode(true);peer.id='peer-lane';peer.setAttribute('aria-label','另一位玩家');
 for(const node of peer.querySelectorAll('[id]'))node.id=`peer-${node.id}`;
 $('boards').append(peer);
+const roundResult=document.createElement('section');roundResult.id='round-result';roundResult.setAttribute('role','status');$('boards').append(roundResult);
 const garbageViews=new Map();
 function fitGarbage(prefix){
   const g=garbageViews.get(prefix);if(!g)return;
@@ -149,8 +150,20 @@ function finishRound(){
   const next=nextRound(playbackMode(),Number($('round').value),rounds.length);stop();
   if(next===null)return;
   playing=true;$('play').textContent='Ⅱ';$('play').setAttribute('aria-label','暫停');$('play').setAttribute('aria-pressed','true');
-  $('boards').dataset.transition=`Round ${next+1}`;$('boards').classList.add('round-transition');
-  transitionTimer=setTimeout(()=>{$('round').value=String(next);fillPlayers();select(true);},500);
+  const round=rounds[Number($('round').value)],focus=Number($('player').value);
+  const title=document.createElement('div');title.className='result-title';title.textContent=`Round ${round.index+1}`;
+  const sides=document.createElement('div');sides.className='result-sides';
+  for(const p of [...round.players].sort((a,b)=>Number(b.index===focus)-Number(a.index===focus))){
+    const side=document.createElement('div');side.className='result-side';side.dataset.outcome=p.outcome??'unknown';
+    const name=document.createElement('span');name.className='result-name';name.textContent=p.name;
+    const outcome=document.createElement('strong');outcome.className='result-outcome';outcome.textContent=p.outcome?.toUpperCase()??'ROUND END';
+    const score=document.createElement('div');score.className='result-score';
+    if(variant==='ttrm'){const before=document.createElement('span');before.textContent=p.scoreBefore??'—';const after=document.createElement('b');after.textContent=p.scoreAfter??'—';score.append(before,document.createTextNode(' → '),after);}
+    side.append(name,outcome,score);sides.append(side);
+  }
+  const upcoming=document.createElement('div');upcoming.className='result-next';upcoming.textContent=`Next · Round ${next+1}`;
+  roundResult.replaceChildren(title,sides,upcoming);$('boards').classList.add('round-transition');
+  transitionTimer=setTimeout(()=>{$('round').value=String(next);fillPlayers();select(true);},1200);
 }
 $('file').addEventListener('change',e=>{load(e.target.files[0]);e.target.value='';});
 $('round').addEventListener('change',()=>{fillPlayers();select();});$('player').addEventListener('change',()=>{
