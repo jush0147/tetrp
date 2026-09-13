@@ -1,6 +1,6 @@
 import './pwa.js';
 import {bindAutoStep} from './auto-step.js';
-import {bindPlayModes,nextRound} from './play-modes.js';
+import {bindPlayModes,bindPicker,nextRound} from './play-modes.js';
 import {boardModel,drawBoard,drawPreview} from './render.js';
 import {PlaybackClock,displayStats,placementLabel,incomingGarbage,visibleGarbage} from './playback.js';
 const $=id=>document.getElementById(id);
@@ -25,9 +25,11 @@ function fitGarbage(prefix){
 const garbageResize=new ResizeObserver(()=>{for(const prefix of garbageViews.keys())fitGarbage(prefix);});
 for(const prefix of ['', 'peer-'])garbageResize.observe($(prefix+'garbage-panel'));
 const clock=new PlaybackClock();
+bindPicker($('speed'),$('speed-menu'),['0.5×','1×','1.5×'],1,i=>['0.5×','1×','1.5×'][i],i=>clock.setSpeed([.5,1,1.5][i],performance.now()),'Playback speed');
+let scrubbing=false,scrubWasPlaying=false,scrubResumeId=null;
 let worker=null,serial=0,active=0,rounds=[],state=null,total=0,frames=0,desired=0,roundFrame=0,playing=false,raf=null,inflight=false,scrubTimer=null,available=false,variant=null;
 const request=(type,data={})=>{active=++serial;worker.postMessage({id:active,type,...data});return active;};
-function stop(cancelAuto=true){clearTimeout(transitionTimer);transitionTimer=null;resumeRound=false;$('boards').classList.remove('round-transition');if(cancelAuto)autoStep.stop();if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
+function stop(cancelAuto=true){scrubbing=false;scrubWasPlaying=false;scrubResumeId=null;clearTimeout(transitionTimer);transitionTimer=null;resumeRound=false;$('boards').classList.remove('round-transition');if(cancelAuto)autoStep.stop();if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
 function busy(message){stop();inflight=false;state=null;available=false;$('viewer').hidden=true;$('error').hidden=true;$('busy').textContent=message;$('busy').hidden=false;}
 function showError(error){stop();inflight=false;state=null;$('viewer').hidden=true;$('busy').hidden=true;$('error').hidden=false;
   $('error-title').textContent=/UNSUPPORTED/.test(error.code||'')?'此 replay 暫不支援':'無法開啟 replay';
@@ -77,6 +79,7 @@ function load(file){
     if(m.type==='ready'||m.type==='state'||m.type==='focused'){
       inflight=false;frames=m.roundFrames;available=m.views.some(v=>!v.error);
       $('busy').hidden=true;$('viewer').hidden=false;renderRound(m,m.type!=='state');
+      if(m.id===scrubResumeId){scrubResumeId=null;const resume=scrubWasPlaying;scrubWasPlaying=false;if(resume&&available)startPlayback(state?Math.max(m.frame,state.frame+state.subframe):m.frame);}
       if(m.type==='ready'&&resumeRound){resumeRound=false;if(available&&frames>0)startPlayback(0);}
       else if(playing&&m.frame>=frames)finishRound();
     }
@@ -174,9 +177,12 @@ $('round').addEventListener('change',()=>{fillPlayers();select();});$('player').
   if($('viewer').hidden){select();return;}
   clearTimeout(scrubTimer);inflight=true;request('focus',{player:Number($('player').value)});
 });
-$('scrubber').addEventListener('pointerdown',()=>{autoStep.stop();if(transitionTimer)stop();});
-$('scrubber').addEventListener('input',e=>{stop();active=++serial;inflight=false;desired=Number(e.target.value);clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>seek('placement',desired),45);});
-$('scrubber').addEventListener('change',()=>seek('placement',desired));
+function beginScrub(){if(scrubbing)return;const resume=playing||scrubWasPlaying;stop();scrubbing=true;scrubWasPlaying=resume;active=++serial;inflight=false;}
+function endScrub(){if(!scrubbing)return;desired=Number($('scrubber').value);seek('placement',desired,false);scrubbing=false;scrubResumeId=active;}
+$('scrubber').addEventListener('pointerdown',beginScrub);
+$('scrubber').addEventListener('input',e=>{beginScrub();active=++serial;inflight=false;desired=Number(e.target.value);clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>seek('placement',desired,false),45);});
+$('scrubber').addEventListener('change',endScrub);
+for(const event of ['pointerup','pointercancel'])$('scrubber').addEventListener(event,()=>setTimeout(endScrub,0));
 $('play').addEventListener('click',()=>{autoStep.stop();if(playing){stop();return;}if(!available)return;
   const at=roundFrame>=frames?0:state?Math.max(roundFrame,state.frame+state.subframe):roundFrame;
   if(roundFrame>=frames)seek('frame',0);
@@ -190,7 +196,9 @@ for(const [buttonId,targetId,containerId,label] of [['toggle-selectors','selecto
     (targetId?$(targetId):document.querySelector('.transport-body')).hidden=!expanded||(targetId==='selectors'&&variant==='ttr');
   });
 }
-$('speed').addEventListener('change',()=>clock.setSpeed(Number($('speed').value),performance.now()));
+const fileMenu=document.querySelector('.file-menu');
+document.addEventListener('pointerdown',e=>{if(!fileMenu.contains(e.target))fileMenu.open=false;});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')fileMenu.open=false;});
  document.addEventListener('keydown',e=>{if(!available||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,button,summary'))return;
   if(e.key==='ArrowLeft'){e.preventDefault();step(-1);}if(e.key==='ArrowRight'){e.preventDefault();step(1);}if(e.code==='Space'){e.preventDefault();$('play').click();}
 });

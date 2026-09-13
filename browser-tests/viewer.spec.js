@@ -7,6 +7,25 @@ const synthetic=()=>({version:1,gamemode:'40l',replay:{frames:90,options:{versio
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}}]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>document.addEventListener('tetrp:position',e=>{window.observedPosition=e.detail;}));await page.goto('./');});
 async function upload(page,object){await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});}
+test('scrubbing preserves playback, compact pickers and outside menu dismissal',async({page})=>{
+  const replay=synthetic();replay.replay.frames=600;replay.replay.events.at(-1).frame=600;
+  await upload(page,replay);await expect(page.locator('#viewer')).toBeVisible();
+  const scrub=page.locator('#scrubber'),play=page.locator('#play');
+  async function drag(){const b=await scrub.boundingBox();await page.mouse.move(b.x+b.width*.3,b.y+b.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width*.6,b.y+b.height/2,{steps:4});await page.mouse.up();}
+  await drag();await expect(play).toHaveAttribute('aria-pressed','false');
+  await play.click();await drag();await expect(play).toHaveAttribute('aria-pressed','true');
+  const frame=await page.evaluate(()=>window.observedPosition.roundFrame);await expect.poll(()=>page.evaluate(()=>window.observedPosition.roundFrame)).toBeGreaterThan(frame);
+  await play.click();await drag();await expect(play).toHaveAttribute('aria-pressed','false');
+  async function hold(id){const b=await page.locator(id).boundingBox();await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();await page.waitForTimeout(500);await page.mouse.up();}
+  await page.locator('#speed').click();await expect(page.locator('#speed')).toHaveText('1.5×');
+  await hold('#speed');await expect(page.locator('#speed-menu')).toBeVisible();await expect(page.locator('#speed')).toHaveText('1.5×');
+  await page.getByRole('menuitemradio',{name:'0.5×',exact:true}).click();await expect(page.locator('#speed')).toHaveText('0.5×');
+  await hold('#play-mode');await expect(page.locator('#mode-menu svg')).toHaveCount(4);
+  expect(await page.locator('#mode-menu').textContent()).toBe('');
+  await page.getByRole('menuitemradio',{name:'Repeat Round',exact:true}).click();await expect(page.locator('#play-mode')).toHaveAttribute('data-mode','3');
+  await page.locator('.file-menu summary').click();await expect(page.locator('.file-menu')).toHaveAttribute('open','');
+  await page.locator('#board').click();await expect(page.locator('.file-menu')).not.toHaveAttribute('open','');
+});
 test('round transition aligns WIN LOSE and score changes with swapped sides',async({page})=>{
   const player=(id,reason)=>({id,username:id,replay:{...synthetic().replay,options:{version:19,seed:42,handling:{safelock:false}},results:{gameoverreason:reason}}});
   await upload(page,{version:1,gamemode:'league',replay:{rounds:[
@@ -29,11 +48,11 @@ test('playback modes cycle, select by hold, transition and retain speed',async({
   await upload(page,{version:1,gamemode:'league',replay:{rounds:[[player('a'),player('b')],[player('a'),player('b')]]}});
   await expect(page.locator('#viewer')).toBeVisible();const mode=page.locator('#play-mode'),play=page.locator('#play');
   await expect(mode).toHaveAttribute('data-mode','0');
-  await page.locator('#speed').selectOption('1.5');
+  await page.locator('#speed').click();
   await play.click();await expect(play).toHaveAttribute('aria-pressed','false');await expect(page.locator('#round')).toHaveValue('0');
   await mode.click();await expect(page.locator('#mode-toast')).toHaveText('Continuous');
   await play.click();await expect(page.locator('#boards')).toHaveClass(/round-transition/);
-  await expect(page.locator('#round')).toHaveValue('1');await expect(page.locator('#speed')).toHaveValue('1.5');
+  await expect(page.locator('#round')).toHaveValue('1');await expect(page.locator('#speed')).toHaveText('1.5×');
   await expect(play).toHaveAttribute('aria-pressed','false');await expect(mode).toHaveAttribute('data-mode','1');
   await mode.click();await play.click();await expect(page.locator('#round')).toHaveValue('0');
   await expect(play).toHaveAttribute('aria-pressed','true');await play.click();await expect(mode).toHaveAttribute('data-mode','2');
@@ -126,7 +145,7 @@ test('orientation preserves both timelines, player IDs and frame-clock speeds',a
   await page.clock.pauseAt(new Date('2026-01-01T00:00:01Z'));
   for(const speed of ['0.5','1','1.5']){
     await placement(page,0);await expect.poll(()=>page.evaluate(()=>window.observedPosition?.roundFrame)).toBe(0);
-    await page.locator('#speed').selectOption(speed);
+    while(await page.locator('#speed').textContent()!==speed+'×')await page.locator('#speed').click();
     // Browser clock controls rAF/performance without relying on CI wall-clock speed.
     await page.evaluate(()=>document.getElementById('play').click());await page.clock.runFor(500);
     await choosePlayer(page,'1');await expect(page.locator('#player-id')).toHaveText('player-beta');
