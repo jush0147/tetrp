@@ -76,7 +76,7 @@ function load(file){
     if(m.type==='progress'){$('busy').textContent=`正在建立時間軸… ${m.value}%`;return;}
     if(m.type==='catalog'){
       variant=m.variant;document.body.dataset.variant=variant;
-      rounds=m.rounds;$('round').disabled=false;$('player').disabled=false;$('round').replaceChildren(...rounds.map(r=>new Option(`Round ${r.index+1}`,String(r.index))));fillPlayers();$('stream-tools').hidden=false;$('stream-tools').classList.toggle('solo',variant==='ttr');$('selectors').hidden=variant==='ttr'||$('toggle-selectors').getAttribute('aria-expanded')==='false';select(true);return;
+      rounds=m.rounds;$('round').disabled=false;$('player').disabled=false;$('round').replaceChildren(...rounds.map(r=>new Option(`Round ${r.index+1}`,String(r.index))));fillPlayers();$('stream-tools').hidden=false;$('stream-tools').classList.toggle('solo',variant==='ttr');$('selectors').hidden=variant==='ttr'||$('toggle-selectors').getAttribute('aria-expanded')==='false';select();return;
     }
     if(m.type==='ready'||m.type==='state'||m.type==='focused'){
       inflight=false;frames=m.roundFrames;available=m.views.some(v=>!v.error);

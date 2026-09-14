@@ -33,7 +33,7 @@ test('portrait cold reload fits a visual viewport smaller than the initial layou
   const controls=await page.locator('#playback-tools').boundingBox();expect(controls.y+controls.height).toBeLessThanOrEqual(700);
   await page.evaluate(()=>{window.visibleTestHeight=740;window.dispatchEvent(new Event('pageshow'));});await fits();
 });
-test('empty viewer is responsive and file selection starts playback',async({page})=>{
+test('empty viewer is responsive and file selection waits for explicit playback',async({page})=>{
   await expect(page.locator('#board')).toBeVisible();await expect(page.locator('#open-empty')).toBeVisible();
   await expect(page.locator('#pieces')).toHaveText('—');await expect(page.locator('#play')).toBeDisabled();
   await expect(page.locator('#speed')).toBeDisabled();await expect(page.locator('#round')).toBeDisabled();
@@ -44,12 +44,14 @@ test('empty viewer is responsive and file selection starts playback',async({page
   const chooser=page.waitForEvent('filechooser');await page.locator('#open-empty').click();
   const replay=synthetic();replay.replay.frames=600;replay.replay.events.at(-1).frame=600;
   await (await chooser).setFiles({name:'demo.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(replay))});
-  await expect(page.locator('#welcome')).toBeHidden();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#welcome')).toBeHidden();await expect(page.locator('#play')).toBeEnabled();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
   await expect(page.locator('#boards')).not.toHaveClass(/dual/);
-  await expect.poll(()=>page.evaluate(()=>window.observedPosition?.roundFrame??0)).toBeGreaterThan(0);
+  await page.waitForTimeout(250);expect(await page.evaluate(()=>window.observedPosition.roundFrame)).toBe(0);
+  await page.locator('#play').click();await expect.poll(()=>page.evaluate(()=>window.observedPosition?.roundFrame??0)).toBeGreaterThan(0);
   const player=name=>({id:name,username:name,replay:{...replay.replay,options:{version:19,seed:42,handling:{safelock:false}}}});
   await page.locator('#file').setInputFiles({name:'demo.ttrm',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({version:1,gamemode:'league',replay:{rounds:[[player('a'),player('b')]]}}))});
-  await expect(page.locator('#boards')).toHaveClass(/dual/);await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#boards')).toHaveClass(/dual/);await expect(page.locator('#play')).toBeEnabled();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
+  await page.waitForTimeout(250);expect(await page.evaluate(()=>window.observedPosition.roundFrame)).toBe(0);
   await expect(page.locator('#round')).toHaveValue('0');
 });
 test('scrubbing preserves playback, compact pickers and outside menu dismissal',async({page})=>{
