@@ -308,7 +308,10 @@ test('phone viewport contains both layouts and Hold never changes rail position'
   await expect(page.locator('#viewer')).toBeVisible();
   await expect(page.locator('#hold-lock')).toHaveCount(0);
   for(const size of [{width:360,height:640},{width:390,height:664},{width:430,height:740},{width:667,height:280},{width:667,height:320},{width:844,height:390},{width:915,height:412},{width:900,height:500},{width:1280,height:720}]){
-    await page.setViewportSize(size);await placement(page,1);
+    await page.setViewportSize(size);
+    // Compare Hold states only after the viewport resize has reached the layout.
+    await expect.poll(()=>page.locator('body').evaluate(el=>el.getBoundingClientRect().height)).toBe(size.height);
+    await placement(page,1);
     const before=await page.locator('#focus-lane .chain').boundingBox();
     await placement(page,2);expect(await page.locator('#focus-lane .chain').boundingBox()).toEqual(before);
     const bounds=await page.evaluate(()=>({width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight,x:scrollX,y:scrollY}));
