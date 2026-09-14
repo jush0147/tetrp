@@ -67,7 +67,11 @@ test('PWA manifest, offline reopening and local worker playback',async({page,con
     {frame:0,type:'start',data:{}},{frame:1,type:'keydown',data:{key:'hardDrop',subframe:.2}},
     {frame:2,type:'keyup',data:{key:'hardDrop',subframe:.4}},{frame:90,type:'end',data:{reason:'clear'}}]}};
   await page.locator('#file').setInputFiles({name:'private-offline.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(replay))});
-  await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');await page.locator('#play').click();
+  await expect(page.locator('#viewer')).toBeVisible();await expect(page.locator('#play')).toBeEnabled();
+  await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('#pieces')).toHaveText('0');
+  await page.locator('#play').click();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#pieces')).toHaveText('1');await page.locator('#play').click();
   await page.locator('#scrubber').evaluate(el=>{el.value='0';el.dispatchEvent(new Event('input'));el.dispatchEvent(new Event('change'));});
   await expect(page.locator('#pieces')).toHaveText('0');await page.locator('#next-placement').click();
   await expect(page.locator('#pieces')).toHaveText('1');
