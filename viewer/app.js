@@ -74,10 +74,11 @@ function load(file){
     if(m.type==='progress'){$('busy').textContent=`正在建立時間軸… ${m.value}%`;return;}
     if(m.type==='catalog'){
       variant=m.variant;document.body.dataset.variant=variant;
-      rounds=m.rounds;$('round').replaceChildren(...rounds.map(r=>new Option(`Round ${r.index+1}`,String(r.index))));fillPlayers();$('stream-tools').hidden=false;$('stream-tools').classList.toggle('solo',variant==='ttr');$('selectors').hidden=variant==='ttr'||$('toggle-selectors').getAttribute('aria-expanded')==='false';select();return;
+      rounds=m.rounds;$('round').disabled=false;$('player').disabled=false;$('round').replaceChildren(...rounds.map(r=>new Option(`Round ${r.index+1}`,String(r.index))));fillPlayers();$('stream-tools').hidden=false;$('stream-tools').classList.toggle('solo',variant==='ttr');$('selectors').hidden=variant==='ttr'||$('toggle-selectors').getAttribute('aria-expanded')==='false';select(true);return;
     }
     if(m.type==='ready'||m.type==='state'||m.type==='focused'){
       inflight=false;frames=m.roundFrames;available=m.views.some(v=>!v.error);
+      $('speed').disabled=!available;$('play-mode').disabled=!available;
       $('busy').hidden=true;$('viewer').hidden=false;renderRound(m,m.type!=='state');
       if(m.id===scrubResumeId){scrubResumeId=null;const resume=scrubWasPlaying;scrubWasPlaying=false;if(resume&&available)startPlayback(state?Math.max(m.frame,state.frame+state.subframe):m.frame);}
       if(m.type==='ready'&&resumeRound){resumeRound=false;if(available&&frames>0)startPlayback(0);}
@@ -203,4 +204,21 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')fileMenu.open=false;
   if(e.key==='ArrowLeft'){e.preventDefault();step(-1);}if(e.key==='ArrowRight'){e.preventDefault();step(1);}if(e.code==='Space'){e.preventDefault();$('play').click();}
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});window.addEventListener('pagehide',()=>worker?.terminate());
+function showEmptyViewer(){
+  document.body.dataset.variant='ttrm';$('workspace').hidden=false;$('viewer').hidden=false;$('boards').classList.add('dual');
+  $('stream-tools').hidden=false;$('selectors').hidden=false;$('round').replaceChildren(new Option('Round —',''));
+  $('player-tabs').replaceChildren();
+  for(let i=0;i<2;i++){const name=document.createElement('span');name.className='player-tab';name.textContent='—';$('player-tabs').append(name);
+    if(i===0){const swap=document.createElement('button');swap.type='button';swap.textContent='⇄';swap.disabled=true;swap.setAttribute('aria-label','交換雙方位置');$('player-tabs').append(swap);}}
+  for(const id of ['round','player','previous','play','next-placement','scrubber','speed','play-mode'])$(id).disabled=true;
+  for(const prefix of ['', 'peer-']){
+    drawBoard($(prefix+'board'),{width:10,height:20,rows:Array.from({length:20},()=>Array(10).fill(null)),displayActive:[],placement:0,lines:0});
+    $(prefix+'board').setAttribute('aria-label','空棋盤，尚未載入 replay');drawPreview($(prefix+'hold'),null);
+    for(const id of ['pieces','lines','b2b','combo','attack','pps','apm','app','placement-sent','garbage-total','player-id'])$(prefix+id).textContent='—';
+    $(prefix+'spin').hidden=true;$(prefix+'conformance').hidden=true;
+  }
+  $('playback-position').textContent='—';
+}
+showEmptyViewer();
+$('open-empty').addEventListener('click',()=>$('file').click());
 if(!('Worker'in window)){$('welcome').hidden=true;$('compatibility').hidden=false;}

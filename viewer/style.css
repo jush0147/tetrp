@@ -111,3 +111,5 @@ main{width:100%;max-width:1440px;margin:0 auto;flex:1;min-height:0;display:flex;
 #speed-menu{position:absolute;right:76px;bottom:calc(100% + 6px);z-index:30;min-width:64px;padding:4px;border:1px solid var(--line);border-radius:8px;background:#0c2635;box-shadow:0 4px 20px #0006}
 #speed-menu button{display:block;min-width:56px;width:100%;min-height:44px;padding:8px;border:0;background:transparent;font-size:16px}
 #speed-menu button[aria-checked=true]{color:var(--accent);background:#0a353a}
+
+#welcome{position:absolute;inset:0;display:grid;place-items:center;z-index:4;pointer-events:none}#open-empty{pointer-events:auto;min-height:44px;padding:12px 20px;border:1px solid var(--accent);border-radius:8px;background:#0c2635;color:var(--ink);font:inherit;font-size:16px}#player-tabs>button:disabled{flex:0 0 44px;height:38px;font-size:22px;padding:0}

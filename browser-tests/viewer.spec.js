@@ -6,7 +6,31 @@ const synthetic=()=>({version:1,gamemode:'40l',replay:{frames:90,options:{versio
   {frame:0,type:'start',data:{}},...Array.from({length:6},(_,i)=>[{frame:i*12+1,type:'keydown',data:{key:'hardDrop',subframe:.2}},
     {frame:i*12+2,type:'keyup',data:{key:'hardDrop',subframe:.4}}]).flat(),{frame:90,type:'end',data:{reason:'clear'}}]}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>document.addEventListener('tetrp:position',e=>{window.observedPosition=e.detail;}));await page.goto('./');});
-async function upload(page,object){await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});}
+async function upload(page,object){
+  await page.locator('#file').setInputFiles({name:'synthetic.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(object))});
+  await expect(page.locator('#viewer')).toBeVisible();
+  if(await page.locator('#play').getAttribute('aria-pressed')==='true')await page.locator('#play').click();
+  if(await page.locator('#scrubber').isEnabled())await placement(page,0);
+}
+test('empty viewer is responsive and file selection starts playback',async({page})=>{
+  await expect(page.locator('#board')).toBeVisible();await expect(page.locator('#open-empty')).toBeVisible();
+  await expect(page.locator('#pieces')).toHaveText('—');await expect(page.locator('#play')).toBeDisabled();
+  await expect(page.locator('#speed')).toBeDisabled();await expect(page.locator('#round')).toBeDisabled();
+  for(const size of [{width:390,height:664},{width:844,height:390}]){
+    await page.setViewportSize(size);expect(await page.locator('#peer-lane').isVisible()).toBe(size.width>size.height);
+    expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);
+  }
+  const chooser=page.waitForEvent('filechooser');await page.locator('#open-empty').click();
+  const replay=synthetic();replay.replay.frames=600;replay.replay.events.at(-1).frame=600;
+  await (await chooser).setFiles({name:'demo.ttr',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(replay))});
+  await expect(page.locator('#welcome')).toBeHidden();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#boards')).not.toHaveClass(/dual/);
+  await expect.poll(()=>page.evaluate(()=>window.observedPosition?.roundFrame??0)).toBeGreaterThan(0);
+  const player=name=>({id:name,username:name,replay:{...replay.replay,options:{version:19,seed:42,handling:{safelock:false}}}});
+  await page.locator('#file').setInputFiles({name:'demo.ttrm',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({version:1,gamemode:'league',replay:{rounds:[[player('a'),player('b')]]}}))});
+  await expect(page.locator('#boards')).toHaveClass(/dual/);await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#round')).toHaveValue('0');
+});
 test('scrubbing preserves playback, compact pickers and outside menu dismissal',async({page})=>{
   const replay=synthetic();replay.replay.frames=600;replay.replay.events.at(-1).frame=600;
   await upload(page,replay);await expect(page.locator('#viewer')).toBeVisible();
@@ -302,6 +326,7 @@ test('real private files, all TL streams and known conformance states',async({pa
   test.skip(!process.env.TETRP_TTR||!process.env.TETRP_TTRM,'Private samples are opt-in; never CI artifacts.');test.setTimeout(180000);
   const solo=parseReplay(readFileSync(process.env.TETRP_TTR,'utf8'));
   await page.locator('#file').setInputFiles(process.env.TETRP_TTR);await expect(page.locator('#viewer')).toBeVisible();
+  await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');await page.locator('#play').click();
   const reference=new Reconstruction(prepareReplay(selectPlayer(solo)));reference.run();const total=reference.state.stats.pieces;
   for(const n of [0,Math.floor(total/2),total,Math.floor(total/2)])await consistent(page,reference,n);
   await expect(page.locator('#conformance')).toBeHidden();

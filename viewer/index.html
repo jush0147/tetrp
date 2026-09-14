@@ -10,13 +10,13 @@
 <body>
 <header id="topbar" class="topbar"><a class="brand" href="./" aria-label="Tetrp 首頁">tetrp<span class="brand-dot">.</span></a><div id="stream-tools" class="stream-tools" hidden><div id="selectors" class="selectors" hidden><select id="round" aria-label="選擇 round"></select><select id="player" aria-label="選擇 player" hidden></select><div id="player-tabs" class="player-tabs" role="group" aria-label="切換玩家"></div></div><button id="toggle-selectors" class="icon" aria-label="收合選單" aria-expanded="true">⌃</button></div><details class="file-menu"><summary aria-label="檔案選單">⋮</summary><div class="file-menu-panel"><label class="open-file" for="file">開啟 replay</label><button id="install-app" type="button">安裝 App</button></div></details><input id="file" type="file" accept=".ttr,.ttrm" aria-label="選擇本機 replay"></header>
 <main>
-<section id="welcome" class="welcome"><label class="file-cta" for="file">選擇 .ttr / .ttrm</label><p>本機讀取，不上傳。</p></section>
+
 <section id="workspace" hidden aria-label="Replay 工作區">
 
 <p id="busy" role="status" hidden>正在讀取…</p>
 <div id="error" class="error" role="alert" hidden><strong id="error-title">無法開啟 replay</strong><p id="error-message"></p><details><summary>錯誤細節</summary><pre id="error-detail"></pre></details></div>
 <div id="viewer" hidden>
-<div id="boards" class="boards">
+<div id="boards" class="boards"><div id="welcome"><button id="open-empty" type="button">Open replay</button></div>
 <section id="focus-lane" class="lane" aria-label="選定玩家">
 <p id="lane-error" class="error" hidden role="alert"></p>
 <div id="lane-display">
