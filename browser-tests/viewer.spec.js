@@ -12,6 +12,27 @@ async function upload(page,object){
   if(await page.locator('#play').getAttribute('aria-pressed')==='true')await page.locator('#play').click();
   if(await page.locator('#scrubber').isEnabled())await placement(page,0);
 }
+test('portrait cold reload fits a visual viewport smaller than the initial layout viewport',async({page})=>{
+  await page.setViewportSize({width:384,height:832});
+  await page.addInitScript(()=>{
+    window.visibleTestHeight=740;
+    Object.defineProperty(window.visualViewport,'height',{get:()=>window.visibleTestHeight});
+  });
+  await page.reload();
+  async function fits(){
+    await expect.poll(()=>page.locator('body').evaluate(el=>el.getBoundingClientRect().height)).toBe(740);
+    for(const id of ['board','playback-tools','previous','play','next-placement','speed','play-mode']){
+      const box=await page.locator('#'+id).boundingBox();expect(box.y).toBeGreaterThanOrEqual(0);expect(box.y+box.height).toBeLessThanOrEqual(740);
+    }
+    expect(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight)).toBe(true);
+  }
+  await fits();await page.reload();await fits();
+  await upload(page,synthetic());await fits();
+  await page.evaluate(()=>{window.visibleTestHeight=700;visualViewport.dispatchEvent(new Event('resize'));});
+  await expect.poll(()=>page.locator('body').evaluate(el=>el.getBoundingClientRect().height)).toBe(700);
+  const controls=await page.locator('#playback-tools').boundingBox();expect(controls.y+controls.height).toBeLessThanOrEqual(700);
+  await page.evaluate(()=>{window.visibleTestHeight=740;window.dispatchEvent(new Event('pageshow'));});await fits();
+});
 test('empty viewer is responsive and file selection starts playback',async({page})=>{
   await expect(page.locator('#board')).toBeVisible();await expect(page.locator('#open-empty')).toBeVisible();
   await expect(page.locator('#pieces')).toHaveText('—');await expect(page.locator('#play')).toBeDisabled();

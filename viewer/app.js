@@ -1,4 +1,6 @@
 import './pwa.js';
+import {bindViewport} from './viewport.js';
+bindViewport(window,document.documentElement);
 import {bindAutoStep} from './auto-step.js';
 import {bindPlayModes,bindPicker,nextRound} from './play-modes.js';
 import {boardModel,drawBoard,drawPreview} from './render.js';
