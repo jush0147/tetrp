@@ -123,4 +123,6 @@ main{width:100%;max-width:1440px;margin:0 auto;flex:1;min-height:0;display:flex;
  #peer-lane-display .lane-field{grid-column:1}
  #peer-lane-display .rail-stats{grid-column:2}
  .identity summary{font-size:18px;font-weight:750;color:var(--ink);letter-spacing:.6px;background:#0c2635}
+ .sent-label{font-size:clamp(11px,1.4vw,16px)}
+ .sent-stat .placement-sent{font-size:clamp(24px,4.6dvh,42px)}
 }
