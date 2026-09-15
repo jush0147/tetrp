@@ -162,7 +162,7 @@ test('local open, scrubber navigation, playback and refresh',async({page})=>{
   await page.locator('#previous').click();await expect(page.locator('#pieces')).toHaveText('0');
   await expect(page.locator('#frame-form')).toHaveCount(0);await expect(page.locator('#placement-form')).toHaveCount(0);
   await page.locator('#play').click();await expect(page.locator('#pieces')).toHaveText('6');await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
-  expect(external).toEqual([]);await page.reload();await expect(page.locator('#welcome')).toBeVisible();await upload(page,x);await expect(page.locator('#pieces')).toHaveText('0');
+  expect(external).toEqual([]);await page.waitForTimeout(350);await page.reload();await expect(page.locator('#pieces')).toHaveText('6');await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');await upload(page,x);await expect(page.locator('#pieces')).toHaveText('0');
 });
 
 test('orientation preserves both timelines, player IDs and frame-clock speeds',async({page})=>{
@@ -352,7 +352,7 @@ test('real private files, all TL streams and known conformance states',async({pa
   test.skip(!process.env.TETRP_TTR||!process.env.TETRP_TTRM,'Private samples are opt-in; never CI artifacts.');test.setTimeout(180000);
   const solo=parseReplay(readFileSync(process.env.TETRP_TTR,'utf8'));
   await page.locator('#file').setInputFiles(process.env.TETRP_TTR);await expect(page.locator('#viewer')).toBeVisible();
-  await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');await page.locator('#play').click();
+  await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
   const reference=new Reconstruction(prepareReplay(selectPlayer(solo)));reference.run();const total=reference.state.stats.pieces;
   for(const n of [0,Math.floor(total/2),total,Math.floor(total/2)])await consistent(page,reference,n);
   await expect(page.locator('#conformance')).toBeHidden();
@@ -393,6 +393,7 @@ test('real private files, all TL streams and known conformance states',async({pa
           const original=page.viewportSize();await placement(page,ac);
           for(const size of [{width:667,height:320},{width:844,height:390}]){
             await page.setViewportSize(size);
+            await expect.poll(()=>page.locator('body').evaluate(el=>el.getBoundingClientRect().height)).toBe(size.height);
             const chain=await page.locator('#focus-lane .chain').boundingBox(),sent=await page.locator('#placement-sent').boundingBox();
             expect(sent.y+sent.height).toBeLessThanOrEqual(chain.y+chain.height);
             const spin=await page.locator('#spin').boundingBox();expect(spin.y+spin.height).toBeLessThanOrEqual(sent.y);

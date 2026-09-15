@@ -120,4 +120,4 @@ particular v19 behavioral snapshot, not today's live service.
 
 ## Install on your phone
 
-Open [tetrp](https://jush0147.github.io/tetrp/) and choose **⋮ → 安裝 App**. On iPhone, use Safari → Share → Add to Home Screen. After the first online load, the viewer works offline; choose your replay from the device each time. Updates are checked on opening, returning to the app, and reconnecting. A downloaded update reloads open app windows; select your replay again. Replay files are never uploaded or cached.
+Open [tetrp](https://jush0147.github.io/tetrp/) and choose **⋮ → 安裝 App**. On iPhone, use Safari → Share → Add to Home Screen. After the first online load, the viewer works offline; the last opened replay and its viewing position restore from local IndexedDB. Updates are checked on opening, returning to the app, and reconnecting. A downloaded update waits for local persistence before reloading, then restores the replay paused. Only one current replay is retained, replaced by the next file; it is never uploaded or stored in the service-worker asset cache. Legacy tabs without persistence support must close before the upgrade can activate.

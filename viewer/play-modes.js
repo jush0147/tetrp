@@ -37,5 +37,5 @@ export function bindPicker(button,menu,labels,initial,markup,onChange,name){
   button.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();open();menu.children[mode].focus();}});
   document.addEventListener('pointerdown',e=>{if(!menu.contains(e.target)&&!button.contains(e.target))close();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){close();button.focus();}});
-  render();return ()=>mode;
+  render();const value=()=>mode;value.set=i=>{if(Number.isInteger(i)&&i>=0&&i<labels.length){mode=i;render();close();}};return value;
 }

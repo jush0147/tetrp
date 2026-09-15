@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 
-test('legacy cached app upgrades without closing tabs or clearing storage',async({page,context})=>{
+test('legacy cached app waits for old tabs to close before activating',async({page,context})=>{
   let current=false;
   const server=createServer(async(req,res)=>{
     const name=new URL(req.url,'http://localhost').pathname.replace('/tetrp/','')||'index.html';
@@ -25,11 +25,14 @@ test('legacy cached app upgrades without closing tabs or clearing storage',async
     await page.evaluate(async()=>{for(const key of await caches.keys())await caches.delete(key);});
     current=true;
     await page.evaluate(async()=>{await (await navigator.serviceWorker.getRegistration()).update();});
-    await expect(page.locator('#welcome')).toBeVisible();await expect(other.locator('#welcome')).toBeVisible();
-    await expect(page.locator('#legacy')).toHaveCount(0);
-    const initial=await page.evaluate(()=>performance.timeOrigin);
-    await page.evaluate(async()=>{await (await navigator.serviceWorker.getRegistration()).update();});
-    await page.waitForTimeout(500);expect(await page.evaluate(()=>performance.timeOrigin)).toBe(initial);
+    await expect.poll(()=>page.evaluate(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting)).toBe(true);
+    await expect(page.locator('#legacy')).toBeVisible();await expect(other.locator('#legacy')).toBeVisible();
+    await other.close();await page.close();
+    const reopened=await context.newPage();await reopened.goto(base);
+    await expect(reopened.locator('#welcome')).toBeVisible();
+    const initial=await reopened.evaluate(()=>performance.timeOrigin);
+    await reopened.evaluate(async()=>{await (await navigator.serviceWorker.getRegistration()).update();});
+    await reopened.waitForTimeout(500);expect(await reopened.evaluate(()=>performance.timeOrigin)).toBe(initial);
   }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 });
 
@@ -80,8 +83,8 @@ test('PWA manifest, offline reopening and local worker playback',async({page,con
     return result.sort();
   });
   expect(paths).toEqual(['app.css','app.js','icon-180.png','icon-192.png','icon-512.png','index.html','manifest.webmanifest','worker.js'].map(p=>'/tetrp/'+p).sort());
-  const reopened=await context.newPage();await page.close();await reopened.goto(base);
-  await expect(reopened.locator('#welcome')).toBeVisible();
+  await page.waitForTimeout(350);const reopened=await context.newPage();await page.close();await reopened.goto(base);
+  await expect(reopened.locator('#pieces')).toHaveText('1');await expect(reopened.locator('#play')).toHaveAttribute('aria-pressed','false');
   }finally{server.closeAllConnections();if(server.listening)await new Promise(resolve=>server.close(resolve));}
 });
 
