@@ -113,3 +113,14 @@ main{width:100%;max-width:1440px;margin:0 auto;flex:1;min-height:0;display:flex;
 #speed-menu button[aria-checked=true]{color:var(--accent);background:#0a353a}
 
 #welcome{position:absolute;inset:0;display:grid;place-items:center;z-index:4;pointer-events:none}#open-empty{pointer-events:auto;min-height:44px;padding:12px 20px;border:1px solid var(--accent);border-radius:8px;background:#0c2635;color:var(--ink);font:inherit;font-size:16px}#player-tabs>button:disabled{flex:0 0 44px;height:38px;font-size:22px;padding:0}
+
+/* Desktop landscape keeps three vertical stats, with the peer rail on the outside. */
+.player-name,.identity,.result-name,#player{text-transform:uppercase}
+@media(orientation:landscape) and (min-height:501px){
+ .rail-stats>.pieces-stat,.rail-stats>.attack-stat,.rail-stats>.solo-lines{display:none}
+ .rail-stats>.app-stat{display:flex;border-bottom:0}
+ #peer-lane-display{grid-template-columns:1fr var(--rail)}
+ #peer-lane-display .lane-field{grid-column:1}
+ #peer-lane-display .rail-stats{grid-column:2}
+ .identity summary{font-size:18px;font-weight:750;color:var(--ink);letter-spacing:.6px;background:#0c2635}
+}

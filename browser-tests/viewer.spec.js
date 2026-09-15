@@ -274,7 +274,9 @@ test('malformed file and responsive touch targets',async({page})=>{
   await page.locator('#file').setInputFiles({name:'broken.ttr',mimeType:'text/plain',buffer:Buffer.from('{')});
   await expect(page.locator('#error')).toBeVisible();await expect(page.locator('#error-detail')).toContainText('MALFORMED_JSON');
   await upload(page,synthetic());await expect(page.locator('#viewer')).toBeVisible();
-  await expect(page.locator('#lines')).toBeVisible();await expect(page.locator('#conformance')).toBeHidden();
+  if(await page.evaluate(()=>matchMedia('(orientation:portrait)').matches))await expect(page.locator('#lines')).toBeVisible();
+  else await expect(page.locator('#lines')).toBeHidden();
+  await expect(page.locator('#conformance')).toBeHidden();
   expect((await page.locator('.transport').boundingBox()).height).toBeLessThanOrEqual(140);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   for(const id of ['previous','next-placement','play']){const b=await page.locator(`#${id}`).boundingBox();expect(b.height).toBeGreaterThanOrEqual(44);expect(b.width).toBeGreaterThanOrEqual(44);}
@@ -328,6 +330,16 @@ test('phone viewport contains both layouts and Hold never changes rail position'
       const chain=await page.locator('#focus-lane .chain').boundingBox(),sent=await page.locator('#placement-sent').boundingBox(),spin=await page.locator('#spin').boundingBox();
       expect(sent.y+sent.height).toBeLessThanOrEqual(chain.y+chain.height);
       expect(spin.y+spin.height).toBeLessThanOrEqual(sent.y);
+      if(size.height>500){
+        for(const prefix of ['', 'peer-']){
+          expect(await page.locator(`#${prefix}lane-display .rail-stats dt:visible`).allTextContents()).toEqual(['PPS','APM','APP']);
+          expect(await page.locator(`#${prefix}player-id`).evaluate(el=>getComputedStyle(el).textTransform)).toBe('uppercase');
+          expect(await page.locator(`#${prefix}player-id`).evaluate(el=>Number(getComputedStyle(el).fontWeight))).toBeGreaterThanOrEqual(700);
+        }
+        const field=await page.locator('#peer-lane-display .lane-field').boundingBox(),stats=await page.locator('#peer-lane-display .rail-stats').boundingBox();
+        expect(stats.x).toBeGreaterThanOrEqual(field.x+field.width);
+        expect(await page.locator('.player-name').first().evaluate(el=>getComputedStyle(el).textTransform)).toBe('uppercase');
+      }
       if(size.height<=500){
         for(const prefix of ['', 'peer-']){
           await expect(page.locator(`#${prefix}pieces`)).toBeHidden();await expect(page.locator(`#${prefix}attack`)).toBeHidden();
