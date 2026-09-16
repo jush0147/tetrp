@@ -322,6 +322,13 @@ test('phone viewport contains both layouts and Hold never changes rail position'
     for(const selector of ['#board','#hold','#next','#garbage-total','#placement-sent','.rail-stats','#playback-tools']){
       const r=await page.locator(selector).first().boundingBox();expect(r.y).toBeGreaterThanOrEqual(0);expect(r.y+r.height).toBeLessThanOrEqual(size.height);
     }
+    if(size.width<=size.height){
+      expect(await page.locator('#lane-display .rail-stats dt:visible').allTextContents()).toEqual(['PPS','APM','APP']);
+      const s=await page.evaluate(()=>window.observedPosition.state);
+      await expect(page.locator('#app')).toHaveText((s.attack.totals.generated/s.stats.pieces).toFixed(2));
+      const pps=await page.locator('#pps').boundingBox(),apm=await page.locator('#apm').boundingBox(),app=await page.locator('#app').boundingBox();
+      expect(app.x).toBeGreaterThan(apm.x);expect(apm.x).toBeGreaterThan(pps.x);
+    }
     if(size.width>size.height){
       const r=await page.locator('#peer-board').boundingBox();expect(r.x+r.width).toBeLessThanOrEqual(size.width);
       const header=await page.locator('.topbar').boundingBox();expect(header.height).toBeLessThanOrEqual(48);

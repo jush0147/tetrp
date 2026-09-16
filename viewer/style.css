@@ -39,6 +39,10 @@ main{width:100%;max-width:1440px;margin:0 auto;flex:1;min-height:0;display:flex;
 @media(orientation:landscape) and (max-height:360px){.chain{gap:1px}.placement-sent{font-size:18px}}
 .sent-stat{margin-top:auto;padding-top:6px;grid-column:1/-1;grid-row:4}.sent-label{display:block;font-size:11px;font-weight:650;line-height:1.3;color:var(--muted)}.sent-stat .placement-sent{margin:0;padding:0}@media(orientation:landscape) and (max-height:440px){.sent-stat{display:flex;align-items:center;justify-content:space-between;gap:4px;padding-top:2px}.sent-label{font-size:10px}}
 .rail-stats>.app-stat{display:none}
+@media(orientation:portrait){
+ body[data-variant=ttrm] .rail-stats>.pieces-stat,body[data-variant=ttrm] .rail-stats>.attack-stat{display:none}
+ body[data-variant=ttrm] .rail-stats>.app-stat{display:flex;border-right:0}
+}
 /* Phone landscape is a height-first three-column viewer, not the desktop rail layout. */
 @media(orientation:landscape) and (max-height:500px){
  body{gap:4px;padding-bottom:max(2px,env(safe-area-inset-bottom))}
