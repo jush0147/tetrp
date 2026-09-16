@@ -225,3 +225,11 @@ streams, multiplayer retry applicability, denser independent anchors for exact
 first-frame localization, and unsupported replay modes/features. Phase 2 does not
 claim universal TETR.IO compatibility or complete historical v15 emulation.
 Stop here; Phase 3 viewer and bot integration have not begun.
+
+## Provisional TL retry no-op — requested by the user (2026-09-16)
+
+At the user's explicit request, all TL `retry` keydown/keyup events are treated as no-ops, including mid-round events, any subframe, and absent/false/true `hoisted`. This is a provisional compatibility assumption, not confirmed general TETR.IO behavior, and has NOT been broadly tested. The user explicitly requested inclusion of mid-round retries. Solo retry and retryisclear profile handling are unchanged. Each event remains in source order as `provisional-ignored-multiplayer-retry` metadata, including original fields and source index. Engine rules and anchor values are unchanged. This note is only in code/documentation; no provisional notice is added to the viewer UI.
+
+The single real case checked is TL.ttrm, displayed Round 7 / VEXSERY (zero-based round 6 / player 1), source event 4. Ignoring that event reconstructs 124 placements and 62 lines through frame 1842. Both available anchors (pre-spawn and terminal source event 952) match every projected field, including terminal board, Hold, Next, active piece, attack and counters. Repeated seeks and checkpoint continuation at placements 0 / 62 / 124 match. Sparse anchors do not establish every intermediate frame: firstDivergentFrame remains null and no precise divergence is inferred. This supersedes the earlier unsupported status for this one sample; the original findings above describe the pre-exception baseline.
+
+Mid-round TL retry behavior has synthetic no-op/order coverage only; real-sample evidence is limited to the opening retry described above.

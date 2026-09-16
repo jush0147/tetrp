@@ -151,12 +151,10 @@ test('flags and terminal anchor retain raw Y; retry terminates solo without rese
   const bag=structuredClone(r.state.bag);r.advance();assert.equal(r.state.reason,'retry');assert.equal(r.state.playing,false);
   assert.deepEqual(r.state.bag,bag);
 });
-test('unsupported gameplay options, mode combinations, retryisclear and multiplayer retry fail explicitly',()=>{
+test('unsupported gameplay options, mode combinations and retryisclear fail explicitly',()=>{
   for(const [key,value] of [['retryisclear',true],['unknown_gameplay',true],['infinite_movement',true]]){
     const x=fixture();x.replay.options[key]=value;assert.throws(()=>prepareReplay(selectPlayer(parse(x))),/UNSUPPORTED_PROFILE/);
   }
-  const x=leagueFixture();x.replay.rounds[0][0].replay.events.splice(2,0,input(1,'keydown','retry'));
-  assert.throws(()=>prepareReplay(selectPlayer(parse(x))),/Multiplayer retry/);
   const wrong=fixture();wrong.replay.options.version=19;
   assert.throws(()=>prepareReplay(selectPlayer(parse(wrong))),/profile combination/);
 });
@@ -175,4 +173,18 @@ test('diagnostics capture missing/object values without later mutation and survi
   assert.deepEqual(r.diagnostics.first,first);
   const cp=r.checkpoint(), restored=Reconstruction.restore(cp);
   assert.equal(restored.checkpoint(),cp);assert.deepEqual(restored.diagnostics.first,first);
+});
+
+test('user-requested TL retry no-op covers opening and mid-round keydown/keyup without reordering',()=>{
+  const baseline=new Reconstruction(prepareReplay(selectPlayer(parse(leagueFixture()))));baseline.run();
+  for(const event of [input(0,'keydown','retry'),input(1,'keydown','retry',.7),input(1,'keyup','retry',.2)]){
+    for(const hoisted of [undefined,false,true]){
+      const x=leagueFixture(),e=structuredClone(event);if(hoisted!==undefined)e.data.hoisted=hoisted;
+      x.replay.rounds[0][0].replay.events.splice(2,0,e);
+      const timeline=prepareReplay(selectPlayer(parse(x))),ignored=timeline.events.find(e=>e.kind==='provisional-ignored-multiplayer-retry');
+      assert.equal(ignored.sourceIndex,2);assert.equal(ignored.original.hoisted,hoisted);assert.equal(ignored.original.type,event.type);
+      assert.equal(timeline.events[timeline.events.indexOf(ignored)+1].sourceIndex,3);
+      const r=new Reconstruction(timeline);r.run();assert.deepEqual(r.state,baseline.state);
+    }
+  }
 });

@@ -282,8 +282,8 @@ test('malformed file and responsive touch targets',async({page})=>{
   for(const id of ['previous','next-placement','play']){const b=await page.locator(`#${id}`).boundingBox();expect(b.height).toBeGreaterThanOrEqual(44);expect(b.width).toBeGreaterThanOrEqual(44);}
   const board=await page.locator('#board').boundingBox();expect(Math.abs(board.height/board.width-2)).toBeLessThan(.03);
 });
-test('selection races preserve the latest stream and unsupported retry is visible',async({page})=>{
-  const make=(retry=false)=>{const s=synthetic().replay;s.options.version=19;if(retry)s.events.splice(1,0,{frame:0,type:'keydown',data:{key:'retry',subframe:0}});return {replay:s};};
+test('selection races preserve the latest stream and unsupported retryisclear is visible',async({page})=>{
+  const make=(retry=false)=>{const s=synthetic().replay;s.options.version=19;if(retry)s.options.retryisclear=true;return {replay:s};};
   const x={version:1,gamemode:'league',replay:{rounds:[[make(),make(true)],[make()]]}};
   await upload(page,x);await expect(page.locator('#viewer')).toBeVisible();await placement(page,3);
   await choosePlayer(page,'1');await expect(page.locator('#lane-error')).toContainText('此 stream 暫不支援');await expect(page.locator('#lane-error')).toContainText('retry');

@@ -106,7 +106,13 @@ export function prepareReplay(player) {
     }
     if(e.type==='keydown'||e.type==='keyup'){
       if(e.key==='retry'){
-        if(mode==='tl')fail(`events[${e.sourceIndex}]`,'Multiplayer retry applicability requires explicit behavior');
+        // User-requested provisional compatibility (2026-09-16), not established client semantics.
+        // Only TL.ttrm Round 7 / VEXSERY opening retry has real-anchor coverage;
+        // mid-round retries are included at user request, without broad real-sample testing.
+        // Retain every TL retry keydown/keyup in source order as metadata.
+        if(mode==='tl'){
+          events.push({...position,type:'metadata',kind:'provisional-ignored-multiplayer-retry',original:structuredClone(e)});continue;
+        }
         events.push({...position,type:e.type==='keydown'?'terminal':'metadata',reason:'retry',subframe:e.subframe});
       }else events.push(e);
       continue;
