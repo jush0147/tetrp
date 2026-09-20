@@ -1,4 +1,4 @@
-import { upperPiece } from './tetrp-authority-adapter.mjs';
+const upperPiece=piece=>piece==null?null:String(piece).toUpperCase();
 
 export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) {
   const baseCells = {
@@ -28,7 +28,9 @@ export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) 
   }
 
   const cellsKey=cells=>cells.map(c=>c[0]+','+Math.ceil(c[1])).sort().join(';');
-  const copyPiece=p=>structuredClone(p);
+  // Active-piece fields are scalars. Copying them through structuredClone in
+  // every graph edge dominates traversal time and provides no extra isolation.
+  const copyPiece=p=>({...p});
 
   function dropped(board,piece) {
     const p=copyPiece(piece);
@@ -36,8 +38,11 @@ export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) 
     return p;
   }
 
-  function pathStateKey(p) {
-    return [p.x,Number(p.y).toFixed(6),p.r,p.kick,p.rotated?1:0,p.spin].join(',');
+  function pathStateKey(p,ruleset) {
+    // totalRotations changes SRS+ kick Y after lockresets+15. Once beyond
+    // that threshold, exact larger values are geometrically equivalent.
+    const rotationBucket=Math.min(p.totalRotations||0,(ruleset.lockresets||15)+16);
+    return [p.x,Number(p.y).toFixed(6),p.r,p.kick,p.rotated?1:0,p.spin,rotationBucket].join(',');
   }
 
   function applyPathMove(board,piece,action,ruleset) {
@@ -65,6 +70,129 @@ export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) 
     return p;
   }
 
+
+  const orientationNames=['north','east','south','west'];
+  function ccPlacementsForAuthorityCells(type,cells,spin) {
+    const upper=upperPiece(type),actual=cellsKey(cells),out=[];
+    for(const orientation of orientationNames) {
+      const offsets=baseCells[upper].map(c=>rotateCell(c,orientation));
+      for(const [ax,ay] of cells) for(const [dx,dy] of offsets) {
+        // Tetrp keeps the active piece at fractional y (for example 17.96).
+        // Board occupancy, and cellsKey above, use ceil(y). Convert that
+        // occupied row rather than requiring the transient floating y itself
+        // to be integral, otherwise an ordinary fresh spawn yields no CC2
+        // placement at all.
+        const occupiedY=Math.ceil(ay);
+        const x=ax-dx,y=39-occupiedY-dy;
+        if(!Number.isInteger(x)||!Number.isInteger(y))continue;
+        const placement={location:{type:upper,orientation,x,y},spin};
+        if(cellsKey(targetFor(placement).cells)===actual)out.push(placement);
+      }
+    }
+    const seen=new Set();
+    return out.filter(p=>{const k=JSON.stringify(p);if(seen.has(k))return false;seen.add(k);return true;});
+  }
+
+  /**
+   * Exhaustive geometry-only root landing enumeration from the ACTUAL active
+   * piece state. No Hold, no frame clock and no lock-reset auto-lock timing.
+   * The result is an allowlist for Kiwi's first search layer; scheduling remains
+   * a separate authority validation step.
+   */
+  function enumerateRootPlacements(engine) {
+    const state=engine.state;
+    if(!state.playing||!state.piece||state.piece.sleeping)
+      throw new Error('ROOT_GEOMETRY_NOT_PLAYABLE');
+    // Deliberately clone ONLY current geometry inputs. Do not serialize the
+    // Engine: that would read hidden queue/RNG even though geometry needs neither.
+    const board=structuredClone(state.board),rules=structuredClone(state.rules);
+    const initial=copyPiece(state.piece);
+    const q=[initial],seen=new Set([pathStateKey(initial,rules)]),placements=new Map();
+    const landingCache=new Set();
+    const edgeCache=new Map();
+    const actions=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
+    let head=0;
+    while(head<q.length) {
+      if(seen.size>250000)throw new Error('ROOT_GEOMETRY_STATE_LIMIT');
+      const p=q[head++];
+      const poseKey=[p.x,p.y,p.r,p.kick,p.rotated?1:0].join(',');
+      if(!landingCache.has(poseKey)) {
+        const drop=dropped(board,p);
+        const spin=p.rotated?R.classifySpin(board,p,rules.spinbonuses):'none';
+        // Rotation/reset history changes future edges, but not the landing
+        // of an identical pose. Keep all graph states; map each landing once.
+        const landingKey=cellsKey(B.cells(drop))+':'+spin;
+        if(!landingCache.has(landingKey)) {
+          for(const placement of ccPlacementsForAuthorityCells(p.type,B.cells(drop),spin))
+            placements.set(JSON.stringify(placement),placement);
+          landingCache.add(landingKey);
+        }
+        landingCache.add(poseKey);
+      }
+      // SRS+ kick geometry only distinguishes counters on either side of its
+      // anti-stall threshold. Cache edge geometry within each regime, but keep
+      // every original rotation-counter state in the traversal and seen set.
+      const edgeKey=poseKey+','+p.spin+','+((p.totalRotations||0)>rules.lockresets+15?1:0);
+      let edges=edgeCache.get(edgeKey);
+      if(!edges) {
+        edges=actions.map(action=>applyPathMove(board,p,action,rules));
+        edgeCache.set(edgeKey,edges);
+      }
+      for(let i=0;i<actions.length;i++) {
+        const edge=edges[i];
+        if(!edge)continue;
+        const rotating=actions[i].startsWith('rotate');
+        const next={...edge,totalRotations:(p.totalRotations||0)+(rotating?1:0)};
+        const key=pathStateKey(next,rules);
+        if(seen.has(key))continue;
+        seen.add(key);
+        q.push(next);
+      }
+    }
+    const list=[...placements.values()].sort((a,b)=>
+      a.location.type.localeCompare(b.location.type)||
+      a.location.x-b.location.x||a.location.y-b.location.y||
+      orientationNames.indexOf(a.location.orientation)-orientationNames.indexOf(b.location.orientation)||
+      a.spin.localeCompare(b.spin)
+    );
+    return {
+      placements:list,
+      states_explored:seen.size,
+      semantics:'geometry_only_no_hold_no_frame_clock',
+      timing_validated:false,
+    };
+  }
+
+
+  function findCurrentPath(state,placement) {
+    const target=targetFor(placement);
+    if(upperPiece(state.piece.type)!==placement.location.type)
+      throw new Error('current-piece mismatch');
+    const board=structuredClone(state.board),rules=structuredClone(state.rules);
+    const targetKey=cellsKey(target.cells);
+    const initial=copyPiece(state.piece);
+    const q=[{piece:initial,moves:[]}],seen=new Set([pathStateKey(initial,rules)]);
+    const actions=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
+    let head=0;
+    while(head<q.length) {
+      if(seen.size>250000)throw new Error('ROOT_GEOMETRY_STATE_LIMIT');
+      const node=q[head++],p=node.piece;
+      const drop=dropped(board,p);
+      const spin=p.rotated?R.classifySpin(board,p,rules.spinbonuses):'none';
+      if(cellsKey(B.cells(drop))===targetKey&&spin===target.spin)
+        return {useHold:false,moves:[...node.moves,'hardDrop'],target,geometryStates:seen.size};
+      for(const action of actions) {
+        const next=applyPathMove(board,p,action,rules);
+        if(!next)continue;
+        const key=pathStateKey(next,rules);
+        if(seen.has(key))continue;
+        seen.add(key);
+        q.push({piece:next,moves:[...node.moves,action]});
+      }
+    }
+    throw new Error('no current-pose Tetrp geometry path for '+JSON.stringify({placement,target,current:state.piece}));
+  }
+
   function findPath(engine,placement) {
     const target=targetFor(placement);
     const root=Engine.restore(engine.serialize());
@@ -83,7 +211,7 @@ export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) 
     const actions=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
     let head=0;
     while(head<q.length&&head<100000) {
-      const node=q[head++],p=node.piece,key=pathStateKey(p);
+      const node=q[head++],p=node.piece,key=pathStateKey(p,root.state.rules);
       if(seen.has(key)) continue;
       seen.add(key);
       const drop=dropped(board,p);
@@ -199,5 +327,5 @@ export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) 
     }));
   }
 
-  return {findPath,schedulePath,inputsForFrame,targetFor};
+  return {findPath,findCurrentPath,enumerateRootPlacements,schedulePath,inputsForFrame,targetFor};
 }

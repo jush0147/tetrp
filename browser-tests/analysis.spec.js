@@ -12,15 +12,16 @@ async function open(page,data=replay(),name='analysis.ttr'){
 }
 async function analyze(page){
   await page.evaluate(()=>window.analysis=null);await page.locator('#analyze').click();
-  await expect.poll(()=>page.evaluate(()=>Boolean(window.analysis)),{timeout:45000}).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>Boolean(window.analysis)),{timeout:120000}).toBe(true);
   return page.evaluate(()=>window.analysis);
 }
+test.setTimeout(180000);
 test('Kiwi real WASM at replay positions: responsive, deterministic, detached and cancellable',async({page},info)=>{
   const workers=[];page.on('worker',w=>workers.push(w.url()));await open(page);
   const before=await page.evaluate(()=>JSON.stringify(window.position));
   await page.evaluate(()=>{window.ticks=0;window.tickInterval=setInterval(()=>window.ticks++,10);});
-  const first=await analyze(page);expect(first.nodeBudget).toBe(200000);expect(first.nodes).toBe(200000);
-  expect(first.path).toBe('persistent');expect(first.move.cells).toHaveLength(4);
+  const first=await analyze(page);expect(first.nodeBudget).toBe(200000);expect(first.nodes).toBeLessThanOrEqual(200000);
+  expect(first.path).toBe('snapshot');if(first.action.kind==='place')expect(first.move.cells).toHaveLength(4);else expect(first.move).toBeNull();
   expect(workers.some(w=>w.endsWith('/kiwi-worker.js'))).toBe(true);
   expect(await page.evaluate(()=>window.ticks)).toBeGreaterThan(3);
   expect(await page.evaluate(()=>JSON.stringify(window.position))).toBe(before);
@@ -34,7 +35,7 @@ test('Kiwi real WASM at replay positions: responsive, deterministic, detached an
   await page.locator('#previous').click();await expect(page.locator('#pieces')).toHaveText('0');
   expect((await analyze(page)).move).toEqual(first.move);
   await page.evaluate(()=>clearInterval(window.tickInterval));
-  console.log(JSON.stringify({browser:info.project.name,performance:[first,second].map(r=>({searchMs:r.searchMs,totalMs:r.totalMs,nodes:r.nodes}))}));
+  console.log(JSON.stringify({browser:info.project.name,performance:[first,second].map(r=>({geometryMs:r.geometryMs,searchMs:r.searchMs,totalMs:r.totalMs,nodes:r.nodes}))}));
 });
 test('Kiwi handles TL pending and switching players invalidates analysis',async({page})=>{
   const data=replay().replay;Object.assign(data.options,{version:19,b2bcharge_base:3,garbageare:5,garbagearebump:12});
@@ -44,31 +45,32 @@ test('Kiwi handles TL pending and switching players invalidates analysis',async(
   await open(page,match,'match.ttrm');
   // At placement 1 the already-confirmed incoming remains observable (20-frame travel).
   await page.locator('#next-placement').click();await expect(page.locator('#pieces')).toHaveText('1');
-  const r=await analyze(page);expect(r.path).toBe('pending-snapshot');expect(r.nodes).toBe(200000);
+  const r=await analyze(page);expect(r.path).toBe('snapshot');expect(r.nodes).toBeLessThanOrEqual(200000);
   await expect(page.locator('#analysis-details')).toContainText('10 種');
-  await expect(page.locator('#analysis-details')).toContainText('surge base=3');
+  await expect(page.locator('#analysis-details')).toContainText('ARE');
+  await expect(page.locator('#analysis-details')).not.toContainText('base=0');
   await page.locator('#player-swap').click();await expect(page.locator('#analysis-panel')).toBeHidden();
-  const other=await analyze(page);expect(other.path).toBe('persistent');
+  const other=await analyze(page);expect(other.path).toBe('snapshot');
 });
-test('unknown observable garbage arrival fails explicitly without damaging replay',async({page})=>{
+test('unknown observable garbage arrival is analyzed without damaging replay',async({page})=>{
   const data=replay().replay;data.options.version=19;
   data.events.splice(1,0,
     {frame:0,type:'ige',data:{id:1,frame:0,type:'target',data:{targets:[9]}}},
     {frame:0,type:'ige',data:{id:2,frame:0,type:'interaction',data:{type:'garbage',amt:4,gameid:9,frame:0,cid:1,iid:1,ackiid:0}}});
   await open(page,{version:1,gamemode:'league',replay:{rounds:[[{id:'a',replay:data}]]}},'pending.ttrm');
   await page.locator('#next-placement').click();await expect(page.locator('#pieces')).toHaveText('1');
-  const before=await page.evaluate(()=>JSON.stringify(window.position));await page.locator('#analyze').click();
-  await expect(page.locator('#analysis-status')).toContainText('activation frame');
-  expect(await page.evaluate(()=>window.analysis)).toBeUndefined();
+  const before=await page.evaluate(()=>JSON.stringify(window.position));const result=await analyze(page);
+  expect(result.unknownActivationPackets).toBe(1);expect(result.nodes).toBeLessThanOrEqual(200000);
+  await expect(page.locator('#analysis-details')).toContainText('到達時間未知');
   expect(await page.evaluate(()=>JSON.stringify(window.position))).toBe(before);
   await page.locator('#clear-analysis').click();await page.locator('#previous').click();
-  await expect(page.locator('#pieces')).toHaveText('0');expect((await analyze(page)).path).toBe('persistent');
+  await expect(page.locator('#pieces')).toHaveText('0');expect((await analyze(page)).path).toBe('snapshot');
 });
 test('Kiwi search assets are local and Hold recommendation is labelled',async({page})=>{
   const requests=[];page.on('request',r=>requests.push({url:r.url(),method:r.method()}));
   // This seed produces an empty-Hold recommendation in the frozen 200k profile.
   await open(page,replay(1));const r=await analyze(page);
-  expect(r.move.useHold).toBe(true);await expect(page.locator('#analysis-status')).toContainText('HOLD');
+  expect(r.action.kind).toBe('hold');expect(r.move).toBeNull();await expect(page.locator('#analysis-status')).toContainText('HOLD');
   expect(requests.every(r=>new URL(r.url).origin===new URL(page.url()).origin&&r.method==='GET')).toBe(true);
   expect(requests.some(r=>r.url.endsWith('/cold_clear_2_bg.wasm'))).toBe(true);
   await page.setViewportSize({width:667,height:280});

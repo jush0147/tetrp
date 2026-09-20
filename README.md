@@ -18,11 +18,13 @@ enter the board before the next placement. Playback and scrubber seeks stay unch
 See [the viewer handoff](docs/PHASE_3_HANDOFF.md) and
 [Phase 2 conformance findings](docs/PHASE_2_HANDOFF.md).
 **Phase 4A:** pause at a supported position and select **Kiwi** for one local
-recommendation, outlined on the board with an explicit Hold label. Search runs
-in a dedicated Worker using the pinned Kiwi v1 browser artifact and a 200,000-node
-budget. The recommendation does not change the recorded replay. Seek, play, swap
+recommendation: a board outline for Place, or a standalone Hold instruction without
+a fabricated landing. Geometry enumeration and search run in a dedicated Worker
+using pinned Kiwi snapshot-v3.2 and a 200,000-node search cap. Only the current
+visible snapshot is used; no historical SevenBag scan is performed. The recommendation does not change the recorded replay. Seek, play, swap
 players, or clear analysis to remove it. Analysis details disclose rule and timing
-approximations; unconfirmed garbage arrival and locked Hold roots fail explicitly.
+approximations; unconfirmed garbage arrival and positive existing ARE queues fail
+explicitly. Hold-locked roots are supported and cannot choose Hold again.
 See [the Phase 4A handoff](docs/PHASE_4A_HANDOFF.md) for the contract and limitations.
 Bot continuation (Phase 4B) is not implemented. No practice UI or live-match integration is included. Read
 [the Phase 1 handoff](docs/PHASE_1_HANDOFF.md) before extending the engine.

@@ -1,0 +1,721 @@
+{
+  "schema": "kiwi-snapshot-result/3",
+  "action": {
+    "kind": "place",
+    "placement": {
+      "location": {
+        "type": "I",
+        "orientation": "north",
+        "x": 1,
+        "y": 0
+      },
+      "spin": "none"
+    }
+  },
+  "candidates": [
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "north",
+            "x": 1,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -64.80000305175781,
+      "worst_score": -64.8,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 0
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "south",
+            "x": 2,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -64.80000305175781,
+      "worst_score": -64.8,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 1
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "north",
+            "x": 3,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -64.80000305175781,
+      "worst_score": -64.8,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 2
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "south",
+            "x": 4,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -64.80000305175781,
+      "worst_score": -64.8,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 3
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "north",
+            "x": 5,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -64.9000015258789,
+      "worst_score": -64.9,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 4
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "south",
+            "x": 6,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -64.9000015258789,
+      "worst_score": -64.9,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 5
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "north",
+            "x": 7,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -64.9000015258789,
+      "worst_score": -64.9,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 6
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "south",
+            "x": 8,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -64.9000015258789,
+      "worst_score": -64.9,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 7
+    },
+    {
+      "action": {
+        "kind": "hold",
+        "mode": "empty",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "mean_score": -64.9000015258789,
+      "worst_score": -64.9,
+      "scenarios": 1,
+      "search_basis": "post_empty_hold_known_prefix_without_revealed_next",
+      "candidate_index": 8
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 0,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.30000305175781,
+      "worst_score": -65.3,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 9
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 0,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.30000305175781,
+      "worst_score": -65.3,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 10
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 9,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.30000305175781,
+      "worst_score": -65.3,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 11
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 9,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.30000305175781,
+      "worst_score": -65.3,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 12
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "north",
+            "x": 2,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.69999694824219,
+      "worst_score": -65.7,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 13
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "south",
+            "x": 3,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.69999694824219,
+      "worst_score": -65.7,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 14
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "north",
+            "x": 4,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.9000015258789,
+      "worst_score": -65.9,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 15
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "south",
+            "x": 5,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.9000015258789,
+      "worst_score": -65.9,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 16
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "north",
+            "x": 6,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.9000015258789,
+      "worst_score": -65.9,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 17
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "south",
+            "x": 7,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -65.9000015258789,
+      "worst_score": -65.9,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 18
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 1,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 19
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 1,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 20
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 2,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 21
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 2,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 22
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 3,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 23
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 3,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 24
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 4,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 25
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 4,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 26
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 5,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 27
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 5,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 28
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 6,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 29
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 6,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 30
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 7,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 31
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 7,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 32
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 8,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 33
+    },
+    {
+      "action": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "east",
+            "x": 8,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "mean_score": -69.5999984741211,
+      "worst_score": -69.6,
+      "scenarios": 1,
+      "search_basis": "authority_root_geometry_filtered",
+      "candidate_index": 34
+    }
+  ],
+  "nodes": 197372,
+  "branch_nodes": {
+    "place": 97372,
+    "hold": 100000,
+    "total": 197372
+  },
+  "node_budget": 200000,
+  "completion": "visible_search_idle",
+  "search_path": "stateless_clocked_snapshot_split_root_actions",
+  "analysis_mode": "tl",
+  "source_mode": "tl",
+  "config_profile": "h9+h12-review",
+  "bag_knowledge": "unknown",
+  "unknown_tail": "finite_visible",
+  "place_known_search_layers": 5,
+  "hold_known_search_layers": 5,
+  "scenarios": 1,
+  "unknown_activation_packets": 0,
+  "unknown_activation_delays": [],
+  "authority_attack_clock": true,
+  "garbage_are_frames": 0,
+  "garbage_are_bump_frames": 0,
+  "garbage_locked_until_frame": 0,
+  "exact_are_bump_timing": false,
+  "competitive_stacking_neutral_root_counters": false,
+  "root_geometry_filtered": true,
+  "root_geometry_candidates": 34,
+  "candidate_truncation": "none: complete authority allowlist is scored directly; if it cannot fit the Place root budget the request rejects",
+  "hold_information_gain_optimized": false,
+  "requires_authority_timing_validation": true,
+  "rules_parity_verified": false,
+  "assumptions": [
+    "Only the current detached visible snapshot is used; no draw history, bag remainder, hidden RNG/tail, opponent board or future original placement.",
+    "Unknown tail never expands speculatively; frontier leaves keep the existing evaluator.",
+    "Place search scores the complete geometry-only root landing allowlist derived by pinned Tetrp from the actual active piece; it is not intersected with spawn movegen.",
+    "Geometry reachability and frame-accurate input timing are separate. Tetrp must still validate execution timing before any future automated execution.",
+    "Hold is a standalone action with no landing. Tetrp applies Hold, refills NEXT 5, then sends a new hold_locked=true request.",
+    "Same-piece Hold is a distinct action. It is not assumed equivalent because Hold respawns/resets the active piece and changes Hold lock state.",
+    "Empty-Hold pre-reveal scoring deliberately omits the newly revealed unknown preview. Information-gain value is NOT optimized; the real revealed piece is used only by the required post-Hold request.",
+    "The request node cap is split deterministically between Place and Hold branches when Hold is available; post-Hold reanalysis is a separate request with its own cap.",
+    "Real garbageare/garbagearebump rule values are preserved in the request/result. Positive existing ARE is rejected; exact ARE/bump timing is not simulated.",
+    "competitive_stacking is a distinct 40L-source heuristic mode with neutral root combo/B2B and no TL attack clock; it is neither TL parity nor 40L score optimization.",
+    "Pending uses explicit frames_per_piece and ten hypothetical clean-hole scenarios; ARE/bump timing remains approximate.",
+    "Null activation remains unknown in the request; the shared node budget covers a cross product with three labeled timing hypotheses, not observed arrival times or calibrated probabilities."
+  ]
+}

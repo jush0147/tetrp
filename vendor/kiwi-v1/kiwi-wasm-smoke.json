@@ -1,7 +1,7 @@
 {
   "runtime": "Node WASM",
   "status": "passed",
-  "nodes": "554",
+  "nodes": "571",
   "hard_nodes": "1003",
   "checks": [
     "search",
@@ -13,12 +13,15 @@
     "empty-hold",
     "first-hold-refill-two",
     "same-piece-explicit-hold",
+    "public-rule-contract-base3",
+    "root-hold-lock",
     "invalid-input-no-mutation",
     "no-hidden-preview",
     "normal-garbage-queue"
   ],
   "capabilities": {
     "clutch_clears": false,
+    "clutch_spawn_rescue": true,
     "config_profile": "h9+h12+h13-interactive",
     "despeculation_backprop": true,
     "deterministic_hard_node_search": true,
@@ -32,6 +35,8 @@
     "pending_forecast_api": "analyze_pending_json",
     "pending_garbage_in_search": false,
     "persistent_dag": true,
+    "public_rule_contract": true,
+    "root_hold_lock": true,
     "rules_parity_verified": false
   }
 }

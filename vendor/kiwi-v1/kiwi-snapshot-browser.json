@@ -1,0 +1,61 @@
+{
+  "status": "passed",
+  "schema": "kiwi-snapshot-browser/3",
+  "results": [
+    {
+      "browser": "chromium",
+      "version": "153.0.8010.12",
+      "identical": true,
+      "restarted_identical": true,
+      "rejectionCode": "REQUEST_SCHEMA_INVALID",
+      "ticks": 612,
+      "lateReplies": 0,
+      "nodes": 197372,
+      "budget": 200000,
+      "action_kind": "place",
+      "same_piece_hold_search": true,
+      "root_geometry_in_search": true,
+      "unknown_activation": {
+        "scenarios": 30,
+        "packets": 1,
+        "delays": [
+          1,
+          25,
+          600
+        ],
+        "nodes": 200000,
+        "budget": 200000,
+        "ms": 384.29999999998836,
+        "deterministic": true
+      }
+    },
+    {
+      "browser": "webkit",
+      "version": "26.6",
+      "identical": true,
+      "restarted_identical": true,
+      "rejectionCode": "REQUEST_SCHEMA_INVALID",
+      "ticks": 416,
+      "lateReplies": 0,
+      "nodes": 197372,
+      "budget": 200000,
+      "action_kind": "place",
+      "same_piece_hold_search": true,
+      "root_geometry_in_search": true,
+      "unknown_activation": {
+        "scenarios": 30,
+        "packets": 1,
+        "delays": [
+          1,
+          25,
+          600
+        ],
+        "nodes": 200000,
+        "budget": 200000,
+        "ms": 399,
+        "deterministic": true
+      }
+    }
+  ],
+  "evidence": "real headless browser module Workers using the delivered web WASM; not physical-device certification"
+}

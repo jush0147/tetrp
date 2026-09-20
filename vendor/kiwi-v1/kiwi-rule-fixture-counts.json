@@ -1,0 +1,29 @@
+{
+  "schema": "kiwi-rule-fixtures/2",
+  "fixtures": 3472,
+  "kinds": {
+    "cancel": 3240,
+    "spawn_rescue": 224,
+    "clear_rescue": 2,
+    "garbage_top_boundary": 2,
+    "rule_variant_supported": 3,
+    "rule_variant_rejected": 1
+  },
+  "reasons": {
+    "topout": 78,
+    "garbagesmash": 78
+  },
+  "scope": [
+    "opening cancellation across pending/cumulative-sent/opener boundaries",
+    "spawn rescue and topout/garbagesmash reason observations",
+    "representative clear-to-rescue transitions",
+    "full-vs-partial storage-top garbage-smash boundary",
+    "supported transported public-rule variants plus an explicitly rejected Tetrp-visible variant"
+  ],
+  "not_certified": [
+    "positive existing ARE queue forecast",
+    "garbage ARE/bump exact timing",
+    "active-piece repair failure after garbage insertion",
+    "complete terminal-reason parity"
+  ]
+}

@@ -17,6 +17,11 @@ export class WasmBot {
     preview_refill_needed(): number;
     reset_stats(): void;
     start(start_json: string): void;
+    /**
+     * Tetrp review entrypoint. Public attack rules are transported explicitly
+     * instead of inheriting the legacy base-0 defaults.
+     */
+    start_tetrp(start_json: string, rules_json: string, hold_locked: boolean): void;
     stats_json(): string;
     suggest_json(): string;
     /**
@@ -45,6 +50,8 @@ export function analyze_pending_json(input_json: string): string;
  */
 export function analyze_pending_profile_json(input_json: string, profile: string): string;
 
+export function analyze_snapshot_json(text: string): string;
+
 /**
  * Replay diagnostics at a fresh-spawn decision boundary. Counts and attack
  * packets can be compared against independently reconstructed replay locks.
@@ -57,6 +64,8 @@ export function check_replay_lock_json(input_json: string): string;
  */
 export function preview_garbage_one_to_one(queue_json: string, attack: number, cleared_lines: number, cap: number): string;
 
+export function snapshot_capabilities_json(): string;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
@@ -64,8 +73,10 @@ export interface InitOutput {
     readonly __wbg_wasmbot_free: (a: number, b: number) => void;
     readonly analyze_pending_json: (a: number, b: number) => [number, number, number, number];
     readonly analyze_pending_profile_json: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly analyze_snapshot_json: (a: number, b: number) => [number, number, number, number];
     readonly check_replay_lock_json: (a: number, b: number) => [number, number, number, number];
     readonly preview_garbage_one_to_one: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+    readonly snapshot_capabilities_json: () => [number, number];
     readonly wasmbot_capabilities_json: (a: number) => [number, number, number, number];
     readonly wasmbot_new: () => number;
     readonly wasmbot_new_piece: (a: number, b: number, c: number) => [number, number];
@@ -75,6 +86,7 @@ export interface InitOutput {
     readonly wasmbot_preview_refill_needed: (a: number) => [number, number, number];
     readonly wasmbot_reset_stats: (a: number) => void;
     readonly wasmbot_start: (a: number, b: number, c: number) => [number, number];
+    readonly wasmbot_start_tetrp: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
     readonly wasmbot_stats_json: (a: number) => [number, number, number, number];
     readonly wasmbot_suggest_json: (a: number) => [number, number, number, number];
     readonly wasmbot_think: (a: number, b: number) => [bigint, number, number];

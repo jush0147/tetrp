@@ -157,7 +157,11 @@ including pending pace/hole scenarios/ARE timing and unsupported rule variants.
 Tests of the action protocol may use an isolated authority harness. They are not
 permission to add user-visible continuation in Tetrp before Phase 4B is authorized.
 
-## Delivery and current status
+## Delivery status at the time of the upstream request
+
+Subsequent adoption: Tetrp Phase 4A now targets snapshot-v3.2 build 35524225160.
+See `PHASE_4A_HANDOFF.md` for the current integration and verification record.
+The paragraph below preserves the original request baseline.
 
 Tetrp still pins `kiwi-v1-browser` build `35444205867`, source/build commit
 `89dcfe6cf544991bc9bb59098dd43d2ca2173945`. Its Phase 4A still performs observed-prefix

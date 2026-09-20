@@ -1,166 +1,78 @@
-# Codex task: integrate Kiwi v1 into Tetrp
+# Tetrp Phase 4A consumer task: Kiwi snapshot-v3
 
-You are implementing the first usable Kiwi bot integration in **jush0147/tetrp**.
+Use the accepted `kiwi-v1-browser` snapshot-v3 artifact only after verifying
+`kiwi-build.json`, `sha256.json`, `kiwi-snapshot-acceptance.json`,
+`kiwi-snapshot-browser.json`, and the rule audit evidence.
 
-Read `KIWI_V1_HANDOFF.md` in this repository first. Treat it as the product contract.
+Scope is Phase 4A only. Do not vendor Rust, switch bot implementations, change
+strategy weights, infer SevenBag history, or start user-visible continuation.
 
-## Repositories / refs
+## Minimum integration
 
-Kiwi source handoff:
-- repository: `jush0147/cold-clear-2`
-- branch: `kiwi-v1`
-- consume the **`kiwi-v1-browser`** GitHub Actions artifact
-- do not vendor the Rust repository into Tetrp
+1. Create/fork only the current Tetrp authority state needed for analysis.
+2. Call `captureSnapshotFromEngine(fork, placementTools)`.
+3. Call `buildSnapshotRequest(...)`; Worker input must be exactly current+NEXT5
+   plus allowlisted current facts. Never add history, bag remainder, hidden RNG/tail,
+   original future placements or opponent future attacks.
+4. Send the request to `kiwi-snapshot-worker.mjs`.
+5. A `place` result may be displayed after authority geometry validation.
+6. A `hold` result is already a complete Phase 4A recommendation. It intentionally
+   has no landing. Display "建議 Hold" rather than treating the missing landing as
+   an error or painting a placement from an older candidate.
+7. To inspect a landing after Hold, call
+   `applyHoldForReanalysis(fork, action, {Engine})`, let Tetrp reveal/refill its
+   private sequence, capture the NEW current+NEXT5 snapshot, and submit a NEW
+   request. The new snapshot is `hold_locked=true`.
+8. Empty Hold consumes one draw; occupied Hold consumes none. Same-piece Hold is an
+   independent action in both cases. Never infer Hold from piece-type mismatch.
+9. A lock/spawn refills NEXT5 from Tetrp's private branch sequence. The protocol can
+   repeat beyond the first six visible pieces, but this task does not authorize a
+   user-visible Phase 4B loop.
 
-Tetrp:
-- repository: `jush0147/tetrp`
-- starting reference at handoff: `0b48cb7e1a50e5f0bba6fcfee05ba8e291bebee2`
+## Root geometry
 
-## Goal
+Snapshot-v3 enumerates the complete geometry-only current-piece landing set from
+the actual Tetrp active pose before Kiwi's first Place expansion. There is no top-K
+candidate truncation. Enumeration failure is an explicit rejection.
 
-Make Kiwi a real interactive review feature inside the existing Tetrp replay viewer.
+The visible root metadata includes x/y/hy/rotation/kick/rotated/spin,
+totalRotations/resets/rotationResets/locking/forceLock/safelock/softDropped/wall.
+This is still not a timing guarantee. Use the Tetrp authority helper for final
+geometry validation and, if timing matters, the separate timing validator against
+the isolated engine. Never substitute direct board painting for execution.
 
-The user flow must be:
+## Rejections and limitations
 
-1. Open a replay normally.
-2. Navigate to a placement boundary.
-3. Invoke **Kiwi**.
-4. Show one Kiwi continuation placement from that exact visible state.
-5. Let the user advance the Kiwi line one placement at a time.
-6. Keep the recorded replay untouched and allow returning to it.
+Use `normalizeSnapshotError()` and surface its stable code/message. In particular,
+positive existing ARE, unknown pending activation, unsupported packet states and
+unsupported public rule values are intentional rejections, not empty suggestions.
 
-Do not implement automatic full-replay grading in this pass.
+The 24F pace assumption, ten pending-hole scenarios and simplified ARE/bump remain
+approximations. Empty-Hold newly revealed preview information gain is not optimized
+before the Hold; the branch uses only the currently known post-Hold prefix.
+Capabilities must remain truthful about these limitations and incomplete rule parity.
 
-## Product constraints
+Cancellation means terminating the Worker. Discard stale results using the request
+generation/id and dispose all analysis branch state on exit. The frozen recorded
+checkpoint must not change.
 
-- Display name is **Kiwi**.
-- Default search budget is 200,000 evaluator nodes per decision.
-- Tetrp remains gameplay authority.
-- Kiwi remains search / placement-choice only.
-- Kiwi sees own board, current, Hold, exactly NEXT 5, B2B/Surge/combo and already-observable incoming garbage/timing.
-- Kiwi must not see opponent board, replay future, hidden RNG or future attacks.
-- Bot work must run off the main UI thread.
-- Local replay privacy must remain intact. No replay content is uploaded.
-- Existing PWA/offline behavior must continue to work.
+This artifact does not alter the Tetrp pin automatically. Downstream adoption and
+Phase 4A integration tests remain a separate Tetrp repository change.
 
-## Integration approach
 
-Do not start by redesigning Tetrp.
+## Revision 3.1 consumer notes
 
-First establish a small, testable vertical slice:
+Do not reject a TL snapshot merely because `garbageare` or
+`garbagearebump` is nonzero. Preserve both rule values in the request and
+continue displaying the approximation warning while
+`exact_are_bump_timing=false`. A positive current ARE queue is a separate
+unsupported condition and has its own structured rejection.
 
-### A. Asset integration
+For a 40L replay, request the explicitly labeled competitive-stacking snapshot.
+Do not manufacture TL pending/clock state. Neutral combo/B2B is part of that
+analysis mode, not a reconstruction claim about solo attack history.
 
-Copy the built Kiwi browser artifact into Tetrp's static build in a reproducible way. Do not hand-copy opaque files without recording provenance.
-
-Keep a small manifest in Tetrp containing:
-- Kiwi product version
-- source commit
-- artifact build commit
-- default node budget
-
-Ensure the PWA/service-worker asset list includes the Kiwi JS/WASM required for offline use.
-
-### B. Dedicated Kiwi worker
-
-Create a dedicated module Worker for Kiwi search.
-
-Responsibilities:
-- initialize `cold_clear_2.js` / WASM once
-- own the active `WasmBot`
-- receive detached visible-state requests
-- return suggestions/errors/progress without mutating viewer state
-
-Do not run 200k-node search on the main thread.
-
-### C. Analysis-session state
-
-Do not mutate the replay `Reconstruction`.
-
-Create a separate hypothetical analysis session / engine fork for Kiwi continuation.
-
-At the invocation point, reconstruct only information observable up to that point. In particular, reconstruct SevenBag observation history from the round start rather than reading hidden future queue state.
-
-Reuse or faithfully port:
-- `tetrp-authority-adapter.mjs`
-- `tetrp-placement-path.mjs`
-
-### D. First-move path
-
-For a no-pending decision:
-- initialize one persistent `WasmBot`
-- call `think_nodes(200000)`
-- call `suggest_json()`
-- use the top suggestion
-- render the suggested placement without changing the recorded replay
-
-### E. Continuation path
-
-When the user advances Kiwi:
-- apply the selected placement through a separate Tetrp authority engine
-- use explicit Hold semantics
-- reveal the correct number of new previews
-- keep the same `WasmBot` and refill it with `new_piece()` when the persistent path remains valid
-- search the next 200k-node decision
-
-Use the shipped reset-safe placement helper. Call `schedulePath(startFrame, lockFrame, moves, hypotheticalEngine)` with the live hypothetical Tetrp engine so the helper can validate ordinary transport against an isolated authority clone and fall back only when synthetic tap spacing would auto-lock early or lock multiple pieces. Do not simplify this back to an unvalidated fixed tap scheduler.
-
-Do not directly write cells onto the board.
-
-### F. Incoming-garbage path
-
-Never ignore incoming garbage.
-
-The persistent `WasmBot.start()` path does not model pending garbage. When observable incoming exists, use `analyze_pending_json()` and a Tetrp-owned hypothetical continuation as specified in `KIWI_V1_HANDOFF.md`.
-
-It is acceptable for pending-aware continuation to rebuild snapshot search while pending remains. Correctness is more important than preserving the DAG in a state the persistent API does not support.
-
-## UI scope
-
-Keep UI changes deliberately small.
-
-Add a clear **Kiwi** action near replay navigation / analysis controls. When active:
-- distinguish the Kiwi hypothetical line from recorded replay state
-- show searching / error state
-- show the suggested move/board
-- provide one-step forward through the Kiwi line
-- provide an obvious way back to the recorded replay
-
-Do not introduce a large analysis dashboard in this pass.
-
-Desktop browser is primary. Preserve the existing responsive/mobile viewer rather than designing Kiwi desktop-only DOM that breaks portrait/landscape.
-
-## Tests required
-
-Add tests before declaring the feature complete.
-
-At minimum cover:
-
-1. Kiwi artifact/module can load in the built Tetrp app.
-2. WASM search is Worker-owned.
-3. current + exactly NEXT 5 boundary.
-4. hidden replay future changes do not change the request at the same visible position.
-5. SevenBag observer alignment at bag boundaries.
-6. empty-Hold consumes/reveals two draws; ordinary placement one.
-7. deterministic suggestion for identical state + budget.
-8. replay Reconstruction is unchanged after starting/advancing/stopping Kiwi.
-9. a Kiwi placement is transported through Tetrp rules and reaches the intended final placement.
-10. a grounded/reset-heavy path with more than 15 movement/rotation resets still produces exactly one lock at the scheduled authority instant; no early auto-lock followed by a second hard-drop lock.
-11. pending garbage never falls through the no-pending persistent path.
-12. existing unit tests stay green.
-13. existing Chromium/WebKit viewer + PWA tests stay green.
-14. add a synthetic browser flow for invoke Kiwi -> suggestion -> advance -> second suggestion -> return to replay.
-
-Do not use private replay fixtures in CI.
-
-## Deliverable
-
-Implement the feature in Tetrp, not just a design document.
-
-At completion provide:
-- changed files
-- integration architecture in a short summary
-- tests run and exact results
-- any remaining product limitation that is real, reproducible and not merely future strategy tuning
-
-Do not retune Kiwi during this task. Strategy research is intentionally decoupled from product integration.
+Before vendoring the new package, reproduce the release's post-upload E2E from the
+downloaded artifact. The placement helper must import successfully without any
+unshipped module and must build a real pinned-Tetrp snapshot that the packaged WASM
+can analyze. Do not treat manifest hashes alone as dependency-closure proof.

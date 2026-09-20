@@ -1,0 +1,857 @@
+{
+  "schema": "kiwi-snapshot/3",
+  "analysis_mode": "tl",
+  "source_mode": "tl",
+  "bag_knowledge": "unknown",
+  "unknown_tail": "finite_visible",
+  "timing_rules": {
+    "garbage_are_frames": 0,
+    "garbage_are_bump_frames": 0,
+    "garbage_locked_until_frame": 0
+  },
+  "existing_are_lines": 0,
+  "start": {
+    "board": [
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    ],
+    "queue": [
+      "I",
+      "S",
+      "O",
+      "L",
+      "T",
+      "J"
+    ],
+    "hold": null,
+    "combo": 0,
+    "back_to_back": false,
+    "b2b_count": 0
+  },
+  "root_state": {
+    "x": 4,
+    "y": 17.96,
+    "hy": 18,
+    "rotation": 0,
+    "kick": 0,
+    "rotated": false,
+    "spin": "none",
+    "total_rotations": 0,
+    "resets": 0,
+    "rotation_resets": 0,
+    "locking": 0,
+    "force_lock": false,
+    "safelock": 0,
+    "soft_dropped": false,
+    "wall": false
+  },
+  "root_legal_placements": [
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 0,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 0,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "north",
+        "x": 1,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 1,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 1,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "north",
+        "x": 2,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "south",
+        "x": 2,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 2,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 2,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "north",
+        "x": 3,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "south",
+        "x": 3,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 3,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 3,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "north",
+        "x": 4,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "south",
+        "x": 4,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 4,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 4,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "north",
+        "x": 5,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "south",
+        "x": 5,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 5,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 5,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "north",
+        "x": 6,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "south",
+        "x": 6,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 6,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 6,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "north",
+        "x": 7,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "south",
+        "x": 7,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 7,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 7,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "south",
+        "x": 8,
+        "y": 0
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 8,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 8,
+        "y": 2
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "west",
+        "x": 9,
+        "y": 1
+      },
+      "spin": "none"
+    },
+    {
+      "location": {
+        "type": "I",
+        "orientation": "east",
+        "x": 9,
+        "y": 2
+      },
+      "spin": "none"
+    }
+  ],
+  "rules": {
+    "b2bcharging": true,
+    "b2bcharge_at": 4,
+    "b2bcharge_base": 3,
+    "b2bchaining": false,
+    "openerphase_pieces": 14,
+    "allclears": true,
+    "allclear_garbage": 5,
+    "allclear_b2b": 1,
+    "garbagespecialbonus": true,
+    "clutch": true
+  },
+  "hold_locked": false,
+  "incoming": [],
+  "pieces_placed": 0,
+  "garbage_sent": 0,
+  "frames_per_piece": 24,
+  "authority_frame": 0,
+  "authority_subframe": 0,
+  "garbage_multiplier": 1,
+  "garbage_margin_frames": 10800,
+  "garbage_increase_per_second": 0.008,
+  "node_budget": 200000
+}

@@ -2,119 +2,68 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
-import * as B from '../src/board.js';
-import * as R from '../src/rotation.js';
+import * as B from '../src/board.js';import * as R from '../src/rotation.js';
 import {Reconstruction} from '../src/replay/index.js';
 import {ViewerSession} from '../viewer/session.js';
-import {ObservedDraws,visibleState} from '../src/analysis/visible-state.js';
-import {prepareKiwi,normalizePlacement,NODE_BUDGET} from '../src/analysis/kiwi.js';
+import {visibleState} from '../src/analysis/visible-state.js';
+import {prepareKiwi,normalizeRecommendation,NODE_BUDGET} from '../src/analysis/kiwi.js';
 import {BotAdapter} from '../viewer/bot-adapter.js';
 import {verifyKiwi} from '../scripts/verify-kiwi.js';
-import {SevenBagObserver} from '../vendor/kiwi-v1/tetrp-authority-adapter.mjs';
 import {createPlacementTools} from '../vendor/kiwi-v1/tetrp-placement-path.mjs';
-import init,{WasmBot,analyze_pending_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
+import {captureSnapshot,buildSnapshotRequest,applyHoldForReanalysis} from '../vendor/kiwi-v1/kiwi-snapshot-adapter.mjs';
+import init,{analyze_snapshot_json,snapshot_capabilities_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
 await init({module_or_path:readFileSync(new URL('../vendor/kiwi-v1/pkg/cold_clear_2_bg.wasm',import.meta.url))});
-const snapshot=e=>visibleState(e.state,new ObservedDraws(e.state).draws);
-function viewer(engine,events=[],frames=100){
-  const v=Object.create(ViewerSession.prototype);
-  v.session=new Reconstruction({schema:'tetrp-timeline/1',id:'analysis-test',frames,initial:engine.serialize(),events});return v;
-}
+const search=p=>JSON.parse(analyze_snapshot_json(JSON.stringify(p.request)));
+const e=new Engine({seed:42,rules:{b2bcharge_base:3,garbageare:5,garbagearebump:12}});
+const snapshot=visibleState(e.state),prepared=prepareKiwi(snapshot),report=search(prepared);
 
-test('pinned Kiwi browser artifact is byte-identical and uses frozen interactive profile',async()=>{
-  await verifyKiwi();const b=new WasmBot();
-  assert.equal(JSON.parse(b.capabilities_json()).config_profile,'h9+h12+h13-interactive');b.free();
+test('pinned v3.2 artifact hashes and snapshot capabilities',async()=>{
+ await verifyKiwi();const c=JSON.parse(snapshot_capabilities_json());assert.equal(c.same_piece_hold_search,true);assert.equal(c.history_scan,false);assert.equal(c.root_geometry_in_search,true);
 });
-test('canonical projection excludes hidden RNG, queue, packet identity, and source events',()=>{
-  const e=new Engine({seed:42}),a=snapshot(e);
-  e.state.bag.queue.splice(5,99,'i','i');e.state.bag.rng.seed=9;e.state.holes.rng.seed=22;
-  e.state.attack.incoming.secret=9;e.state.attack.outgoing.secret=[{amt:999}];
-  assert.deepEqual(snapshot(e),a);
-  assert.equal(a.next.length,5);assert.equal(prepareKiwi(a).request.start.queue.length,6);
-  assert.doesNotMatch(JSON.stringify(a),/rng|outgoing|secret|events|seed|bagId/);
-  a.board.rows[39][0]='gb';assert.equal(e.state.board.rows[39][0],null);
+test('direct projection never reads history, hidden NEXT or RNG; analysis preserves exact checkpoint',async()=>{
+ const v=Object.create(ViewerSession.prototype);v.session=new Reconstruction({schema:'tetrp-timeline/1',id:'test',frames:20,initial:e.serialize(),events:[]});
+ const before=v.session.checkpoint();Object.defineProperty(v.session,'state',{get(){throw new Error('full state clone');}});Object.defineProperty(v.session.timeline,'events',{get(){throw new Error('history read');},configurable:true});
+ const s=await v.analysisState();assert.deepEqual(s,snapshot);Object.defineProperty(v.session.timeline,'events',{value:[],writable:true,configurable:true});assert.equal(v.session.checkpoint(),before);
+ assert.equal(await v.analysisState({cancelled:()=>true}),null);
+ const raw=Engine.restore(e.serialize()).state;raw.bag.queue=new Proxy(raw.bag.queue,{get(t,k){if(Number(k)>=5)throw new Error('hidden queue');return Reflect.get(t,k);}});
+ Object.defineProperty(raw.bag,'rng',{get(){throw new Error('rng');}});assert.deepEqual(visibleState(raw),snapshot);
+ assert.equal(s.next.length,5);assert.doesNotMatch(JSON.stringify(s),/observedDraws|rng|outgoing|events/);
 });
-test('board conversion preserves all 40 rows and reverses vertical coordinates once',()=>{
-  const e=new Engine({seed:42});e.state.board.rows[39][2]='gb';e.state.board.rows[20][3]='j';e.state.board.rows[0][9]='t';
-  const p=prepareKiwi(snapshot(e));assert.equal(p.visible.board[0][2],'G');assert.equal(p.visible.board[19][3],'J');assert.equal(p.visible.board[39][9],'T');
+test('snapshot carries real rules, clock, exact five previews; no bag input',()=>{
+ const q=prepared.request;assert.equal(q.rules.b2bcharge_base,3);assert.equal(q.timing_rules.garbage_are_frames,5);assert.equal(q.timing_rules.garbage_are_bump_frames,12);assert.equal(q.start.queue.length,6);assert.equal(q.bag_knowledge,'unknown');assert.equal(q.unknown_tail,'finite_visible');assert.ok(!('randomizer' in q.start));
+ const s=structuredClone(snapshot);s.attack.multiplier=2;s.frame=18000;
+ const p=buildSnapshotRequest(captureSnapshot({...prepared.authority.state,frame:s.frame,attack:s.attack},{rootGeometry:{placements:q.root_legal_placements}}));assert.equal(p.garbage_multiplier,2);assert.equal(p.authority_frame,18000);assert.equal(p.incoming.length,0);
+ assert.ok(JSON.parse(analyze_snapshot_json(JSON.stringify({...p,node_budget:5000}))).nodes<=5000);
 });
-test('observed history handles empty Hold, occupied Hold and bag frontiers without hidden queue',async()=>{
-  const e=new Engine({seed:42,handling:{safelock:false}}),v=viewer(e,[
-    {frame:0,type:'keydown',key:'hold',subframe:0},
-    {frame:0,type:'keydown',key:'hardDrop',subframe:.2},
-    {frame:1,type:'keyup',key:'hold',subframe:0},
-    {frame:1,type:'keydown',key:'hold',subframe:.2},
-    {frame:1,type:'keyup',key:'hardDrop',subframe:.3},
-    {frame:1,type:'keydown',key:'hardDrop',subframe:.4},
-  ]);
-  v.session.seekPlacement(1);let s=await v.analysisState();
-  assert.equal(s.observedDraws.length,8);assert.equal(new SevenBagObserver(s.observedDraws,s.observedDraws.slice(-6)).frontierBagState().length,6);
-  assert.equal(s.hold.piece,e.state.piece.type);prepareKiwi(s);
-  v.session.seekPlacement(2);s=await v.analysisState();assert.equal(s.observedDraws.length,9);prepareKiwi(s);
-  // A nonempty Hold before lock does not consume a bag draw; search rejects its locked root.
-  v.session.seekPlacement(1);v.session.advance();v.session.advance();v.session.advance();
-  s=await v.analysisState();assert.equal(s.observedDraws.length,8);assert.equal(s.hold.locked,true);
-  assert.throws(()=>prepareKiwi(s),/Hold/);
+test('real WASM deterministic hard budget and normalized recommendation without mutation',()=>{
+ const before=e.serialize();assert.deepEqual(search(prepared),report);assert.ok(report.nodes>0&&report.nodes<=NODE_BUDGET);
+ const r=normalizeRecommendation(snapshot,prepared,report);assert.ok(['hold','place'].includes(r.action.kind));if(r.move)assert.equal(r.move.cells.length,4);assert.equal(e.serialize(),before);
+ for(const c of report.candidates)if(c.action.kind==='place')assert.ok(prepared.request.root_legal_placements.some(p=>JSON.stringify(p)===JSON.stringify(c.action.placement)));
 });
-test('history recovery stops at exact same-frame source cursor, is cancellable and does not mutate Reconstruction',async()=>{
-  const v=viewer(new Engine({seed:42,handling:{safelock:false}}),[
-    {frame:0,type:'keydown',key:'hardDrop',subframe:.2},
-    {frame:0,type:'receive',data:{from:'peer',iid:1,ackiid:0,amt:7}},
-  ]);
-  v.session.seekPlacement(1);const before=v.session.checkpoint(),s=await v.analysisState();
-  assert.equal(s.attack.pending.length,0);assert.equal(v.session.checkpoint(),before);
-  v.session.timeline.events[1].data.amt=33;assert.deepEqual(await v.analysisState(),s);
-  const future=v.session.timeline.events[1];
-  Object.defineProperty(v.session.timeline.events,1,{get(){throw new Error('future read');},configurable:true});
-  assert.deepEqual(await v.analysisState(),s);
-  Object.defineProperty(v.session.timeline.events,1,{value:future,writable:true,configurable:true});
-  v.session.seekFrame(90);assert.equal(await v.analysisState({cancelled:()=>true}),null);
+test('same-piece empty and occupied Hold are standalone; locked post-Hold search cannot Hold',()=>{
+ for(const occupied of [false,true]){
+ const h=Engine.restore(e.serialize());if(occupied)h.state.hold.piece=h.state.piece.type;else h.state.bag.queue[0]=h.state.piece.type;
+ const s=visibleState(h.state),p=prepareKiwi(s),r=search(p),a=r.candidates.find(c=>c.action.kind==='hold').action;
+ assert.equal(a.same_piece,true);assert.ok(!('placement' in a));const normalized=normalizeRecommendation(s,p,{...r,action:a});assert.equal(normalized.move,null);
+ const before=h.serialize(),post=applyHoldForReanalysis(h,a,{Engine});assert.equal(h.serialize(),before);assert.equal(post.state.hold.locked,true);
+ assert.deepEqual(post.state.bag.queue.slice(0,5),h.state.bag.queue.slice(occupied?0:1,occupied?5:6));
+ const after=search(prepareKiwi(visibleState(post.state)));assert.ok(after.candidates.every(c=>c.action.kind==='place'));
+ }
 });
-test('observable pending cannot enter persistent search and exact arrival/clock fields are retained',()=>{
-  const e=new Engine({seed:42});e.receive({from:'peer',iid:1,ackiid:0,amt:4});
-  assert.throws(()=>prepareKiwi(snapshot(e)),/activation frame/);
-  e.confirm(1);const p=prepareKiwi(snapshot(e));
-  assert.equal(p.path,'pending-snapshot');assert.deepEqual(p.request.incoming,[{lines:4,ready_in_frames:20}]);
-  assert.equal(p.request.authority_frame,0);assert.equal(p.request.garbage_margin_frames,10800);
-  assert.equal(p.request.node_budget,200000);assert.equal(p.request.frames_per_piece,24);
-  e.state.attack.pending[0].active=true;assert.equal(prepareKiwi(snapshot(e)).request.incoming[0].ready_in_frames,0);
-  e.state.attack.pending[0].hardened=true;assert.throws(()=>prepareKiwi(snapshot(e)),/垃圾/);
+test('unknown pending timing remains visible and analyzable; unsupported phases retain errors',()=>{
+ const h=Engine.restore(e.serialize());h.receive({from:'peer',iid:1,ackiid:0,amt:4});
+ const capture=()=>captureSnapshot(h.state,{rootGeometry:{placements:prepared.request.root_legal_placements}});
+ const unknown=buildSnapshotRequest(capture(),{nodeBudget:5000});
+ assert.deepEqual(unknown.incoming,[{lines:4,ready_in_frames:null}]);
+ const result=JSON.parse(analyze_snapshot_json(JSON.stringify(unknown)));
+ assert.equal(result.unknown_activation_packets,1);assert.equal(result.scenarios,30);
+ assert.deepEqual(result.unknown_activation_delays,[1,25,600]);assert.ok(result.nodes<=5000);
+ assert.equal(unknown.incoming[0].ready_in_frames,null);
+ h.confirm(1);const q=buildSnapshotRequest(capture(),{nodeBudget:5000});assert.equal(q.incoming[0].lines,4);assert.ok(JSON.parse(analyze_snapshot_json(JSON.stringify(q))).nodes<=5000);
+ h.state.attack.pending[0].hardened=true;assert.throws(capture,{code:'PENDING_PACKET_HARDENED_UNSUPPORTED'});h.state.attack.pending=[];h.state.attack.are=[{amt:1}];assert.throws(capture,{code:'PENDING_ARE_QUEUE_UNSUPPORTED'});
 });
-test('actual TL surge-base and ARE differences are disclosed without changing authority counters',()=>{
-  const e=new Engine({rules:{b2bcharge_base:3,garbageare:5,garbagearebump:12}});
-  e.state.attack.btb=10;e.state.attack.combo=4;
-  e.receive({from:'peer',iid:1,ackiid:0,amt:4});e.confirm(1);
-  const before=e.serialize(),p=prepareKiwi(snapshot(e));
-  assert.equal(p.request.start.b2b_count,9);assert.equal(p.request.start.combo,4);
-  assert.ok(p.warnings.some(s=>s.includes('surge base=3')));assert.ok(p.warnings.some(s=>s.includes('ARE')));
-  assert.equal(e.serialize(),before);
-});
-test('WASM 200k search is deterministic and normalized recommendation is read-only',()=>{
-  const e=new Engine({mode:'40l',seed:42}),s=snapshot(e),p=prepareKiwi(s),before=e.serialize();
-  const run=()=>{const b=new WasmBot();b.start(JSON.stringify(p.request.start));assert.equal(Number(b.think_nodes(NODE_BUDGET)),200000);const r=JSON.parse(b.suggest_json());b.free();return r;};
-  const first=run();assert.deepEqual(run(),first);
-  const move=normalizePlacement(s,p.visible,first[0]);assert.equal(move.cells.length,4);assert.equal(e.serialize(),before);
-  assert.equal(move.piece,e.state.piece.type);assert.equal(move.useHold,false);assert.ok(p.warnings.length);
-});
-test('artifact placement mapping covers every piece, four orientations and explicit Hold',()=>{
-  const tools=createPlacementTools({Engine,boardModule:B,rotationModule:R});
-  for(const type of 'IOTLJSZ')for(const orientation of ['north','east','south','west']){
-    const e=new Engine({seed:42});e.state.piece.type=type.toLowerCase();
-    const s=snapshot(e),placement={location:{type,orientation,x:4,y:2},spin:'none'};
-    let target=tools.targetFor(placement);placement.location.y-=39-Math.max(...target.cells.map(c=>c[1]));
-    const move=normalizePlacement(s,{queue:[type]},placement);
-    assert.equal(move.piece,type.toLowerCase());assert.equal(move.useHold,false);assert.equal(Math.max(...move.cells.map(c=>c[1])),39);
-  }
-  for(const held of [null,'i']){
-    const e=new Engine({seed:42});e.state.hold.piece=held;const s=snapshot(e);
-    const type=(held??s.next[0]).toUpperCase(),placement={location:{type,orientation:'north',x:4,y:0},spin:'none'};
-    const move=normalizePlacement(s,{queue:[s.current.type.toUpperCase()]},placement);assert.equal(move.useHold,true);assert.equal(move.piece,type.toLowerCase());
-  }
-});
-test('pending WASM snapshot respects total hard node budget',()=>{
-  const e=new Engine({seed:42});e.receive({from:'peer',iid:1,ackiid:0,amt:4});e.confirm(1);
-  const s=snapshot(e),p=prepareKiwi(s),report=JSON.parse(analyze_pending_json(JSON.stringify(p.request)));
-  assert.ok(report.candidates.length);normalizePlacement(s,p.visible,report.candidates[0].placement);
-  assert.equal(report.nodes,200000);assert.equal(report.node_budget,200000);assert.equal(report.scenarios,10);
+test('40L explicitly uses neutral competitive stacking without a TL attack clock',()=>{
+ const solo=new Engine({mode:'40l',seed:42}),s=visibleState(solo.state),p=prepareKiwi(s);assert.equal(p.request.analysis_mode,'competitive_stacking');assert.equal(p.request.source_mode,'40l');assert.equal(p.request.garbage_multiplier,null);assert.equal(p.request.start.combo,0);assert.ok(p.warnings.some(w=>w.includes('40L')));normalizeRecommendation(s,p,search(p));
 });
 test('updated artifact transport prevents a reset-heavy path locking a second piece',()=>{
   const tools=createPlacementTools({Engine,boardModule:B,rotationModule:R});

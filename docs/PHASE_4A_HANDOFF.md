@@ -1,334 +1,208 @@
-# Phase 4A handoff — Kiwi single-position analysis
+# Phase 4A handoff — Kiwi snapshot-v3.2
 
-Date: 2026-09-20. Scope authority: `docs/PHASE_4_PLAN.md`, with the user's
-designation of Kiwi v1 as the Cold Clear 2 implementation. Only Phase 4A is
-implemented. No user-visible continuation, bot-move application, analysis branch
-timeline, gameplay controls, or Phase 4B work is included. Stop for review.
+Updated 2026-09-21. Scope authority: `PHASE_4_PLAN.md` and its snapshot/progressive
+reveal clarification. Phase 4A only: one local recommendation. No user-visible
+continuation, bot execution, analysis timeline, or Phase 4B is implemented.
 
-## Result
+## Delivered behavior
 
-### Subsequent product clarification — requested, not yet implemented
+Select the Kiwi image beside Next. Playback for the entire replay is paused before
+analysis. A Place recommendation produces a lime outline. A Hold recommendation
+says **建議 HOLD**, without a landing: Hold is a complete single-action recommendation,
+not an error. Phase 4A does not execute it or automatically request its subsequent
+placement. A future authorized continuation must execute Hold on an isolated branch,
+refill NEXT 5 immediately for empty Hold, and analyze anew with Hold locked.
 
-The 2026-09-20 snapshot/progressive-reveal clarification in `PHASE_4_PLAN.md`
-supersedes the original history-informed analysis requirement. The implementation
-and test results below describe the delivered Phase 4A, not completion of this
-revised contract. Specifically:
+Clearing, seeking, scrubbing, starting playback, changing file/round/player, or PWA
+update preparation invalidates the result and terminates Kiwi Worker. Clearing also
+empties analysis DOM text. Replay checkpoints and persistence are unchanged. Static
+program files stay cached for offline use; analysis data is never persisted.
 
-- `ViewerSession.analysisState()` currently rescans the observed prefix and sends
-  observed draws; `prepareKiwi()` derives SevenBag state. The requested replacement
-  is a direct visible snapshot with no historical bag inference. This is pending
-  an explicit Kiwi unknown-bag/unknown-tail contract; never pretend unknown means
-  a known full bag or silently alter the pinned artifact helpers.
-- Future continuation must refill NEXT 5 from the original sequence after each
-  consumed draw. Empty Hold must trigger an immediate refill and a fresh decision
-  with Hold locked, before a placement is committed. Occupied Hold consumes no draw.
-  Tetrp owns the sequence and branch; Kiwi sees only each new visible snapshot.
-- Current Kiwi integration rejects Hold-locked roots. Supporting the requested
-  post-Hold re-analysis therefore requires explicit upstream root-Hold control or
-  another verified supported mechanism. Current Hold-plus-placement results do
-  not fulfill the new two-stage behavior.
-- Current analysis already pauses replay, terminates its Worker when cleared or
-  replay navigation resumes, and persists no results. There is no continuation
-  branch yet. Future exit must discard that branch too and return to the original
-  recorded position paused; offline static assets may remain cached.
-
-The user has clarified the information boundary and resource lifetime, not
-authorized Phase 4B implementation. Unknown-tail search semantics remain an open
-integration decision. Do not interpret the earlier discussion of a finite known
-queue as a requirement to stop the entire continuation after the initial NEXT 5.
-
-### Delivered Phase 4A behavior
-
-Open a supported replay, pause at a position, and select **Kiwi** beside replay
-navigation. One recommendation appears as a lime outline on the existing board.
-The status explicitly says `HOLD → piece` when required. Details show the budget,
-actual evaluator nodes, path, and approximation warnings. The separate status row
-does not obscure the board. The × button cancels or clears analysis.
-
-Analyzing pauses playback and auto-step without seeking. Navigation, scrub start,
-playback start, round/player/file changes, and coordinated PWA updates invalidate
-analysis. Replay persistence remains unchanged; recommendations are not persisted.
-
-## Pinned artifact and license
+## Exact artifact pin
 
 | Field | Value |
 | --- | --- |
 | Repository / branch | `jush0147/cold-clear-2` / `kiwi-v1` |
-| Product | `kiwi-v1`, display name `Kiwi` |
-| Source commit | `89dcfe6cf544991bc9bb59098dd43d2ca2173945` |
-| Artifact build commit | `89dcfe6cf544991bc9bb59098dd43d2ca2173945` |
-| Frozen strategy ancestor | `e13ec57e7f3795ea0c4dd7e256346d533fcb36e3` |
-| GitHub Actions run | `35444205867` |
-| Artifact name / ID | `kiwi-v1-browser` / `10585366096` |
-| GitHub-reported archive digest | `sha256:b63be254a1cd0ce2b6419719e3eb5ce8db53773c9b6cbe51f8bab48ad3e1561a` |
-| Default budget | 200,000 evaluator nodes |
-| WASM size | 491,197 bytes |
+| Product | `kiwi-v1-snapshot-v3.2` |
+| Source / build commit | `2e243242b674d57491f99b445f75e35fc48a0e26` |
+| Workflow | `35524225160` |
+| Artifact | `kiwi-v1-browser`, ID `10608234222` |
+| GitHub archive digest | `sha256:5f41edcd5f92165e4d77589e74bb47e926384c8d113fc927afd9552ec56aa3e8` |
+| Upstream post-upload verification artifact | `10609269000` |
+| Upstream authority fixture ref | `0b48cb7e1a50e5f0bba6fcfee05ba8e291bebee2` |
+| Search budget | 200,000 evaluator nodes per request, early completion allowed |
 
-The complete extracted browser artifact lives in `vendor/kiwi-v1/`, including its
-two unmodified mapping helpers, browser package, build manifest, handoff, smoke
-report, and licenses. No Rust source or alternate bot was vendored. The recorded
-archive digest is GitHub metadata; `scripts/verify-kiwi.js` independently verifies
-SHA-256 for every extracted file using `artifact-lock.json` on every build/test.
-`.gitattributes` disables text conversion for this directory so a fresh checkout
-preserves the verified bytes.
-
-The upstream package declares `MIT OR Apache-2.0`; both notices ship in `dist`.
-The artifact omits its repository's `THIRD_PARTY_NOTICES.md`. The same pinned
-commit's [third-party notice](https://github.com/jush0147/cold-clear-2/blob/89dcfe6cf544991bc9bb59098dd43d2ca2173945/THIRD_PARTY_NOTICES.md)
-was copied separately to `third-party/kiwi-notices.md` and ships as `kiwi-NOTICES`.
-It attributes adapted SRS+ data to Triangle.js / halp; it is not Tetrp-authored data.
-
-Reacquire the original artifact while GitHub retains it:
+The complete extracted artifact, including helpers, reports, licenses, notices,
+and packaged E2E script, is in `vendor/kiwi-v1`. No Rust source is vendored. Upstream
+verification checks 31 files excluding its own hash manifest; the local lock also
+hashes that manifest. `scripts/verify-kiwi.js` checks the exact file set and every
+hash on builds/tests. Vendor text conversion is disabled. The archive digest above
+is GitHub metadata; extracted-file hashes were independently verified locally.
 
 ```sh
-gh run download 35444205867 -R jush0147/cold-clear-2 -n kiwi-v1-browser -D .cache/kiwi-v1-browser
+gh run download 35524225160 -R jush0147/cold-clear-2 -n kiwi-v1-browser -D .cache/kiwi-v1-browser-35524225160
 ```
 
-Ordinary builds need no GitHub access, Rust, wasm-pack, or artifact download.
-The checked-in browser artifact is the reproducible build input even after Actions
-retention expires. Updating the pin is a separate reviewed change.
+Normal builds use the pinned local files and need no Rust or GitHub download.
+MIT / Apache-2.0 licenses and upstream third-party notices ship in dist.
 
-The user-requested build 35444205867 updates the placement transport to an
-**authority-gated reset-safe fallback**, tested upstream against Tetrp commit
-`0b48cb7e1a50e5f0bba6fcfee05ba8e291bebee2`. Its WASM, browser glue and authority
-adapter are byte-identical to the earlier build 35441288411. This is a transport
-fix, not a strategy/rules-parity change. A local regression reproduces a grounded
-16-reset path locking two pieces with ordinary scheduling, then verifies the new
-engine-probed schedule locks exactly one piece at frame 19, subframe 0.5, without
-mutating the supplied Engine. Ordinary safe schedules remain unchanged.
-Phase 4A uses the helper's geometry mapping only; scheduling is exercised in tests
-and is not exposed as continuation or used by the viewer.
-
-## Architecture and information boundary
+## Snapshot boundary and Worker architecture
 
 ```text
-ViewerSession / recorded Reconstruction (replay Worker)
-  → exact selected position + observed-history reconstruction
-  → allowlisted canonical visible state
-  → BotAdapter (UI request lifecycle only)
-  → dedicated kiwi-worker.js
-  → artifact adapter + WasmBot / analyze_pending_json
-  → artifact placement helper + Tetrp geometry verification
-  → one normalized move
-  → read-only Canvas overlay
+Frozen recorded Reconstruction in replay Worker
+  -> direct allowlisted current visible projection
+  -> UI request lifecycle / BotAdapter
+  -> dedicated Kiwi Worker
+     -> artifact validation and actual-root geometry enumeration
+     -> artifact snapshot-v3 request
+     -> packaged WASM analyze_snapshot_json
+     -> Tetrp geometry validation and normalized Place or Hold
+  -> viewer recommendation only
 ```
 
-- `src/analysis/visible-state.js` defines the bot-independent transport. It contains
-  own board/current/Hold, exactly five previews, public rules, counters, observed
-  draw history, and allowlisted incoming packet facts. Packet identity, sender,
-  hole column, RNG, hidden queue, opponent board, timeline and raw replay are absent.
-- `ViewerSession.analysisState()` runs in the existing replay Worker. A separate
-  Reconstruction receives only the source-event prefix ending at the selected
-  cursor, with its frame bound truncated to the selected frame. It scans from
-  initial state and stops at the exact cursor/frame/phase, yielding every 256
-  operations. No later same-frame input or future attack confirmation is read.
-  Gameplay reconstruction uses the existing authority Engine; the observer never
-  derives a bag frontier from RNG or the queue beyond preview five.
-- This scan does not modify or seek the recorded Reconstruction. The final
-  projection is a detached copy. History work is invalidated by any new replay
-  command or explicit analysis cancellation.
-- `viewer/bot-adapter.js` exposes initialize/analyze/cancel/dispose. Worker identity
-  and monotonic request generation guard replies and errors. Busy repeated Analyze
-  requests terminate/restart the Worker; idle identical requests reuse a cached
-  normalized result. Timeout is 120 seconds. Cancellation terminates synchronous
-  WASM work rather than trying to send an interrupt through its blocked event loop.
-- `viewer/kiwi-worker.js` owns WASM initialization, WasmBot, search and placement
-  checking. Nothing runs Kiwi search on the UI thread or replay Worker.
-- Replay position generations independently reject late history and search
-  responses. Worker errors, initialization errors, unsupported state and mapping
-  failures are analysis errors, not replay load errors; replay navigation survives.
+`ViewerSession.analysisState()` reads the current state directly. It never walks
+source events, reconstructs an earlier prefix, or consults observed draw history.
+`ObservedDraws` and the old SevenBag adapter integration have been removed.
 
-## Mapping and search semantics
+The projection includes own board/current pose, Hold availability, exactly five
+previews, current public rules/time/counters and allowlisted pending/ARE facts.
+There is no replay checkpoint, raw event, hidden queue, RNG, opponent board, packet
+sender/hole, or historical draw list in the Worker message. Private sequence state
+is not needed for Phase 4A because no Hold or placement is executed.
 
-The artifact's `captureVisibleState`, `buildAnalysisRequest`, `SevenBagObserver`,
-`inferredUseHold`, and `createPlacementTools` are reused unchanged.
+The Worker creates an authority-shaped facade containing only that projection.
+Both the expensive root-landing enumeration and WASM search happen there, using
+unmodified artifact mapping helpers. Unsupported rules/packets are checked before
+expensive enumeration. The facade does not generate pieces or advance gameplay.
 
-Board storage is 10 × 40 with 20 visible rows. The helper reverses the rows once
-for Kiwi's bottom-up board, converts piece letters to uppercase, and maps ordinary
-garbage to `G`. Permanent garbage and other dimensions are rejected. Root queue
-is current plus **exactly NEXT 5**. The selected piece's actual coordinates and
-rotation remain available for authority reachability checking.
+`BotAdapter` retains monotonic generation and Worker-identity guards, including
+error callbacks. New navigation terminates synchronous geometry/search immediately
+at the Worker boundary. The existing 120-second watchdog remains. Identical repeated
+Analyze requests may reuse the one result cached within the current Worker session;
+no search DAG or result survives exit. Every actual WASM request builds fresh DAGs.
 
-Replay placements commonly have `phase=inputs`. The harness helper's ready-frame
-requirement is adapted only on a detached mapping object: the original frame,
-subframe, board, and piece remain unchanged. No `finishFrame()` or future input
-is executed to manufacture a ready decision. Integer packet timing uses the
-selected integer source frame; subframe travel precision is not modeled by Kiwi.
+## Search and mapping
 
-TL combo is supplied directly. `back_to_back = raw btb > 0` and
-`b2b_count = max(0, raw btb - 1)` use the artifact's convention. Tetrp keeps its
-canonical counters and full rule configuration; Kiwi does not become authority.
+All roots use `analyze_snapshot_json`, including no incoming, pending incoming and
+late multipliers. The old persistent/no-pending product split is superseded by the
+upstream v3.2 contract. There is no call to legacy WasmBot, new_piece or play_json.
 
-### SevenBag and Hold
+The request declares `bag_knowledge=unknown`, `unknown_tail=finite_visible`.
+No full-bag substitute, bag remainder or piece-count-modulo inference is provided.
+Search ends at known queue layers; heuristic leaves do not peek beyond NEXT 5.
+This per-request horizon is not a limit on a future progressive-reveal continuation.
 
-Observation starts with the initial current plus five visible previews. For each
-consumed atomic operation, actual spawn transitions count draws; occupied-Hold
-replacement spawns do not. Only newly exposed preview suffix entries are appended.
-Ordinary lock/spawn reveals one new preview; empty Hold plus lock/spawn reveals
-two. If empty Hold and placement are separate events, each reveal is observed
-separately. Buffered Hold is accounted for by the same transition rule.
+The artifact maps the 10x40 top-down board to bottom-up CC2 rows. Its exhaustive
+geometry helper uses the complete current active-piece state, including fractional
+y, rotation/kick/spin metadata. Occupancy maps using ceil(y). The legal root landing
+allowlist constrains the first Place search layer; there is no top-K truncation.
+Exceeding the upstream 250,000-state safety bound rejects explicitly.
 
-`SevenBagObserver` validates the accumulated history and computes the remaining
-pieces at the *observed preview frontier*. Its draw-window suffix is kept separate
-from the actual current piece: nonempty Hold can make current differ from the
-latest draw. The observed NEXT five must still match; only the decision-window
-binding passed to `buildAnalysisRequest` substitutes the real current. No bag
-order beyond the observed frontier is supplied.
+Place is validated with the artifact path helper, then checked with Tetrp geometry
+methods in a disposable sandbox using a fixed dummy seed and only visible previews.
+The sandbox never locks a piece. Cells, collision legality and spin must agree.
+The normalized result is `{action:{kind:'place'},move:{piece,x,y,rotation,useHold:false,cells}}`.
 
-Kiwi's represented Hold choice changes the played piece type. The provided helper
-infers `useHold` under this explicit contract; same-piece Hold is not a separate
-search branch. Hold-locked roots, disabled Hold and infinite Hold fail explicitly,
-because the pinned API cannot express those restrictions. Empty/occupied Hold
-placement paths are checked through Tetrp's Hold method in the geometry sandbox.
+Hold is validated as an explicit action, including empty/occupied and same-piece
+identity. It returns `{action:{kind:'hold',mode,samePiece,requiresReanalysis:true},move:null}`.
+Hold-locked roots are now supported; the search cannot Hold again. Tests exercise
+post-Hold re-analysis on isolated Engine clones; runtime Phase 4A does not execute it.
 
-### Persistent versus pending-aware search
+Public surge base/threshold, opener, all-clear, special bonus and clutch fields are
+passed through. TL garbageare=5 and garbagearebump=12 retain their original values.
+Clock and attack multiplier are included even with no pending. Positive pending
+cannot silently fall back to no-pending analysis. Unknown activation stays explicit
+null, with its amount and queue order retained. Kiwi evaluates three disclosed
+timing hypotheses crossed with ten hole scenarios within the SAME 200k cap.
+These are heuristic assumptions, not actual arrival times or probabilities.
+Positive existing ARE and unsupported packet states still reject explicitly.
 
-No observable incoming: instantiate `new WasmBot()` with its frozen
-`h9+h12+h13-interactive` constructor profile, start from the visible root, call
-`think_nodes(200000)`, and choose the first suggestion. The Worker/session remains
-alive for identical Analyze clicks; those return the same result without adding
-another search budget. A replay seek cancels it and establishes a fresh root.
-Phase 4A does not call `play_json`, `play_with_hold_json`, or `new_piece`, because
-there is no Kiwi continuation to advance.
+40L uses source_mode=40l / analysis_mode=competitive_stacking, neutral combo/B2B,
+no pending and no TL attack clock. This is explicitly a competitive stacking
+heuristic, not solo scoring recovery or sprint time optimization.
 
-Any positive observable incoming: use `buildAnalysisRequest()` and
-`analyze_pending_json()`. Persistent start never receives a stripped pending root.
-Active packets have ready time 0; confirmed inactive packets use
-`activeFrame - frame`. Frame, current attack multiplier, growth margin and growth
-rate are supplied together, plus placed-piece and sent-garbage counters.
-Pending search uses frozen `h9+h12-review`, 24 frames/piece (2.5 PPS), and ten
-equally weighted unknown-hole scenarios sharing one 200,000-node budget.
+## PWA and privacy
 
-Unconfirmed activation, shielded/hardened/nonstandard packet state, unsupported
-garbage cap/blocking/entry rules fail explicitly. No future confirm is consulted.
-ARE packets that do not satisfy the supported packet contract likewise fail;
-they never become a no-pending search.
+Existing relative URLs, self-only hosting, WASM MIME and `wasm-unsafe-eval` CSP remain.
+Geometry/adapter code bundles into Kiwi Worker; WASM, provenance and licenses are
+pre-cached with the app. The Kiwi button image is also local/offline. No service,
+remote inference, upload, account, analytics or analysis persistence was added.
 
-### Placement normalization
+`npm test` explicitly selects `test/*.test.js`, avoiding accidental execution of
+upstream packaged E2E scripts by Node test discovery. The upstream E2E is run
+explicitly with artifact and Tetrp paths when validating a release.
 
-The artifact helper maps Kiwi piece cells/orientation to Tetrp coordinates and
-finds a path using Tetrp SRS+ CW/CCW/180, Hold and spin logic. A detached geometry
-sandbox uses the visible board/piece/Hold, five previews, public rules and a fixed
-dummy seed; it has no replay RNG or events. Tetrp movement/rotation/drop methods
-verify the path, final occupied cells, collision legality and spin classification.
-The sandbox is discarded without committing a lock or applying a bot placement
-to a replay or user-visible branch.
+## Validation and performance
 
-The result is `{piece, x, y, rotation, useHold, cells}` in top-down Tetrp coordinates,
-plus generic search metadata/warnings. `y` and cells use occupied integer rows;
-the viewer subtracts its 20-row buffer. It never sees Kiwi placement structures.
-The outline is presentation only; no direct board mutation is used.
+- 352 unit/replay/viewer/reference/PWA tests passed, none skipped. Local reference
+  tests use bundled Python 3.12, matching CI; default Python 3.11 produces a
+  different AST representation and fails the source-audit hash without a rule change.
+- Production build and downloaded artifact exact-set/SHA-256 verification passed.
+- Upstream run 35524225160 passed build, Chromium/WebKit Worker tests and a fresh
+  downloaded-artifact E2E job. Unknown arrival was deterministic in both browsers,
+  used 200,000 / 200,000 nodes and remained within the shared cap.
+- Full Chromium/WebKit browser regression: 56 passed, zero failed/skipped (3.5 min),
+  including real private replay, unknown-arrival recommendations, stale results,
+  cancellation, PWA offline WASM and persistence/update checks. Timings below.
+- Private replay audit: 21 streams, 2,541 positions, 62 sampled successful
+  searches, 20 pending roots, 32 Hold recommendations, zero sampled rejections.
+  Sampling stops at the first successful pending root; v3.1 skipped unknown
+  activation until a later confirmed root, so pending samples differ between runs.
+  Every result normalized and every recorded checkpoint remained byte-identical.
+- TL JavaScript geometry: 0.198–0.936 s, median 0.492 s; WASM search:
+  0.374–0.950 s, median 0.535 s. Two solo roots used 0.522–0.550 s geometry and
+  0.684–0.825 s search. These are desktop local samples, not phone certification.
+- Upstream's reproducible 11-fixture before/after comparison preserves the entire
+  landing list, ordering, state counts and metadata. It includes all seven pieces,
+  fractional non-spawn wall poses across the rotation threshold and an immobile spin.
+  Complete enumeration remains; repeated landing/edge calculations are cached.
+- Private reconstruction: 2,520 placements, 5,082 seeks, 2,541 forks; report hash
+  exactly matches v3.1, including four known TL mismatch streams. No engine changed.
 
-## Static hosting, offline, privacy
+Worker timing excludes startup, WASM initialization, message transport and painting.
+WebKit is desktop-host mobile emulation, not a physical phone. Geometry and WASM
+both stay inside the dedicated Worker and navigation cancels them immediately.
 
-esbuild emits app, replay Worker and Kiwi Worker. Browser glue/helpers are bundled
-into Kiwi Worker; the original WASM is copied beside it. Relative URLs preserve
-GitHub Pages project subpaths. The preview server explicitly allows the new files
-and serves WASM with `application/wasm`.
+Two synthetic replay positions at the default 200k cap (162,535 and 200,000 actual
+nodes), measured in the full browser regression:
 
-The content-hashed PWA asset list includes Worker, WASM, provenance manifests and
-license/notices. Installation/update still requires the complete asset set and
-the existing persistence acknowledgement protocol. Analysis is cancelled before
-update preparation. The CSP adds only `wasm-unsafe-eval` to the existing self-only
-script policy; no `unsafe-eval`, remote script, backend or bot service is added.
-Replays remain local, outside service-worker caches; analysis has no storage path.
+| Browser | Geometry | WASM search | Total |
+| --- | --- | --- | --- |
+| Chromium | 0.199–0.324 s | 0.566–0.597 s | 0.768–0.921 s |
+| WebKit mobile emulation | 0.299–0.610 s | 1.012–1.143 s | 1.314–1.753 s |
 
-## Validation
+The preceding v3.1 run measured 4.23–8.88 s total in Chromium and 7.68–12.96 s
+in WebKit for these positions. Runs are not isolated device benchmarks; the
+strict same-input geometry comparison is recorded separately upstream.
 
-Commands (Node 24.15.0, Python 3.12.14, Windows; set `PYTHON` if needed):
+Local ignored evidence: .cache/v32-unit-final.log, .cache/v32-build.log,
+.cache/v32-browser-final.log, .private-replays/v32-regression.json,
+.private-replays/v32-analysis.log. Private replay files are never committed.
 
-```sh
-npm test
-npm run build
-npm run test:browser
-node scripts/validate-replays.mjs <40L path> <TL path> --output .private-replays/phase4a-regression.json
-node scripts/validate-analysis.mjs <40L path> <TL path>
-```
+Reproduction: npm test (Python 3.12), npm run build, npm run test:browser;
+scripts/validate-replays.mjs and scripts/validate-analysis.mjs accept local replay
+paths. Browser private fixtures use TETRP_TTR / TETRP_TTRM. Public CI uses synthetic
+fixtures only. Upstream 3,472 bounded rule fixtures are not full parity certification.
 
-Private browser checks use `TETRP_TTR` / `TETRP_TTRM`. Public CI continues to use
-synthetic fixtures only (`--grep-invert "real private"`). Logs, screenshots and
-private inputs were not added to Git or dist.
+## Remaining limitations
 
-- Unit/replay/viewer/reference/PWA: **355 passed, 0 failed, 0 skipped**.
-- Full Chromium/WebKit browser suite, including private replay and offline PWA:
-  **56 passed, 0 failed, 0 skipped** (3.6 minutes) on the final pinned build.
-- Production build and `git diff --check` pass. Local verification logs are
-  `.cache/phase4a-unit-latest.log`, `.cache/phase4a-browser-latest.log`, and
-  `.private-replays/phase4a-analysis-latest.log` (ignored, not distributed).
-- New tests cover artifact hashes/profile, current+NEXT5, hidden-tail/RNG immunity,
-  a throwing future-event getter, exact same-frame history boundary, SevenBag
-  frontier/Hold accounting, all seven pieces × four orientations, Hold placement,
-  deterministic 200k search, pending budget/timing, authority immutability, stale
-  reply/error rejection, cancellation, repeated requests and Worker restart.
-- Browser tests exercise real WASM, independent worker identity, UI timers during
-  search, Hold labelling, new-position analysis, clearing/cancellation, pending and
-  unknown-arrival paths, player switching, local-only requests and short landscape.
-  PWA tests perform real offline WASM analysis after shutting down the origin.
-- Existing private replay audit: 100 solo + 2,420 TL placements, 21 streams,
-  **5,082 repeated placement seeks and 2,541 forks**. The same four known TL
-  terminal mismatch streams remain. The existing provisional TL retry no-op is
-  unchanged; no new engine conformance claim is made.
-- Private Kiwi audit observes **2,541 placement positions**, searching initial,
-  first, every 25th, and pending sample positions. All **144 searches** normalize
-  successfully: 113 persistent, 31 pending; 71 Hold recommendations. 22 selected
-  TL positions reject unconfirmed garbage timing; one selected terminal TL
-  position rejects no active piece. These are explicit unsupported positions.
-  Checkpoint bytes stay identical across every attempted analysis. This audit was
-  rerun after pinning build 35444205867: Node search times were 288–398 ms for
-  solo (median 345 ms), 18–890 ms for TL (median 451 ms).
+- Actual-root preparation is much faster but remains board/pose-dependent.
+  Pathological geometry can exceed the unchanged safety bound; no candidate
+  truncation is silently substituted. No replay-history scan occurs.
+- Geometry is not a frame/reset timing execution guarantee. Phase 4A displays only;
+  future execution requires Tetrp authority timing validation.
+- Pending is 24F/piece with ten assumed holes and approximate integer-frame timing.
+  Exact ARE/bump, full opener double-cancel and complete clutch parity remain false.
+  Positive existing ARE and unsupported packet states reject explicitly. Unknown
+  activation is accepted, but the three timing cases are a bounded heuristic, not
+  exhaustive independent packet timing combinations or calibrated probabilities.
+- Empty Hold is searched independently, including same-piece Hold, but its newly
+  revealed piece is unknown until execution. Information-gain optimization is false.
+- Finite-visible search and root branch budget splitting differ from the old bot.
+  Correctness checks establish neither equivalent strength nor a win probability.
+- 40L is competitive stacking only. Blitz/custom rules outside the upstream contract
+  remain unsupported. A rejection does not authorize changing canonical rules.
+- Mobile WebKit is desktop-host emulation; physical-phone performance and installed
+  PWA lifecycle still require device verification.
 
-## Performance and real limitations
-
-Browser measurements use the synthetic seed-42 empty root and placement 1 with
-the real pinned 200k WASM. Worker search and search-plus-mapping are measured using
-`performance.now`; history reconstruction, Worker startup, WASM loading and UI
-rendering are outside those durations. These are local desktop-host measurements
-with mobile WebKit emulation, not physical-phone performance certification.
-
-Final build 35444205867 browser measurements: Chromium search **376–716 ms**,
-total **387–746 ms**; WebKit mobile-emulation search **1,512–1,809 ms**, total
-**1,525–1,829 ms**. The private Node audit was running concurrently, so these
-measurements include desktop CPU contention. The identical WASM in the initial
-run measured Chromium 320–352 ms and WebKit 1,688–1,883 ms search time.
-Both roots report exactly 200,000 evaluated nodes. UI intervals continue while
-search runs. General API behavior allows fewer nodes if its graph has no work;
-200k is a hard evaluator budget, not a promised time or depth. Cancellation
-terminates the entire Worker; there is a visible thinking state, no invented
-percentage progress, and a two-minute watchdog.
-
-Reproducible limitations:
-
-1. **Real TL surge mismatch:** the supplied TL replay uses `b2bcharge_base=3`;
-   the pinned Kiwi source's `surge_size` matches base 0. Set that rule on a
-   synthetic TL Engine to reproduce the warning. Input B2B counters remain exact,
-   but search can undervalue a surge release; no adapter API exists for this rule.
-2. **40L unknown combo/B2B:** authority marks solo aggregates unknown. Kiwi receives
-   explicitly disclosed neutral combo/B2B values and evaluates competitive
-   stacking. This is not a fastest-40L solution or recovered solo scoring.
-3. **Hold already locked:** analyze after a Hold before the next lock; Kiwi cannot
-   constrain root Hold, so the request fails. Same-type Hold is not ranked separately.
-4. **Unknown incoming activation:** receive a packet without confirming it, then
-   analyze. The request fails; it is not treated as zero pending or assigned a
-   guessed delay. Nonstandard packet/material/board/rule contracts also fail.
-5. **Pending is approximate:** 24F pace, ten unknown-hole scenarios, integer frame
-   timing, and simplified ARE/bump timing. No opponent future, actual hidden hole,
-   actual future input pace, or future attack is used. Future scenario searches
-   may be optimistic; evaluation is not a win probability.
-6. **Rules parity is not certified:** upstream capabilities explicitly report
-   `rules_parity_verified=false`, missing opener double-cancel and clutch-clears.
-   Nonstandard spin/attack rules fail; the known surge-base difference is disclosed.
-   No-pending persistent search also cannot transport a late-round multiplier;
-   a non-unit authority multiplier triggers an explicit warning.
-7. **Reachability is geometric:** paths are checked with Tetrp methods and spin,
-   independent of invented PPS/gravity timing. No wall-clock execution guarantee
-   or replay input schedule is claimed. A bounded helper BFS (100k visits, 32 moves)
-   may reject a valid but complex placement; failure produces no overlay and does
-   not substitute a different bot or silently paint the cells.
-8. **Linear observed-history scan:** arbitrary invocation reconstructs the observed
-   prefix from the beginning of the stream. It yields and is cancellable but is
-   not yet indexed; long streams can add latency before search.
-9. **Scope:** no continuation, move ranking UI, recorded-line grading, cloud
-   compute, accounts, or live/ranked assistance. Physical device/installed PWA
-   lifecycle verification remains separate from automated browsers.
-
-Review this Phase 4A implementation and limitations before authorizing Phase 4B.
+Stop at Phase 4A for review. No user-visible continuation or Phase 4B was implemented.

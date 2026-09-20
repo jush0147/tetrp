@@ -154,7 +154,7 @@ async function consistent(page,reference,n){await placement(page,n);const expect
   expect(pixels).toEqual(colors);
 }
 test('local open, scrubber navigation, playback and refresh',async({page})=>{
-  const external=[];page.on('request',r=>{if(/^https?:/.test(r.url())&&(r.method()!=='GET'||!r.url().startsWith('http://127.0.0.1:4173/')))external.push(r.url());});
+  const external=[];page.on('request',r=>{if(/^https?:/.test(r.url())&&(r.method()!=='GET'||new URL(r.url()).origin!==new URL(page.url()).origin))external.push(r.url());});
   const x=synthetic();await upload(page,x);await expect(page.locator('#viewer')).toBeVisible();
   const reference=new Reconstruction(prepareReplay(selectPlayer(parseReplay(JSON.stringify(x)))));
   for(const n of [0,3,6,3,0])await consistent(page,reference,n);

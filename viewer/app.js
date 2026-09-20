@@ -35,7 +35,7 @@ let worker=null,serial=0,active=0,rounds=[],state=null,total=0,frames=0,desired=
 const bot=new BotAdapter();let analysisGeneration=0,analysisRequest=null;
 function clearAnalysis(){
   ++analysisGeneration;analysisRequest=null;bot.cancel();
-  $('analysis-panel').hidden=true;$('analyze').setAttribute('aria-busy','false');
+  $('analysis-panel').hidden=true;$('analysis-status').textContent='';$('analysis-details').textContent='';$('analyze').setAttribute('aria-busy','false');
   if(state)drawBoard($('board'),boardModel(state));
 }
 function analysisError(error){$('analysis-status').textContent=error.message??String(error);$('analyze').setAttribute('aria-busy','false');}
@@ -44,8 +44,9 @@ async function runAnalysis(snapshot,generation){
     const result=await bot.analyze(snapshot);
     if(generation!==analysisGeneration)return;
     const move=result.move;drawBoard($('board'),boardModel(state),move);
-    $('analysis-status').textContent=`Kiwi · ${move.useHold?'HOLD → ':''}${move.piece.toUpperCase()} · ${(result.searchMs/1000).toFixed(2)} s${result.cached?' · 已快取':''}`;
-    $('analysis-details').textContent=[`200,000 node budget · ${result.nodes??'未回報'} nodes · ${result.path}`,...result.warnings].join('\n');
+    if(result.action.kind==='hold')$('board').setAttribute('aria-label',$('board').getAttribute('aria-label')+' Kiwi 建議 HOLD；需補齊預覽後重新分析。');
+    $('analysis-status').textContent=`Kiwi · ${result.action.kind==='hold'?'建議 HOLD':move.piece.toUpperCase()} · ${(result.totalMs/1000).toFixed(2)} s${result.cached?' · 已快取':''}`;
+    $('analysis-details').textContent=[`200,000 node budget · ${result.nodes??'未回報'} nodes · ${result.path} · ${result.completion}`,`幾何 ${(result.geometryMs/1000).toFixed(2)} s · 搜尋 ${(result.searchMs/1000).toFixed(2)} s`,...(result.action.kind==='hold'?['Hold 是獨立建議；本次不執行 Hold 或顯示其後落點。']:[]),...result.warnings].join('\n');
     $('analyze').setAttribute('aria-busy','false');
     document.dispatchEvent(new CustomEvent('tetrp:analysis',{detail:structuredClone(result)}));
   }catch(error){if(generation===analysisGeneration&&error.name!=='AbortError')analysisError(error);}

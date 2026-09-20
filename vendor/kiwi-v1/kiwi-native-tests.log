@@ -1,0 +1,348 @@
+[1m[92m    Updating[0m crates.io index
+[1m[92m   Compiling[0m cold-clear-2 v0.1.0 (/home/runner/work/cold-clear-2/cold-clear-2)
+[1m[33mwarning[0m[1m: variant `Freestyle` is never constructed[0m
+   [1m[94m--> [0msrc/bot.rs:151:19
+    [1m[94m|[0m
+[1m[94m151[0m [1m[94m|[0m enum ModeSwitch { Freestyle }
+    [1m[94m|[0m      [1m[94m----------[0m   [1m[33m^^^^^^^^^[0m
+    [1m[94m|[0m      [1m[94m|[0m
+    [1m[94m|[0m      [1m[94mvariant in this enum[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m[1m: hiding a lifetime that's elided elsewhere is confusing[0m
+   [1m[94m--> [0msrc/dag.rs:175:9
+    [1m[94m|[0m
+[1m[94m175[0m [1m[94m|[0m         &self,
+    [1m[94m|[0m         [1m[33m^^^^^[0m [1m[33mthe lifetime is elided here[0m
+[1m[94m...[0m
+[1m[94m179[0m [1m[94m|[0m     ) -> Option<Selection<E>> {
+    [1m[94m|[0m                 [1m[33m^^^^^^^^^^^^[0m [1m[33mthe same lifetime is hidden here[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mhelp[0m: the same lifetime is referred to in inconsistent ways, making the signature confusing
+    [1m[94m= [0m[1mnote[0m: `#[warn(mismatched_lifetime_syntaxes)]` on by default
+[1m[96mhelp[0m: use `'_` for type paths
+    [1m[94m|[0m
+[1m[94m179[0m [1m[94m| [0m    ) -> Option<Selection<[92m'_, [0mE>> {
+    [1m[94m|[0m                           [92m+++[0m
+
+[1m[33mwarning[0m[1m: hiding a lifetime that's elided elsewhere is confusing[0m
+  [1m[94m--> [0msrc/map.rs:48:20
+   [1m[94m|[0m
+[1m[94m48[0m [1m[94m|[0m     pub fn get_raw(&self, k: u64) -> Option<MappedRwLockReadGuard<V>> {
+   [1m[94m|[0m                    [1m[33m^^^^^[0m                    [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mthe same lifetime is hidden here[0m
+   [1m[94m|[0m                    [1m[33m|[0m
+   [1m[94m|[0m                    [1m[33mthe lifetime is elided here[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mhelp[0m: the same lifetime is referred to in inconsistent ways, making the signature confusing
+[1m[96mhelp[0m: use `'_` for type paths
+   [1m[94m|[0m
+[1m[94m48[0m [1m[94m| [0m    pub fn get_raw(&self, k: u64) -> Option<MappedRwLockReadGuard<[92m'_, [0mV>> {
+   [1m[94m|[0m                                                                   [92m+++[0m
+
+[1m[33mwarning[0m[1m: hiding a lifetime that's elided elsewhere is confusing[0m
+  [1m[94m--> [0msrc/map.rs:52:16
+   [1m[94m|[0m
+[1m[94m52[0m [1m[94m|[0m     pub fn get(&self, k: &GameState) -> Option<MappedRwLockReadGuard<V>> {
+   [1m[94m|[0m                [1m[33m^^^^^[0m                           [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mthe same lifetime is hidden here[0m
+   [1m[94m|[0m                [1m[33m|[0m
+   [1m[94m|[0m                [1m[33mthe lifetime is elided here[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mhelp[0m: the same lifetime is referred to in inconsistent ways, making the signature confusing
+[1m[96mhelp[0m: use `'_` for type paths
+   [1m[94m|[0m
+[1m[94m52[0m [1m[94m| [0m    pub fn get(&self, k: &GameState) -> Option<MappedRwLockReadGuard<[92m'_, [0mV>> {
+   [1m[94m|[0m                                                                      [92m+++[0m
+
+[1m[33mwarning[0m[1m: hiding a lifetime that's elided elsewhere is confusing[0m
+  [1m[94m--> [0msrc/map.rs:56:24
+   [1m[94m|[0m
+[1m[94m56[0m [1m[94m|[0m     pub fn get_raw_mut(&self, k: u64) -> Option<MappedRwLockWriteGuard<V>> {
+   [1m[94m|[0m                        [1m[33m^^^^^[0m                    [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mthe same lifetime is hidden here[0m
+   [1m[94m|[0m                        [1m[33m|[0m
+   [1m[94m|[0m                        [1m[33mthe lifetime is elided here[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mhelp[0m: the same lifetime is referred to in inconsistent ways, making the signature confusing
+[1m[96mhelp[0m: use `'_` for type paths
+   [1m[94m|[0m
+[1m[94m56[0m [1m[94m| [0m    pub fn get_raw_mut(&self, k: u64) -> Option<MappedRwLockWriteGuard<[92m'_, [0mV>> {
+   [1m[94m|[0m                                                                        [92m+++[0m
+
+[1m[33mwarning[0m[1m: hiding a lifetime that's elided elsewhere is confusing[0m
+  [1m[94m--> [0msrc/map.rs:61:9
+   [1m[94m|[0m
+[1m[94m61[0m [1m[94m|[0m         &self,
+   [1m[94m|[0m         [1m[33m^^^^^[0m [1m[33mthe lifetime is elided here[0m
+[1m[94m...[0m
+[1m[94m64[0m [1m[94m|[0m     ) -> MappedRwLockWriteGuard<V> {
+   [1m[94m|[0m          [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mthe same lifetime is hidden here[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mhelp[0m: the same lifetime is referred to in inconsistent ways, making the signature confusing
+[1m[96mhelp[0m: use `'_` for type paths
+   [1m[94m|[0m
+[1m[94m64[0m [1m[94m| [0m    ) -> MappedRwLockWriteGuard<[92m'_, [0mV> {
+   [1m[94m|[0m                                 [92m+++[0m
+
+[1m[33mwarning[0m[1m: hiding a lifetime that's elided elsewhere is confusing[0m
+  [1m[94m--> [0msrc/map.rs:71:9
+   [1m[94m|[0m
+[1m[94m71[0m [1m[94m|[0m         &self,
+   [1m[94m|[0m         [1m[33m^^^^^[0m [1m[33mthe lifetime is elided here[0m
+[1m[94m...[0m
+[1m[94m74[0m [1m[94m|[0m     ) -> MappedRwLockWriteGuard<V> {
+   [1m[94m|[0m          [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m [1m[33mthe same lifetime is hidden here[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mhelp[0m: the same lifetime is referred to in inconsistent ways, making the signature confusing
+[1m[96mhelp[0m: use `'_` for type paths
+   [1m[94m|[0m
+[1m[94m74[0m [1m[94m| [0m    ) -> MappedRwLockWriteGuard<[92m'_, [0mV> {
+   [1m[94m|[0m                                 [92m+++[0m
+
+[1m[33mwarning[0m: `cold-clear-2` (lib) generated 7 warnings (run `cargo fix --lib -p cold-clear-2` to apply 6 suggestions)
+[1m[33mwarning[0m: `cold-clear-2` (lib test) generated 7 warnings (7 duplicates)
+[1m[33mwarning[0m[1m: field `profile` is never read[0m
+  [1m[94m--> [0msrc/main.rs:12:5
+   [1m[94m|[0m
+[1m[94m 9[0m [1m[94m|[0m struct CliOptions {
+   [1m[94m|[0m        [1m[94m----------[0m [1m[94mfield in this struct[0m
+[1m[94m...[0m
+[1m[94m12[0m [1m[94m|[0m     profile: bool,
+   [1m[94m|[0m     [1m[33m^^^^^^^[0m
+   [1m[94m|[0m
+   [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+[1m[33mwarning[0m: `cold-clear-2` (bin "cold-clear-2" test) generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `cold-clear-2` (bin "cold-clear-2") generated 1 warning
+[1m[92m    Finished[0m `release` profile [optimized] target(s) in 24.68s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: criterion v0.3.5
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m unittests src/lib.rs (target/release/deps/cold_clear_2-94884bfeef557e56)
+
+running 63 tests
+test analysis::tests::hold_locked_requires_occupied_hold ... ok
+test analysis::tests::exact_packet_timing_beats_legacy_fallback_when_present ... ok
+test analysis::tests::tuner_profile_applies_dynamic_h9_override_on_corrected_baseline ... ok
+test analysis::tests::tuner_profile_rejects_unknown_or_empty_overrides ... ok
+test analysis::tests::hold_locked_root_excludes_hold_branch ... ok
+test bot::config_tests::corrected_legacy_h12_is_neutral_reset_baseline ... ok
+test bot::config_tests::interactive_review_adds_h13_without_changing_scored_h14_profile ... ok
+test bot::config_tests::review_h9_h12_matches_scored_h14_configuration ... ok
+test bot::freestyle::h2_tests::h2_does_not_mistake_garbage_rise_for_cancellation ... ok
+test bot::freestyle::h2_tests::h2_separates_outgoing_from_cancelled_lines ... ok
+test bot::freestyle::h2_tests::h3_values_only_live_charge_and_banked_surge ... ok
+test bot::freestyle::h2_tests::h9_sealed_component_counts_minimum_roof_blockers_once ... ok
+test bot::freestyle::h2_tests::h9_side_open_cave_has_zero_excavation_cost ... ok
+test bot::freestyle::h2_tests::raw_attack_is_used_when_no_forecast_is_attached ... ok
+test dag::h12_tests::h12_demoted_best_requires_parent_recompute ... ok
+test dag::h12_tests::h12_nonbest_change_that_stays_nonbest_needs_no_parent_recompute ... ok
+test dag::h13_tests::h13_revealed_piece_replaces_speculative_average_with_known_best ... ok
+test dag::h13_tests::h13_unexpanded_despeculated_node_keeps_existing_eval ... ok
+test data::tetrp_b2b_transition_tests::all_clear_and_difficult_clear_contribute_separately ... ok
+test data::tetrp_b2b_transition_tests::ordinary_clear_breaks_live_chain ... ok
+test forecast::tests::active_rises_with_provenance_but_a_clear_blocks_it ... ok
+test forecast::tests::authority_clock_scales_at_the_lock_frame ... ok
+test forecast::tests::authority_clock_uses_snapshot_multiplier_after_margin ... ok
+test forecast::tests::forecast_clock_and_queue_are_part_of_state ... ok
+test forecast::tests::garbage_top_boundary_matches_tetrp_full_row_rule ... ok
+test forecast::tests::opening_bonus_cancels_but_never_becomes_outgoing ... ok
+test forecast::tests::per_packet_remaining_delays_are_preserved ... ok
+test ko_support::tests::active_garbage_applied_once_with_provenance ... ok
+test ko_support::tests::opening_bonus_never_sends ... ok
+test ko_support::tests::search_rng_repeatable ... ok
+test ko_support::tests::snapshot_does_not_invent_activation_times ... ok
+test movegen::tests::frontier_pops_lowest_softdrop_cost_first ... ok
+test movegen::tests::immobility_requires_all_four_directions_blocked ... ok
+test movegen::tests::optimized_collision_matches_cell_reference_including_ceiling ... ok
+test movegen::tests::out_of_range_anchors_do_not_shift_by_64_or_more ... ok
+test analysis::tests::tuner_profile_runs_through_snapshot_analysis ... ok
+test analysis::tests::repeated_snapshot_analysis_has_identical_rank_order ... ok
+test snapshot::tests::competitive_stacking_is_explicit_40l_with_neutral_root_and_no_attack_clock ... ok
+test snapshot::tests::positive_existing_are_is_a_distinct_rejection ... ok
+test snapshot::tests::real_tl_are_rules_are_preserved_but_not_claimed_exact ... ok
+test snapshot::tests::locked_root_has_no_hold_and_geometry_filter_is_enforced ... ok
+test snapshot::tests::strict_contract_rejects_history_unknown_activation_and_bad_geometry ... ok
+test snapshot::tests::same_piece_empty_and_occupied_hold_are_explicit_without_landing ... ok
+test tetrio::garbage::tests::cancelling_across_packet_boundaries_preserves_activation ... ok
+test tetrio::garbage::tests::clears_block_rise_and_nonclears_obey_cap ... ok
+test tetrio::garbage::tests::excess_attack_is_outgoing_not_negative_garbage ... ok
+test tetrio::garbage::tests::inactive_prefix_is_not_bypassed_or_autoactivated ... ok
+test tetrio::garbage::tests::invalid_counts_and_hidden_metadata_are_rejected ... ok
+test tetrio::garbage::tests::packet_model_matches_independent_per_line_model_30618_cases ... ok
+test tetrio::garbage::tests::pending_is_cancelable_but_does_not_rise ... ok
+test tetrio::tests::combo_rounding ... ok
+test tetrio::tests::garbage_bonus_is_flat_and_requires_garbage ... ok
+test tetrio::tests::garbage_multiplier_scales_before_flat_garbage_bonus ... ok
+test tetrio::tests::garbage_multiplier_scales_corrected_surge_before_packet_split ... ok
+test tetrio::tests::mini_uses_non_full_base_table ... ok
+test tetrio::tests::nonclear_never_sends_even_with_stale_flags ... ok
+test tetrio::tests::pc_is_a_separate_additive_packet ... ok
+test tetrio::tests::pinned_tetrp_v19_surge_threshold_examples ... ok
+test tetrio::tests::real_tl_base3_surge_examples ... ok
+test tetrio::tests::surge_precedes_normal_attack_and_conserves_lines ... ok
+test snapshot::tests::deterministic_requests_do_not_share_search_state ... ok
+test analysis::tests::reset_profiles_are_accepted ... ok
+test snapshot::tests::unknown_activation_is_preserved_and_uses_one_shared_budget ... ok
+
+test result: ok. 63 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.35s
+
+[1m[92m     Running[0m unittests src/main.rs (target/release/deps/cold_clear_2-ef5a5b09d074c0cd)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/bin/diagnostic_ft7_app.rs (target/release/deps/diagnostic_ft7_app-cfa79ab29e34c3b6)
+
+running 3 tests
+test tests::best_profile_is_the_scored_h9_lineage ... ok
+test tests::app_is_attack_per_piece ... ok
+test tests::diagnostic_legacy_uses_corrected_core_without_promoted_weights ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/bin/strategy_h2.rs (target/release/deps/strategy_h2-004e2104d8776565)
+
+running 6 tests
+test tests::accepts_direct_h2_vs_h2_configuration ... ok
+test tests::hidden_holes_do_not_enter_observation ... ok
+test tests::authority_and_forecast_agree ... ok
+test tests::rejects_caps_negative_and_nan_rewards ... ok
+test tests::hard_budget_and_authority_unchanged ... ok
+test tests::five_next_does_not_limit_search_depth ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+[1m[92m     Running[0m unittests src/bin/strategy_h3.rs (target/release/deps/strategy_h3-ade9710d239f7562)
+
+running 6 tests
+test tests::accepts_direct_h3_vs_h3_configuration ... ok
+test tests::authority_and_forecast_agree ... ok
+test tests::hidden_holes_do_not_enter_observation ... ok
+test tests::rejects_caps_negative_and_nan_rewards ... ok
+test tests::hard_budget_and_authority_unchanged ... ok
+test tests::five_next_does_not_limit_search_depth ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+[1m[92m     Running[0m unittests src/bin/strategy_h4.rs (target/release/deps/strategy_h4-287ca7d43f972fe7)
+
+running 6 tests
+test tests::accepts_direct_h4_vs_h4_configuration ... ok
+test tests::authority_and_forecast_agree ... ok
+test tests::hidden_holes_do_not_enter_observation ... ok
+test tests::rejects_caps_negative_and_nan_rewards ... ok
+test tests::hard_budget_and_authority_unchanged ... ok
+test tests::five_next_does_not_limit_search_depth ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+[1m[92m     Running[0m unittests src/bin/strategy_h5.rs (target/release/deps/strategy_h5-a8bc292092294fa6)
+
+running 6 tests
+test tests::accepts_direct_h5_vs_h5_configuration ... ok
+test tests::authority_and_forecast_agree ... ok
+test tests::hidden_holes_do_not_enter_observation ... ok
+test tests::rejects_caps_negative_and_nan_rewards ... ok
+test tests::hard_budget_and_authority_unchanged ... ok
+test tests::five_next_does_not_limit_search_depth ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+[1m[92m     Running[0m unittests src/bin/strategy_h6.rs (target/release/deps/strategy_h6-1d4687bee2db9af6)
+
+running 6 tests
+test tests::accepts_direct_h6_vs_h6_configuration ... ok
+test tests::authority_and_forecast_agree ... ok
+test tests::hidden_holes_do_not_enter_observation ... ok
+test tests::rejects_caps_negative_and_nan_rewards ... ok
+test tests::hard_budget_and_authority_unchanged ... ok
+test tests::five_next_does_not_limit_search_depth ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+[1m[92m     Running[0m unittests src/bin/strategy_h6b.rs (target/release/deps/strategy_h6b-5d479b07a530ef4e)
+
+running 6 tests
+test tests::accepts_direct_h6b_vs_h6b_configuration ... ok
+test tests::authority_and_forecast_agree ... ok
+test tests::hidden_holes_do_not_enter_observation ... ok
+test tests::rejects_caps_negative_and_nan_rewards ... ok
+test tests::hard_budget_and_authority_unchanged ... ok
+test tests::five_next_does_not_limit_search_depth ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+[1m[92m     Running[0m unittests src/bin/strategy_h6c.rs (target/release/deps/strategy_h6c-b0e71f254fd4ee3f)
+
+running 6 tests
+test tests::accepts_direct_h6c_vs_h6c_configuration ... ok
+test tests::hidden_holes_do_not_enter_observation ... ok
+test tests::rejects_caps_negative_and_nan_rewards ... ok
+test tests::authority_and_forecast_agree ... ok
+test tests::hard_budget_and_authority_unchanged ... ok
+test tests::five_next_does_not_limit_search_depth ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+[1m[92m     Running[0m unittests src/bin/strategy_ko.rs (target/release/deps/strategy_ko-28a3853ee7105cb5)
+
+running 5 tests
+test tests::authority_and_forecast_agree ... ok
+test tests::hidden_holes_do_not_enter_observation ... ok
+test tests::rejects_piece_caps_and_invalid_budgets ... ok
+test tests::hard_budget_and_authority_unchanged ... ok
+test tests::five_next_does_not_limit_search_depth ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+[1m[92m     Running[0m unittests src/bin/tl_s2_bench.rs (target/release/deps/tl_s2_bench-ae794cef312720ce)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/bin/tl_s2_duel.rs (target/release/deps/tl_s2_duel-dafde1c111f740cf)
+
+running 4 tests
+test tests::generated_bags_contain_each_piece_once ... ok
+test tests::obsolete_piece_cap_is_rejected_not_ignored ... ok
+test tests::zero_budget_cannot_be_reported_as_a_ko ... ok
+test tests::nan_weights_are_rejected ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m tests/core_regressions.rs (target/release/deps/core_regressions-a0cd3b4911339a5a)
+
+running 13 tests
+test combo_b2b_and_nonclears_transition_independently ... ok
+test excess_rows_and_wrong_width_return_errors ... ok
+test empty_hold_is_not_exposed_as_a_real_prehold ... ok
+test identical_current_and_next_still_require_explicit_hold_for_replays ... ok
+test first_actual_hold_consumes_two_pieces_and_reveals_two ... ok
+test invalid_moves_do_not_mutate_the_board_or_queue ... ok
+test line_detection_matches_independent_row_grid_1024_cases ... ok
+test bitboard_line_compaction_matches_independent_row_grid_4096_cases ... ok
+test no_hold_consumes_one_piece_and_remains_empty ... ok
+test start_rejects_hidden_previews_and_inconsistent_counters ... ok
+test short_boards_are_bottom_up_and_padded_not_indexed_out_of_bounds ... ok
+test occupied_hold_swap_consumes_only_one_queued_piece ... ok
+test generated_locks_are_in_bounds_nonoverlapping_and_grounded ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+[1m[92m     Running[0m tests/kiwi_rule_fixtures.rs (target/release/deps/kiwi_rule_fixtures-80ab3d13e981b25c)
+
+running 1 test
+test pinned_tetrp_differential_fixtures ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+[1m[92m     Running[0m tests/replay_fixtures.rs (target/release/deps/replay_fixtures-4ae9addb0725d475)
+
+running 3 tests
+test hidden_replay_state_is_rejected ... ok
+test pending_packets_change_actual_search_scores ... ok
+test reconstructed_recorded_locks_match_movement_scoring_and_counters ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+

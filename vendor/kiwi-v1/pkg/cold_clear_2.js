@@ -120,6 +120,23 @@ export class WasmBot {
         }
     }
     /**
+     * Tetrp review entrypoint. Public attack rules are transported explicitly
+     * instead of inheriting the legacy base-0 defaults.
+     * @param {string} start_json
+     * @param {string} rules_json
+     * @param {boolean} hold_locked
+     */
+    start_tetrp(start_json, rules_json, hold_locked) {
+        const ptr0 = passStringToWasm0(start_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(rules_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.wasmbot_start_tetrp(this.__wbg_ptr, ptr0, len0, ptr1, len1, hold_locked);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
      * @returns {string}
      */
     stats_json() {
@@ -250,6 +267,31 @@ export function analyze_pending_profile_json(input_json, profile) {
 }
 
 /**
+ * @param {string} text
+ * @returns {string}
+ */
+export function analyze_snapshot_json(text) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.analyze_snapshot_json(ptr0, len0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
  * Replay diagnostics at a fresh-spawn decision boundary. Counts and attack
  * packets can be compared against independently reconstructed replay locks.
  * @param {string} input_json
@@ -303,6 +345,22 @@ export function preview_garbage_one_to_one(queue_json, attack, cleared_lines, ca
         return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * @returns {string}
+ */
+export function snapshot_capabilities_json() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.snapshot_capabilities_json();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
     }
 }
 function __wbg_get_imports() {

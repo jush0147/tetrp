@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "schema": "kiwi-packaged-e2e/1",
+  "evidence": "import packaged placement helper -> pinned Tetrp snapshot -> packaged web WASM search",
+  "browser": {
+    "name": "Chromium",
+    "version": "153.0.8010.12"
+  },
+  "local_only": true,
+  "tl": {
+    "request_mode": [
+      "tl",
+      "tl"
+    ],
+    "timing_rules": {
+      "garbage_are_frames": 5,
+      "garbage_are_bump_frames": 12,
+      "garbage_locked_until_frame": 0
+    },
+    "result_mode": [
+      "tl",
+      "tl"
+    ],
+    "nodes": 5000,
+    "budget": 5000,
+    "completion": "node_budget",
+    "authority_attack_clock": true
+  },
+  "stacking": {
+    "request_mode": [
+      "competitive_stacking",
+      "40l"
+    ],
+    "neutral": {
+      "combo": 0,
+      "b2b": false,
+      "b2b_count": 0,
+      "incoming": 0
+    },
+    "attack_clock": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "result_mode": [
+      "competitive_stacking",
+      "40l"
+    ],
+    "nodes": 5000,
+    "budget": 5000,
+    "completion": "node_budget",
+    "authority_attack_clock": false
+  }
+}
