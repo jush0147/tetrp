@@ -1,0 +1,37 @@
+{
+  "runtime": "Node WASM",
+  "status": "passed",
+  "nodes": "554",
+  "hard_nodes": "1003",
+  "checks": [
+    "search",
+    "hard-node-budget",
+    "deterministic-hard-node-search",
+    "pending-hard-node-budget",
+    "persistent-h13-continuation",
+    "h9+h12+h13-interactive-config",
+    "empty-hold",
+    "first-hold-refill-two",
+    "same-piece-explicit-hold",
+    "invalid-input-no-mutation",
+    "no-hidden-preview",
+    "normal-garbage-queue"
+  ],
+  "capabilities": {
+    "clutch_clears": false,
+    "config_profile": "h9+h12+h13-interactive",
+    "despeculation_backprop": true,
+    "deterministic_hard_node_search": true,
+    "explicit_hold_playback": true,
+    "garbage_special_bonus": true,
+    "hard_node_budget": true,
+    "movement": "SRS+ CW/CCW/180 with Clutch spawn rescue; replay-fixture checked",
+    "next_limit": 5,
+    "normal_garbage_queue_primitives": true,
+    "opening_double_cancel": false,
+    "pending_forecast_api": "analyze_pending_json",
+    "pending_garbage_in_search": false,
+    "persistent_dag": true,
+    "rules_parity_verified": false
+  }
+}

@@ -31,9 +31,9 @@ test('update waits for a pending atomic replacement, restores position and never
   const {createServer}=await import('node:http');const {readFile}=await import('node:fs/promises');let version=1;
   const server=createServer(async(req,res)=>{
     const name=new URL(req.url,'http://localhost').pathname.replace('/tetrp/','')||'index.html';
-    if(!/^(index\.html|app\.(js|css)|worker\.js|sw\.js|manifest\.webmanifest|icon-(180|192|512)\.png)$/.test(name)){res.writeHead(404).end();return;}
+    if(!/^(kiwi-worker\.js|cold_clear_2_bg\.wasm|kiwi-(build|artifact-lock)\.json|kiwi-LICENSE-(MIT|APACHE)|kiwi-NOTICES|index\.html|app\.(js|css)|worker\.js|sw\.js|manifest\.webmanifest|icon-(180|192|512)\.png)$/.test(name)){res.writeHead(404).end();return;}
     let data=await readFile(new URL('../dist/'+name,import.meta.url));if(name==='sw.js')data=data.toString().replace(/const VERSION=.*?;/,`const VERSION="test-${version}";`);
-    res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.webmanifest')?'application/manifest+json':'text/html');res.end(data);
+    res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type',name.endsWith('.wasm')?'application/wasm':name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.webmanifest')?'application/manifest+json':'text/html');res.end(data);
   });await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${server.address().port}/tetrp/`;
   try{
     await page.goto(base);await open(page,match(),'match.ttrm');await page.locator('#round').selectOption('1');await expect(page.locator('#viewer')).toBeVisible();await page.locator('#player-swap').click();await position(page,2);await saved(page,2);

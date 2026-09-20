@@ -1,4 +1,5 @@
 import { parseReplay, selectPlayer, prepareReplay, Reconstruction } from '../src/replay/index.js';
+import {ObservedDraws,visibleState} from '../src/analysis/visible-state.js';
 
 export const MAX_FILE_BYTES = 32 * 1024 * 1024;
 export const MAX_FRAMES = 216000; // One hour at 60 source frames/second.
@@ -112,6 +113,23 @@ export class ViewerSession {
       this.garbageStop={target,checkpoint:this.session.checkpoint(),paused:true};
     }else this.session=scan;
     return this.session.state;
+  }
+  async analysisState({cancelled=()=>false,yieldTask=()=>new Promise(resolve=>setTimeout(resolve,0))}={}) {
+    const target=this.session,position=target.state;
+    const scan=new Reconstruction({schema:'tetrp-timeline/1',id:'observed-history',
+      initial:target.timeline.initial,frames:position.frame,events:target.timeline.events.slice(0,target.cursor)});
+    const history=new ObservedDraws(scan.state);
+    let steps=0;
+    // Stop at the exact canonical source cursor AND frame phase. In particular,
+    // never consume later same-frame inputs or future attack confirmations.
+    while(scan.cursor!==target.cursor||scan.engine.state.frame!==position.frame||scan.engine.state.phase!==position.phase){
+      const before=scan.state;
+      if(!scan.advance())throw new Error('Cannot recover visible history at this position');
+      history.advance(before,scan.state,scan.transitions);
+      if(++steps%256===0){await yieldTask();if(cancelled())return null;}
+    }
+    if(cancelled())return null;
+    return visibleState(position,history.draws);
   }
   result() {const state=this.session.state;return {state,total:this.total,frames:this.frames,conformance:this.conformance,
     navigationStop:this.garbageStop?.paused?'incoming':null,

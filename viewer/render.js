@@ -22,7 +22,7 @@ function tile(ctx,x,y,size,type,active=false) {
   ctx.fillStyle=active?'#ffffffaa':'#ffffff35';ctx.fillRect(x+3,y+3,size-6,2);
   if(active){ctx.strokeStyle='#eefcf8';ctx.lineWidth=1;ctx.strokeRect(x+1.5,y+1.5,size-3,size-3);}
 }
-export function drawBoard(canvas,model) {
+export function drawBoard(canvas,model,recommendation=null) {
   const unit=30;canvas.width=model.width*unit;canvas.height=model.height*unit;
   const ctx=canvas.getContext('2d');ctx.fillStyle='#10191f';ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.strokeStyle='#ffffff09';ctx.lineWidth=1;
@@ -30,7 +30,13 @@ export function drawBoard(canvas,model) {
   for(let y=0;y<=model.height;y++){ctx.beginPath();ctx.moveTo(0,y*unit+.5);ctx.lineTo(canvas.width,y*unit+.5);ctx.stroke();}
   model.rows.forEach((row,y)=>row.forEach((type,x)=>{if(type)tile(ctx,x*unit,y*unit,unit,type);}));
   model.displayActive.forEach(([x,y])=>tile(ctx,x*unit,y*unit,unit,model.type,true));
+  if(recommendation){
+    ctx.strokeStyle='#d4ff69';ctx.fillStyle='#d4ff6940';ctx.lineWidth=3;
+    for(const [x,y] of recommendation.cells){const visibleY=y-20;if(visibleY<0||visibleY>=model.height)continue;
+      ctx.fillRect(x*unit+2,visibleY*unit+2,unit-4,unit-4);ctx.strokeRect(x*unit+2,visibleY*unit+2,unit-4,unit-4);}
+  }
   canvas.setAttribute('aria-label',`棋盤 ${model.width} × ${model.height}，第 ${model.placement} 顆，${model.lines} 行。${model.above?'目前方塊位於上方緩衝區。':''}`);
+  if(recommendation)canvas.setAttribute('aria-label',canvas.getAttribute('aria-label')+` Kiwi 建議 ${recommendation.piece.toUpperCase()}${recommendation.useHold?'，使用 Hold':''}，x ${recommendation.x}，y ${recommendation.y}，旋轉 ${recommendation.rotation}。`);
 }
 export function drawPreview(canvas,type,rotation=0) {
   canvas.width=80;canvas.height=40;

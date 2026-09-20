@@ -1,1 +1,3 @@
 * text=auto eol=lf
+# The pinned browser artifact is verified byte-for-byte, including text files.
+vendor/kiwi-v1/** -text

@@ -1,4 +1,5 @@
 import {setRecoveryHooks} from './pwa.js';
+import {BotAdapter} from './bot-adapter.js';
 import {CurrentReplayStore} from './persistence.js';
 import {bindViewport} from './viewport.js';
 bindViewport(window,document.documentElement);
@@ -31,10 +32,37 @@ const clock=new PlaybackClock();
 const speedPicker=bindPicker($('speed'),$('speed-menu'),['0.5×','1×','1.5×'],1,i=>['0.5×','1×','1.5×'][i],i=>clock.setSpeed([.5,1,1.5][i],performance.now()),'Playback speed');
 let scrubbing=false,scrubWasPlaying=false,scrubResumeId=null;
 let worker=null,serial=0,active=0,rounds=[],state=null,total=0,frames=0,desired=0,roundFrame=0,playing=false,raf=null,inflight=false,scrubTimer=null,available=false,variant=null;
-const request=(type,data={})=>{active=++serial;worker.postMessage({id:active,type,...data});return active;};
+const bot=new BotAdapter();let analysisGeneration=0,analysisRequest=null;
+function clearAnalysis(){
+  ++analysisGeneration;analysisRequest=null;bot.cancel();
+  $('analysis-panel').hidden=true;$('analyze').setAttribute('aria-busy','false');
+  if(state)drawBoard($('board'),boardModel(state));
+}
+function analysisError(error){$('analysis-status').textContent=error.message??String(error);$('analyze').setAttribute('aria-busy','false');}
+async function runAnalysis(snapshot,generation){
+  try{
+    const result=await bot.analyze(snapshot);
+    if(generation!==analysisGeneration)return;
+    const move=result.move;drawBoard($('board'),boardModel(state),move);
+    $('analysis-status').textContent=`Kiwi · ${move.useHold?'HOLD → ':''}${move.piece.toUpperCase()} · ${(result.searchMs/1000).toFixed(2)} s${result.cached?' · 已快取':''}`;
+    $('analysis-details').textContent=[`200,000 node budget · ${result.nodes??'未回報'} nodes · ${result.path}`,...result.warnings].join('\n');
+    $('analyze').setAttribute('aria-busy','false');
+    document.dispatchEvent(new CustomEvent('tetrp:analysis',{detail:structuredClone(result)}));
+  }catch(error){if(generation===analysisGeneration&&error.name!=='AbortError')analysisError(error);}
+}
+$('analyze').addEventListener('click',()=>{
+  if(!state||inflight||updateLocked)return;stop();
+  if(analysisRequest!==null||bot.pending)clearAnalysis();
+  const generation=++analysisGeneration;drawBoard($('board'),boardModel(state));
+  $('analysis-panel').hidden=false;$('analysis-status').textContent='Kiwi 思考中…';$('analysis-details').textContent='';
+  $('analyze').setAttribute('aria-busy','true');
+  analysisRequest={id:++serial,generation};worker.postMessage({type:'analysis',id:analysisRequest.id});
+});
+$('clear-analysis').addEventListener('click',()=>{clearAnalysis();worker?.postMessage({type:'cancel-analysis'});});
+const request=(type,data={})=>{clearAnalysis();active=++serial;worker.postMessage({id:active,type,...data});return active;};
 function stop(cancelAuto=true){scrubbing=false;scrubWasPlaying=false;scrubResumeId=null;clearTimeout(transitionTimer);transitionTimer=null;resumeRound=false;$('boards').classList.remove('round-transition');if(cancelAuto)autoStep.stop();if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
 function busy(message){stop();inflight=false;state=null;available=false;for(const id of ['play','previous','next-placement'])$(id).disabled=true;$('viewer').hidden=true;$('error').hidden=true;$('busy').textContent=message;$('busy').hidden=false;}
-function showError(error){stop();inflight=false;state=null;$('viewer').hidden=true;$('busy').hidden=true;$('error').hidden=false;
+function showError(error){stop();clearAnalysis();inflight=false;state=null;$('viewer').hidden=true;$('busy').hidden=true;$('error').hidden=false;
   $('error-title').textContent=/UNSUPPORTED/.test(error.code||'')?'此 replay 暫不支援':'無法開啟 replay';
   $('error-message').textContent='請選擇其他 replay，或確認檔案是否完整。';
   $('error-detail').textContent=`${error.code||'ERROR'}${error.path?` · ${error.path}`:''}\n${error.message}`;
@@ -51,7 +79,7 @@ function remember(){
   if(!persistTimer)persistTimer=setTimeout(()=>{persistTimer=null;persistence.flush().catch(storageWarning);},250);
 }
 setRecoveryHooks({prepare:async()=>{
-  await startup;updateLocked=true;document.body.inert=true;stop();clearTimeout(persistTimer);
+  await startup;updateLocked=true;document.body.inert=true;stop();clearAnalysis();clearTimeout(persistTimer);
   if(!recovering&&state)remember();clearTimeout(persistTimer);
   try{await persistence.flush();}catch(error){updateLocked=false;document.body.inert=false;storageWarning();throw error;}
 },cancel:()=>{updateLocked=false;document.body.inert=false;persistTimer=null;}});
@@ -83,7 +111,7 @@ function fillPlayers(){const r=rounds[Number($('round').value)];$('player').repl
 function select(autoplay=false){if(updateLocked)return;clearTimeout(scrubTimer);busy('正在建立雙方時間軸…');resumeRound=autoplay;request('select',{round:Number($('round').value),player:Number($('player').value)});}
 async function load(file,recovery=null){
   if(!file||updateLocked)return;
-  const generation=++loadGeneration;stop();state=null;available=false;active=++serial;recovering=recovery;
+  const generation=++loadGeneration;stop();clearAnalysis();state=null;available=false;active=++serial;recovering=recovery;
   $('welcome').hidden=true;$('workspace').hidden=false;busy('正在本機讀取 replay…');
   if(!recovery){await startup;clearTimeout(persistTimer);persistTimer=null;try{await persistence.replace(file);}catch{storageWarning();}}
   if(generation!==loadGeneration)return;swapped=false;stop();clearTimeout(scrubTimer);worker?.terminate();
@@ -92,6 +120,12 @@ async function load(file,recovery=null){
   try{worker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});}catch(error){if(recovering)recoveryFailed();else showError(error);return;}
   worker.onerror=()=>recovering?recoveryFailed():showError({message:'無法啟動 replay Worker，請使用新版瀏覽器。'});
   worker.onmessage=({data:m})=>{
+    if(m.type==='analysis'||m.type==='analysis-error'){
+      if(m.id!==analysisRequest?.id)return;
+      const {generation}=analysisRequest;analysisRequest=null;
+      if(m.type==='analysis-error')analysisError(m.error);else runAnalysis(m.state,generation);
+      return;
+    }
     if(m.id!==active)return;
     if(m.type==='error'){if(recovering){recoveryFailed();}else{persistence.clear().catch(storageWarning);showError(m.error);}return;}
     if(m.type==='progress'){$('busy').textContent=`正在建立時間軸… ${m.value}%`;return;}
@@ -161,6 +195,7 @@ function renderRound(m,initial){
   $('boards').classList.toggle('dual',Boolean(other));$('peer-lane').hidden=!other;
   const model=renderLane('',primary,initial);if(other)renderLane('peer-',other,initial);
   state=primary.state??null;total=primary.total??0;desired=state?.stats.pieces??0;
+  $('analyze').disabled=!state||!state.playing||state.piece.sleeping;
   $('scrubber').max=String(total);$('scrubber').value=String(desired);$('scrubber').disabled=!state;
   $('scrubber').setAttribute('aria-valuetext',state?`${desired} / ${total}`:'此玩家不支援');
   $('previous').disabled=!state||(desired===0&&!primary.navigationStop);$('next-placement').disabled=!state||desired>=total;$('play').disabled=!available;
@@ -181,7 +216,7 @@ function tick(now){
   const target=clock.target(now,frames);if(!inflight&&target>roundFrame)seek('frame',target,false);
   raf=requestAnimationFrame(tick);
 }
-function startPlayback(at){if(updateLocked)return;playing=true;clock.start(at,performance.now());$('play').textContent='Ⅱ';$('play').setAttribute('aria-label','暫停');$('play').title='暫停';$('play').setAttribute('aria-pressed','true');raf=requestAnimationFrame(tick);}
+function startPlayback(at){if(updateLocked)return;clearAnalysis();playing=true;clock.start(at,performance.now());$('play').textContent='Ⅱ';$('play').setAttribute('aria-label','暫停');$('play').title='暫停';$('play').setAttribute('aria-pressed','true');raf=requestAnimationFrame(tick);}
 function finishRound(){
   const next=nextRound(playbackMode(),Number($('round').value),rounds.length);stop();
   if(next===null)return;
@@ -211,7 +246,7 @@ $('round').addEventListener('change',()=>{fillPlayers();select();});$('player').
   if($('viewer').hidden){select();return;}
   clearTimeout(scrubTimer);inflight=true;request('focus',{player:Number($('player').value)});
 });
-function beginScrub(){if(scrubbing)return;const resume=playing||scrubWasPlaying;stop();scrubbing=true;scrubWasPlaying=resume;active=++serial;inflight=false;}
+function beginScrub(){if(scrubbing)return;clearAnalysis();const resume=playing||scrubWasPlaying;stop();scrubbing=true;scrubWasPlaying=resume;active=++serial;inflight=false;}
 function endScrub(){if(!scrubbing)return;desired=Number($('scrubber').value);seek('placement',desired,false);scrubbing=false;scrubResumeId=active;}
 $('scrubber').addEventListener('pointerdown',beginScrub);
 $('scrubber').addEventListener('input',e=>{beginScrub();active=++serial;inflight=false;desired=Number(e.target.value);clearTimeout(scrubTimer);scrubTimer=setTimeout(()=>seek('placement',desired,false),45);});
@@ -236,7 +271,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')fileMenu.open=false;
  document.addEventListener('keydown',e=>{if(!available||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,button,summary'))return;
   if(e.key==='ArrowLeft'){e.preventDefault();step(-1);}if(e.key==='ArrowRight'){e.preventDefault();step(1);}if(e.code==='Space'){e.preventDefault();$('play').click();}
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();clearTimeout(persistTimer);persistTimer=null;persistence.flush().catch(storageWarning);}});window.addEventListener('pagehide',()=>worker?.terminate());
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();clearTimeout(persistTimer);persistTimer=null;persistence.flush().catch(storageWarning);}});window.addEventListener('pagehide',()=>{worker?.terminate();bot.dispose();});
 function showEmptyViewer(){
   document.body.dataset.variant='ttrm';$('workspace').hidden=false;$('viewer').hidden=false;$('boards').classList.add('dual');
   $('stream-tools').hidden=false;$('selectors').hidden=false;$('round').replaceChildren(new Option('Round —',''));

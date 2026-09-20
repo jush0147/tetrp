@@ -53,9 +53,11 @@ test('#5 public tree excludes research directories and binary assets',()=>{
     assert.equal(existsSync(new URL(name,root)),false,`${name} must remain outside the public tree`);
   }
   // Audit publication, not untracked user files or temporary test output.
-  const publicReplayScripts = new Set(['scripts/inspect-replays.mjs','scripts/validate-replays.mjs']);
+  const publicReplayScripts = new Set(['scripts/inspect-replays.mjs','scripts/validate-replays.mjs','scripts/validate-analysis.mjs']);
+  const kiwiLock=JSON.parse(readFileSync(new URL('../vendor/kiwi-v1/artifact-lock.json',import.meta.url),'utf8'));
+  const kiwiFiles=new Set(['artifact-lock.json',...Object.keys(kiwiLock.files)].map(p=>'vendor/kiwi-v1/'+p));
   const publicViewerAssets = new Set(['viewer/index.html','viewer/style.css']);
   for(const path of tracked) {
-    assert.ok(/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||publicViewerAssets.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
+    assert.ok(kiwiFiles.has(path)||/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||publicViewerAssets.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
   }
 });

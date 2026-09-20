@@ -1,0 +1,31 @@
+{
+  "schema": "tetrp-kiwi-artifact/1",
+  "productVersion": "kiwi-v1",
+  "sourceRepository": "jush0147/cold-clear-2",
+  "sourceBranch": "kiwi-v1",
+  "sourceCommit": "89dcfe6cf544991bc9bb59098dd43d2ca2173945",
+  "artifactBuildCommit": "89dcfe6cf544991bc9bb59098dd43d2ca2173945",
+  "frozenFrom": "e13ec57e7f3795ea0c4dd7e256346d533fcb36e3",
+  "artifactId": 10585366096,
+  "workflowRun": 35444205867,
+  "artifactDigest": "sha256:b63be254a1cd0ce2b6419719e3eb5ce8db53773c9b6cbe51f8bab48ad3e1561a",
+  "defaultNodeBudget": 200000,
+  "files": {
+    "CODEX_TETRP_KIWI_TASK.md": "0c332d2c0ba8ad3fd4499f90a3883d9328a0c1b57cc7082a5d4cd0df7c793a91",
+    "KIWI_V1_HANDOFF.md": "311fbd99fabf6094389b928d53978fe0d58748287883b4f56d249830ff859817",
+    "LICENSE-APACHE": "f7536b5fcfc5c5f08548798c9036062d45fb33f053e1c748ed149fdd3b27be2d",
+    "LICENSE-MIT": "6ccbdacd28e7c9acdfc9bcd5b853d23d26787f128c5871057d6a3c299a4b2633",
+    "kiwi-build.json": "4477343b1a22eae52ddc5339c94ef6cc84561e9adadae4e954763c03e235572f",
+    "kiwi-wasm-smoke.json": "9478bbc9fdd1ba1ff66bc6391e574a83125c555133b2a7f016ed29acc7737ef1",
+    "pkg/LICENSE-APACHE": "f7536b5fcfc5c5f08548798c9036062d45fb33f053e1c748ed149fdd3b27be2d",
+    "pkg/LICENSE-MIT": "6ccbdacd28e7c9acdfc9bcd5b853d23d26787f128c5871057d6a3c299a4b2633",
+    "pkg/README.md": "68d924533e8345074f6a42ea5e21df295b5c249a9b30fb6a1836e33a5d27f8b1",
+    "pkg/cold_clear_2.d.ts": "ba2ba1b5d312b61b7003ea5060047154c4cbffd99fe949a306331e3bbd73a320",
+    "pkg/cold_clear_2.js": "ffc0ecfcc81cb80d3185a0b731483064f3dbb225ac9d4e81bd185694827b304d",
+    "pkg/cold_clear_2_bg.wasm": "73134b6d737e6cb5368396942b6a6990986cb8828f635ecc1d0b946644411002",
+    "pkg/cold_clear_2_bg.wasm.d.ts": "cd43153f40acc5ea30c7d9b68dfa165ad9b7463db6df48d7a1bb383d2c59bf6e",
+    "pkg/package.json": "ab5cbdbf12623043d4edcf3f7f0497efef246716c606a9e90102b7a2b44fd8d3",
+    "tetrp-authority-adapter.mjs": "186d4ee2270a13e74b5a164ff8c3fce8cc9c61da8377f0fc25421b408ea56d74",
+    "tetrp-placement-path.mjs": "9b275e1fba8720ee2652166b9e74174a02d2b863aa1bc2bd3a2f806aa8c14e53"
+  }
+}

@@ -3,6 +3,9 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 const port=Number(process.env.PORT||4173);
 const files=new Map([['index.html','text/html; charset=utf-8'],['app.js','text/javascript; charset=utf-8'],['worker.js','text/javascript; charset=utf-8'],['app.css','text/css; charset=utf-8']]);
+files.set('kiwi-worker.js','text/javascript; charset=utf-8');files.set('cold_clear_2_bg.wasm','application/wasm');
+for(const f of ['kiwi-build.json','kiwi-artifact-lock.json'])files.set(f,'application/json');
+for(const f of ['kiwi-LICENSE-MIT','kiwi-LICENSE-APACHE','kiwi-NOTICES'])files.set(f,'text/plain');
 files.set('sw.js','text/javascript; charset=utf-8');files.set('manifest.webmanifest','application/manifest+json');
 for(const size of [180,192,512])files.set(`icon-${size}.png`,'image/png');
 createServer(async(req,res)=>{

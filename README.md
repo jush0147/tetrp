@@ -1,7 +1,7 @@
 # Tetrp
 
-Independent, MIT-licensed deterministic gameplay engine for future post-game
-TETR.IO replay review and offline practice. Not affiliated with TETR.IO.
+Independent, MIT-licensed deterministic gameplay engine for post-game
+TETR.IO replay review and local bot analysis. Not affiliated with TETR.IO.
 No official client code or visual/audio/font assets are included.
 
 **Phase 3 mobile-first viewer.** Open local `.ttr`/`.ttrm` files, select a stream,
@@ -17,7 +17,14 @@ Manual next adds at most one pre-intake stop when otherwise-unseen garbage would
 enter the board before the next placement. Playback and scrubber seeks stay unchanged.
 See [the viewer handoff](docs/PHASE_3_HANDOFF.md) and
 [Phase 2 conformance findings](docs/PHASE_2_HANDOFF.md).
-No bot, practice UI, or live-match integration is included. Read
+**Phase 4A:** pause at a supported position and select **Kiwi** for one local
+recommendation, outlined on the board with an explicit Hold label. Search runs
+in a dedicated Worker using the pinned Kiwi v1 browser artifact and a 200,000-node
+budget. The recommendation does not change the recorded replay. Seek, play, swap
+players, or clear analysis to remove it. Analysis details disclose rule and timing
+approximations; unconfirmed garbage arrival and locked Hold roots fail explicitly.
+See [the Phase 4A handoff](docs/PHASE_4A_HANDOFF.md) for the contract and limitations.
+Bot continuation (Phase 4B) is not implemented. No practice UI or live-match integration is included. Read
 [the Phase 1 handoff](docs/PHASE_1_HANDOFF.md) before extending the engine.
 
 ## Run tests

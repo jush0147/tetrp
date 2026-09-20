@@ -1,9 +1,10 @@
 import {MAX_FILE_BYTES,parseLocalText,catalog,ViewerSession} from './session.js';
-let replay=null,sessions=[],epoch=0,focus=0,roundFrames=0,currentFrame=0;
+let replay=null,sessions=[],epoch=0,focus=0,roundFrames=0,currentFrame=0,analysisEpoch=0;
 const send=(id,type,data)=>postMessage({id,type,...data});
 const errorData=error=>({code:error.code||'VIEWER_ERROR',path:error.path||null,message:error.message});
 function snapshot(frame){currentFrame=frame;return {focus,roundFrames,frame,views:sessions.map(s=>s.error?s:{player:s.player,id:s.id,...s.session.result()})};}
 self.onmessage=async({data:m})=>{
+  const analysisGeneration=++analysisEpoch;
   try{
     if(m.type==='load'){
       const generation=++epoch;sessions=[];replay=null;
@@ -43,6 +44,11 @@ self.onmessage=async({data:m})=>{
         for(const s of sessions)if(s.session)s.session.seek('frame',Math.min(frame,s.session.frames));
       }else throw new Error('Unknown seek kind');
       send(m.id,'state',snapshot(frame));
-    }else throw new Error('Unknown viewer command');
-  }catch(error){send(m.id,'error',{error:errorData(error)});}
+    }else if(m.type==='analysis'){
+      const primary=sessions.find(s=>s.player===focus);
+      if(!primary?.session)throw new Error('請先選擇支援的 replay。');
+      const state=await primary.session.analysisState({cancelled:()=>analysisGeneration!==analysisEpoch});
+      if(state)send(m.id,'analysis',{state});
+    }else if(m.type!=='cancel-analysis')throw new Error('Unknown viewer command');
+  }catch(error){send(m.id,m.type==='analysis'?'analysis-error':'error',{error:errorData(error)});}
 };
