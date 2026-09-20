@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 const port=Number(process.env.PORT||4173);
 const files=new Map([['index.html','text/html; charset=utf-8'],['app.js','text/javascript; charset=utf-8'],['worker.js','text/javascript; charset=utf-8'],['app.css','text/css; charset=utf-8']]);
+files.set('kiwi-button.jpg','image/jpeg');
 files.set('kiwi-worker.js','text/javascript; charset=utf-8');files.set('cold_clear_2_bg.wasm','application/wasm');
 for(const f of ['kiwi-build.json','kiwi-artifact-lock.json'])files.set(f,'application/json');
 for(const f of ['kiwi-LICENSE-MIT','kiwi-LICENSE-APACHE','kiwi-NOTICES'])files.set(f,'text/plain');

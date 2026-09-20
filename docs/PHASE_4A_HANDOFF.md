@@ -7,6 +7,38 @@ timeline, gameplay controls, or Phase 4B work is included. Stop for review.
 
 ## Result
 
+### Subsequent product clarification — requested, not yet implemented
+
+The 2026-09-20 snapshot/progressive-reveal clarification in `PHASE_4_PLAN.md`
+supersedes the original history-informed analysis requirement. The implementation
+and test results below describe the delivered Phase 4A, not completion of this
+revised contract. Specifically:
+
+- `ViewerSession.analysisState()` currently rescans the observed prefix and sends
+  observed draws; `prepareKiwi()` derives SevenBag state. The requested replacement
+  is a direct visible snapshot with no historical bag inference. This is pending
+  an explicit Kiwi unknown-bag/unknown-tail contract; never pretend unknown means
+  a known full bag or silently alter the pinned artifact helpers.
+- Future continuation must refill NEXT 5 from the original sequence after each
+  consumed draw. Empty Hold must trigger an immediate refill and a fresh decision
+  with Hold locked, before a placement is committed. Occupied Hold consumes no draw.
+  Tetrp owns the sequence and branch; Kiwi sees only each new visible snapshot.
+- Current Kiwi integration rejects Hold-locked roots. Supporting the requested
+  post-Hold re-analysis therefore requires explicit upstream root-Hold control or
+  another verified supported mechanism. Current Hold-plus-placement results do
+  not fulfill the new two-stage behavior.
+- Current analysis already pauses replay, terminates its Worker when cleared or
+  replay navigation resumes, and persists no results. There is no continuation
+  branch yet. Future exit must discard that branch too and return to the original
+  recorded position paused; offline static assets may remain cached.
+
+The user has clarified the information boundary and resource lifetime, not
+authorized Phase 4B implementation. Unknown-tail search semantics remain an open
+integration decision. Do not interpret the earlier discussion of a finite known
+queue as a requirement to stop the entire continuation after the initial NEXT 5.
+
+### Delivered Phase 4A behavior
+
 Open a supported replay, pause at a position, and select **Kiwi** beside replay
 navigation. One recommendation appears as a lime outline on the existing board.
 The status explicitly says `HOLD → piece` when required. Details show the budget,

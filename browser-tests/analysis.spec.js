@@ -69,7 +69,7 @@ test('Kiwi search assets are local and Hold recommendation is labelled',async({p
   // This seed produces an empty-Hold recommendation in the frozen 200k profile.
   await open(page,replay(1));const r=await analyze(page);
   expect(r.move.useHold).toBe(true);await expect(page.locator('#analysis-status')).toContainText('HOLD');
-  expect(requests.every(r=>new URL(r.url).origin==='http://127.0.0.1:4173'&&r.method==='GET')).toBe(true);
+  expect(requests.every(r=>new URL(r.url).origin===new URL(page.url()).origin&&r.method==='GET')).toBe(true);
   expect(requests.some(r=>r.url.endsWith('/cold_clear_2_bg.wasm'))).toBe(true);
   await page.setViewportSize({width:667,height:280});
   for(const id of ['board','analyze','play','previous','next-placement']){

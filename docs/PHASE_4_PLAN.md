@@ -10,6 +10,62 @@
 
 ## Current product direction
 
+### Product clarification — snapshot input and progressive reveal (2026-09-20)
+
+This clarification supersedes earlier requirements to recover observed draw history
+for Kiwi analysis. It records the requested behavior; it does not authorize starting
+Phase 4B or claim that the existing Phase 4A implementation already conforms.
+
+- Pause the entire replay before invoking Kiwi. Keep the recorded replay and both
+  players' playback frozen while analysis is active.
+- Each decision receives only a detached current visible snapshot: own board,
+  current piece and position, exactly NEXT 5, Hold piece/availability, current
+  combo/B2B, observable pending garbage, and relevant public rules/time/counters.
+  Current counters remain valid snapshot data even though gameplay produced them.
+- Do not replay earlier inputs or collect previous draws to infer a remaining
+  SevenBag set for analysis. Do not use piece-count modulo seven or hidden queue/RNG
+  to reconstruct that information indirectly. Unknown bag state is not a known
+  fresh full bag. The Kiwi API must explicitly support the chosen snapshot-only
+  search semantics; omission or a fabricated bag_state is not an implementation.
+- For a future authorized continuation, Tetrp owns an isolated branch with the
+  original piece sequence at the selected position. Only Tetrp may retain the
+  private sequence cursor/generator. Kiwi receives no raw replay, hidden sequence,
+  RNG, opponent board, future attacks, or original player's future placements.
+- Reveal new pieces as branch actions consume draws, not according to the recorded
+  player's frame or placement number. Tetrp refills exactly NEXT 5 before each new
+  Kiwi decision. A single decision's visibility limit does not limit the whole
+  continuation to its initial six visible pieces.
+- Empty Hold is a separate authority action: move current into Hold, draw the new
+  current, immediately refill NEXT 5, then re-analyze with Hold locked. Do not commit
+  the pre-Hold landing without giving Kiwi the newly revealed preview. Occupied Hold
+  exchanges pieces without consuming the sequence; NEXT 5 stays unchanged and Hold
+  becomes locked. Any subsequent analysis must respect that lock.
+- Tetrp executes and validates every action, then supplies the actual resulting
+  visible state. Never substitute the original player's later board. Unknown future
+  garbage is not authorized merely because future pieces can progressively reveal.
+- On leaving analysis, cancel work, terminate its Worker, discard branch/search/
+  recommendation data, and return to the unchanged recorded position paused. Do not
+  persist analysis history. Static PWA program assets may remain cached for offline use.
+
+Open implementation decision: unknown-tail evaluation (for example, ending search
+at the known queue versus an explicitly declared uncertainty model) must be specified
+and tested in the Kiwi integration. No particular new API or unknown-tail algorithm
+has yet been approved or delivered. Both no-pending and pending-aware paths must
+obey the same snapshot boundary and the 200,000 evaluator-node default budget.
+
+Acceptance checks for the revised contract:
+
+- Identical allowed snapshots produce the same analysis regardless of earlier replay
+  draws or unrevealed sequence tails under the same deterministic search settings.
+- Analysis preparation does not scan the observed replay prefix.
+- Empty Hold immediately reveals one new preview and requests analysis with Hold
+  unavailable; occupied Hold reveals none; lock/spawn refills previews as required.
+- Branch draws match the original sequence under each action's actual consumption,
+  including empty Hold, without exposing unrevealed pieces to Kiwi.
+- Exit frees analysis resources and leaves the recorded replay checkpoint unchanged.
+
+See `docs/PHASE_4A_HANDOFF.md` for the current implementation gaps.
+
 Tetrp is a replay viewer plus bot-assisted stacking analysis and demonstration platform.
 
 The current official scope is:
@@ -406,7 +462,10 @@ Avoid runaway computation and keep cancellation straightforward.
 
 The bot continuation may only use information available from the branch state.
 
-If the visible Next queue is exhausted but the canonical branch engine already contains deterministic bag/RNG state, the branch may generate future pieces through the engine's normal deterministic rules.
+The canonical branch engine preserves the original piece sequence and refills NEXT 5
+after every draw, including an empty Hold before lock. Its private deterministic
+sequence/RNG state must never cross the Kiwi boundary. Follow the snapshot and
+progressive-reveal clarification above; do not wait for the visible queue to empty.
 
 Do not:
 

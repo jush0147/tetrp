@@ -6,9 +6,9 @@ test('legacy cached app waits for old tabs to close before activating',async({pa
   let current=false;
   const server=createServer(async(req,res)=>{
     const name=new URL(req.url,'http://localhost').pathname.replace('/tetrp/','')||'index.html';
-    if(!/^(kiwi-worker\.js|cold_clear_2_bg\.wasm|kiwi-(build|artifact-lock)\.json|kiwi-LICENSE-(MIT|APACHE)|kiwi-NOTICES|index\.html|app\.(js|css)|worker\.js|sw\.js|manifest\.webmanifest|icon-(180|192|512)\.png)$/.test(name)){res.writeHead(404).end();return;}
+    if(!/^(kiwi-button\.jpg|kiwi-worker\.js|cold_clear_2_bg\.wasm|kiwi-(build|artifact-lock)\.json|kiwi-LICENSE-(MIT|APACHE)|kiwi-NOTICES|index\.html|app\.(js|css)|worker\.js|sw\.js|manifest\.webmanifest|icon-(180|192|512)\.png)$/.test(name)){res.writeHead(404).end();return;}
     res.setHeader('Cache-Control','no-store');
-    res.setHeader('Content-Type',name.endsWith('.wasm')?'application/wasm':name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.webmanifest')?'application/manifest+json':'text/html');
+    res.setHeader('Content-Type',name.endsWith('.jpg')?'image/jpeg':name.endsWith('.wasm')?'application/wasm':name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.webmanifest')?'application/manifest+json':'text/html');
     if(!current&&name==='index.html'){res.end('<p id="legacy">Old app</p><script src="./app.js"></script>');return;}
     if(!current&&name==='app.js'){res.end("navigator.serviceWorker.register('./sw.js')");return;}
     if(!current&&name==='sw.js'){
@@ -41,8 +41,8 @@ test('PWA manifest, offline reopening and local worker playback',async({page,con
   // which throws an internal navigation error on both Windows and Linux.
   const server=createServer(async(req,res)=>{
     const name=new URL(req.url,'http://localhost').pathname.replace('/tetrp/','')||'index.html';
-    if(!/^(kiwi-worker\.js|cold_clear_2_bg\.wasm|kiwi-(build|artifact-lock)\.json|kiwi-LICENSE-(MIT|APACHE)|kiwi-NOTICES|index\.html|app\.(js|css)|worker\.js|sw\.js|manifest\.webmanifest|icon-(180|192|512)\.png)$/.test(name)){res.writeHead(404).end();return;}
-    const type=name.endsWith('.wasm')?'application/wasm':name.endsWith('.js')?'text/javascript':name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':'application/manifest+json';
+    if(!/^(kiwi-button\.jpg|kiwi-worker\.js|cold_clear_2_bg\.wasm|kiwi-(build|artifact-lock)\.json|kiwi-LICENSE-(MIT|APACHE)|kiwi-NOTICES|index\.html|app\.(js|css)|worker\.js|sw\.js|manifest\.webmanifest|icon-(180|192|512)\.png)$/.test(name)){res.writeHead(404).end();return;}
+    const type=name.endsWith('.jpg')?'image/jpeg':name.endsWith('.wasm')?'application/wasm':name.endsWith('.js')?'text/javascript':name.endsWith('.html')?'text/html':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':'application/manifest+json';
     res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store'});res.end(await readFile(new URL('../dist/'+name,import.meta.url)));
   });
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -86,7 +86,7 @@ test('PWA manifest, offline reopening and local worker playback',async({page,con
     const result=[];for(const name of await caches.keys())for(const r of await (await caches.open(name)).keys())result.push(new URL(r.url).pathname);
     return result.sort();
   });
-  expect(paths).toEqual(['kiwi-worker.js','cold_clear_2_bg.wasm','kiwi-build.json','kiwi-artifact-lock.json','kiwi-LICENSE-MIT','kiwi-LICENSE-APACHE','kiwi-NOTICES','app.css','app.js','icon-180.png','icon-192.png','icon-512.png','index.html','manifest.webmanifest','worker.js'].map(p=>'/tetrp/'+p).sort());
+  expect(paths).toEqual(['kiwi-button.jpg','kiwi-worker.js','cold_clear_2_bg.wasm','kiwi-build.json','kiwi-artifact-lock.json','kiwi-LICENSE-MIT','kiwi-LICENSE-APACHE','kiwi-NOTICES','app.css','app.js','icon-180.png','icon-192.png','icon-512.png','index.html','manifest.webmanifest','worker.js'].map(p=>'/tetrp/'+p).sort());
   await page.waitForTimeout(350);const reopened=await context.newPage();await page.close();await reopened.goto(base);
   await expect(reopened.locator('#pieces')).toHaveText('1');await expect(reopened.locator('#play')).toHaveAttribute('aria-pressed','false');
   }finally{server.closeAllConnections();if(server.listening)await new Promise(resolve=>server.close(resolve));}

@@ -45,7 +45,7 @@ test('#5 public tree excludes research directories and binary assets',()=>{
   for(const path of tracked) {
     assert.ok(!/^(01_core_spec|02_engine_details|03_fixtures|04_reference|05_phase2_replay|\.cache|\.private-replays)\//.test(path),`Research/private data tracked: ${path}`);
     assert.ok(!/\.ttrm?$/i.test(path),`Private replay tracked: ${path}`);
-    assert.ok(!/\.(zip|png|jpg|svg|webp|woff2?|ttf|mp3|wav|exe)$/i.test(path),`Unexpected binary/asset tracked: ${path}`);
+    assert.ok(path==='viewer/kiwi-button.jpg'||!/\.(zip|png|jpg|svg|webp|woff2?|ttf|mp3|wav|exe)$/i.test(path),`Unexpected binary/asset tracked: ${path}`);
     assert.ok(!/tetrio\.beautified|01_Official_Standalone|production.bundle/i.test(path),`Forbidden artifact: ${path}`);
   }
   for(const name of ['01_core_spec','02_engine_details','03_fixtures','04_reference','05_phase2_replay',
@@ -56,7 +56,7 @@ test('#5 public tree excludes research directories and binary assets',()=>{
   const publicReplayScripts = new Set(['scripts/inspect-replays.mjs','scripts/validate-replays.mjs','scripts/validate-analysis.mjs']);
   const kiwiLock=JSON.parse(readFileSync(new URL('../vendor/kiwi-v1/artifact-lock.json',import.meta.url),'utf8'));
   const kiwiFiles=new Set(['artifact-lock.json',...Object.keys(kiwiLock.files)].map(p=>'vendor/kiwi-v1/'+p));
-  const publicViewerAssets = new Set(['viewer/index.html','viewer/style.css']);
+  const publicViewerAssets = new Set(['viewer/index.html','viewer/style.css','viewer/kiwi-button.jpg']);
   for(const path of tracked) {
     assert.ok(kiwiFiles.has(path)||/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||publicViewerAssets.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
   }
