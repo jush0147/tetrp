@@ -17,16 +17,23 @@ Manual next adds at most one pre-intake stop when otherwise-unseen garbage would
 enter the board before the next placement. Playback and scrubber seeks stay unchanged.
 See [the viewer handoff](docs/PHASE_3_HANDOFF.md) and
 [Phase 2 conformance findings](docs/PHASE_2_HANDOFF.md).
-**Phase 4A:** pause at a supported position and select **Kiwi** for one local
-recommendation: a board outline for Place, or a standalone Hold instruction without
-a fabricated landing. Geometry enumeration and search run in a dedicated Worker
-using pinned Kiwi snapshot-v3.2 and a 200,000-node search cap. Only the current
-visible snapshot is used; no historical SevenBag scan is performed. The recommendation does not change the recorded replay. Seek, play, swap
-players, or clear analysis to remove it. Analysis details disclose rule and timing
-approximations; unconfirmed garbage arrival and positive existing ARE queues fail
-explicitly. Hold-locked roots are supported and cannot choose Hold again.
-See [the Phase 4A handoff](docs/PHASE_4A_HANDOFF.md) for the contract and limitations.
-Bot continuation (Phase 4B) is not implemented. No practice UI or live-match integration is included. Read
+**Phase 4B:** select the Kiwi image beside the next-piece arrow to pause the replay
+and start an isolated bot demonstration. A target appears briefly, then Tetrp executes
+the validated move. Select Kiwi or → for the next move, up to 20 placements; ← and →
+can revisit computed positions. Exit with × to discard the branch and return to the
+original replay position, paused. Empty Hold immediately refills NEXT 5 and triggers
+a fresh decision before placement. No analysis history is saved.
+
+Geometry and search run in a dedicated Worker using pinned Kiwi snapshot-v3.2 and a
+200,000-node cap per decision. Kiwi receives only the current visible snapshot;
+there is no historical SevenBag scan or hidden-tail access. Unknown garbage arrival
+is modeled as uncertainty, rather than rejected. Demonstrations preserve current
+pending garbage, use independent garbage holes, and do not import future opponent
+attacks or acknowledgements. Positive existing ARE queues and unsupported packet
+types still fail explicitly. See [the Phase 4B handoff](docs/PHASE_4B_HANDOFF.md)
+for execution assumptions, tests and limitations, and the
+[Phase 4A handoff](docs/PHASE_4A_HANDOFF.md) for the artifact contract.
+No practice UI or live-match integration is included. Read
 [the Phase 1 handoff](docs/PHASE_1_HANDOFF.md) before extending the engine.
 
 ## Run tests

@@ -1,5 +1,5 @@
 import {setRecoveryHooks} from './pwa.js';
-import {BotAdapter} from './bot-adapter.js';
+import {DemoController} from './demo-controller.js';
 import {CurrentReplayStore} from './persistence.js';
 import {bindViewport} from './viewport.js';
 bindViewport(window,document.documentElement);
@@ -32,34 +32,57 @@ const clock=new PlaybackClock();
 const speedPicker=bindPicker($('speed'),$('speed-menu'),['0.5×','1×','1.5×'],1,i=>['0.5×','1×','1.5×'][i],i=>clock.setSpeed([.5,1,1.5][i],performance.now()),'Playback speed');
 let scrubbing=false,scrubWasPlaying=false,scrubResumeId=null;
 let worker=null,serial=0,active=0,rounds=[],state=null,total=0,frames=0,desired=0,roundFrame=0,playing=false,raf=null,inflight=false,scrubTimer=null,available=false,variant=null;
-const bot=new BotAdapter();let analysisGeneration=0,analysisRequest=null;
-function clearAnalysis(){
-  ++analysisGeneration;analysisRequest=null;bot.cancel();
-  $('analysis-panel').hidden=true;$('analysis-status').textContent='';$('analysis-details').textContent='';$('analyze').setAttribute('aria-busy','false');
-  if(state)drawBoard($('board'),boardModel(state));
+let demoActive=false,originalRound=null;
+const demoRequests=new Map();
+const demoRpc=(type,data={})=>new Promise((resolve,reject)=>{
+  const id=++serial;demoRequests.set(id,{resolve,reject});worker.postMessage({id,type,...data});
+});
+function demoControls(){
+  if(!demoActive)return;
+  const v=demo.view;
+  for(const id of ['play','scrubber','speed','play-mode'])$(id).disabled=true;
+  $('previous').disabled=demo.busy||!v||v.index===0;
+  $('next-placement').disabled=demo.busy||!v||v.index>=v.total&&(v.stopped||v.index>=v.limit);
+  $('analyze').disabled=demo.busy||!v||v.index>=v.total&&(v.stopped||v.index>=v.limit);
+  $('analyze').setAttribute('aria-busy',String(demo.busy));
+  $('analyze').setAttribute('aria-label','Kiwi 示範下一手');
 }
-function analysisError(error){$('analysis-status').textContent=error.message??String(error);$('analyze').setAttribute('aria-busy','false');}
-async function runAnalysis(snapshot,generation){
-  try{
-    const result=await bot.analyze(snapshot);
-    if(generation!==analysisGeneration)return;
-    const move=result.move;drawBoard($('board'),boardModel(state),move);
-    if(result.action.kind==='hold')$('board').setAttribute('aria-label',$('board').getAttribute('aria-label')+' Kiwi 建議 HOLD；需補齊預覽後重新分析。');
-    $('analysis-status').textContent=`Kiwi · ${result.action.kind==='hold'?'建議 HOLD':move.piece.toUpperCase()} · ${(result.totalMs/1000).toFixed(2)} s${result.cached?' · 已快取':''}`;
-    $('analysis-details').textContent=[`200,000 node budget · ${result.nodes??'未回報'} nodes · ${result.path} · ${result.completion}`,`幾何 ${(result.geometryMs/1000).toFixed(2)} s · 搜尋 ${(result.searchMs/1000).toFixed(2)} s`,...(result.action.kind==='hold'?['Hold 是獨立建議；本次不執行 Hold 或顯示其後落點。']:[]),...result.warnings].join('\n');
-    $('analyze').setAttribute('aria-busy','false');
-    document.dispatchEvent(new CustomEvent('tetrp:analysis',{detail:structuredClone(result)}));
-  }catch(error){if(generation===analysisGeneration&&error.name!=='AbortError')analysisError(error);}
+function showDemo(view){
+  if(!view||!demoActive)return;
+  const primary=originalRound.views.find(v=>v.player===originalRound.focus);
+  renderLane('',{...primary,state:view.state,lastPlacement:view.lastPlacement,conformance:null},false);
+  $('board').setAttribute('aria-label',$('board').getAttribute('aria-label')+' Kiwi 示範');
+  $('playback-position').textContent='Kiwi '+view.index+' / '+view.total+' · 最多 '+view.limit+' 手';
+  $('analysis-status').textContent=view.stopped?'Kiwi 分支已結束':view.index>=view.limit?'已完成 20 手示範':'Kiwi 第 '+view.index+' 手 · → 下一手';
+  demoControls();
+  document.dispatchEvent(new CustomEvent('tetrp:demo',{detail:structuredClone({index:view.index,total:view.total,state:view.visible,stopped:view.stopped})}));
+}
+const demo=new DemoController({rpc:demoRpc,onView:showDemo,
+  onThinking:()=>{$('analysis-panel').hidden=false;$('analysis-status').textContent='Kiwi 思考中…';demoControls();},
+  onRecommendation:result=>{
+    drawBoard($('board'),boardModel(demo.view.state),result.move);
+    $('analysis-status').textContent=result.action.kind==='hold'?'Kiwi HOLD · 補齊預覽後重新分析':'Kiwi 準備落子…';
+    $('analysis-details').textContent=['200,000 node budget · '+result.nodes+' nodes · '+result.completion,
+      ...result.warnings,'示範使用獨立垃圾洞位；不加入對手未來攻擊，未確認抵達時間維持未知。'].join('\n');
+  },onResult:result=>{document.dispatchEvent(new CustomEvent('tetrp:analysis',{detail:structuredClone(result)}));},
+  onError:error=>{$('analysis-status').textContent=error.message;demoControls();}
+});
+function clearAnalysis(){
+  const wasActive=demoActive;demoActive=false;demo.cancel();
+  for(const p of demoRequests.values())p.reject(new DOMException('Demo cancelled','AbortError'));demoRequests.clear();
+  if(wasActive)worker?.postMessage({type:'demo-exit'});
+  $('analysis-panel').hidden=true;$('analysis-status').textContent='';$('analysis-details').textContent='';
+  $('analyze').setAttribute('aria-busy','false');$('analyze').setAttribute('aria-label','Kiwi 分析此位置');
+  if(wasActive&&originalRound){renderRound(originalRound,false);$('speed').disabled=!available;$('play-mode').disabled=!available;}
 }
 $('analyze').addEventListener('click',()=>{
-  if(!state||inflight||updateLocked)return;stop();
-  if(analysisRequest!==null||bot.pending)clearAnalysis();
-  const generation=++analysisGeneration;drawBoard($('board'),boardModel(state));
-  $('analysis-panel').hidden=false;$('analysis-status').textContent='Kiwi 思考中…';$('analysis-details').textContent='';
-  $('analyze').setAttribute('aria-busy','true');
-  analysisRequest={id:++serial,generation};worker.postMessage({type:'analysis',id:analysisRequest.id});
+  if(!state||inflight||updateLocked||demo.busy)return;stop();
+  if(demoActive){demo.next();return;}
+  demoActive=true;$('analysis-panel').hidden=false;$('analysis-details').textContent='';demo.begin();
 });
-$('clear-analysis').addEventListener('click',()=>{clearAnalysis();worker?.postMessage({type:'cancel-analysis'});});
+$('clear-analysis').setAttribute('aria-label','退出 Kiwi，回到原 replay');
+$('clear-analysis').title='退出 Kiwi，回到原 replay';
+$('clear-analysis').addEventListener('click',clearAnalysis);
 const request=(type,data={})=>{clearAnalysis();active=++serial;worker.postMessage({id:active,type,...data});return active;};
 function stop(cancelAuto=true){scrubbing=false;scrubWasPlaying=false;scrubResumeId=null;clearTimeout(transitionTimer);transitionTimer=null;resumeRound=false;$('boards').classList.remove('round-transition');if(cancelAuto)autoStep.stop();if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
 function busy(message){stop();inflight=false;state=null;available=false;for(const id of ['play','previous','next-placement'])$(id).disabled=true;$('viewer').hidden=true;$('error').hidden=true;$('busy').textContent=message;$('busy').hidden=false;}
@@ -121,11 +144,9 @@ async function load(file,recovery=null){
   try{worker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});}catch(error){if(recovering)recoveryFailed();else showError(error);return;}
   worker.onerror=()=>recovering?recoveryFailed():showError({message:'無法啟動 replay Worker，請使用新版瀏覽器。'});
   worker.onmessage=({data:m})=>{
-    if(m.type==='analysis'||m.type==='analysis-error'){
-      if(m.id!==analysisRequest?.id)return;
-      const {generation}=analysisRequest;analysisRequest=null;
-      if(m.type==='analysis-error')analysisError(m.error);else runAnalysis(m.state,generation);
-      return;
+    if(m.type==='demo'||m.type==='demo-error'){
+      const pending=demoRequests.get(m.id);if(!pending)return;demoRequests.delete(m.id);
+      m.type==='demo-error'?pending.reject(new Error(m.error.message)):pending.resolve(m.result);return;
     }
     if(m.id!==active)return;
     if(m.type==='error'){if(recovering){recoveryFailed();}else{persistence.clear().catch(storageWarning);showError(m.error);}return;}
@@ -191,6 +212,7 @@ function renderLane(prefix,view,initial){
   return model;
 }
 function renderRound(m,initial){
+  originalRound=m;
   roundFrame=m.frame;const primary=m.views.find(v=>v.player===m.focus),other=m.views.find(v=>v.player!==m.focus);
   renderPlayers(m.focus,m.frame);
   $('boards').classList.toggle('dual',Boolean(other));$('peer-lane').hidden=!other;
@@ -211,7 +233,7 @@ function seek(kind,value,pause=true){
   if(!Number.isSafeInteger(value)||value<0||value>(kind==='frame'?frames:total))return;
   if(kind==='placement')desired=value;inflight=true;request('seek',{kind,value});
 }
-function step(direction){if(updateLocked||!state||inflight)return;stop(false);clearTimeout(scrubTimer);inflight=true;request('seek',{kind:'step',value:direction});}
+function step(direction){if(demoActive){if(direction<0)demo.seek(Math.max(0,(demo.view?.index??0)-1));else demo.next();return;}if(updateLocked||!state||inflight)return;stop(false);clearTimeout(scrubTimer);inflight=true;request('seek',{kind:'step',value:direction});}
 function tick(now){
   if(!playing)return;
   const target=clock.target(now,frames);if(!inflight&&target>roundFrame)seek('frame',target,false);
@@ -272,7 +294,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')fileMenu.open=false;
  document.addEventListener('keydown',e=>{if(!available||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,button,summary'))return;
   if(e.key==='ArrowLeft'){e.preventDefault();step(-1);}if(e.key==='ArrowRight'){e.preventDefault();step(1);}if(e.code==='Space'){e.preventDefault();$('play').click();}
 });
-document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();clearTimeout(persistTimer);persistTimer=null;persistence.flush().catch(storageWarning);}});window.addEventListener('pagehide',()=>{worker?.terminate();bot.dispose();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();clearTimeout(persistTimer);persistTimer=null;persistence.flush().catch(storageWarning);}});window.addEventListener('pagehide',()=>{demo.cancel();worker?.terminate();});
 function showEmptyViewer(){
   document.body.dataset.variant='ttrm';$('workspace').hidden=false;$('viewer').hidden=false;$('boards').classList.add('dual');
   $('stream-tools').hidden=false;$('selectors').hidden=false;$('round').replaceChildren(new Option('Round —',''));

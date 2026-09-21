@@ -1,5 +1,9 @@
 # Phase 4A handoff — Kiwi snapshot-v3.2
 
+Historical Phase 4A delivery record. The subsequently authorized demonstration
+implementation is documented in [PHASE_4B_HANDOFF.md](PHASE_4B_HANDOFF.md).
+Statements below about no continuation describe the Phase 4A checkpoint.
+
 Updated 2026-09-21. Scope authority: `PHASE_4_PLAN.md` and its snapshot/progressive
 reveal clarification. Phase 4A only: one local recommendation. No user-visible
 continuation, bot execution, analysis timeline, or Phase 4B is implemented.

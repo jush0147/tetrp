@@ -10,6 +10,15 @@
 
 ## Current product direction
 
+### Phase 4B continuation (2026-09-21)
+
+After the Phase 4A review and Kiwi v3.2 fixes, the user requested actual execution
+after a brief target preview and subsequently asked to start/continue the next step.
+The downstream implementation now targets Phase 4B: an isolated, disposable branch,
+one click per move, at most 20 placements, navigation through computed positions,
+and exact return to the paused original replay. See `PHASE_4B_HANDOFF.md` for evidence
+and remaining limitations. This does not authorize practice mode or live assistance.
+
 ### Product clarification — snapshot input and progressive reveal (2026-09-20)
 
 This clarification supersedes earlier requirements to recover observed draw history

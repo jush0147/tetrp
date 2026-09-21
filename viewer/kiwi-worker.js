@@ -1,22 +1,25 @@
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
 import {prepareKiwi,normalizeRecommendation,normalizeSnapshotError,NODE_BUDGET} from '../src/analysis/kiwi.js';
-let initialized,lastKey,lastResult;
-self.onmessage=async({data:{id,state}})=>{
+let initialized,lastKey,lastResult,lastPrepared,lastReport;
+self.onmessage=async({data:{id,state,candidateIndex=0}})=>{
   try{
     const key=JSON.stringify(state);
-    if(key===lastKey&&lastResult){postMessage({id,result:{...lastResult,cached:true}});return;}
+    if(key===lastKey&&lastResult&&candidateIndex===lastResult.candidateIndex){postMessage({id,result:{...lastResult,cached:true}});return;}
     initialized??=init({module_or_path:new URL('./cold_clear_2_bg.wasm',import.meta.url)});
     await initialized;
-    const start=performance.now(),prepared=prepareKiwi(state),geometryMs=performance.now()-start;
-    const searchStart=performance.now(),report=JSON.parse(analyze_snapshot_json(JSON.stringify(prepared.request)));
+    const cached=key===lastKey&&lastReport;
+    const start=performance.now(),prepared=cached?lastPrepared:prepareKiwi(state),geometryMs=performance.now()-start;
+    const searchStart=performance.now(),report=cached?lastReport:JSON.parse(analyze_snapshot_json(JSON.stringify(prepared.request)));
     const searchMs=performance.now()-searchStart;
-    const normalized=normalizeRecommendation(state,prepared,report);
+    if(!Number.isInteger(candidateIndex)||!report.candidates[candidateIndex])throw new Error('No more Kiwi candidates');
+    const normalized=normalizeRecommendation(state,prepared,{...report,action:report.candidates[candidateIndex].action});
     lastResult={...normalized,warnings:prepared.warnings,path:'snapshot',nodeBudget:NODE_BUDGET,nodes:report.nodes,
+      candidateIndex,candidateCount:report.candidates.length,cached:Boolean(cached),
       completion:report.completion,unknownActivationPackets:report.unknown_activation_packets,
       geometryMs,searchMs,totalMs:performance.now()-start};
-    lastKey=key;postMessage({id,result:lastResult});
+    lastKey=key;lastPrepared=prepared;lastReport=report;postMessage({id,result:lastResult});
   }catch(error){
-    lastKey=null;lastResult=null;
+    lastKey=null;lastResult=null;lastPrepared=null;lastReport=null;
     const e=normalizeSnapshotError(error);
     postMessage({id,error:`${e.code}: ${e.message}`});
   }

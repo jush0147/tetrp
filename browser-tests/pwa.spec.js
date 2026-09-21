@@ -74,6 +74,7 @@ test('PWA manifest, offline reopening and local worker playback',async({page,con
   await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
   await expect(page.locator('#pieces')).toHaveText('0');
   await page.locator('#analyze').click();
+  await expect(page.locator('#playback-position')).toContainText('Kiwi 1 / 1',{timeout:120000});
   await expect(page.locator('#board')).toHaveAttribute('aria-label',/Kiwi/,{timeout:120000});
   await expect(page.locator('#analysis-details')).toContainText('200,000 node budget');
   await page.locator('#clear-analysis').click();

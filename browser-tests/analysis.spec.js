@@ -16,67 +16,70 @@ async function analyze(page){
   return page.evaluate(()=>window.analysis);
 }
 test.setTimeout(180000);
-test('Kiwi real WASM at replay positions: responsive, deterministic, detached and cancellable',async({page},info)=>{
-  const workers=[];page.on('worker',w=>workers.push(w.url()));await open(page);
+test('Kiwi demo reveals beyond initial preview, navigates history and exits to exact recorded position',async({page})=>{
+  await page.addInitScript(()=>document.addEventListener('tetrp:demo',e=>window.demo=e.detail));
+  await open(page);
   const before=await page.evaluate(()=>JSON.stringify(window.position));
-  await page.evaluate(()=>{window.ticks=0;window.tickInterval=setInterval(()=>window.ticks++,10);});
-  const first=await analyze(page);expect(first.nodeBudget).toBe(200000);expect(first.nodes).toBeLessThanOrEqual(200000);
-  expect(first.path).toBe('snapshot');if(first.action.kind==='place')expect(first.move.cells).toHaveLength(4);else expect(first.move).toBeNull();
-  expect(workers.some(w=>w.endsWith('/kiwi-worker.js'))).toBe(true);
-  expect(await page.evaluate(()=>window.ticks)).toBeGreaterThan(3);
+  await page.evaluate(()=>{window.ticks=0;window.timer=setInterval(()=>window.ticks++,10);});
+  for(let i=1;i<=8;i++){
+    const result=await analyze(page);expect(result.action.kind).toBe('place');expect(result.nodeBudget).toBe(200000);
+    expect(result.nodes).toBeLessThanOrEqual(200000);
+    expect(await page.evaluate(()=>window.demo.index)).toBe(i);
+    expect(await page.evaluate(()=>window.demo.state.next.length)).toBe(5);
+  }
+  const last=await page.evaluate(()=>window.demo.state);
+  await page.locator('#previous').click();await expect(page.locator('#playback-position')).toContainText('Kiwi 7 / 8');
+  await page.locator('#next-placement').click();await expect(page.locator('#playback-position')).toContainText('Kiwi 8 / 8');
+  expect(await page.evaluate(()=>window.demo.state)).toEqual(last);
+  expect(await page.evaluate(()=>window.ticks)).toBeGreaterThan(10);
+  await expect(page.locator('#play')).toBeDisabled();await expect(page.locator('#scrubber')).toBeDisabled();
   expect(await page.evaluate(()=>JSON.stringify(window.position))).toBe(before);
-  await expect(page.locator('#board')).toHaveAttribute('aria-label',/Kiwi/);
-  const again=await analyze(page);expect(again.move).toEqual(first.move);expect(again.cached).toBe(true);
   await page.locator('#clear-analysis').click();await expect(page.locator('#analysis-panel')).toBeHidden();
   expect(await page.evaluate(()=>JSON.stringify(window.position))).toBe(before);
-  await page.locator('#analyze').click();await page.locator('#next-placement').click();
-  await expect(page.locator('#pieces')).toHaveText('1');await expect(page.locator('#analysis-panel')).toBeHidden();
-  const second=await analyze(page);expect(second.nodeBudget).toBe(200000);
-  await page.locator('#previous').click();await expect(page.locator('#pieces')).toHaveText('0');
-  expect((await analyze(page)).move).toEqual(first.move);
-  await page.evaluate(()=>clearInterval(window.tickInterval));
-  console.log(JSON.stringify({browser:info.project.name,performance:[first,second].map(r=>({geometryMs:r.geometryMs,searchMs:r.searchMs,totalMs:r.totalMs,nodes:r.nodes}))}));
-});
-test('Kiwi handles TL pending and switching players invalidates analysis',async({page})=>{
-  const data=replay().replay;Object.assign(data.options,{version:19,b2bcharge_base:3,garbageare:5,garbagearebump:12});
-  const packet=(type,id)=>({frame:0,type:'ige',data:{id,frame:0,type,data:{type:'garbage',amt:4,gameid:9,frame:0,cid:1,iid:1,ackiid:0}}});
-  data.events.splice(1,0,{frame:0,type:'ige',data:{id:1,frame:0,type:'target',data:{targets:[9]}}},packet('interaction',2),packet('interaction_confirm',3));
-  const match={version:1,gamemode:'league',replay:{rounds:[[{id:'a',username:'Alpha',replay:data},{id:'b',username:'Beta',replay:{...replay(99).replay,options:{version:19,seed:99,handling:{safelock:false}}}}]]}};
-  await open(page,match,'match.ttrm');
-  // At placement 1 the already-confirmed incoming remains observable (20-frame travel).
+  await expect(page.locator('#pieces')).toHaveText('0');await expect(page.locator('#play')).toBeEnabled();
   await page.locator('#next-placement').click();await expect(page.locator('#pieces')).toHaveText('1');
-  const r=await analyze(page);expect(r.path).toBe('snapshot');expect(r.nodes).toBeLessThanOrEqual(200000);
-  await expect(page.locator('#analysis-details')).toContainText('10 種');
-  await expect(page.locator('#analysis-details')).toContainText('ARE');
-  await expect(page.locator('#analysis-details')).not.toContainText('base=0');
-  await page.locator('#player-swap').click();await expect(page.locator('#analysis-panel')).toBeHidden();
-  const other=await analyze(page);expect(other.path).toBe('snapshot');
+  await page.evaluate(()=>clearInterval(window.timer));
 });
-test('unknown observable garbage arrival is analyzed without damaging replay',async({page})=>{
+
+test('unknown observable garbage is retained during demo and player switch discards branch',async({page})=>{
+  await page.addInitScript(()=>document.addEventListener('tetrp:demo',e=>window.demo=e.detail));
   const data=replay().replay;data.options.version=19;
   data.events.splice(1,0,
     {frame:0,type:'ige',data:{id:1,frame:0,type:'target',data:{targets:[9]}}},
     {frame:0,type:'ige',data:{id:2,frame:0,type:'interaction',data:{type:'garbage',amt:4,gameid:9,frame:0,cid:1,iid:1,ackiid:0}}});
-  await open(page,{version:1,gamemode:'league',replay:{rounds:[[{id:'a',replay:data}]]}},'pending.ttrm');
+  await open(page,{version:1,gamemode:'league',replay:{rounds:[[{id:'a',replay:data},{id:'b',replay:{...data,events:replay().replay.events}}]]}},'pending.ttrm');
   await page.locator('#next-placement').click();await expect(page.locator('#pieces')).toHaveText('1');
   const before=await page.evaluate(()=>JSON.stringify(window.position));const result=await analyze(page);
-  expect(result.unknownActivationPackets).toBe(1);expect(result.nodes).toBeLessThanOrEqual(200000);
+  expect(result.unknownActivationPackets).toBe(1);
   await expect(page.locator('#analysis-details')).toContainText('到達時間未知');
   expect(await page.evaluate(()=>JSON.stringify(window.position))).toBe(before);
-  await page.locator('#clear-analysis').click();await page.locator('#previous').click();
-  await expect(page.locator('#pieces')).toHaveText('0');expect((await analyze(page)).path).toBe('snapshot');
+  await page.locator('#player-swap').click();await expect(page.locator('#analysis-panel')).toBeHidden();
+  await expect(page.locator('#analyze')).toHaveAttribute('aria-busy','false');
 });
-test('Kiwi search assets are local and Hold recommendation is labelled',async({page})=>{
-  const requests=[];page.on('request',r=>requests.push({url:r.url(),method:r.method()}));
-  // This seed produces an empty-Hold recommendation in the frozen 200k profile.
-  await open(page,replay(1));const r=await analyze(page);
-  expect(r.action.kind).toBe('hold');expect(r.move).toBeNull();await expect(page.locator('#analysis-status')).toContainText('HOLD');
-  expect(requests.every(r=>new URL(r.url).origin===new URL(page.url()).origin&&r.method==='GET')).toBe(true);
-  expect(requests.some(r=>r.url.endsWith('/cold_clear_2_bg.wasm'))).toBe(true);
+
+test('exit while thinking or showing target cancels commit, then a new session works',async({page})=>{
+  await open(page);const before=await page.evaluate(()=>JSON.stringify(window.position));
+  await page.locator('#analyze').click();await page.locator('#clear-analysis').click();
+  await expect(page.locator('#analysis-panel')).toBeHidden();
+  const r=await analyze(page);expect(r.action.kind).toBe('place');
+  await page.locator('#clear-analysis').click();
+  expect(await page.evaluate(()=>JSON.stringify(window.position))).toBe(before);
+  await expect(page.locator('#pieces')).toHaveText('0');
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
+  expect(errors).toEqual([]);
+});
+
+test('empty Hold executes and reanalyzes before placement; all assets stay local',async({page})=>{
+  const requests=[];page.on('request',r=>requests.push(r.url()));
+  await page.addInitScript(()=>{window.demoViews=[];document.addEventListener('tetrp:demo',e=>window.demoViews.push(e.detail));});
+  await open(page,replay(1));const r=await analyze(page);expect(r.action.kind).toBe('place');
+  const views=await page.evaluate(()=>window.demoViews);
+  expect(views.some(v=>v.index===0&&v.state.hold.locked)).toBe(true);
+  expect(views.at(-1).index).toBe(1);
+  expect(requests.every(u=>new URL(u).origin===new URL(page.url()).origin)).toBe(true);
   await page.setViewportSize({width:667,height:280});
-  for(const id of ['board','analyze','play','previous','next-placement']){
+  for(const id of ['board','analyze','previous','next-placement']){
     const b=await page.locator('#'+id).boundingBox();expect(b.x).toBeGreaterThanOrEqual(0);expect(b.x+b.width).toBeLessThanOrEqual(667);expect(b.y+b.height).toBeLessThanOrEqual(280);
   }
-  const board=await page.locator('#board').boundingBox(),panel=await page.locator('#analysis-panel').boundingBox();
-  expect(board.y+board.height).toBeLessThanOrEqual(panel.y);
 });

@@ -1,4 +1,6 @@
 import {MAX_FILE_BYTES,parseLocalText,catalog,ViewerSession} from './session.js';
+import {BotDemo} from '../src/analysis/demo.js';
+let demo=null;
 let replay=null,sessions=[],epoch=0,focus=0,roundFrames=0,currentFrame=0,analysisEpoch=0;
 const send=(id,type,data)=>postMessage({id,type,...data});
 const errorData=error=>({code:error.code||'VIEWER_ERROR',path:error.path||null,message:error.message});
@@ -6,12 +8,29 @@ function snapshot(frame){currentFrame=frame;return {focus,roundFrames,frame,view
 self.onmessage=async({data:m})=>{
   const analysisGeneration=++analysisEpoch;
   try{
+    if(m.type.startsWith('demo-')){
+      if(m.type==='demo-start'){
+        const primary=sessions.find(s=>s.player===focus);
+        if(!primary?.session)throw new Error('請先選擇支援的 replay。');
+        demo=new BotDemo(primary.session.session.engine);
+      }else if(m.type==='demo-exit'){demo=null;return;}
+      else if(!demo)throw new Error('示範已關閉。');
+      let result;
+      if(m.type==='demo-prepare')result=demo.prepare(m.result,m.revision);
+      else if(m.type==='demo-commit')result=demo.commit(m.revision);
+      else if(m.type==='demo-seek')result=demo.seek(m.index);
+      else if(m.type==='demo-start')result=demo.view();
+      else throw new Error('Unknown demo command');
+      send(m.id,'demo',{result});return;
+    }
     if(m.type==='load'){
+      demo=null;
       const generation=++epoch;sessions=[];replay=null;
       if(m.file.size>MAX_FILE_BYTES)throw new Error('檔案超過 32 MB，請選擇較小的 replay。');
       const text=await m.file.text();if(generation!==epoch)return;
       replay=parseLocalText(text);send(m.id,'catalog',{rounds:catalog(replay),variant:replay.variant});
     }else if(m.type==='select'){
+      demo=null;
       const generation=++epoch;sessions=[];focus=m.player;
       if(!replay)throw new Error('請先開啟 replay。');
       const entries=catalog(replay)[m.round].players,next=[];
@@ -29,9 +48,11 @@ self.onmessage=async({data:m})=>{
       roundFrames=Math.max(0,...sessions.filter(s=>s.session).map(s=>s.session.frames));
       send(m.id,'ready',snapshot(0));
     }else if(m.type==='focus'){
+      demo=null;
       if(!sessions.some(s=>s.player===m.player))throw new Error('Unknown player');
       focus=m.player;send(m.id,'focused',snapshot(currentFrame));
     }else if(m.type==='seek'){
+      demo=null;
       if(!sessions.length)throw new Error('Replay 尚未準備完成。');
       let frame=m.value;
       if(m.kind==='placement'||m.kind==='step'){
@@ -50,5 +71,5 @@ self.onmessage=async({data:m})=>{
       const state=await primary.session.analysisState({cancelled:()=>analysisGeneration!==analysisEpoch});
       if(state)send(m.id,'analysis',{state});
     }else if(m.type!=='cancel-analysis')throw new Error('Unknown viewer command');
-  }catch(error){send(m.id,m.type==='analysis'?'analysis-error':'error',{error:errorData(error)});}
+  }catch(error){send(m.id,m.type.startsWith('demo-')?'demo-error':m.type==='analysis'?'analysis-error':'error',{error:errorData(error)});}
 };

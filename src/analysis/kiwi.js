@@ -44,5 +44,6 @@ export function normalizeRecommendation(snapshot,prepared,report){
   const key=v=>v.map(c=>c.join(',')).sort().join(';');
   if(!B.legal(engine.state.board,p)||key(cells)!==key(checked.path.target.cells)||R.classifySpin(engine.state.board,p,snapshot.rules.spinbonuses)!==checked.path.target.spin)
     throw new Error('Kiwi placement failed authority geometry validation');
-  return {action:{kind:'place'},move:{piece:p.type,x:p.x,y:Math.ceil(p.y),rotation:p.r,useHold:false,cells}};
+  return {action:{kind:'place'},move:{piece:p.type,x:p.x,y:Math.ceil(p.y),rotation:p.r,useHold:false,cells},
+    execution:{moves:checked.path.moves,spin:checked.path.target.spin}};
 }
