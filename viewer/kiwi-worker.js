@@ -1,5 +1,5 @@
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
-import {prepareKiwi,normalizeRecommendation,normalizeSnapshotError,NODE_BUDGET} from '../src/analysis/kiwi.js';
+import {prepareKiwi,normalizeRankedRecommendation,normalizeSnapshotError,NODE_BUDGET} from '../src/analysis/kiwi.js';
 let initialized,lastKey,lastResult,lastPrepared,lastReport;
 self.onmessage=async({data:{id,state,candidateIndex=0}})=>{
   try{
@@ -11,10 +11,9 @@ self.onmessage=async({data:{id,state,candidateIndex=0}})=>{
     const start=performance.now(),prepared=cached?lastPrepared:prepareKiwi(state),geometryMs=performance.now()-start;
     const searchStart=performance.now(),report=cached?lastReport:JSON.parse(analyze_snapshot_json(JSON.stringify(prepared.request)));
     const searchMs=performance.now()-searchStart;
-    if(!Number.isInteger(candidateIndex)||!report.candidates[candidateIndex])throw new Error('No more Kiwi candidates');
-    const normalized=normalizeRecommendation(state,prepared,{...report,action:report.candidates[candidateIndex].action});
+    const normalized=normalizeRankedRecommendation(state,prepared,report,candidateIndex);
     lastResult={...normalized,warnings:prepared.warnings,path:'snapshot',nodeBudget:NODE_BUDGET,nodes:report.nodes,
-      candidateIndex,candidateCount:report.candidates.length,cached:Boolean(cached),
+      cached:Boolean(cached),
       completion:report.completion,unknownActivationPackets:report.unknown_activation_packets,
       geometryMs,searchMs,totalMs:performance.now()-start};
     lastKey=key;lastPrepared=prepared;lastReport=report;postMessage({id,result:lastResult});

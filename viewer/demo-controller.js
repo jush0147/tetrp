@@ -30,10 +30,12 @@ export class DemoController {
       for(let actions=0;actions<2;actions++){
         const revision=this.view.revision;
         let result;
-        for(let candidateIndex=0;;candidateIndex++){
+        for(let candidateIndex=0;;){
           result=await this.bot.analyze(this.view.visible,{candidateIndex});if(g!==this.generation)return;
           try{await this.rpc('demo-prepare',{result,revision});break;}
-          catch(error){if(g!==this.generation)return;if(candidateIndex+1>=result.candidateCount)throw error;}
+          catch(error){if(g!==this.generation)return;
+            candidateIndex=(result.candidateIndex??candidateIndex)+1;
+            if(candidateIndex>=result.candidateCount)throw error;}
         }
         if(g!==this.generation)return;
         this.onRecommendation(result);

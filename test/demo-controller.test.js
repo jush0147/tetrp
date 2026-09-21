@@ -35,3 +35,11 @@ test('bounded or ended branch starts no search; saved forward movement only seek
  h.controller.view={...view,index:3,total:4};await h.controller.next();
  assert.equal(searches,0);assert.deepEqual(h.calls,['demo-seek']);
 });
+
+test('timing retry advances past the actual candidate after geometry skipped earlier ranks',async()=>{
+ const indexes=[];let attempts=0;
+ const h=harness({bot:{dispose(){},async analyze(_,o){indexes.push(o.candidateIndex);
+  return {...result,candidateIndex:o.candidateIndex===0?2:3,candidateCount:4};}},
+  async rpc(type){if(type==='demo-prepare'&&attempts++===0)throw new Error('timing');return {...view};}});
+ await h.controller.begin();assert.deepEqual(indexes,[0,3]);assert.deepEqual(h.errors,[]);
+});

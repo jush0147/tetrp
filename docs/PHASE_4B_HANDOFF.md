@@ -1,5 +1,36 @@
 # Phase 4B — disposable Kiwi demonstration
 
+## Post-checkpoint correction — hard-drop spin validation (2026-09-21)
+
+A user reported `KIWI_CORE_REJECTED: Kiwi placement failed authority geometry
+validation` after 12 demonstration placements. A synthetic board transcribed from
+the screenshot reproduces the same rejection with `rotateCCW, hardDrop` for T at
+CC2 west/x=4/y=4. This is a reproduction of the failure mechanism, not a claim to
+have recovered the user's exact replay checkpoint from an image.
+
+The downstream normalizer incorrectly called `classifySpin` again at the final
+landing. Tetrp assigns spin when the rotation occurs, and hard drop preserves that
+earned spin. In this case the actual path had spin `none`, whereas reclassifying
+its landing returned `mini`. Geometry and cells were legal; the extra check was
+inventing an unearned spin and then rejecting the correct recommendation.
+
+Normalization now compares the engine's resulting `piece.spin` with the target.
+The allowlist, cell/legality checks and full timed authority trial remain in place.
+A regression both executes the legal move and rejects a forged mini-spin target.
+No gameplay rules or pinned Kiwi artifact bytes changed.
+
+Ranked candidate fallback now also covers normalization rejection in Kiwi's Worker,
+not only timed execution rejection. Rejected candidates cannot commit. Further
+timing retries start after the actual returned candidate rank, and reuse the same
+search report/budget. If every candidate fails, the branch remains unchanged.
+The browser continuation regression now executes all 20 placements before testing
+history navigation and exact return to the original replay.
+
+The checkpoint tag `checkpoint/phase-4b-2026-09-21` remains the pre-fix baseline.
+Correction validation: **362 unit tests and 56 browser/PWA/private replay tests
+passed**, including full 20-placement demos in Chromium and mobile WebKit.
+Validation numbers and timings below describe that checkpoint unless stated otherwise.
+
 2026-09-21. Downstream continuation after Phase 4A review and the user's request
 to execute recommendations, followed by approval to start/continue.
 

@@ -42,8 +42,22 @@ export function normalizeRecommendation(snapshot,prepared,report){
   }
   const p=engine.state.piece,cells=B.cells(p).map(([x,y])=>[x,Math.ceil(y)]);
   const key=v=>v.map(c=>c.join(',')).sort().join(';');
-  if(!B.legal(engine.state.board,p)||key(cells)!==key(checked.path.target.cells)||R.classifySpin(engine.state.board,p,snapshot.rules.spinbonuses)!==checked.path.target.spin)
+  // Hard drop preserves the spin earned by the actual input path. Reclassifying
+  // at the landing can invent a spin that was never earned by a rotation there.
+  if(!B.legal(engine.state.board,p)||key(cells)!==key(checked.path.target.cells)||p.spin!==checked.path.target.spin)
     throw new Error('Kiwi placement failed authority geometry validation');
   return {action:{kind:'place'},move:{piece:p.type,x:p.x,y:Math.ceil(p.y),rotation:p.r,useHold:false,cells},
     execution:{moves:checked.path.moves,spin:checked.path.target.spin}};
+}
+
+export function normalizeRankedRecommendation(snapshot,prepared,report,startIndex=0){
+  if(!Number.isInteger(startIndex)||startIndex<0||!Array.isArray(report.candidates)||!report.candidates[startIndex])
+    throw new Error('No more Kiwi candidates');
+  let lastError;
+  for(let candidateIndex=startIndex;candidateIndex<report.candidates.length;candidateIndex++){
+    try{return {...normalizeRecommendation(snapshot,prepared,{...report,action:report.candidates[candidateIndex].action}),
+      candidateIndex,candidateCount:report.candidates.length};}
+    catch(error){lastError=error;}
+  }
+  throw new Error('No Kiwi candidate passed authority validation',{cause:lastError});
 }

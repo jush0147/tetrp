@@ -6,7 +6,8 @@ import * as B from '../src/board.js';import * as R from '../src/rotation.js';
 import {Reconstruction} from '../src/replay/index.js';
 import {ViewerSession} from '../viewer/session.js';
 import {visibleState} from '../src/analysis/visible-state.js';
-import {prepareKiwi,normalizeRecommendation,NODE_BUDGET} from '../src/analysis/kiwi.js';
+import {prepareKiwi,normalizeRecommendation,normalizeRankedRecommendation,NODE_BUDGET} from '../src/analysis/kiwi.js';
+import {BotDemo} from '../src/analysis/demo.js';
 import {BotAdapter} from '../viewer/bot-adapter.js';
 import {verifyKiwi} from '../scripts/verify-kiwi.js';
 import {createPlacementTools} from '../vendor/kiwi-v1/tetrp-placement-path.mjs';
@@ -16,6 +17,36 @@ await init({module_or_path:readFileSync(new URL('../vendor/kiwi-v1/pkg/cold_clea
 const search=p=>JSON.parse(analyze_snapshot_json(JSON.stringify(p.request)));
 const e=new Engine({seed:42,rules:{b2bcharge_base:3,garbageare:5,garbagearebump:12}});
 const snapshot=visibleState(e.state),prepared=prepareKiwi(snapshot),report=search(prepared);
+
+test('air rotation then hard drop retains earned spin instead of reclassifying the landing',()=>{
+ // Synthetic transcription of the reported cavity, not an imported private replay.
+ const engine=new Engine({seed:42,rules:{g:0}});engine.state.piece.type='t';engine.state.piece.y=17.97;
+ for(const [y,row] of [[31,'.........j'],[32,'.z.......j'],[33,'zz......jj'],[34,'z....slloo'],
+  [35,'oo...ssloo'],[36,'oo.z.ssloo'],[37,'gg.ggggggg'],[38,'gg.ggggggg'],[39,'gg.ggggggg']])
+  engine.state.board.rows[y]=[...row].map(c=>c==='.'?null:c==='g'?'gb':c);
+ const before=engine.serialize(),s=visibleState(engine.state),p=prepareKiwi(s);
+ const action={kind:'place',placement:{location:{type:'T',orientation:'west',x:4,y:4},spin:'none'}};
+ const result=normalizeRecommendation(s,p,{schema:'kiwi-snapshot-result/3',action});
+ assert.deepEqual(result.execution.moves,['rotateCCW','hardDrop']);assert.equal(result.execution.spin,'none');
+ const trial=Engine.restore(before);trial.rotate(3);trial.slam(true);
+ assert.equal(trial.state.piece.spin,'none');assert.equal(R.classifySpin(trial.state.board,trial.state.piece,trial.state.rules.spinbonuses),'mini');
+ const demo=new BotDemo(engine),revision=demo.view().revision;demo.prepare(result,revision);
+ const after=demo.commit(revision);assert.equal(after.index,1);assert.equal(after.lastPlacement.spin,'none');
+ assert.equal(engine.serialize(),before);
+ const forged=structuredClone(result);forged.execution.spin='mini';
+ const rejected=new BotDemo(engine);assert.throws(()=>rejected.prepare(forged,0));assert.equal(rejected.view().index,0);
+});
+
+test('ranked normalization skips rejected candidates without accepting an invalid action',()=>{
+ const valid=report.candidates.find(c=>c.action.kind==='place');
+ const invalid={action:{kind:'place',placement:{location:{type:'T',orientation:'north',x:99,y:99},spin:'none'}}};
+ const ranked={...report,candidates:[invalid,valid]};
+ const result=normalizeRankedRecommendation(snapshot,prepared,ranked);
+ assert.equal(result.candidateIndex,1);assert.equal(result.candidateCount,2);
+ assert.deepEqual(result.move,normalizeRecommendation(snapshot,prepared,{...report,action:valid.action}).move);
+ assert.throws(()=>normalizeRankedRecommendation(snapshot,prepared,{...report,candidates:[invalid]}),/No Kiwi candidate passed/);
+ assert.throws(()=>normalizeRankedRecommendation(snapshot,prepared,ranked,-1),/No more/);
+});
 
 test('pinned v3.2 artifact hashes and snapshot capabilities',async()=>{
  await verifyKiwi();const c=JSON.parse(snapshot_capabilities_json());assert.equal(c.same_piece_hold_search,true);assert.equal(c.history_scan,false);assert.equal(c.root_geometry_in_search,true);
