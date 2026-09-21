@@ -21,16 +21,16 @@ test('Kiwi demo reveals beyond initial preview, navigates history and exits to e
   await open(page);
   const before=await page.evaluate(()=>JSON.stringify(window.position));
   await page.evaluate(()=>{window.ticks=0;window.timer=setInterval(()=>window.ticks++,10);});
-  for(let i=1;i<=20;i++){
+  for(let i=1;i<=22;i++){
     const result=await analyze(page);expect(result.action.kind).toBe('place');expect(result.nodeBudget).toBe(200000);
     expect(result.nodes).toBeLessThanOrEqual(200000);
     expect(await page.evaluate(()=>window.demo.index)).toBe(i);
     expect(await page.evaluate(()=>window.demo.state.next.length)).toBe(5);
   }
   const last=await page.evaluate(()=>window.demo.state);
-  await expect(page.locator('#analyze')).toBeDisabled();
-  await page.locator('#previous').click();await expect(page.locator('#playback-position')).toContainText('Kiwi 19 / 20');
-  await page.locator('#next-placement').click();await expect(page.locator('#playback-position')).toContainText('Kiwi 20 / 20');
+  await expect(page.locator('#analyze')).toBeEnabled();
+  await page.locator('#previous').click();await expect(page.locator('#playback-position')).toContainText('Kiwi 21 / 22');
+  await page.locator('#next-placement').click();await expect(page.locator('#playback-position')).toContainText('Kiwi 22 / 22');
   expect(await page.evaluate(()=>window.demo.state)).toEqual(last);
   expect(await page.evaluate(()=>window.ticks)).toBeGreaterThan(10);
   await expect(page.locator('#play')).toBeDisabled();await expect(page.locator('#scrubber')).toBeDisabled();

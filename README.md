@@ -19,7 +19,7 @@ See [the viewer handoff](docs/PHASE_3_HANDOFF.md) and
 [Phase 2 conformance findings](docs/PHASE_2_HANDOFF.md).
 **Phase 4B:** select the Kiwi image beside the next-piece arrow to pause the replay
 and start an isolated bot demonstration. A target appears briefly, then Tetrp executes
-the validated move. Select Kiwi or → for the next move, up to 20 placements; ← and →
+the validated move. Select Kiwi or → for the next move, with no fixed move limit; ← and →
 can revisit computed positions. Exit with × to discard the branch and return to the
 original replay position, paused. Empty Hold immediately refills NEXT 5 and triggers
 a fresh decision before placement. No analysis history is saved.

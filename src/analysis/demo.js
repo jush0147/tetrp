@@ -18,7 +18,6 @@ class BranchEngine extends Engine {
 const tools=createPlacementTools({Engine:BranchEngine,boardModule:B,rotationModule:R});
 const cellKey=cells=>cells.map(([x,y])=>`${x},${Math.ceil(y)}`).sort().join(';');
 const moves=new Set(['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down','hardDrop']);
-export const DEMO_LIMIT=20;
 export class BotDemo {
   constructor(engine){
     this.engine=BranchEngine.restore(engine.serialize());
@@ -39,7 +38,7 @@ export class BotDemo {
       rules:visible.rules,frame:s.frame,subframe:s.subframe,stats:structuredClone(s.stats),
       attack:visible.attack?{...visible.attack,totals:structuredClone(s.attack.totals)}:null};
     return {state,visible,index:this.index,
-    total:this.history.length-1,limit:DEMO_LIMIT,revision:this.revision,lastPlacement:this.metadata[this.index],
+    total:this.history.length-1,revision:this.revision,lastPlacement:this.metadata[this.index],
     stopped:!this.engine.state.playing};}
   seek(index){
     if(!Number.isInteger(index)||index<0||index>=this.history.length)throw new Error('示範位置超出範圍。');
@@ -49,7 +48,7 @@ export class BotDemo {
   prepare(result,revision){
     if(revision!==this.revision)throw new Error('示範位置已改變。');
     this.pending=null;
-    if(this.index!==this.history.length-1||this.index>=DEMO_LIMIT)throw new Error('請到示範末端再計算下一手。');
+    if(this.index!==this.history.length-1)throw new Error('請到示範末端再計算下一手。');
     const trial=BranchEngine.restore(this.engine.serialize()),s=trial.state;
     if(!s.playing||s.piece.sleeping)throw new Error('此分支已結束或沒有可操作方塊。');
     if(result.action?.kind==='hold'){

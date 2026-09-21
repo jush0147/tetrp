@@ -24,7 +24,7 @@ export class DemoController {
   async next(){
     if(this.busy||!this.view)return;
     if(this.view.index<this.view.total)return this.seek(this.view.index+1);
-    if(this.view.index>=this.view.limit||this.view.stopped)return;
+    if(this.view.stopped)return;
     const g=this.generation;this.busy=true;this.onThinking();
     try{
       for(let actions=0;actions<2;actions++){

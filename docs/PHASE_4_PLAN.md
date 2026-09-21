@@ -10,6 +10,14 @@
 
 ## Current product direction
 
+### User-requested continuation update (2026-09-22)
+
+Remove the fixed 20-placement cap. Continue one move per user request until game
+end, no executable recommendation, or exit. Preserve history navigation and
+discard all branch/search/history data on exit. This supersedes the earlier
+bounded-length examples and completion criterion; no autoplay or practice mode
+is added. History remains session-local in memory.
+
 ### Phase 4B continuation (2026-09-21)
 
 After the Phase 4A review and Kiwi v3.2 fixes, the user requested actual execution

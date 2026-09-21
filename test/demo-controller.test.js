@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DemoController} from '../viewer/demo-controller.js';
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve};};
-const view={visible:{next:['i','o','t','s','z']},revision:0,index:0,total:0,limit:20,stopped:false};
+const view={visible:{next:['i','o','t','s','z']},revision:0,index:0,total:0,stopped:false};
 const result={action:{kind:'place'},candidateCount:2};
 function harness(overrides={}){
  const calls=[],errors=[],views=[];
@@ -28,9 +28,8 @@ test('failed timing candidate retries ranked report, then executes one placement
  await h.controller.begin();assert.deepEqual(indexes,[0,1]);
  assert.deepEqual(calls,['demo-start','demo-prepare','demo-prepare','demo-commit']);assert.deepEqual(h.errors,[]);
 });
-test('bounded or ended branch starts no search; saved forward movement only seeks',async()=>{
+test('ended branch starts no search; saved forward movement only seeks',async()=>{
  let searches=0;const h=harness({bot:{dispose(){},async analyze(){searches++;return result;}}});
- h.controller.view={...view,index:20,total:20};await h.controller.next();
  h.controller.view={...view,stopped:true};await h.controller.next();
  h.controller.view={...view,index:3,total:4};await h.controller.next();
  assert.equal(searches,0);assert.deepEqual(h.calls,['demo-seek']);

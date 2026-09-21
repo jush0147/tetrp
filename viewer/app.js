@@ -42,8 +42,8 @@ function demoControls(){
   const v=demo.view;
   for(const id of ['play','scrubber','speed','play-mode'])$(id).disabled=true;
   $('previous').disabled=demo.busy||!v||v.index===0;
-  $('next-placement').disabled=demo.busy||!v||v.index>=v.total&&(v.stopped||v.index>=v.limit);
-  $('analyze').disabled=demo.busy||!v||v.index>=v.total&&(v.stopped||v.index>=v.limit);
+  $('next-placement').disabled=demo.busy||!v||v.index>=v.total&&v.stopped;
+  $('analyze').disabled=demo.busy||!v||v.index>=v.total&&v.stopped;
   $('analyze').setAttribute('aria-busy',String(demo.busy));
   $('analyze').setAttribute('aria-label','Kiwi 示範下一手');
 }
@@ -52,8 +52,8 @@ function showDemo(view){
   const primary=originalRound.views.find(v=>v.player===originalRound.focus);
   renderLane('',{...primary,state:view.state,lastPlacement:view.lastPlacement,conformance:null},false);
   $('board').setAttribute('aria-label',$('board').getAttribute('aria-label')+' Kiwi 示範');
-  $('playback-position').textContent='Kiwi '+view.index+' / '+view.total+' · 最多 '+view.limit+' 手';
-  $('analysis-status').textContent=view.stopped?'Kiwi 分支已結束':view.index>=view.limit?'已完成 20 手示範':'Kiwi 第 '+view.index+' 手 · → 下一手';
+  $('playback-position').textContent='Kiwi '+view.index+' / '+view.total;
+  $('analysis-status').textContent=view.stopped?'Kiwi 分支已結束':'Kiwi 第 '+view.index+' 手 · → 下一手';
   demoControls();
   document.dispatchEvent(new CustomEvent('tetrp:demo',{detail:structuredClone({index:view.index,total:view.total,state:view.visible,stopped:view.stopped})}));
 }

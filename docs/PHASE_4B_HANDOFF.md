@@ -40,12 +40,20 @@ Kiwi's image button remains beside the next-placement arrow. Clicking it pauses
 the whole replay and forks the focused player's current checkpoint. The first
 move is computed immediately. The target is shown for 350 ms after successful
 authority validation, then committed. Kiwi or → computes one more placement;
-←/→ revisits already computed states without repeating search. Maximum 20
-placements, including history. Game end stops further moves. × exits, terminates
+←/→ revisits already computed states without repeating search. Following the
+2026-09-22 user request, there is no fixed placement limit. Each click requests
+one more move; game end or no executable recommendation stops progress. History
+remains in memory until exit, so its memory cost grows with the number of moves.
+No automatic history eviction is introduced. × exits, terminates
 Kiwi's Worker, releases timers, discards branch/history/search data and restores
 the exact original replay position paused. Switching file, round or player also
 discards the branch. Nothing is persisted beyond the existing original-replay
 storage; PWA static assets remain cached.
+
+Move-cap removal validation (2026-09-22): 362 unit tests and 14 focused
+Chromium/WebKit analysis/PWA tests passed. Both browsers execute 22 placements,
+keep continuation enabled, navigate saved history, and return to the unchanged
+recorded replay. This extends the earlier checkpoint's bounded demonstration.
 
 ## Artifact and architecture
 
