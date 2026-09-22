@@ -1,6 +1,8 @@
 import {test,expect} from '@playwright/test';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
+import {Engine} from '../src/engine.js';
+import {visibleState} from '../src/analysis/visible-state.js';
 
 test('legacy cached app waits for old tabs to close before activating',async({page,context})=>{
   let current=false;
@@ -78,6 +80,12 @@ test('PWA manifest, offline reopening and local worker playback',async({page,con
   await expect(page.locator('#board')).toHaveAttribute('aria-label',/Kiwi/,{timeout:120000});
   await expect(page.locator('#analysis-details')).toContainText('200,000 node budget');
   await page.locator('#clear-analysis').click();
+  const native=await page.evaluate(snapshot=>new Promise((resolve,reject)=>{
+    const worker=new Worker(new URL('kiwi-worker.js',location.href),{type:'module'});
+    worker.onmessage=({data})=>{worker.terminate();data.error?reject(new Error(data.error)):resolve(data.result);};
+    worker.onerror=reject;worker.postMessage({id:1,state:snapshot,core:'native'});
+  }),visibleState(new Engine().state));
+  expect(native.path).toBe('native');
   await page.locator('#play').click();await expect(page.locator('#play')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('#pieces')).toHaveText('1');await page.locator('#play').click();
   await page.locator('#scrubber').evaluate(el=>{el.value='0';el.dispatchEvent(new Event('input'));el.dispatchEvent(new Event('change'));});

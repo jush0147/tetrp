@@ -1,0 +1,71 @@
+name: Kiwi placement FT7
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: Fresh series base seed
+        required: true
+        default: '20260923'
+  # Bootstrap this new workflow without merging experimental code into Pages.
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-ft7.yml]
+permissions:
+  contents: read
+concurrency:
+  group: kiwi-ft7-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  arena:
+    runs-on: ubuntu-latest
+    timeout-minutes: 270
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Correctness gate
+        run: |
+          npm ci
+          node scripts/verify-kiwi.js
+          npm test
+      - name: KO-only FT7 (stop on any technical failure)
+        timeout-minutes: 240
+        env:
+          SERIES_SEED: ${{ inputs.seed || '20260923' }}
+        shell: bash
+        run: |
+          mkdir -p ft7-results
+          set -o pipefail
+          node scripts/kiwi-ft7.js ft7-results "$SERIES_SEED" 2>&1 | tee ft7-results/runner.log
+      - name: Preserve complete or partial evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiwi-ft7-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ft7-results/
+          if-no-files-found: warn
+          retention-days: 30
+  notify:
+    if: always()
+    needs: arena
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: kiwi-ft7-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ft7-results
+      - name: Notify completion or failure
+        env:
+          ARENA_JOB_STATUS: ${{ needs.arena.result }}
+          NTFY_TOPIC: just_a_kiwi_for_tetrp
+        run: node scripts/kiwi-ft7-notify.js ft7-results/result.json

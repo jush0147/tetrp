@@ -11,20 +11,21 @@ export function rotationCandidates(piece, direction, lockresets = 15) {
   const offsets = (piece.type === 'i' ? kicks.i_kicks : kicks.kicks)[`${piece.r}${r}`];
   return [raw, ...offsets.map(([dx, dy], kick) => ({ ...raw, x: piece.x + dx, y: kickY(piece.y,dy,0,lockresets,piece.totalRotations), kick }))];
 }
-export function rotate(board, piece, direction, lockresets = 15) {
-  return rotationCandidates(piece, direction, lockresets).find(candidate => legal(board, candidate)) ?? null;
+const defaultGeometry = { legal, occupied };
+export function rotate(board, piece, direction, lockresets = 15, geometry = defaultGeometry) {
+  return rotationCandidates(piece, direction, lockresets).find(candidate => geometry.legal(board, candidate)) ?? null;
 }
-export function classifySpin(board, piece, mode = 'all-mini+') {
+export function classifySpin(board, piece, mode = 'all-mini+', geometry = defaultGeometry) {
   const rule = spinTables.spinbonuses_rules[mode];
   if (!rule) throw new TypeError('Unsupported spin mode');
   if (!rule.types?.includes(piece.type)) return 'none';
-  const can = (dx, dy) => legal(board, { ...piece, x: piece.x + dx, y: piece.y + dy });
+  const can = (dx, dy) => geometry.legal(board, { ...piece, x: piece.x + dx, y: piece.y + dy });
   if (mode === 'stupid') return can(0, 1) ? 'none' : 'full';
   if (!piece.rotated) return 'none';
   const cornerCells = spinTables.cornerTable[piece.type]?.[piece.r];
   let corner = 'none';
   if (cornerCells && !can(0, 1)) {
-    const taken = cornerCells.filter(([x, y]) => occupied(board, piece.x + x, piece.y + y));
+    const taken = cornerCells.filter(([x, y]) => geometry.occupied(board, piece.x + x, piece.y + y));
     if (taken.length >= 3) {
       const facing = taken.filter(cell => cell.slice(2).includes(piece.r)).length;
       corner = piece.type !== 't' || facing === 2 || piece.kick === 3 ? 'full' : 'mini';

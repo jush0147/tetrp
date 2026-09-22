@@ -12,7 +12,10 @@
     "test:reference": "node --test test/reference.test.js",
     "build": "node scripts/build-viewer.js",
     "preview": "node scripts/serve-viewer.js",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "kiwi:arena": "node scripts/kiwi-arena.js",
+    "kiwi:ft7": "node scripts/kiwi-ft7.js",
+    "kiwi:replay": "node scripts/kiwi-replay-demo.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

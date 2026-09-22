@@ -61,3 +61,13 @@ export function normalizeRankedRecommendation(snapshot,prepared,report,startInde
   }
   throw new Error('No Kiwi candidate passed authority validation',{cause:lastError});
 }
+
+// Strength arena must never turn an invalid original rank zero into rank one.
+export function normalizeTopRecommendation(snapshot,prepared,report){
+  const raw=report?.candidates?.[0]?.action;
+  try{
+    if(!raw||JSON.stringify(report.action)!==JSON.stringify(raw))throw new Error('Inconsistent Kiwi top-1 result');
+    return {...normalizeRecommendation(snapshot,prepared,{...report,action:raw}),
+      candidateIndex:0,candidateCount:report.candidates.length,policyIntent:structuredClone(raw)};
+  }catch(error){error.details={...error.details,policyAction:raw??report?.action,stage:'top-1-normalization'};throw error;}
+}

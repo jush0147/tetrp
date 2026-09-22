@@ -32,7 +32,10 @@ export function receive(s, event) {
     hardened: false, shielded: false, column: null, status: 'spawn', confirmFrame: null, activeFrame: null });
   return cid;
 }
-export function fight(s, amount, rules, holes, player = 'P1', target = 'P2') {
+// Effects keep private RNG and peer ledgers outside the shared rule transaction.
+// Engine callers use the original defaults; search supplies local bookkeeping.
+const defaultEffects = { completePacket, send };
+export function fight(s, amount, rules, holes, player = 'P1', target = 'P2', effects = defaultEffects) {
   const result = { generated: amount, cancelled: 0, sent: 0, unused_defense_budget: 0 };
   s.totals.generated += amount;
   let attack = amount;
@@ -46,27 +49,27 @@ export function fight(s, amount, rules, holes, player = 'P1', target = 'P2') {
       result.cancelled += real + extra;
       if (packet.amt === 0) {
         queue.splice(i, 1);
-        if (queue === s.pending) completePacket(holes, rules.boardwidth);
+        if (queue === s.pending) effects.completePacket(holes, rules.boardwidth);
       } else i++;
     }
   }
   result.sent = attack; result.unused_defense_budget = defense;
   s.totals.cancelled += result.cancelled;
-  send(s, attack, player, target);
+  effects.send(s, attack, player, target);
   return result;
 }
 export const pendingCount = s => s.pending.reduce((sum, packet) => sum + packet.amt, 0);
-export function resolveAttack(s, { lines, spin, allClear, garbageRows }, rules, holes, emit = () => {}) {
+export function resolveAttack(s, { lines, spin, allClear, garbageRows }, rules, holes, emit = () => {}, effects = defaultEffects) {
   s.pieces++;
   s.combo = lines ? s.combo + 1 : 0;
   const contribution = (allClear ? rules.allclear_b2b : 0) + (lines >= 4 || lines > 0 && spin !== 'none' ? 1 : 0);
   const resolve = (n, phase) => {
     emit(phase);
     if (rules.garbageblocking === 'none') {
-      s.totals.generated += n; send(s, n);
+      s.totals.generated += n; effects.send(s, n);
       return { generated: n, cancelled: 0, sent: n, unused_defense_budget: 0 };
     }
-    return fight(s, n, rules, holes);
+    return fight(s, n, rules, holes, 'P1', 'P2', effects);
   };
   const surge = [];
   if (contribution) s.btb += contribution;

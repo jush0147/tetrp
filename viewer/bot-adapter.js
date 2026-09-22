@@ -2,6 +2,7 @@
 export class BotAdapter {
   constructor(factory=()=>new Worker(new URL('./kiwi-worker.js',import.meta.url),{type:'module'})) {
     this.factory=factory;this.generation=0;this.worker=null;this.pending=null;
+    this.core=new URLSearchParams(globalThis.location?.search).get('kiwi')==='native'?'native':'legacy';
   }
   initialize(){
     if(this.worker)return;
@@ -20,7 +21,7 @@ export class BotAdapter {
     return new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>this.cancel(new Error('Kiwi 分析超時，請重試或選擇其他位置。')),120000);
       this.pending={resolve,reject,timer};
-      try{this.worker.postMessage({id,state,candidateIndex});}catch(error){this.cancel(error);}
+      try{this.worker.postMessage({id,state,candidateIndex,core:this.core});}catch(error){this.cancel(error);}
     });
   }
   cancel(error=new DOMException('Analysis cancelled','AbortError')){

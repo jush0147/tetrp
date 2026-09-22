@@ -136,4 +136,8 @@ particular v19 behavioral snapshot, not today's live service.
 
 ## Install on your phone
 
+Native Kiwi v0 is available as an experimental TL candidate with `?kiwi=native`.
+The default Kiwi is unchanged. See [native search, evaluator and arena notes](docs/NATIVE_KIWI_V0.md)
+for its information boundary, limitations and local benchmark commands.
+
 Open [tetrp](https://jush0147.github.io/tetrp/) and choose **⋮ → 安裝 App**. On iPhone, use Safari → Share → Add to Home Screen. After the first online load, the viewer works offline; the last opened replay and its viewing position restore from local IndexedDB. Updates are checked on opening, returning to the app, and reconnecting. A downloaded update waits for local persistence before reloading, then restores the replay paused. Only one current replay is retained, replaced by the next file; it is never uploaded or stored in the service-worker asset cache. Legacy tabs without persistence support must close before the upgrade can activate.

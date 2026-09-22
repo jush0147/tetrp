@@ -3,6 +3,7 @@ import * as B from '../board.js';
 import * as R from '../rotation.js';
 import {createHoles} from '../random.js';
 import {visibleState} from './visible-state.js';
+import {schedulePlacement} from './placement-transport.js';
 import {createPlacementTools} from '../../vendor/kiwi-v1/tetrp-placement-path.mjs';
 
 // A replay may stop partway through a frame. Continue that frame, never replay
@@ -60,7 +61,7 @@ export class BotDemo {
     if(result.action?.kind!=='place'||!target||target.piece!==s.piece.type||!Array.isArray(path)||path.length>512||
       path.at(-1)!=='hardDrop'||path.slice(0,-1).includes('hardDrop')||path.some(m=>!moves.has(m)))throw new Error('無效的落子操作。');
     const start=s.frame,end=start+23,before=s.stats.pieces;
-    const inputs=tools.schedulePath(start,end,path,trial),locks=[];
+    const inputs=schedulePlacement(trial,result,end),locks=[];
     const emit=trial.emit.bind(trial);
     trial.emit=(type,data)=>{if(type==='lock')locks.push({cells:B.cells(trial.state.piece),spin:trial.state.piece.spin,
       piece:trial.state.piece.type,frame:trial.state.frame,subframe:trial.state.subframe});emit(type,data);};
