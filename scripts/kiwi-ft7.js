@@ -11,8 +11,12 @@ const geometryBudget=Number(process.argv[4]??100000);
 if(!Number.isSafeInteger(geometryBudget)||geometryBudget<1||geometryBudget>10000000)throw new Error('Invalid geometry budget');
 const frontierMode=process.argv[5]??'off';
 if(!['off','on'].includes(frontierMode))throw new Error('Invalid frontier mode');
+const objective=process.argv[6]??'sent-safety';
+if(!['sent-safety','generated-app'].includes(objective))throw new Error('Invalid objective');
+if(objective==='generated-app'&&frontierMode!=='off')throw new Error('APP experiment requires frontier off');
 await mkdir(directory,{recursive:true});
-const profiles=[await profile('native',{geometryBudget,frontierExtension:frontierMode==='on'}),await profile('legacy')];
+const profiles=[await profile('native',{geometryBudget,objective,frontierExtension:frontierMode==='on',
+  ...(objective==='generated-app'?{weights:{sent:1,load:0,coveredEmpty:0,height:0}}:{})}),await profile('legacy')];
 const files=['scripts/kiwi-arena-core.js','scripts/kiwi-profiles.js','scripts/kiwi-ft7.js',
   'src/analysis/visible-state.js','src/analysis/kiwi.js','src/analysis/placement-transport.js','src/analysis/placement-authority.js',
   ...(await readdir('src')).filter(f=>f.endsWith('.js')).map(f=>'src/'+f),

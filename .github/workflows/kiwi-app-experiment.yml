@@ -1,0 +1,63 @@
+name: Kiwi last-chance APP FT7
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-app-experiment.yml]
+permissions:
+  contents: read
+concurrency:
+  group: kiwi-app-experiment-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  arena:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Correctness gate
+        run: |
+          npm ci
+          node scripts/verify-kiwi.js
+          npm test
+      - name: Generated APP candidate vs Legacy, KO-only FT7
+        timeout-minutes: 330
+        shell: bash
+        run: |
+          mkdir -p ft7-results
+          set -o pipefail
+          node scripts/kiwi-ft7.js ft7-results 2026092403 1000000 off generated-app 2>&1 | tee ft7-results/runner.log
+      - name: Preserve complete or partial evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kiwi-app-${{ github.run_id }}
+          path: ft7-results/
+          if-no-files-found: warn
+          retention-days: 30
+  notify:
+    if: always()
+    needs: arena
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: kiwi-app-${{ github.run_id }}
+          path: ft7-results
+      - name: Notify completion or failure
+        env:
+          ARENA_JOB_STATUS: ${{ needs.arena.result }}
+          NTFY_TOPIC: just_a_kiwi_for_tetrp
+        run: node scripts/kiwi-ft7-notify.js ft7-results/result.json

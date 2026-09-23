@@ -12,6 +12,7 @@ export function describeFt7(report,jobStatus){
   return {title:complete?'Kiwi FT7 完成':'Kiwi FT7 未完成／需要檢查',
     message:[report?.score?`Native ${score[0]} : ${score[1]} Legacy`:'Score unavailable (run did not produce a readable result)',
       `Geometry budget: ${report?.profiles?.[0]?.config?.geometryBudget??'unknown'}; seed: ${report?.seed??'unknown'}`,
+      `Objective: ${report?.profiles?.[0]?.config?.objective??'sent-safety'}`,
       `Frontier extension: ${report?.profiles?.[0]?.config?.frontierExtension===true?'on':'off'}; applied requests: ${report?.profiles?.[0]?.diagnostics?.applied??0}; changed top-1: ${report?.profiles?.[0]?.diagnostics?.changedTop1??0}`,
       `Model: ${report?.executionModel??'not started'}; KO-only; 24 frames/placement`,
       `Scored rounds: ${games.filter(g=>g.scored).length}; unscored: ${games.filter(g=>!g.scored).length}; technical: ${technical.length}`,

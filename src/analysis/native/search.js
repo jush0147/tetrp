@@ -8,6 +8,9 @@ export const DEFAULTS=Object.freeze({nodeBudget:200000,beamWidth:32,ttCapacity:3
   geometryBudget:100000,rootStateLimit:60000,weights:Object.freeze({sent:1,load:1,coveredEmpty:1,height:1})});
 function configuration(options){
   const c={...DEFAULTS,...options,weights:{...DEFAULTS.weights,...options.weights}};
+  c.objective=options.objective??'sent-safety';
+  if(!['sent-safety','generated-app'].includes(c.objective))throw new Error('NATIVE_OBJECTIVE_INVALID');
+  if(c.objective==='generated-app')c.weights={sent:1,load:0,coveredEmpty:0,height:0};
   for(const k of ['nodeBudget','beamWidth','ttCapacity','framesPerPiece','geometryBudget','rootStateLimit'])
     if(!Number.isSafeInteger(c[k])||c[k]<1)throw new Error('NATIVE_CONFIG_INVALID: '+k);
   if(c.nodeBudget>2000000||c.beamWidth>1024||c.ttCapacity>32768||c.rootStateLimit>60000||c.geometryBudget>10000000||c.framesPerPiece>600)
@@ -50,8 +53,12 @@ export function analyze(snapshot,options={},capture){
   function evaluate(parent,source,move,rootId,depth){
     if(nodes+hypotheses.length>config.nodeBudget){completion='node_budget';stopped=true;return null;}
     const outcomes=hypotheses.map(scenario=>{nodes++;return place(source,move.piece,rules,{framesPerPiece:config.framesPerPiece,rootFrame:root.frame,scenario});});
-    const reward=parent.reward+outcomes.reduce((n,o)=>n+o.sent*config.weights.sent,0)/outcomes.length;
-    const values=outcomes.map(o=>parent.reward+o.sent*config.weights.sent+leaf(o.state,config.weights).value);
+    const app=config.objective==='generated-app';
+    const gain=o=>app?o.state.attack.totals.generated-source.attack.totals.generated:o.sent*config.weights.sent;
+    const reward=parent.reward+outcomes.reduce((n,o)=>n+gain(o),0)/outcomes.length;
+    // APP uses generated attack (including cancellation), per speculative lock.
+    // Hold itself is not a placement. Retain the existing terminal death penalty.
+    const values=outcomes.map(o=>(parent.reward+gain(o))/(app?depth:1)+leaf(o.state,config.weights).value);
     const terminal=outcomes.some(o=>o.state.dead||o.state.frontier)||depth>=horizon;
     const score=values.reduce((a,b)=>a+b,0)/values.length;
     const state=outcomes[0].state;

@@ -7,6 +7,7 @@ const average=xs=>xs.reduce((a,b)=>a+b,0)/xs.length;
 // Opt-in experiment: rerank the original best prefix per root, without changing
 // the base beam, traversal, budgets or weights. No partially extended ranking.
 export function analyzeFrontier(snapshot,options={},limits=FRONTIER_LIMITS){
+  if(options.objective&&options.objective!=='sent-safety')throw new Error('NATIVE_FRONTIER_OBJECTIVE_UNSUPPORTED');
   for(const k of ['geometryBudget','nodeBudget'])if(!Number.isSafeInteger(limits[k])||limits[k]<1||limits[k]>1000000)
     throw new Error('NATIVE_FRONTIER_LIMIT_INVALID');
   let published;
