@@ -9,8 +9,10 @@ const seed=Number(process.argv[3]??20260923);
 if(!Number.isSafeInteger(seed)||seed<1||seed>1e12)throw new Error('Invalid FT7 seed');
 const geometryBudget=Number(process.argv[4]??100000);
 if(!Number.isSafeInteger(geometryBudget)||geometryBudget<1||geometryBudget>10000000)throw new Error('Invalid geometry budget');
+const frontierMode=process.argv[5]??'off';
+if(!['off','on'].includes(frontierMode))throw new Error('Invalid frontier mode');
 await mkdir(directory,{recursive:true});
-const profiles=[await profile('native',{geometryBudget}),await profile('legacy')];
+const profiles=[await profile('native',{geometryBudget,frontierExtension:frontierMode==='on'}),await profile('legacy')];
 const files=['scripts/kiwi-arena-core.js','scripts/kiwi-profiles.js','scripts/kiwi-ft7.js',
   'src/analysis/visible-state.js','src/analysis/kiwi.js','src/analysis/placement-transport.js','src/analysis/placement-authority.js',
   ...(await readdir('src')).filter(f=>f.endsWith('.js')).map(f=>'src/'+f),

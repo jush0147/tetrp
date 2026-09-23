@@ -23,7 +23,7 @@ function selectBeam(nodes,width){
   return selected;
 }
 /** No Engine, RNG, previous request, or replay object is accepted by this core. */
-export function analyze(snapshot,options={}){
+export function analyze(snapshot,options={},capture){
   const started=performance.now(),config=configuration(options),root=fromSnapshot(snapshot),rules=snapshot.rules;
   const horizon=options.horizon??(root.hold.piece===null?5:6);
   if(!Number.isInteger(horizon)||horizon<1||horizon>6)throw new Error('NATIVE_HORIZON_INVALID');
@@ -60,6 +60,7 @@ export function analyze(snapshot,options={}){
     // represent several distinct outcomes, so they cannot use the first state.
     if(!terminal&&tt.dominated(key,reward))return null;
     return {state,reward,score,root:rootId,terminal,depth,order:order++,worst:Math.min(...values),
+      ...(capture?{outcomes}:{}),
       features:outcomes.map(o=>leaf(o.state,config.weights).features)};
   }
   const parent={reward:0};let layer=[];
@@ -72,6 +73,7 @@ export function analyze(snapshot,options={}){
   }
   if(!layer.length)throw new Error('NATIVE_NO_ROOT_ACTION');
   const summarize=ns=>{
+    capture?.(ns,rootActions);
     const best=new Map();for(const n of ns)if(!best.has(n.root)||n.score>best.get(n.root).score)best.set(n.root,n);
     return [...best.values()].sort((a,b)=>b.score-a.score||a.root-b.root).map(n=>({...rootActions[n.root],score:n.score,worstScore:n.worst,
       features:n.features,depth:n.depth,frontier:n.terminal}));

@@ -17,7 +17,7 @@ async function load(){
   };
   replace('function selectBeam(nodes,width){','function selectBeam(nodes,width,observer){');
   replace('  return selected;','  observer?.beam({nodes,selected,width});\n  return selected;');
-  replace('export function analyze(snapshot,options={}){','export function analyze(snapshot,options={},observer){');
+  replace('export function analyze(snapshot,options={},capture){','export function analyze(snapshot,options={},capture,observer){');
   source=source.replaceAll('selectBeam(layer,config.beamWidth)','selectBeam(layer,config.beamWidth,observer)');
   source=source.replaceAll('selectBeam(next,config.beamWidth)','selectBeam(next,config.beamWidth,observer)');
   replace("    if(!r.complete){completion='geometry_budget';stopped=true;}",
@@ -41,7 +41,7 @@ const status=(s,rules)=>({combo:s.attack.combo,btb:s.attack.btb,b2bCount:Math.ma
 export async function auditSearch(snapshot,options={}){
   const {module,hash}=await load(),nodes=[],beams=[],summaries=[],geometry=[],ttPrunes={},discarded=[];
   const rules=snapshot.rules;
-  const report=module.analyze(snapshot,options,{
+  const report=module.analyze(snapshot,options,undefined,{
     node:({node,parent,source,move,outcomes})=>{
       const immediate=outcomes.map(o=>({generated:o.state.attack.totals.generated-source.attack.totals.generated,
         cancelled:o.state.attack.totals.cancelled-source.attack.totals.cancelled,sent:o.sent,inserted:o.inserted,

@@ -1,0 +1,51 @@
+[
+  {
+    "frame": 1032,
+    "totalMs": 2096.4392,
+    "frontier": {
+      "enabled": true,
+      "applied": true,
+      "reason": "complete",
+      "eligibleRoots": 38,
+      "extendedRoots": 38,
+      "geometryStates": 286680,
+      "nodes": 18220,
+      "cacheHits": 0,
+      "changedTop1": true,
+      "extraMs": 2036.8593999999998,
+      "limits": {
+        "geometryBudget": 500000,
+        "nodeBudget": 50000
+      }
+    },
+    "top": {
+      "kind": "hold",
+      "mode": "occupied",
+      "samePiece": false,
+      "requiresReanalysis": true
+    }
+  },
+  {
+    "frame": 1056,
+    "totalMs": 2226.466000000001,
+    "frontier": {
+      "enabled": true,
+      "applied": true,
+      "reason": "complete",
+      "eligibleRoots": 36,
+      "extendedRoots": 36,
+      "geometryStates": 292250,
+      "nodes": 9630,
+      "cacheHits": 10,
+      "changedTop1": false,
+      "extraMs": 2207.9539000000004,
+      "limits": {
+        "geometryBudget": 500000,
+        "nodeBudget": 50000
+      }
+    },
+    "top": {
+      "kind": "place"
+    }
+  }
+]

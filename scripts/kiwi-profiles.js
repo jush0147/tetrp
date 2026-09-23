@@ -2,6 +2,7 @@ import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
 import {analyze,recommendation,VERSION,DEFAULTS} from '../src/analysis/native/search.js';
+import {analyzeFrontier,FRONTIER_LIMITS} from '../src/analysis/native/frontier.js';
 import {prepareKiwi,normalizeTopRecommendation,NODE_BUDGET} from '../src/analysis/kiwi.js';
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
 let ready;
@@ -12,9 +13,20 @@ export async function profile(name,options={}){
       if(!Object.hasOwn(DEFAULTS.weights,omitted))throw new Error('Unknown ablation '+name);
       weights[omitted]=0;
     }
-    const config={...options,weights};
-    return {name,version:VERSION,config:{...DEFAULTS,...config,weights:{...DEFAULTS.weights,...weights}},
-      decide:s=>{const r=analyze(s,config);return {candidates:r.candidates.map((_,i)=>recommendation(r,i))};}};
+    const {frontierExtension=false,...baseOptions}=options;
+    if(typeof frontierExtension!=='boolean')throw new Error('Invalid frontier extension option');
+    const config={...baseOptions,weights};
+    const diagnostics={requests:0,applied:0,changedTop1:0,extraMs:0,geometryStates:0,nodes:0,reasons:{},baseCompletions:{},depths:{}};
+    return {name,version:VERSION,config:{...DEFAULTS,...config,weights:{...DEFAULTS.weights,...weights},
+      frontierExtension,frontierLimits:FRONTIER_LIMITS},diagnostics,
+      decide:s=>{
+        const r=frontierExtension?analyzeFrontier(s,config):analyze(s,config),f=r.frontierExtension;
+        diagnostics.requests++;diagnostics.applied+=f?.applied?1:0;diagnostics.changedTop1+=f?.changedTop1?1:0;
+        for(const k of ['extraMs','geometryStates','nodes'])diagnostics[k]+=f?.[k]??0;
+        const reason=f?.reason??'disabled';diagnostics.reasons[reason]=(diagnostics.reasons[reason]??0)+1;
+        diagnostics.baseCompletions[r.completion]=(diagnostics.baseCompletions[r.completion]??0)+1;
+        diagnostics.depths[r.completedDepth]=(diagnostics.depths[r.completedDepth]??0)+1;
+        return {candidates:r.candidates.map((_,i)=>recommendation(r,i))};}};
   }
   if(name==='legacy'||name==='champion'){
     ready??=init({module_or_path:await readFile(new URL('../vendor/kiwi-v1/pkg/cold_clear_2_bg.wasm',import.meta.url))});await ready;
