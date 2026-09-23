@@ -11,6 +11,7 @@ export function describeFt7(report,jobStatus){
     Math.max(...score)===7&&technical.length===0&&games.length>0&&games.every(g=>g.parity?.length===2)&&mismatches===0;
   return {title:complete?'Kiwi FT7 完成':'Kiwi FT7 未完成／需要檢查',
     message:[report?.score?`Native ${score[0]} : ${score[1]} Legacy`:'Score unavailable (run did not produce a readable result)',
+      `Geometry budget: ${report?.profiles?.[0]?.config?.geometryBudget??'unknown'}; seed: ${report?.seed??'unknown'}`,
       `Model: ${report?.executionModel??'not started'}; KO-only; 24 frames/placement`,
       `Scored rounds: ${games.filter(g=>g.scored).length}; unscored: ${games.filter(g=>!g.scored).length}; technical: ${technical.length}`,
       `Audited placements: ${placements}; Holds: ${holds}; mismatches: ${mismatches}`,
