@@ -37,13 +37,24 @@ function publicPlan(snapshot,action,cadence){
  * Virtual frames advance together, independent of policy wall-clock speed.
  * Hold is a submitted action and reveals a new snapshot before another request.
  */
-export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece=24,maxFrames=18000,watchdogFrames=360000,onProgress=()=>{},record=null,executionModel=PLACEMENT_MODEL}={}){
+export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece=24,maxFrames=18000,watchdogFrames=360000,onProgress=()=>{},record=null,executionModel=PLACEMENT_MODEL,startCheckpoint=null,onBoundary=null}={}){
   if(bots.length!==2||!Number.isInteger(framesPerPiece)||framesPerPiece<2||maxFrames!==null&&(!Number.isInteger(maxFrames)||maxFrames<1)||
     !Number.isInteger(watchdogFrames)||watchdogFrames<1)
     throw new Error('Invalid arena configuration');
   if(![PLACEMENT_MODEL,'physical-input-v1'].includes(executionModel))throw new Error('Unknown arena execution model');
   const Authority=executionModel===PLACEMENT_MODEL?PlacementArenaEngine:Engine;
   const engines=seeds.map((seed,i)=>{const e=new Authority({seed});e.state.holes=createHoles(holeSeeds[i]);return e;});
+  if(startCheckpoint){
+    if(executionModel!==PLACEMENT_MODEL||startCheckpoint.states?.length!==2)throw new Error('Invalid placement checkpoint');
+    for(let i=0;i<2;i++){
+      const s=Engine.restore(JSON.stringify(startCheckpoint.states[i])).state;
+      if(s.phase!=='ready'||s.subframe!==0||!s.playing||s.frame%framesPerPiece!==0||s.attack.outbox.length)
+        throw new Error('Checkpoint must be a live post-delivery decision boundary');
+      assertPlacementContract(s);engines[i].state=s;
+    }
+    if(engines[0].state.frame!==engines[1].state.frame)throw new Error('Checkpoint clocks differ');
+  }
+  const startFrame=engines[0].state.frame,initialPieces=engines.map(e=>e.state.stats.pieces);
   if(record)engines.forEach((e,seat)=>record({type:'initial',seat,executionModel,seed:seeds[seat],holeSeed:holeSeeds[seat],state:structuredClone(e.state)}));
   const failures=[null,null],latencies=[[],[]],decisions=[0,0],holds=[0,0],sent=[0,0];
   const transportStats=[0,1].map(()=>({fallbackRequests:0,rejectedCandidates:0,maxSelectedRank:0}));
@@ -57,14 +68,15 @@ export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece
       actual:{visible:visibleState(engines[seat].state),reason:engines[seat].state.reason,stats:structuredClone(engines[seat].state.stats)}};
     record?.({type:'technical-failure',seat,dump:structuredClone(failures[seat])});
   }
-  let frame=0,deliveries=[[],[]],plans=[null,null];
-  while(frame<(maxFrames??watchdogFrames)&&engines.every(e=>e.state.playing)&&failures.every(f=>f===null)){
+  let frame=startFrame,deliveries=[[],[]],plans=[null,null];
+  while(frame<startFrame+(maxFrames??watchdogFrames)&&engines.every(e=>e.state.playing)&&failures.every(f=>f===null)){
     for(let i=0;i<2;i++)for(const event of deliveries[i]){
       const cid=engines[i].receive({...event,from:'P2',to:'P1'});if(cid!==null)engines[i].confirm(cid);
       record?.({type:'receive',seat:i,frame,event:structuredClone(event),cid});
     }
     deliveries=[[],[]];
     if(frame%framesPerPiece===0){
+      onBoundary?.({frame,states:engines.map(e=>structuredClone(e.state))});
       // Capture both before either policy runs. No opponent action is observed.
       const snapshots=engines.map(e=>visibleState(e.state));
       for(let i=0;i<2;i++){
@@ -148,7 +160,8 @@ export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece
   return {winner:technical?null:winner,reason:failures.some(Boolean)?'policy-or-transport-failure':ko.some(Boolean)?'topout':maxFrames===null?'watchdog':'frame-cap',
     ko,deathReasons:engines.map(e=>e.state.reason),
     executionModel,parity,frames:frame,seeds,holeSeeds,framesPerPiece,maxFrames,watchdogFrames,failures,decisions,holds,sent,latencies,transportStats,
-    pieces:engines.map(e=>e.state.stats.pieces),totals:engines.map(e=>e.state.attack.totals)};
+    pieces:engines.map(e=>e.state.stats.pieces),totals:engines.map(e=>e.state.attack.totals),
+    ...(startCheckpoint?{startFrame,initialPieces}: {})};
 }
 
 /** KO-only series. Technical failures and simultaneous KO never award points. */
