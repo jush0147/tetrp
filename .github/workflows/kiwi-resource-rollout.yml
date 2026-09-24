@@ -1,0 +1,61 @@
+name: Kiwi resource rollout pilot
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-resource-rollout.yml]
+permissions:
+  contents: read
+concurrency:
+  group: kiwi-resource-rollout-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Correctness gate
+        run: |
+          npm ci
+          node scripts/verify-kiwi.js
+          npm test
+      - name: Fixed public-only offline protocol
+        timeout-minutes: 30
+        shell: bash
+        run: |
+          mkdir -p rollout-results
+          set -o pipefail
+          node scripts/kiwi-resource-rollout.js rollout-results 2>&1 | tee rollout-results/runner.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-resource-${{ github.run_id }}
+          path: rollout-results/
+          if-no-files-found: warn
+          retention-days: 30
+  notify:
+    if: always()
+    needs: experiment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: kiwi-resource-${{ github.run_id }}
+          path: rollout-results
+      - name: Notify completion or failure
+        env:
+          EXPERIMENT_STATUS: ${{ needs.experiment.result }}
+        run: node scripts/kiwi-resource-notify.js rollout-results/result.json
