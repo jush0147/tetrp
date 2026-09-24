@@ -10,6 +10,12 @@ import {syntheticTail,actionKey} from './kiwi-resource-rollout.js';
 import {createHoles} from '../src/random.js';
 import {visibleState} from '../src/analysis/visible-state.js';
 export const KO_PROTOCOL={scenarioSeeds:[51001,51002],cadence:24,watchdogFrames:360000,tail:'IID uniform robustness',continuation:'legacy-200k',maxFrames:null};
+export const KO_BATCHES=Object.freeze({pilot:Object.freeze([51001,51002]),
+  'validation-1':Object.freeze([730201,1849067]),'validation-2':Object.freeze([6901181,23009293])});
+export function batchProtocol(batch='pilot'){
+  assert.ok(Object.hasOwn(KO_BATCHES,batch),'Unknown frozen KO batch');
+  return {...KO_PROTOCOL,batch,scenarioSeeds:[...KO_BATCHES[batch]]};
+}
 export function branchCheckpoint(input,seed,mirrored=false){
   const c=structuredClone(input.checkpoint);
   for(let seat=0;seat<2;seat++){
@@ -43,8 +49,9 @@ export function normalized(record){
     ko:order.map(i=>g.ko[i]),deathReasons:order.map(i=>g.deathReasons[i]),
     pieces:order.map(i=>g.pieces[i]),totals:order.map(i=>g.totals[i]),parity:order.map(i=>g.parity[i])};
 }
-export function summarizeCase(input,records){
-  assert.equal(records.length,8);const pairs=[];let placements=0,holds=0;
+export function summarizeCase(input,records,scenarioSeeds=KO_PROTOCOL.scenarioSeeds){
+  assert.equal(new Set(scenarioSeeds).size,scenarioSeeds.length);
+  assert.equal(records.length,scenarioSeeds.length*4);const pairs=[];let placements=0,holds=0;
   for(const r of records){
     assert.equal(r.game.reason,'topout');assert.ok(r.game.failures.every(f=>!f));
     for(let i=0;i<2;i++){
@@ -52,7 +59,7 @@ export function summarizeCase(input,records){
       placements+=r.game.parity[i].placements;holds+=r.game.parity[i].holds;
     }
   }
-  for(const seed of KO_PROTOCOL.scenarioSeeds){
+  for(const seed of scenarioSeeds){
     const roots={};for(const root of ['A','B']){
       const normal=records.filter(r=>r.seed===seed&&r.root===root&&!r.mirrored),mirror=records.filter(r=>r.seed===seed&&r.root===root&&r.mirrored);
       assert.equal(normal.length,1);assert.equal(mirror.length,1);
@@ -65,20 +72,21 @@ export function summarizeCase(input,records){
   }
   return {complete:true,id:input.id,sameRoot:actionKey(input.roots.A)===actionKey(input.roots.B),
     seatParity:true,technicalFailures:0,silentFallback:0,parity:{placements,holds,mismatches:0},
-    independentScenarios:2,mirroredMatches:4,pairs,
+    independentScenarios:scenarioSeeds.length,mirroredMatches:scenarioSeeds.length*2,pairs,
     AOnlyWins:pairs.filter(p=>p.comparison==='A-only-win').length,BOnlyWins:pairs.filter(p=>p.comparison==='B-only-win').length,
     note:'Conditional on Legacy continuation and synthetic scenarios; not an FT7 or strength promotion.'};
 }
 if(process.argv[1]&&pathToFileURL(resolve(process.argv[1])).href===import.meta.url){
   const id=process.argv[2],directory=process.argv[3]??`.cache/root-ko-${id}`;
+  const protocol=batchProtocol(process.argv[4]??'pilot');
   const inputs=JSON.parse(await readFile('docs/audits/kiwi-root-ko/inputs.json','utf8')),input=inputs.find(x=>x.id===id);assert.ok(input,'Unknown frozen case');
   await mkdir(directory,{recursive:true});const legacy=await profile('legacy'),records=[];
   const sourceFiles=['scripts/kiwi-root-ko.js','scripts/kiwi-arena-core.js','scripts/kiwi-resource-rollout.js','scripts/kiwi-profiles.js',
     'src/engine.js','src/attack.js','src/random.js','src/analysis/placement-authority.js','src/analysis/visible-state.js','docs/audits/kiwi-root-ko/inputs.json'];
   const hashes=Object.fromEntries(await Promise.all(sourceFiles.map(async file=>[file,createHash('sha256').update(await readFile(file)).digest('hex')])));
-  await writeFile(`${directory}/manifest.json`,JSON.stringify({id,git:process.env.GITHUB_SHA??null,protocol:KO_PROTOCOL,hashes,legacy:{version:legacy.version,config:legacy.config},started:new Date().toISOString()},null,2));
+  await writeFile(`${directory}/manifest.json`,JSON.stringify({id,git:process.env.GITHUB_SHA??null,protocol,hashes,legacy:{version:legacy.version,config:legacy.config},started:new Date().toISOString()},null,2));
   try{
-    for(const seed of KO_PROTOCOL.scenarioSeeds)for(const mirrored of [false,true])for(const root of ['A','B']){
+    for(const seed of protocol.scenarioSeeds)for(const mirrored of [false,true])for(const root of ['A','B']){
       const name=`${seed}-${mirrored?'mirror':'normal'}-${root}`;
       console.log(JSON.stringify({type:'match-start',id,seed,mirrored,root}));
       const result=await playRoot(input,{seed,mirrored,root,decide:legacy.decide,record:event=>{
@@ -89,6 +97,6 @@ if(process.argv[1]&&pathToFileURL(resolve(process.argv[1])).href===import.meta.u
       assert.equal(result.game.reason,'topout','Technical stop, no score');assert.ok(result.game.failures.every(f=>!f));
       console.log(JSON.stringify({type:'match-end',id,seed,mirrored,root,outcome:normalized(result)}));
     }
-    const summary=summarizeCase(input,records);await writeFile(`${directory}/result.json`,JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
-  }catch(error){await writeFile(`${directory}/result.json`,JSON.stringify({complete:false,id,error:error.stack,completedMatches:records.length},null,2));throw error;}
+    const summary={...summarizeCase(input,records,protocol.scenarioSeeds),batch:protocol.batch,scenarioSeeds:protocol.scenarioSeeds};await writeFile(`${directory}/result.json`,JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
+  }catch(error){await writeFile(`${directory}/result.json`,JSON.stringify({complete:false,id,batch:protocol.batch,scenarioSeeds:protocol.scenarioSeeds,error:error.stack,completedMatches:records.length},null,2));throw error;}
 }

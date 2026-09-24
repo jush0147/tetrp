@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {match} from '../scripts/kiwi-arena-core.js';
 import {profile} from '../scripts/kiwi-profiles.js';
-import {branchCheckpoint,playRoot,normalized,summarizeCase} from '../scripts/kiwi-root-ko.js';
+import {branchCheckpoint,playRoot,normalized,summarizeCase,batchProtocol,KO_BATCHES} from '../scripts/kiwi-root-ko.js';
+import {experimentStatus} from '../scripts/kiwi-root-ko-status.js';
 import {visibleState} from '../src/analysis/visible-state.js';
 const inputs=JSON.parse(readFileSync(new URL('../docs/audits/kiwi-root-ko/inputs.json',import.meta.url)));
 test('boundary resume preserves uninterrupted gameplay with existing authority',async()=>{
@@ -49,6 +50,38 @@ test('paired summary counts independent futures once, excludes double KO, and re
   const summary=summarizeCase(inputs[0],records);
   assert.equal(summary.independentScenarios,2);assert.equal(summary.AOnlyWins,1);assert.equal(summary.BOnlyWins,0);
   assert.equal(summary.pairs[1].scored,false);
+  const seeds=batchProtocol('validation-1').scenarioSeeds;
+  const replacement=structuredClone(records);
+  for(const r of replacement)r.seed=seeds[r.seed===51001?0:1];
+  const replicated=summarizeCase(inputs[0],replacement,seeds);
+  assert.equal(replicated.AOnlyWins,1);assert.equal(replicated.independentScenarios,2);
+  assert.throws(()=>summarizeCase(inputs[0],replacement.slice(1),seeds));
+  replacement[0]=structuredClone(replacement[1]);
+  assert.throws(()=>summarizeCase(inputs[0],replacement,seeds));
   records[2].game.frames++;
   assert.throws(()=>summarizeCase(inputs[0],records),/mirror gameplay mismatch/);
+});
+
+test('replication seeds are frozen, disjoint and cannot change the pilot protocol',()=>{
+  const seeds=Object.values(KO_BATCHES).flat();assert.equal(new Set(seeds).size,6);
+  const changed=batchProtocol('validation-1');changed.scenarioSeeds[0]=1;
+  assert.equal(batchProtocol('validation-1').scenarioSeeds[0],730201);
+  assert.deepEqual(batchProtocol().scenarioSeeds,[51001,51002]);
+  assert.throws(()=>batchProtocol('unregistered'));
+});
+
+test('notification requires all six distinct shards and clean correctness',()=>{
+  const results=inputs.flatMap(({id})=>['validation-1','validation-2'].map(batch=>({
+    id,batch,complete:true,seatParity:true,technicalFailures:0,silentFallback:0,parity:{mismatches:0},
+    independentScenarios:2,AOnlyWins:1,BOnlyWins:0,
+    pairs:KO_BATCHES[batch].map((seed,i)=>({seed,comparison:i?'concordant':'A-only-win'}))
+  })));
+  assert.equal(experimentStatus(results,'success','replication').ok,true);
+  assert.equal(experimentStatus(results,'failure','replication').ok,false);
+  assert.equal(experimentStatus(results.slice(1),'success','replication').ok,false);
+  for(const mutate of [r=>{r[0]=r[1];},r=>{r[0].silentFallback=1;},r=>{r[0].parity.mismatches=1;},
+    r=>{r[0].pairs[0].seed=51001;},r=>{r[0].AOnlyWins=2;}]){
+    const bad=structuredClone(results);mutate(bad);
+    assert.equal(experimentStatus(bad,'success','replication').ok,false);
+  }
 });

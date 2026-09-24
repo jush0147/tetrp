@@ -1,12 +1,15 @@
 import {readFile,readdir,appendFile} from 'node:fs/promises';
+import {experimentStatus} from './kiwi-root-ko-status.js';
 const dir=process.argv[2]??'artifacts',results=[];
 try{for(const file of await readdir(dir,{recursive:true}))if(file.replaceAll('\\','/').endsWith('/result.json')||file==='result.json'){
   results.push(JSON.parse(await readFile(`${dir}/${file}`,'utf8')));
 }}catch(error){console.log('Artifacts incomplete: '+error.message);}
-const ok=process.env.EXPERIMENT_STATUS==='success'&&results.length===3&&results.every(r=>r.complete&&r.seatParity&&r.technicalFailures===0);
+const mode=process.argv[3]??'pilot';
+const {ok,lines}=experimentStatus(results,process.env.EXPERIMENT_STATUS,mode);
 const url=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-const message=[ok?'Paired root KO pilot complete.':'Paired root KO pilot incomplete / technical issue.',
-  ...results.map(r=>r.complete?`${r.id}: A-only wins ${r.AOnlyWins}; B-only wins ${r.BOnlyWins}; ${r.independentScenarios} independent scenarios; seat parity ${r.seatParity}.`:`${r.id}: incomplete; inspect artifacts.`),
+const message=[`Paired root KO ${mode}: ${ok?'complete':'incomplete / technical issue'}.`,
+  ...lines,
+  'Mirrors are correctness duplicates. Shared seeds and related states must not be pooled as independent samples.',
   'A=Native root, B=Legacy root; both continue with Legacy. Pilot only, not an FT7 or strength proof.',url].join('\n');
 console.log(message);if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,message+'\n');
 let last;for(let i=0;i<3;i++){

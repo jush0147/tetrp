@@ -1,0 +1,70 @@
+name: Kiwi paired root KO replication
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-root-ko-replication.yml]
+permissions:
+  contents: read
+concurrency:
+  group: kiwi-root-ko-replication-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  experiment:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        case: [g1-f48, g1-f120, g1-f192]
+        batch: [validation-1, validation-2]
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Correctness gate
+        run: |
+          npm ci
+          node scripts/verify-kiwi.js
+          npm test
+      - name: Paired roots, Legacy continuation, KO only
+        timeout-minutes: 270
+        env:
+          CASE_ID: ${{ matrix.case }}
+          BATCH_ID: ${{ matrix.batch }}
+        shell: bash
+        run: |
+          mkdir -p ko-results
+          set -o pipefail
+          node scripts/kiwi-root-ko.js "$CASE_ID" ko-results "$BATCH_ID" 2>&1 | tee ko-results/runner.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-root-ko-replication-${{ matrix.case }}-${{ matrix.batch }}-${{ github.run_id }}
+          path: ko-results/
+          if-no-files-found: warn
+          retention-days: 30
+  notify:
+    if: always()
+    needs: experiment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: kiwi-root-ko-replication-*-${{ github.run_id }}
+          path: artifacts
+      - name: Notify completion or failure
+        env:
+          EXPERIMENT_STATUS: ${{ needs.experiment.result }}
+        run: node scripts/kiwi-root-ko-notify.js artifacts replication
