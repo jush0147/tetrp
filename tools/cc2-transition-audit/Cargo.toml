@@ -1,0 +1,10 @@
+[package]
+name = "cc2-transition-audit"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+cold-clear-2 = { path = "../../.cache/cc2-transition-source" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

@@ -1,0 +1,66 @@
+name: CC2 Tetrp transition diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-transition-audit.yml]
+permissions:
+  contents: read
+concurrency:
+  group: cc2-transition-audit-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check out pinned CC2 source
+        uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-transition-source
+      - name: Prepare authority fixtures and read-only Rust observers
+        run: |
+          node --test test/kiwi-cc2-transition-audit.test.js
+          node scripts/kiwi-cc2-transition-audit.js prepare .cache/cc2-transition-results
+          node scripts/kiwi-cc2-audit-prepare.js
+      - name: Compile actual CC2 transition kernel
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          cp .cache/cc2-transition-source/Cargo.lock tools/cc2-transition-audit/Cargo.lock
+          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml
+          rustc +1.90.0 --version > .cache/cc2-transition-results/rust-version.txt
+          cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-transition-results/Cargo.lock
+      - name: Run transition diagnostics (known mismatches are evidence, not a parity pass)
+        run: node scripts/kiwi-cc2-transition-audit.js compare .cache/cc2-transition-results tools/cc2-transition-audit/target/release/cc2-transition-audit
+      - name: Preserve complete or partial evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/cc2-transition-results/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30
+  notify:
+    if: always()
+    needs: diagnostic
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/cc2-transition-results
+      - name: Notify completion or failure
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-transition-results
