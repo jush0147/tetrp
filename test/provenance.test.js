@@ -64,6 +64,7 @@ test('#5 public tree excludes research directories and binary assets',()=>{
     'tools/cc2-transition-audit/.gitignore','tools/cc2-transition-audit/Cargo.toml',
     'tools/cc2-transition-audit/src/main.rs','tools/cc2-transition-audit/lock-timing.patch',
     'tools/cc2-transition-audit/lock-timing-tests.rs',
+    'tools/cc2-transition-audit/queue-scan.patch','tools/cc2-transition-audit/queue-scan-tests.rs',
   ]);
   for(const path of tracked) {
     assert.ok(kiwiFiles.has(path)||cc2DiagnosticSources.has(path)||/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||publicViewerAssets.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);

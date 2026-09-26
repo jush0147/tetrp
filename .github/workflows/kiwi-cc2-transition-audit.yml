@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [baseline, lock-timing]
+        variant: [lock-timing, queue-scan]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -40,8 +40,7 @@ jobs:
           cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml
           rustc +1.90.0 --version > .cache/cc2-transition-results/rust-version.txt
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-transition-results/Cargo.lock
-      - name: Forecast regression and two-placement timing tests
-        if: matrix.variant == 'lock-timing'
+      - name: Forecast regression and multi-placement correction tests
         run: |
           cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib forecast::
       - name: Run transition diagnostics (known mismatches are evidence, not a parity pass)
@@ -68,22 +67,22 @@ jobs:
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-baseline
-          path: .cache/cc2-clock-results/baseline
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-lock-timing
+          path: .cache/cc2-queue-results/lock-timing
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-lock-timing
-          path: .cache/cc2-clock-results/lock-timing
-      - name: Require exactly four corrected cases and no other changes
-        run: node scripts/kiwi-cc2-clock-gate.js
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-queue-scan
+          path: .cache/cc2-queue-results/queue-scan
+      - name: Require queue-only correction with timing preserved
+        run: node scripts/kiwi-cc2-queue-gate.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cc2-clock-gate-${{ github.run_id }}
-          path: .cache/cc2-clock-results/summary.json
+          name: cc2-queue-gate-${{ github.run_id }}
+          path: .cache/cc2-queue-results/summary.json
           include-hidden-files: true
           if-no-files-found: warn
       - name: Notify completion or failure
         if: always()
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-clock-results
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-queue-results

@@ -9,3 +9,7 @@ Actions同時編譯baseline與lock-timing兩個版本，使用相同65 fixtures�
 另外在真正Rust Forecast執行兩個test functions：arrival23/24/25跨兩次resolve、垃圾只入一次；clear blocking、inactive cancellation後不能復活pending。連同既有Forecast tests執行。
 
 完成或失敗由Actions ntfy通知；不監看長跑、不開FT7、不動evaluator。即使gate通過也不是完整模型parity，下一步仍是獨立queue-scan修正。
+
+結果：run 36253842718 已完成並通過全部事前gate，詳見 [驗收記錄](RESULT_36253842718.md)。保留此修正。
+
+已送交 [run 36253842718](https://github.com/jush0147/tetrp/actions/runs/36253842718)，commit `0d8d3ec`；前次 `36253780374` 因YAML末尾colon語法失敗，未執行。另以 `b2a08e4` 補上public-tree test對6個明確診斷source路徑的allowlist，該targeted test本機通過；不影響這次Rust候選。下一輪先讀此run artifacts與gate summary，不重複dispatch。

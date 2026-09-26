@@ -127,6 +127,10 @@ export async function prepare(directory){
     add(ts[0],{tag:`activation-${offset}-hole-${scenario}`,packets:[[2,offset]],scenario});
   add(ts[0],{tag:'inactive-head',packets:[[2,25],[3,0]],note:'conditional packet ordering, arena occurrence not established'});
   add(ts[0],{tag:'partial-storage-top',top:true,packets:[[1,0]]});
+  add(ts[0],{tag:'queue-partial-middle',packets:[[2,25],[10,0],[3,0]]});
+  add(ts[0],{tag:'queue-complete-middle',packets:[[2,25],[3,0],[4,0]]});
+  add(ts[0],{tag:'queue-all-future',packets:[[2,25],[3,30]]});
+  add(ts[5],{tag:'queue-cancel-order',packets:[[1,25],[4,0]]});
   const files=['src/engine.js','src/attack.js','src/board.js','src/rotation.js','src/physics.js',
     'src/analysis/placement-authority.js','src/analysis/visible-state.js',
     'scripts/kiwi-cc2-transition-audit.js','scripts/kiwi-cc2-audit-prepare.js','tools/cc2-transition-audit/src/main.rs'];

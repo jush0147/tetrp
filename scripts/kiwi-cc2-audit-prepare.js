@@ -8,19 +8,20 @@ export const PIN='2e243242b674d57491f99b445f75e35fc48a0e26';
 const root=resolve(process.argv[2]??'.cache/cc2-transition-source');
 const dest=resolve(process.argv[3]??'.cache/cc2-transition-results');
 const variant=process.argv[4]??'baseline';
-assert.ok(['baseline','lock-timing'].includes(variant));
+assert.ok(['baseline','lock-timing','queue-scan'].includes(variant));
 assert.equal(execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim(),PIN);
 assert.equal(execFileSync('git',['-C',root,'status','--porcelain'],{encoding:'utf8'}).trim(),'','requires pristine disposable checkout');
 await mkdir(dest,{recursive:true});
 const hash=s=>createHash('sha256').update(s).digest('hex');
-let correction=null;
-if(variant==='lock-timing'){
-  const file=resolve('tools/cc2-transition-audit/lock-timing.patch');
+const correction=[];
+const corrections=variant==='baseline'?[]:variant==='lock-timing'?['lock-timing']:['lock-timing','queue-scan'];
+for(const name of corrections){
+  const file=resolve(`tools/cc2-transition-audit/${name}.patch`);
   execFileSync('git',['-C',root,'apply','--check',file]);
   execFileSync('git',['-C',root,'apply',file]);
   const patchText=await readFile(file,'utf8');
-  correction={file:'tools/cc2-transition-audit/lock-timing.patch',sha256:hash(patchText)};
-  await writeFile(`${dest}/correction.patch`,patchText);
+  correction.push({file:`tools/cc2-transition-audit/${name}.patch`,sha256:hash(patchText)});
+  await writeFile(`${dest}/${name}.patch`,patchText);
 }
 const changes=[];
 async function patch(file,fn){
@@ -42,11 +43,11 @@ await patch('src/forecast.rs',s=>{
     }
 }\n`;
 });
-if(variant==='lock-timing'){
-  const tests=await readFile('tools/cc2-transition-audit/lock-timing-tests.rs','utf8');
+for(const name of corrections){
+  const tests=await readFile(`tools/cc2-transition-audit/${name}-tests.rs`,'utf8');
   const file=`${root}/src/forecast.rs`;
   await writeFile(file,(await readFile(file,'utf8'))+'\n'+tests);
-  await writeFile(`${dest}/correction-tests.rs`,tests);
+  await writeFile(`${dest}/${name}-tests.rs`,tests);
 }
 const observer=`use std::cell::RefCell;
 use serde_json::{json,Value};
@@ -60,5 +61,5 @@ await writeFile(`${root}/src/transition_audit_observer.rs`,observer);
 const diff=execFileSync('git',['-C',root,'diff','--','src/lib.rs','src/forecast.rs'],{encoding:'utf8'});
 await writeFile(`${dest}/instrumentation.patch`,diff);
 await writeFile(`${dest}/instrumentation.json`,JSON.stringify({pin:PIN,variant,correction,changes,observerSha256:hash(observer),
-  scope:variant==='baseline'?'readout and diagnostic event hooks only; rules unchanged':'lock-timing correction plus readout hooks and targeted tests; combined diff in instrumentation.patch'},null,2));
+  scope:variant==='baseline'?'readout and diagnostic event hooks only; rules unchanged':`${corrections.join(' + ')} corrections plus readout hooks and targeted tests; combined diff in instrumentation.patch`},null,2));
 console.log(`Pinned CC2 observer prepared: ${variant}.`);

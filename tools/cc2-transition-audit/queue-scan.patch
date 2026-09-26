@@ -1,0 +1,23 @@
+diff --git a/src/forecast.rs b/src/forecast.rs
+--- a/src/forecast.rs
++++ b/src/forecast.rs
+@@ -127,8 +127,16 @@ impl Forecast {
+         if cleared==0 {
+             for _ in 0..8 {
+-                if self.len==0 || self.packets[0].ready_at>lock_elapsed {break;}
+-                let hole=self.packets[0].hole;
+-                self.consume(1);
++                let Some(index)=self.packets[..self.len].iter()
++                    .position(|p|p.ready_at<=lock_elapsed) else {break;};
++                let hole=self.packets[index].hole;
++                // Cancellation remains FIFO via consume(); tank debits the
++                // ready packet selected here, not an inactive packet before it.
++                self.packets[index].lines-=1;
++                if self.packets[index].lines==0 {
++                    self.packets.copy_within(index+1..self.len,index);
++                    self.len-=1;
++                    self.packets[self.len]=Packet::default();
++                }
+                 // Pinned Tetrp pushLine rejects only when the storage top row is FULL.
+                 // A partially occupied top row is shifted out by the authority; using
+                 // any() here made the forecast spuriously garbagesmash early.
