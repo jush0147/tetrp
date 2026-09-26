@@ -57,7 +57,15 @@ test('#5 public tree excludes research directories and binary assets',()=>{
   const kiwiLock=JSON.parse(readFileSync(new URL('../vendor/kiwi-v1/artifact-lock.json',import.meta.url),'utf8'));
   const kiwiFiles=new Set(['artifact-lock.json',...Object.keys(kiwiLock.files)].map(p=>'vendor/kiwi-v1/'+p));
   const publicViewerAssets = new Set(['viewer/index.html','viewer/style.css','viewer/kiwi-button.jpg']);
+  // Reviewed diagnostic source only; compiled artifacts and fetched upstream
+  // sources remain in ignored directories and are never publication exceptions.
+  const cc2DiagnosticSources = new Set([
+    'docs/audits/cc2-alignment/source-witnesses.mjs',
+    'tools/cc2-transition-audit/.gitignore','tools/cc2-transition-audit/Cargo.toml',
+    'tools/cc2-transition-audit/src/main.rs','tools/cc2-transition-audit/lock-timing.patch',
+    'tools/cc2-transition-audit/lock-timing-tests.rs',
+  ]);
   for(const path of tracked) {
-    assert.ok(kiwiFiles.has(path)||/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||publicViewerAssets.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
+    assert.ok(kiwiFiles.has(path)||cc2DiagnosticSources.has(path)||/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||publicViewerAssets.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
   }
 });
