@@ -42,7 +42,8 @@ jobs:
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-transition-results/Cargo.lock
       - name: Forecast regression and two-placement timing tests
         if: matrix.variant == 'lock-timing'
-        run: cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib forecast::
+        run: |
+          cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib forecast::
       - name: Run transition diagnostics (known mismatches are evidence, not a parity pass)
         run: node scripts/kiwi-cc2-transition-audit.js compare .cache/cc2-transition-results tools/cc2-transition-audit/target/release/cc2-transition-audit
       - name: Preserve complete or partial evidence
