@@ -6,6 +6,8 @@
 
 後續已建立[真正 Rust transition 診斷入口](audits/cc2-alignment/TRANSITION_HARNESS.md)：本機65個authority fixtures、9項targeted checks通過，Rust編譯／執行交新增Actions workflow。查最新 `CC2 Tetrp transition diagnostic` run與artifact；不要將Actions success等同模型parity。此輪只查transaction，Hold／movegen／spawn仍未認證。
 
+Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RESULT_36246453477.md)：65例中58一致、7差異（4 timing／2 queue scan／1頂端截斷），沒有driver錯誤。接著先做單獨clock修正，預期消除4例，其他3例暫留；不改evaluator、不開FT7。
+
 ## 固定目標與目前決定
 
 目標仍是做出能在公平 TL S2 KO arena 贏過 Legacy、且能在 Tetrp 純前端運行的 Kiwi。停止的是目前 Native v0 beam 的局部救援與全層 lookahead 候選，不是放棄目標。

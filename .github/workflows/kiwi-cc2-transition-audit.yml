@@ -11,6 +11,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   diagnostic:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [baseline, lock-timing]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -28,7 +32,7 @@ jobs:
         run: |
           node --test test/kiwi-cc2-transition-audit.test.js
           node scripts/kiwi-cc2-transition-audit.js prepare .cache/cc2-transition-results
-          node scripts/kiwi-cc2-audit-prepare.js
+          node scripts/kiwi-cc2-audit-prepare.js .cache/cc2-transition-source .cache/cc2-transition-results ${{ matrix.variant }}
       - name: Compile actual CC2 transition kernel
         run: |
           rustup toolchain install 1.90.0 --profile minimal
@@ -36,18 +40,21 @@ jobs:
           cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml
           rustc +1.90.0 --version > .cache/cc2-transition-results/rust-version.txt
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-transition-results/Cargo.lock
+      - name: Forecast regression and two-placement timing tests
+        if: matrix.variant == 'lock-timing'
+        run: cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib forecast::
       - name: Run transition diagnostics (known mismatches are evidence, not a parity pass)
         run: node scripts/kiwi-cc2-transition-audit.js compare .cache/cc2-transition-results tools/cc2-transition-audit/target/release/cc2-transition-audit
       - name: Preserve complete or partial evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.variant }}
           path: .cache/cc2-transition-results/
           include-hidden-files: true
           if-no-files-found: warn
           retention-days: 30
-  notify:
+  verify-and-notify:
     if: always()
     needs: diagnostic
     runs-on: ubuntu-latest
@@ -60,7 +67,22 @@ jobs:
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .cache/cc2-transition-results
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-baseline
+          path: .cache/cc2-clock-results/baseline
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-lock-timing
+          path: .cache/cc2-clock-results/lock-timing
+      - name: Require exactly four corrected cases and no other changes
+        run: node scripts/kiwi-cc2-clock-gate.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-clock-gate-${{ github.run_id }}
+          path: .cache/cc2-clock-results/summary.json
+          include-hidden-files: true
+          if-no-files-found: warn
       - name: Notify completion or failure
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-transition-results
+        if: always()
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-clock-results

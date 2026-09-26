@@ -1,0 +1,22 @@
+diff --git a/src/forecast.rs b/src/forecast.rs
+--- a/src/forecast.rs
++++ b/src/forecast.rs
+@@ -115,6 +115,9 @@ impl Forecast {
+     pub fn resolve(&mut self,board:&mut Board,attacks:&[u32],cleared:u32) {
+         if !self.enabled || self.topped_out {return;}
++        // A placement locks before the next decision boundary. Zero-cadence
++        // snapshots keep their existing stationary clock.
++        let lock_elapsed=self.elapsed_frames.saturating_add(self.frames_per_piece.saturating_sub(1));
+         self.elapsed_frames=self.elapsed_frames.saturating_add(self.frames_per_piece);
+         for &attack in attacks {
+             let (cancelled, outgoing) = crate::ko_support::cancel_plan(attack, self.remaining(), self.pieces_placed, self.sent, self.opener_phase_pieces);
+             self.consume(cancelled);
+@@ -123,7 +126,7 @@ impl Forecast {
+         }
+         if cleared==0 {
+             for _ in 0..8 {
+-                if self.len==0 || self.packets[0].ready_at>self.elapsed_frames {break;}
++                if self.len==0 || self.packets[0].ready_at>lock_elapsed {break;}
+                 let hole=self.packets[0].hole;
+                 self.consume(1);
+                 // Pinned Tetrp pushLine rejects only when the storage top row is FULL.

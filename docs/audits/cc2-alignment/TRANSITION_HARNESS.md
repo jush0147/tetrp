@@ -31,6 +31,7 @@ Rust 只收到 bottom-up public board/current+NEXT5/Hold/counters/rules、已驗
 - `node scripts/kiwi-cc2-transition-audit.js prepare .cache/cc2-transition-results`：65/65 authority certificates及commit完成。
 - `node --test test/kiwi-cc2-transition-audit.test.js test/attack.test.js`：9/9 passed。Comparator測試故意改board、spin、packet順序、cancel、tank、B2B，確認會報差異；這不是Rust結果。
 - 本機沒有可用Rust／WSL環境，編譯與Rust執行交 `.github/workflows/kiwi-cc2-transition-audit.yml`；完成／失敗ntfy `just_a_kiwi_for_tetrp`。
+- 已推送 commit `1dec90dd9ed76802267b3107ffa23b627940f5e9`。[Actions run 36246453477](https://github.com/jush0147/tetrp/actions/runs/36246453477) 已完成並核對：58一致、7差異，分為4 clock、2 queue scan、1 storage clipping。詳見 [Rust結果與接續修正](RESULT_36246453477.md)，不要重複dispatch baseline。
 
 Artifact含 `manifest.json`、`instrumentation.patch/json`、`Cargo.lock`、Rust版本、`input.jsonl`、`cases.json`、`rust-output.jsonl`、`comparisons.json`、`mismatches.json`、`summary.json`。
 
