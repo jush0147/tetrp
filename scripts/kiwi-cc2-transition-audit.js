@@ -116,6 +116,7 @@ export async function prepare(directory){
     s.lastClear=s.attack.combo>0;s.garbageLockedUntil=0;
     if(v.base!==undefined)s.rules.b2bcharge_base=v.base;
     if(v.top)s.board.rows[0][0]='j';
+    for(const [y,x,material] of v.upperCells??[])s.board.rows[y][x]=material;
     const scenario=v.scenario??0;addPressure(e,v.packets??[],scenario);
     const snapshot=visibleState(s),id=`${t.name}/${v.tag}`;
     const input=inputFor(id,snapshot,t.placement,scenario),expected=authority(e,t.action);
@@ -131,6 +132,9 @@ export async function prepare(directory){
   add(ts[0],{tag:'queue-complete-middle',packets:[[2,25],[3,0],[4,0]]});
   add(ts[0],{tag:'queue-all-future',packets:[[2,25],[3,30]]});
   add(ts[5],{tag:'queue-cancel-order',packets:[[1,25],[4,0]]});
+  add(ts[0],{tag:'storage-nine-garbage',upperCells:Array.from({length:9},(_,x)=>[0,x,'gb']),packets:[[1,0]]});
+  add(ts[0],{tag:'storage-cap-eight',upperCells:[[0,0,'j'],[0,9,'j']],packets:[[10,0]]});
+  add(ts[0],{tag:'storage-second-row',upperCells:[[1,0,'gb']],packets:[[8,0]]});
   const files=['src/engine.js','src/attack.js','src/board.js','src/rotation.js','src/physics.js',
     'src/analysis/placement-authority.js','src/analysis/visible-state.js',
     'scripts/kiwi-cc2-transition-audit.js','scripts/kiwi-cc2-audit-prepare.js','tools/cc2-transition-audit/src/main.rs'];
@@ -181,7 +185,7 @@ async function compare(directory,binary){
 async function notify(directory){
   let s;try{s=JSON.parse(await readFile(`${directory}/summary.json`,'utf8'));}catch{}
   const url=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-  const message=s?`${s.checks} transitions; ${s.mismatches} model mismatches. Diagnostic only; not a parity pass or strength result.`:'Diagnostic failed before producing a complete result. Check logs and partial artifacts.';
+  const message=s?`${s.checks} transitions; ${s.mismatches} model mismatches. ${s.note??''} Diagnostic only; not full parity or strength evidence.`:'Diagnostic failed before producing a complete result. Check logs and partial artifacts.';
   if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,`${message}\n\n${url}\n`);
   const response=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:s?'CC2 transition audit completed':'CC2 transition audit failed',message:message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});

@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [lock-timing, queue-scan]
+        variant: [queue-scan, storage]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -31,6 +31,7 @@ jobs:
       - name: Prepare authority fixtures and read-only Rust observers
         run: |
           node --test test/kiwi-cc2-transition-audit.test.js
+          node --test test/cc2-storage-boundary.test.js
           node scripts/kiwi-cc2-transition-audit.js prepare .cache/cc2-transition-results
           node scripts/kiwi-cc2-audit-prepare.js .cache/cc2-transition-source .cache/cc2-transition-results ${{ matrix.variant }}
       - name: Compile actual CC2 transition kernel
@@ -67,22 +68,22 @@ jobs:
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-lock-timing
-          path: .cache/cc2-queue-results/lock-timing
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-queue-scan
+          path: .cache/cc2-storage-results/queue-scan
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-queue-scan
-          path: .cache/cc2-queue-results/queue-scan
-      - name: Require queue-only correction with timing preserved
-        run: node scripts/kiwi-cc2-queue-gate.js
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-storage
+          path: .cache/cc2-storage-results/storage
+      - name: Require clipping-only correction
+        run: node scripts/kiwi-cc2-storage-gate.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cc2-queue-gate-${{ github.run_id }}
-          path: .cache/cc2-queue-results/summary.json
+          name: cc2-storage-gate-${{ github.run_id }}
+          path: .cache/cc2-storage-results/summary.json
           include-hidden-files: true
           if-no-files-found: warn
       - name: Notify completion or failure
         if: always()
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-queue-results
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-storage-results

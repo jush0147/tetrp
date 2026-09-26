@@ -7,3 +7,7 @@
 Rust額外3個test functions：中間封包部分消耗且第二手接完；完全移除中間封包後繼續接後者；跨兩手後FIFO cancellation仍先扣未ready隊首，clear仍阻擋tank。另保留9項既有Forecast／timing tests。
 
 本機69個fixture全部完成authority certificate與commit，比較器3 tests passed；兩份patch依序apply-check通過。Rust編譯、paired comparison及新增tests交Actions，完成／失敗透過既有ntfy通知。不替換production WASM。
+
+已啟動 [run 36254310327](https://github.com/jush0147/tetrp/actions/runs/36254310327)，commit `6161f2655e0311c9ab228c8b028dca9122f79741`。下一轮先下載此run artifacts及queue gate summary，不重複dispatch。
+
+已驗收：paired gate通過，69例僅剩storage一例；Rust Forecast12 tests passed。見 [結果](RESULT_36254310327.md)。

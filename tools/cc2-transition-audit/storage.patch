@@ -1,0 +1,11 @@
+diff --git a/src/forecast.rs b/src/forecast.rs
+--- a/src/forecast.rs
++++ b/src/forecast.rs
+@@ -141,5 +141,5 @@ impl Forecast {
+                 // any() here made the forecast spuriously garbagesmash early.
+                 if board.cols.iter().all(|&c|c>>39!=0) {self.topped_out=true;break;}
+-                for (x,col) in board.cols.iter_mut().enumerate(){*col=(*col<<1)|u64::from(x!=hole as usize);}
+-                board.garbage_rows=(board.garbage_rows<<1)|1;
++                for (x,col) in board.cols.iter_mut().enumerate(){*col=((*col<<1)|u64::from(x!=hole as usize))&((1u64<<40)-1);}
++                board.garbage_rows=((board.garbage_rows<<1)|1)&((1u64<<40)-1);
+             }

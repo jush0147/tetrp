@@ -10,6 +10,8 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 最新：lock timing修正 [run 36253842718 驗收通過](audits/cc2-alignment/RESULT_36253842718.md)，65例由7差異降至3，僅4個預定案例改變，其他61不變；Rust Forecast 9 tests passed。保留修正，下一步獨立queue scan，暫不修storage或替換production。
 
+更後續：queue scan [run 36254310327 通過](audits/cc2-alignment/RESULT_36254310327.md)，69例僅剩storage clipping一例，Rust12 tests passed。保留timing+queue修正。下一步40bit截斷及邊界測試，failed-insertion另辨識；尚不進FT7或production。
+
 ## 固定目標與目前決定
 
 目標仍是做出能在公平 TL S2 KO arena 贏過 Legacy、且能在 Tetrp 純前端運行的 Kiwi。停止的是目前 Native v0 beam 的局部救援與全層 lookahead 候選，不是放棄目標。
