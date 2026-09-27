@@ -12,9 +12,17 @@ fn run(r:Input)->Result<Value,String>{
     let piece=r.start.queue[0];
     let bot=try_create_bot_with_context(r.start,Arc::new(BotConfig::review_h9_h12()),r.rules,false)?;
     let board=bot.state().board;
+    #[cfg(cc2_air_prefix)]
+    if std::env::var_os("CC2_KEEP_AIR_CACHE").is_none(){movegen::audit_air_cache_clear();}
     #[cfg(cc2_profile)]
     movegen::audit_profile_reset();
+    let first_begin=std::time::Instant::now();
     let moves=movegen::find_moves_with_clutch(&board,piece,r.clutch);
+    let first_call_ns=first_begin.elapsed().as_nanos() as u64;
+    #[cfg(cc2_air_prefix)]
+    let air_cache=Some(movegen::audit_air_cache_size());
+    #[cfg(not(cc2_air_prefix))]
+    let air_cache:Option<(usize,usize)>=None;
     #[cfg(cc2_profile)]
     let profile=Some(movegen::audit_profile_take());
     #[cfg(not(cc2_profile))]
@@ -31,7 +39,7 @@ fn run(r:Input)->Result<Value,String>{
         }
         timing_ns.push(begin.elapsed().as_nanos() as u64/25);
     }
-    Ok(json!({"id":r.id,"timingNs":timing_ns,"profile":profile,"moves":moves.iter().map(|(p,cost)|json!({
+    Ok(json!({"id":r.id,"timingNs":timing_ns,"firstCallNs":first_call_ns,"airCache":air_cache,"profile":profile,"moves":moves.iter().map(|(p,cost)|json!({
         "placement":p,"cells":p.location.cells(),"softDrops":cost})).collect::<Vec<_>>() }))
 }
 fn main(){

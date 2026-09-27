@@ -27,7 +27,7 @@ jobs:
         run: |
           node --test test/kiwi-cc2-movegen-audit.test.js
           node scripts/kiwi-cc2-movegen-audit.js prepare
-      - name: Compile uninstrumented reference and read-only profile
+      - name: Compile full reference and empty-air compression candidate
         run: |
           rustup toolchain install 1.90.0 --profile minimal
           cp .cache/cc2-transition-source/Cargo.lock tools/cc2-transition-audit/Cargo.lock
@@ -37,23 +37,26 @@ jobs:
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-movegen-results/Cargo.lock
           rustc +1.90.0 --version > .cache/cc2-movegen-results/rust-version.txt
           node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-movegen-results tools/cc2-transition-audit/target/release/movegen
-          mkdir -p .cache/cc2-profile-results
-          cp -r .cache/cc2-movegen-results .cache/cc2-profile-results/reference
-          cp -r .cache/cc2-movegen-results .cache/cc2-profile-results/profile
-          node scripts/kiwi-cc2-movegen-profile-prepare.js
-          RUSTFLAGS="--cfg cc2_profile" cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --bin movegen
-          node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-profile-results/profile tools/cc2-transition-audit/target/release/movegen
-      - name: Require exact profile parity and report counters
-        run: node scripts/kiwi-cc2-movegen-profile-gate.js
+          mkdir -p .cache/cc2-air-results
+          cp -r .cache/cc2-movegen-results .cache/cc2-air-results/reference
+          cp -r .cache/cc2-movegen-results .cache/cc2-air-results/candidate
+          cp -r .cache/cc2-movegen-results .cache/cc2-air-results/shared-cache
+          node scripts/kiwi-cc2-air-prefix-prepare.js
+          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --bin movegen
+          cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib movegen::
+          node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-air-results/candidate tools/cc2-transition-audit/target/release/movegen
+          CC2_KEEP_AIR_CACHE=1 node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-air-results/shared-cache tools/cc2-transition-audit/target/release/movegen
+      - name: Require exact placement and cost parity, report cold and warm latency
+        run: node scripts/kiwi-cc2-air-prefix-gate.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cc2-movegen-profile-${{ github.run_id }}-${{ github.run_attempt }}
+          name: cc2-air-prefix-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            .cache/cc2-profile-results/
+            .cache/cc2-air-results/
             .cache/cc2-movegen-results/
           include-hidden-files: true
           retention-days: 30
       - name: Notify completion or failure
         if: always()
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-profile-results
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-air-results

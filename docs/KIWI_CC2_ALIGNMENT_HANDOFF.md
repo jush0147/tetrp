@@ -14,7 +14,9 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
-接續：[movegen成本剖析](audits/cc2-alignment/MOVEGEN_PROFILE_PLAN.md)。同39例完整逐格reference與唯讀profile build，要求placement及soft-drop cost逐筆相同；計數與latency分開，不先猜安全剪枝。查最新movegen diagnostic run；尚未做新優化或production promotion。
+目前候選：[空中路徑摘要](audits/cc2-alignment/AIR_PREFIX_PLAN.md)已實作，依piece＋H+5邊界快取empty-air最小cost，近堆疊逐格，高盤面fallback。Actions比完整reference／逐case冷cache候選／跨盤面shared cache；43例要求placement與cost全等，冷暖成本分開。尚未讀Rust結果，不宣稱保留。計畫亦記錄未來timing-aware execution需求；使用者確認目前placement模型方向可繼續。
+
+最新：[成本剖析run 36291812974](audits/cc2-alignment/RESULT_36291812974.md)完成，本機重跑gate通過；39例placement及cost完全一致。23172次展開中93.18% airborne，stale pops只占2.38%；這是工作量、不是CPU時間比例。下一假設為壓縮遠離障礙的空中路徑、保留邊界狀態最小cost及近障礙逐格展開；不可直接above_stack剪枝。尚未實作該優化，production／evaluator未變。
 
 最新結果：[中途下降 run 36291220869](audits/cc2-alignment/RESULT_36291220869.md)已驗收：39例1275個cells+spin落點全等authority，baseline7例漏搜補回；但kernel耗時倍率中位26.77×，294筆既有soft-drop cost變動。僅保留correctness reference，暫不接production／DAG。下一步同一movegen內profile與降低展開成本，保持完整集合，cost語意另列相容性議題；不調weights、不開FT7。
 
