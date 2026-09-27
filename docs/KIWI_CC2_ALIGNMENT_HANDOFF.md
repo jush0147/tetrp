@@ -14,6 +14,10 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
+最新：建立[Hold/spawn/clutch第一輪](audits/cc2-alignment/LIFECYCLE_PLAN.md)，133 conditional fixtures（36 spawn KO、33 clutch rescue、20 Hold attempts）。Rust真正Bot API＋一次完整DAG展開檢查terminal current是否被reserve救回，以及macro Hold取牌／refill。Snapshot standalone Hold重分析尚待另查。Workflow加入此診斷與ntfy，讀最新artifact的cc2-lifecycle-results；尚未取得Rust結果，不先宣稱bug。未改production/evaluator。
+
+最新：[run36305563250已驗收](audits/cc2-alignment/RESULT_36305563250.md)：1746 spawn-reachable rotation probes，兩Rust版本對authority acceptance/cells/spin零差異；43組placement/cost回歸通過，本機重算raw output與air gate確認。Rust6 tests／JS8 tests通過，ntfy accepted。保留isolated修正，不因前輪conditional integer案例擴充表示。下一步Hold／spawn／clutch lifecycle differential；external integer snapshot支援域仍待整合前明確處理。Production未改、不開FT7。
+
 最新：已建立[spawn-reachable rotation 診斷](audits/cc2-alignment/REACHABLE_ROTATION_PLAN.md)，本機1746 probes、71507 prefixes通過，包含history30/31+、kick3、180、mini/full；零integer pose、零certificate差異。14條額外旋轉後接原路徑失敗已記錄，未納入失敗後姿態。Workflow改用此corpus，下一次查 `CC2 Tetrp movegen diagnostic` artifact；Rust結果未得前不宣稱parity。原564 conditional probes generator保留可重跑。
 
 最新：[height domain 審查](audits/cc2-alignment/HEIGHT_DOMAIN.md)完成。正常 default TL generated lineage 的 y 寫入都保留非整數；新增5 tests及 replay16 tests共21通過，包含40×/無限緩降、實際40次旋轉、垃圾推升、restore/fork、anchor不覆寫。外部checkpoint確實接受整數y，且同cells旋轉不同，不能無條件normalize。暫不因186個conditional probes擴充核心；下一步以spawn實際可達路徑建立kick/180/history fixtures，再跑Rust雙版本。完整domain／spin parity尚未認證，production未改，不開FT7。

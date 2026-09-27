@@ -68,6 +68,7 @@ test('#5 public tree excludes research directories and binary assets',()=>{
     'tools/cc2-transition-audit/storage.patch','tools/cc2-transition-audit/storage-tests.rs',
     'tools/cc2-transition-audit/failed-insert.patch','tools/cc2-transition-audit/failed-insert-tests.rs',
     'tools/cc2-transition-audit/src/bin/movegen.rs',
+    'tools/cc2-transition-audit/src/bin/lifecycle.rs',
     'tools/cc2-transition-audit/mid-descent.patch',
     'tools/cc2-transition-audit/air-prefix.rs',
     'tools/cc2-transition-audit/rotation-probe.rs','tools/cc2-transition-audit/src/bin/rotation.rs',
