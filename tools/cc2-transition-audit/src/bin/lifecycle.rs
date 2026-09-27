@@ -31,5 +31,7 @@ fn run(r:Input)->Result<Value,String>{
         "hasLegal":has_legal,"nodes":stats.nodes,"ranked":ranked.iter().map(|(p,_)|p).collect::<Vec<_>>(),"play":play}))
 }
 fn main(){for line in io::stdin().lock().lines(){let result=line.map_err(|e|e.to_string()).and_then(|s|
-    serde_json::from_str::<Input>(&s).map_err(|e|e.to_string())).and_then(run);
+    serde_json::from_str::<Input>(&s).map_err(|e|e.to_string())).map(|r|{
+        let id=r.id.clone();run(r).unwrap_or_else(|e|json!({"id":id,"error":e}))
+    });
     println!("{}",result.unwrap_or_else(|e|json!({"error":e})));}}

@@ -23,7 +23,7 @@ jobs:
           repository: jush0147/cold-clear-2
           ref: 2e243242b674d57491f99b445f75e35fc48a0e26
           path: .cache/cc2-transition-source
-      - name: Enumerate and replay authority witnesses
+      - name: Enumerate authority witnesses and supported lifecycle fixtures
         run: |
           node --test test/kiwi-cc2-movegen-audit.test.js test/kiwi-height-domain.test.js
           node scripts/kiwi-cc2-movegen-audit.js prepare

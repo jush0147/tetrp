@@ -12,6 +12,7 @@ if(mode==='prepare'){
   const cases=[];
   const upper=x=>x===null?null:x.toUpperCase();
   function add(name,board,current,hold,next,clear,locked,useHold,clutch=true){
+    assert.ok(board.rows.every(row=>row.some(cell=>cell===null)),'CC2 decision fixtures must not contain uncleared full rows');
     const e=new PlacementArenaEngine({rules:{clutch}}),s=e.state;
     s.board=structuredClone(board);s.lastClear=clear;s.attack.combo=clear?1:0;
     s.bag.queue=[...next];e.spawn(current);s.hold={piece:hold,locked};
@@ -48,7 +49,8 @@ if(mode==='prepare'){
     for(const current of ['i','o','t'])for(const hold of ['i','o','t'])for(const clear of [false,true])
       add(`block-${x}-${y}`,board,current,hold,['s','z','j','l','o'],clear,false,false);
   }
-  const roof=structuredClone(empty);for(let y=0;y<20;y++)roof.rows[y]=Array(10).fill('j');
+  // Leave a remote hole: sealed spawn geometry without unsupported uncleared rows.
+  const roof=structuredClone(empty);for(let y=0;y<20;y++)roof.rows[y]=Array.from({length:10},(_,x)=>x===0?null:'j');
   for(const clear of [false,true])add('sealed-spawn',roof,'t','i',['o','s','z','j','l'],clear,false,false);
   const disabled=structuredClone(empty);disabled.rows[18][4]='j';
   add('clutch-disabled',disabled,'t','i',['o','s','z','j','l'],true,false,false,false);
@@ -69,7 +71,9 @@ if(mode==='prepare'){
   await writeFile(`${dir}/rust-output.jsonl`,run.stdout??'');await writeFile(`${dir}/rust-stderr.log`,run.stderr??'');
   if(run.error)throw run.error;assert.equal(run.status,0,run.stderr);
   const rows=run.stdout.trim().split('\n').map(JSON.parse);assert.equal(rows.length,cases.length);
-  const comparisons=cases.map((c,i)=>{const r=rows[i],e=c.expected;assert.equal(r.id,c.id);assert.ok(!r.error,JSON.stringify(r));
+  const comparisons=cases.map((c,i)=>{const r=rows[i],e=c.expected;
+    if(r.error)return {id:c.id,fields:['technicalError'],expected:e,actual:r};
+    assert.equal(r.id,c.id);
     assert.deepEqual(r.before,e.before);const fields=[];
     if(!e.spawnAlive&&(r.hasLegal||r.ranked.length))fields.push('holdRescuesTerminalSpawn');
     if(e.spawnAlive&&r.currentMoves===0)fields.push('missingCurrentSpawnMoves');
@@ -84,4 +88,5 @@ if(mode==='prepare'){
   const summary={status:'lifecycle-diagnostic-completed',checks:cases.length,mismatches:comparisons.filter(c=>c.fields.length).length,fields,
     note:'Conditional spawn and public Bot macro-placement diagnostic; not standalone snapshot Hold or full DAG/lifecycle certification. No strength promotion.'};
   await writeFile(`${dir}/comparisons.json`,JSON.stringify(comparisons));await writeFile(`${dir}/summary.json`,JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
+  assert.equal(fields.technicalError??0,0,'diagnostic input/driver errors are not rule mismatches');
 }else throw Error('prepare | compare');

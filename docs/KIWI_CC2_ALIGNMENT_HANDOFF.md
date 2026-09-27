@@ -14,6 +14,8 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
+最新：[run36306028349部分結果](audits/cc2-alignment/RESULT_36306028349.md)：Rust133 rows正常輸出，但2個sealed fixture含滿行被拒，JS gate中止，後續回歸未跑。131正常rows中6例確定current spawn KO卻仍rank Hold落點；未見其他queue/refill/locked Hold差異。已修fixture為column0留洞、Rust保留error id、JS先落盤technicalError再fail。重跑同133 cases，不改production或先修核心。
+
 最新：建立[Hold/spawn/clutch第一輪](audits/cc2-alignment/LIFECYCLE_PLAN.md)，133 conditional fixtures（36 spawn KO、33 clutch rescue、20 Hold attempts）。Rust真正Bot API＋一次完整DAG展開檢查terminal current是否被reserve救回，以及macro Hold取牌／refill。Snapshot standalone Hold重分析尚待另查。Workflow加入此診斷與ntfy，讀最新artifact的cc2-lifecycle-results；尚未取得Rust結果，不先宣稱bug。未改production/evaluator。
 
 最新：[run36305563250已驗收](audits/cc2-alignment/RESULT_36305563250.md)：1746 spawn-reachable rotation probes，兩Rust版本對authority acceptance/cells/spin零差異；43組placement/cost回歸通過，本機重算raw output與air gate確認。Rust6 tests／JS8 tests通過，ntfy accepted。保留isolated修正，不因前輪conditional integer案例擴充表示。下一步Hold／spawn／clutch lifecycle differential；external integer snapshot支援域仍待整合前明確處理。Production未改、不開FT7。
