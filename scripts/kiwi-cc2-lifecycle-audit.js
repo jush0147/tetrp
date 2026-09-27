@@ -54,9 +54,13 @@ if(mode==='prepare'){
   for(const clear of [false,true])add('sealed-spawn',roof,'t','i',['o','s','z','j','l'],clear,false,false);
   const disabled=structuredClone(empty);disabled.rows[18][4]='j';
   add('clutch-disabled',disabled,'t','i',['o','s','z','j','l'],true,false,false,false);
+  for(const [x,y,current,next0] of [[3,18,'i','o'],[3,18,'o','i'],[4,17,'o','i'],[4,17,'i','o']]){
+    const board=structuredClone(empty);board.rows[y][x]='j';
+    for(const clear of [false,true])add(`empty-hold-spawn-${x}-${y}`,board,current,null,[next0,'s','z','j','l'],clear,false,false);
+  }
   await mkdir(dir,{recursive:true});await writeFile(`${dir}/cases.json`,JSON.stringify(cases));
   await writeFile(`${dir}/input.jsonl`,cases.map(c=>JSON.stringify(c.input)).join('\n')+'\n');
-  assert.equal(cases.length,133);assert.ok(cases.some(c=>!c.expected.spawnAlive));
+  assert.equal(cases.length,141);assert.ok(cases.some(c=>!c.expected.spawnAlive));
   assert.ok(cases.some(c=>c.expected.spawnPose.y<17.96&&c.expected.spawnAlive));
   const files=['scripts/kiwi-cc2-lifecycle-audit.js','tools/cc2-transition-audit/src/bin/lifecycle.rs',
     'src/engine.js','src/board.js','src/analysis/placement-authority.js','tools/cc2-transition-audit/mid-descent.patch'];
@@ -76,6 +80,8 @@ if(mode==='prepare'){
     assert.equal(r.id,c.id);
     assert.deepEqual(r.before,e.before);const fields=[];
     if(!e.spawnAlive&&(r.hasLegal||r.ranked.length))fields.push('holdRescuesTerminalSpawn');
+    if(!e.spawnAlive&&r.play?.accepted)fields.push('terminalTryPlayAccepted');
+    if(!e.spawnAlive&&r.play?.accepted===false)assert.deepEqual(r.play.pieces,e.before);
     if(e.spawnAlive&&r.currentMoves===0)fields.push('missingCurrentSpawnMoves');
     if(c.input.use_hold&&e.holdAccepted===false&&c.input.placement){
       if(r.play?.accepted)fields.push('lockedHoldAccepted');

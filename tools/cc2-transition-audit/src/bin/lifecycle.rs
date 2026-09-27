@@ -21,8 +21,10 @@ fn run(r:Input)->Result<Value,String>{
     let stats=bot.do_work_limited(100000);
     if stats.budget_exhausted{return Err("incomplete root expansion".into());}
     let ranked=bot.ranked_suggestions();
-    let play=if let Some(p)=r.placement {
-        match bot.try_play(p,r.use_hold){
+    // Exercise the direct API as well as DAG output for terminal-current cases.
+    let terminal_attempt=if current_moves.is_empty(){held_moves.first().map(|(p,_)|*p)}else{None};
+    let play=if let Some(p)=r.placement.or(terminal_attempt) {
+        match bot.try_play(p,if r.placement.is_none(){true}else{r.use_hold}){
             Ok(_)=>json!({"accepted":true,"pieces":bot.player_pieces(),"refill":bot.preview_refill_needed()}),
             Err(e)=>json!({"accepted":false,"error":e,"pieces":bot.player_pieces()})
         }

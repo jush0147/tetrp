@@ -30,6 +30,9 @@ jobs:
           node scripts/kiwi-cc2-reachable-rotation.js .cache/cc2-rotation-results/reference
           cp -r .cache/cc2-rotation-results/reference .cache/cc2-rotation-results/candidate
           node scripts/kiwi-cc2-lifecycle-audit.js prepare
+          mkdir -p .cache/cc2-spawn-results
+          cp -r .cache/cc2-lifecycle-results .cache/cc2-spawn-results/reference
+          cp -r .cache/cc2-lifecycle-results .cache/cc2-spawn-results/candidate
       - name: Compile full reference and empty-air compression candidate
         run: |
           rustup toolchain install 1.90.0 --profile minimal
@@ -38,7 +41,12 @@ jobs:
           git -C .cache/cc2-transition-source apply "$GITHUB_WORKSPACE/tools/cc2-transition-audit/mid-descent.patch"
           node scripts/kiwi-cc2-rotation-audit.js install .cache/cc2-transition-source
           cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit --bin movegen --bin rotation --bin lifecycle
-          node scripts/kiwi-cc2-lifecycle-audit.js compare .cache/cc2-lifecycle-results tools/cc2-transition-audit/target/release/lifecycle
+          node scripts/kiwi-cc2-lifecycle-audit.js compare .cache/cc2-spawn-results/reference tools/cc2-transition-audit/target/release/lifecycle
+          node scripts/kiwi-cc2-spawn-prepare.js
+          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit --bin movegen --bin rotation --bin lifecycle
+          cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib spawn_audit_tests
+          node scripts/kiwi-cc2-lifecycle-audit.js compare .cache/cc2-spawn-results/candidate tools/cc2-transition-audit/target/release/lifecycle
+          node scripts/kiwi-cc2-spawn-gate.js
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-movegen-results/Cargo.lock
           rustc +1.90.0 --version > .cache/cc2-movegen-results/rust-version.txt
           node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-movegen-results tools/cc2-transition-audit/target/release/movegen
@@ -66,8 +74,9 @@ jobs:
             .cache/cc2-movegen-results/
             .cache/cc2-rotation-results/
             .cache/cc2-lifecycle-results/
+            .cache/cc2-spawn-results/
           include-hidden-files: true
           retention-days: 30
       - name: Notify completion or failure
         if: always()
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-lifecycle-results
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-spawn-results
