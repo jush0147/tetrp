@@ -14,7 +14,9 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
-接續工作：[failed-insertion單項修正](audits/cc2-alignment/FAILED_INSERT_PLAN.md)已準備，Actions對照storage與failed-insert，要求原72個placement案例不變及6個primitive邊界修正。請查最新transition diagnostic run；未讀結果前不可宣稱Rust驗收完成。
+目前接續：[spawn movegen集合診斷](audits/cc2-alignment/MOVEGEN_PLAN.md)已建立，27例直接Engine列舉與certificate本機完成；Actions編譯原始pinned CC2 `find_moves_with_clutch`做cells／cells+spin比較。查最新`CC2 Tetrp movegen diagnostic` run；尚未取得Rust差異，不改movegen／evaluator、不開FT7。
+
+最新進度：[failed-insertion run 36290267203驗收通過](audits/cc2-alignment/RESULT_36290267203.md)。原72個placement案例comparisons完全不變、6個primitive邊界全部對齊；Rust兩邊各16 tests passed，ntfy accepted，本機已重跑gate。保留四項局部transaction修正。下一步CC2 movegen／spin provenance集合差異審查，再查Hold與spawn／clutch；不開FT7、不改production。
 
 最新驗收：storage clipping [run 36254801181 通過](audits/cc2-alignment/RESULT_36254801181.md)，72例由4差異降至0，其餘68例comparisons不變；Rust候選15 tests passed（包含一項已知bug characterization，不能混當parity）。保留timing+queue+storage修正。下一步單獨修failed-insertion先扣pending的交易順序，再進movegen／Hold／spawn。Production未替換、不開FT7。
 

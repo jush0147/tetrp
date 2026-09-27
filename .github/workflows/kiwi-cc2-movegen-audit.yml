@@ -1,0 +1,47 @@
+name: CC2 Tetrp movegen diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-movegen-audit.yml]
+permissions:
+  contents: read
+concurrency:
+  group: cc2-movegen-audit-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-transition-source
+      - name: Enumerate and replay authority witnesses
+        run: |
+          node --test test/kiwi-cc2-movegen-audit.test.js
+          node scripts/kiwi-cc2-movegen-audit.js prepare
+      - name: Compile and execute pinned CC2 movegen
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          cp .cache/cc2-transition-source/Cargo.lock tools/cc2-transition-audit/Cargo.lock
+          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --bin movegen
+          cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-movegen-results/Cargo.lock
+          rustc +1.90.0 --version > .cache/cc2-movegen-results/rust-version.txt
+          node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-movegen-results tools/cc2-transition-audit/target/release/movegen
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-movegen-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/cc2-movegen-results/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify completion or failure
+        if: always()
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-movegen-results
