@@ -6,6 +6,12 @@ publish = false
 
 [features]
 rotation-audit = []
+snapshot-hold-audit = []
+
+[[bin]]
+name = "snapshot_hold"
+path = "src/bin/snapshot_hold.rs"
+required-features = ["snapshot-hold-audit"]
 
 [[bin]]
 name = "rotation"

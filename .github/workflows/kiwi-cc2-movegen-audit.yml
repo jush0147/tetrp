@@ -33,6 +33,7 @@ jobs:
           mkdir -p .cache/cc2-spawn-results
           cp -r .cache/cc2-lifecycle-results .cache/cc2-spawn-results/reference
           cp -r .cache/cc2-lifecycle-results .cache/cc2-spawn-results/candidate
+          node scripts/kiwi-cc2-snapshot-hold.js prepare
       - name: Compile full reference and empty-air compression candidate
         run: |
           rustup toolchain install 1.90.0 --profile minimal
@@ -43,8 +44,11 @@ jobs:
           cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit --bin movegen --bin rotation --bin lifecycle
           node scripts/kiwi-cc2-lifecycle-audit.js compare .cache/cc2-spawn-results/reference tools/cc2-transition-audit/target/release/lifecycle
           node scripts/kiwi-cc2-spawn-prepare.js
-          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit --bin movegen --bin rotation --bin lifecycle
+          node scripts/kiwi-cc2-snapshot-hold.js install .cache/cc2-transition-source
+          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit,snapshot-hold-audit --bin movegen --bin rotation --bin lifecycle --bin snapshot_hold
           cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib spawn_audit_tests
+          cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib snapshot::tests
+          node scripts/kiwi-cc2-snapshot-hold.js compare .cache/cc2-snapshot-hold-results tools/cc2-transition-audit/target/release/snapshot_hold
           node scripts/kiwi-cc2-lifecycle-audit.js compare .cache/cc2-spawn-results/candidate tools/cc2-transition-audit/target/release/lifecycle
           node scripts/kiwi-cc2-spawn-gate.js
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-movegen-results/Cargo.lock
@@ -75,8 +79,9 @@ jobs:
             .cache/cc2-rotation-results/
             .cache/cc2-lifecycle-results/
             .cache/cc2-spawn-results/
+            .cache/cc2-snapshot-hold-results/
           include-hidden-files: true
           retention-days: 30
       - name: Notify completion or failure
         if: always()
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-spawn-results
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-snapshot-hold-results

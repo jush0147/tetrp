@@ -14,6 +14,8 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
+最新：[run36307348238 spawn修正驗收](audits/cc2-alignment/RESULT_36307348238.md)：141 cases零差異、8 baseline cases修好、其餘輸出不變；5 spawn tests含二層DAG通過，1746旋轉/43落點回歸通過，本機重算gates。已保留隔離修正。接著建立[standalone Hold/reveal audit](audits/cc2-alignment/SNAPSHOT_HOLD_PLAN.md)：30 requests、8 hidden-tail pairs、16 authority Holds，本機generation通過；Rust實際parse/post_hold_root/analyze_text待Actions。production未改。
+
 最新：已建立[spawn-terminal隔離修正](audits/cc2-alignment/SPAWN_FIX_PLAN.md)：GameState增加empty-Hold lineage旗標納入hash，actual current的spawn/clutch guard套在DAG expansion與public API，authority active-root allowlist豁免respawn。141配對fixtures含8個empty-Hold反例控制與terminal try_play；要求至少6例修好、其他已通過輸出不變。Rust與二層DAG測試等Actions，尚未宣稱修正驗收。production/evaluator未改。
 
 最新：[run36306243988完整驗收](audits/cc2-alignment/RESULT_36306243988.md)：133 cases零technical errors；同6個terminal-spawn被Hold救回差異重現，其他127 measured checks一致。1746旋轉零差異、43落點/cost回歸過，已本機重核raw lifecycle與air gate。下一步單独spawn-terminal修正，先區分active root/post-Hold/deep spawn與empty-Hold normalization；不能一律next_moves空就判KO。需增加terminal狀態try_play拒絕測試。Production/evaluator未改、不開FT7。
