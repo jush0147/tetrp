@@ -14,7 +14,9 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
-接續候選：[中途下降展開配對計畫](audits/cc2-alignment/MID_DESCENT_PLAN.md)。停用endpoint-only fast seed並新增逐格下降edge，spin不改；39例authority fixtures已本機完成，Actions對照pinned baseline／candidate，保存kernel timing與soft-drop cost變化。請查最新movegen diagnostic run，未讀結果不得保留或宣稱parity。
+接續：[movegen成本剖析](audits/cc2-alignment/MOVEGEN_PROFILE_PLAN.md)。同39例完整逐格reference與唯讀profile build，要求placement及soft-drop cost逐筆相同；計數與latency分開，不先猜安全剪枝。查最新movegen diagnostic run；尚未做新優化或production promotion。
+
+最新結果：[中途下降 run 36291220869](audits/cc2-alignment/RESULT_36291220869.md)已驗收：39例1275個cells+spin落點全等authority，baseline7例漏搜補回；但kernel耗時倍率中位26.77×，294筆既有soft-drop cost變動。僅保留correctness reference，暫不接production／DAG。下一步同一movegen內profile與降低展開成本，保持完整集合，cost語意另列相容性議題；不調weights、不開FT7。
 
 目前最新：[spawn movegen run 36290851396結果](audits/cc2-alignment/RESULT_36290851396.md)已下載並重算。26/27例cells+spin集合相同，605個authority落點中CC2缺1個J中途下降再左移的落點，無CC2-only或同cells spin差異。Witness重新驗證通過；full drop多掉1格後不能左移，吻合fast path省略中間下降pose的風險。下一步只做這類geometry展開的介入修正與配對回歸，不調evaluator、不開FT7；詳細限制見報告。
 

@@ -12,11 +12,17 @@ fn run(r:Input)->Result<Value,String>{
     let piece=r.start.queue[0];
     let bot=try_create_bot_with_context(r.start,Arc::new(BotConfig::review_h9_h12()),r.rules,false)?;
     let board=bot.state().board;
+    #[cfg(cc2_profile)]
+    movegen::audit_profile_reset();
     let moves=movegen::find_moves_with_clutch(&board,piece,r.clutch);
+    #[cfg(cc2_profile)]
+    let profile=Some(movegen::audit_profile_take());
+    #[cfg(not(cc2_profile))]
+    let profile:Option<[u64;8]>=None;
     // Same-run kernel timing, excludes parsing and bot construction. This is
     // diagnostic native latency, not a browser performance acceptance test.
     let mut timing_ns=Vec::new();
-    for _ in 0..7 {
+    for _ in 0..(if cfg!(cc2_profile) {0} else {7}) {
         let begin=std::time::Instant::now();
         for _ in 0..25 {
             let again=movegen::find_moves_with_clutch(std::hint::black_box(&board),piece,r.clutch);
@@ -25,7 +31,7 @@ fn run(r:Input)->Result<Value,String>{
         }
         timing_ns.push(begin.elapsed().as_nanos() as u64/25);
     }
-    Ok(json!({"id":r.id,"timingNs":timing_ns,"moves":moves.iter().map(|(p,cost)|json!({
+    Ok(json!({"id":r.id,"timingNs":timing_ns,"profile":profile,"moves":moves.iter().map(|(p,cost)|json!({
         "placement":p,"cells":p.location.cells(),"softDrops":cost})).collect::<Vec<_>>() }))
 }
 fn main(){
