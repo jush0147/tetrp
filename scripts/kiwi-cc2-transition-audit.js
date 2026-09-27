@@ -21,7 +21,7 @@ const boardBits=board=>({
   cols:Array.from({length:10},(_,x)=>board.rows.reduce((bits,row,y)=>bits|(row[x]===null?0n:1n<<BigInt(39-y)),0n).toString()),
   garbageRows:board.rows.reduce((bits,row,y)=>bits|(row.includes('gb')?1n<<BigInt(39-y):0n),0n).toString(),
 });
-function fromPublic(v){
+export function fromPublic(v){
   const e=new PlacementArenaEngine({rules:v.rules}),s=e.state;
   Object.assign(s,{board:structuredClone(v.board),piece:structuredClone(v.current),hold:{...v.hold},
     frame:v.frame,subframe:v.subframe,playing:v.playing,garbageLockedUntil:v.garbageLockedUntil});
@@ -30,7 +30,7 @@ function fromPublic(v){
   s.lastClear=s.attack.combo>0;
   return e;
 }
-function dropAction(e,path=['hardDrop']){
+export function dropAction(e,path=['hardDrop']){
   const p=fromPublic(visibleState(e.state));
   for(const op of path){if(op==='hardDrop')p.slam(true);else if(op==='rotateCW')assert.ok(p.rotate(1));else throw Error(op);}
   const {spin,...move}=placementIdentity(p.state.piece);
@@ -57,7 +57,7 @@ async function templates(){
   }
   return out;
 }
-function addPressure(e,packets,scenario){
+export function addPressure(e,packets,scenario){
   const s=e.state;s.attack.pending=[];s.attack.are=[];s.waiting=[];
   packets.forEach(([amt,delay],i)=>{
     const cid=i+1;
@@ -66,7 +66,7 @@ function addPressure(e,packets,scenario){
     if(delay)e.schedule(delay,'incoming-attack-hit',{cid});
   });
 }
-function inputFor(id,v,placement,scenario){
+export function inputFor(id,v,placement,scenario){
   assertSupportedSnapshotRules(v.rules);
   return {id,start:{board:v.board.rows.toReversed().map(row=>row.map(c=>c===null?null:c==='gb'?'G':c.toUpperCase())),
     queue:[v.current.type,...v.next].map(p=>p.toUpperCase()),hold:v.hold.piece?.toUpperCase()??null,
@@ -76,7 +76,7 @@ function inputFor(id,v,placement,scenario){
     rate:v.rules.garbageincrease_per_second,pieces:v.piecesPlaced,sent:v.attack.cumulativeSent,
     incoming:v.attack.pending.map(p=>[p.amt,p.active?0:p.activeFrame-v.frame]),scenario};
 }
-function authority(e,action){
+export function authority(e,action){
   const s=e.state,start=s.frame,proof=validatePlacement(visibleState(s),action);
   while(s.frame<start+23)e.step();
   e.beginFrame([]);e.advanceSegment(.5);

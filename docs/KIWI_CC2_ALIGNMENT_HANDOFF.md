@@ -14,6 +14,10 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
+最新：建立[4手trace＋DAG replay audit](audits/cc2-alignment/TRACE_PLAN.md)：本機24traces/96placements生成通過，persistent Bot不補queue，每step對authority transaction及known pieces。診斷observer記published parent/next/move→child，Dag::select重播核fullstate；要求actual replay及depth>=2，禁止speculated expansion。combined workflow先重跑2038 checks再trace，查最新run的cc2-trace-results；Rust尚待驗證。production未改。
+
+最新：[run36309185307 combined gate通過](audits/cc2-alignment/RESULT_36309185307.md)：2038 checks零差異，最終cache build Forecast16/spawn5/snapshot8 tests通過，movegen6 tests通過。本機重跑spawn/air gate、raw72transition comparator、6boundary與Hold/rotation驗證。保留combined candidate。下一步多手known-prefix authority trace＋DAG selection replay/stored-child一致性，然後browser budget；production/evaluator未改，不開FT7。
+
 最新：建立[combined correctness workflow](audits/cc2-alignment/COMBINED_PLAN.md)，四transaction corrections先套，再加movegen/spawn/air；最終cache build重跑transaction＋lifecycle＋snapshot，合併gate共2038 checks。查 `CC2 Tetrp combined correctness` 新workflow（不是舊movegen）。本機72fixtures/6boundary expectations重產成功，Rust整合結果待Actions。尚未做多手authority/DAG trace，production未改。
 
 最新：[run36308069080 Hold/reveal驗收](audits/cc2-alignment/RESULT_36308069080.md)：30 Rust requests零差異、8 hidden-tail pairs相同；16 authority Holds後14次locked reanalysis無Hold候選，2 terminal不重分析。本機核raw output與pairs；141 lifecycle/1746 rotation/43 placement-cost回歸通過。Rust5 spawn+8 snapshot+6 movegen通過。下一步將transaction四項修正與movegen/air/spawn整合於同一diagnostic build，重跑combined suites，再查多手state/DAG replay一致性；未接production、不開FT7。

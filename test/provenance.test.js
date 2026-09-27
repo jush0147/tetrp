@@ -71,6 +71,7 @@ test('#5 public tree excludes research directories and binary assets',()=>{
     'tools/cc2-transition-audit/src/bin/lifecycle.rs',
     'tools/cc2-transition-audit/spawn-tests.rs',
     'tools/cc2-transition-audit/snapshot-hold-probe.rs','tools/cc2-transition-audit/src/bin/snapshot_hold.rs',
+    'tools/cc2-transition-audit/dag-replay-observer.rs','tools/cc2-transition-audit/src/bin/trace.rs',
     'tools/cc2-transition-audit/mid-descent.patch',
     'tools/cc2-transition-audit/air-prefix.rs',
     'tools/cc2-transition-audit/rotation-probe.rs','tools/cc2-transition-audit/src/bin/rotation.rs',

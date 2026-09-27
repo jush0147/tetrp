@@ -7,6 +7,12 @@ publish = false
 [features]
 rotation-audit = []
 snapshot-hold-audit = []
+trace-audit = []
+
+[[bin]]
+name = "trace"
+path = "src/bin/trace.rs"
+required-features = ["trace-audit"]
 
 [[bin]]
 name = "snapshot_hold"
