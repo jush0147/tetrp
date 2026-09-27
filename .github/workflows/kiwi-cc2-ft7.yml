@@ -1,0 +1,56 @@
+name: Corrected Kiwi vs vendored Kiwi FT7
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-ft7.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cc2-ft7-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  ft7:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch the unchanged verified WASM
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 36323060219 --name cc2-wasm-36323060219-1 --dir .cache/cc2-candidate
+      - name: Authority and arena regression checks
+        run: node --test test/placement-authority.test.js test/native-arena.test.js test/kiwi-cc2-series-score.test.js
+      - name: KO-only FT7, 200k nodes each, shared piece seed, alternating seats
+        timeout-minutes: 340
+        run: node scripts/kiwi-cc2-arena-integration.js .cache/cc2-candidate .cache/cc2-ft7-results --ft7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-ft7-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/cc2-ft7-results/
+          include-hidden-files: true
+          retention-days: 30
+  notify:
+    if: always()
+    needs: ft7
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: cc2-ft7-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/cc2-ft7-results
+      - name: Notify completion or technical failure
+        env:
+          AUDIT_JOB_STATUS: ${{ needs.ft7.result }}
+        run: node scripts/kiwi-cc2-ft7-notify.js

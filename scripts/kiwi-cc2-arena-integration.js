@@ -8,18 +8,22 @@ import {execFileSync} from 'node:child_process';
 import {prepareKiwi,normalizeTopRecommendation,NODE_BUDGET} from '../src/analysis/kiwi.js';
 import {profile} from './kiwi-profiles.js';
 import {match} from './kiwi-arena-core.js';
+import {scoreKO} from './kiwi-cc2-series-score.js';
 const artifact=resolve(process.argv[2]??'.cache/cc2-candidate'),out=process.argv[3]??'.cache/cc2-integration-results';
 const smoke=process.argv.includes('--smoke');
+const ft7=process.argv.includes('--ft7');
+assert.ok(!(smoke&&ft7),'A bounded smoke cannot be a strength series');
 await mkdir(out,{recursive:true});
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const expected={
  'cold_clear_2.js':'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691',
  'cold_clear_2_bg.wasm':'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa',
 };
-const report={schema:'cc2-authority-integration/1',git:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
+const report={schema:ft7?'cc2-authority-ft7/1':'cc2-authority-integration/1',git:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
  artifactRun:36323060219,artifactHashes:expected,nodeBudget:NODE_BUDGET,executionModel:'tl-placement-v1',
  framesPerPiece:24,maxFrames:smoke?48:null,watchdogFrames:360000,smokeOnly:smoke,complete:false,games:[],
- baseline:'Tetrp vendored Kiwi snapshot-v3.2; not original CC2',promotionEligible:false};
+ baseline:'Tetrp vendored Kiwi snapshot-v3.2; not original CC2',promotionEligible:false,
+ ...(ft7?{target:7,score:[0,0],seed:2026092801,scoring:'KO only; simultaneous KO unscored and replayed; technical failure aborts'}:{})};
 const save=()=>writeFile(`${out}/result.json`,JSON.stringify(report,null,2));await save();
 try{
  for(const [name,sha]of Object.entries(expected))assert.equal(hash(await readFile(`${artifact}/pkg/${name}`)),sha,`Artifact hash ${name}`);
@@ -33,8 +37,8 @@ try{
   return normalizeTopRecommendation(s,p,r);
  };
  report.profiles=[{name:'corrected-cc2-kiwi',artifactRun:report.artifactRun},{name:'tetrp-vendored-kiwi',version:legacy.version}];
- for(let game=0;game<2;game++){
-  const seed=2026092701+game*4,swapped=game===1,fd=openSync(`${out}/game-${game+1}.jsonl`,'w');
+ for(let game=0;ft7?Math.max(...report.score)<7:game<2;game++){
+  const seed=(ft7?report.seed:2026092701)+game*4,swapped=game%2===1,fd=openSync(`${out}/game-${game+1}.jsonl`,'w');
   const pending=[null,null],counts={placements:[0,0],holds:[0,0],reanalyses:[0,0],receives:[0,0],spins:{},clears:{}};
   const record=event=>{
    // Retain snapshots, original intent, provenance and actual lock before checking.
@@ -70,12 +74,16 @@ try{
    assert.equal(counts.holds[seat],counts.reanalyses[seat]+(pending[seat]?.playing===false?1:0));
   }
   assert.ok(smoke?['frame-cap','topout'].includes(result.reason):result.reason==='topout','Must end by authority KO; watchdog is a technical failure');
-  console.log(JSON.stringify({type:'game-end',game:game+1,reason:result.reason,parity:result.parity,counts}));
+  if(ft7){
+   const scored=scoreKO(report.score,result,swapped);report.score=scored.score;
+   Object.assign(report.games.at(-1),scored);await save();
+  }
+  console.log(JSON.stringify({type:'game-end',game:game+1,reason:result.reason,parity:result.parity,counts,...(ft7?{score:report.score}:{})}));
  }
  if(!smoke)for(let policy=0;policy<2;policy++){
   const total=k=>report.games.reduce((n,g)=>n+g.counts[k][g.swapped?1-policy:policy],0);
   assert.ok(total('placements')>=24,'Insufficient placement coverage');
   assert.ok(total('reanalyses')>0,'No Hold/reveal coverage');assert.ok(total('receives')>0,'No incoming garbage coverage');
  }
- report.complete=true;report.status=smoke?'local-smoke-completed':'arena-integration-passed';await save();
-}catch(e){report.status='integration-failed';report.error={message:e.message,stack:e.stack,details:e.details};await save();throw e;}
+ report.complete=true;report.status=ft7?'ft7-completed':smoke?'local-smoke-completed':'arena-integration-passed';await save();
+}catch(e){report.status=ft7?'ft7-failed':'integration-failed';report.error={message:e.message,stack:e.stack,details:e.details};await save();throw e;}
