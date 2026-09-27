@@ -1,4 +1,4 @@
-// Read-only instrumentation of a disposable pinned CC2 checkout. No policy changes.
+// Isolated transition corrections and observers in a disposable pinned checkout.
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
@@ -8,14 +8,15 @@ export const PIN='2e243242b674d57491f99b445f75e35fc48a0e26';
 const root=resolve(process.argv[2]??'.cache/cc2-transition-source');
 const dest=resolve(process.argv[3]??'.cache/cc2-transition-results');
 const variant=process.argv[4]??'baseline';
-assert.ok(['baseline','lock-timing','queue-scan','storage'].includes(variant));
+assert.ok(['baseline','lock-timing','queue-scan','storage','failed-insert'].includes(variant));
 assert.equal(execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim(),PIN);
 assert.equal(execFileSync('git',['-C',root,'status','--porcelain'],{encoding:'utf8'}).trim(),'','requires pristine disposable checkout');
 await mkdir(dest,{recursive:true});
 const hash=s=>createHash('sha256').update(s).digest('hex');
 const correction=[];
 const corrections=variant==='baseline'?[]:variant==='lock-timing'?['lock-timing']:['lock-timing','queue-scan'];
-if(variant==='storage')corrections.push('storage');
+if(['storage','failed-insert'].includes(variant))corrections.push('storage');
+if(variant==='failed-insert')corrections.push('failed-insert');
 for(const name of corrections){
   const file=resolve(`tools/cc2-transition-audit/${name}.patch`);
   execFileSync('git',['-C',root,'apply','--check',file]);
@@ -33,7 +34,7 @@ function once(s,needle,addition){assert.equal(s.split(needle).length,2,`unique s
 await patch('src/lib.rs',s=>s+'\npub mod transition_audit_observer;\n');
 await patch('src/forecast.rs',s=>{
   s=once(s,'self.consume(cancelled);','\n            crate::transition_audit_observer::attack(attack,cancelled,outgoing);');
-  s=once(s,variant==='storage'?'board.garbage_rows=((board.garbage_rows<<1)|1)&((1u64<<40)-1);':'board.garbage_rows=(board.garbage_rows<<1)|1;','\n                crate::transition_audit_observer::tanked(hole);');
+  s=once(s,corrections.includes('storage')?'board.garbage_rows=((board.garbage_rows<<1)|1)&((1u64<<40)-1);':'board.garbage_rows=(board.garbage_rows<<1)|1;','\n                crate::transition_audit_observer::tanked(hole);');
   return s+`\nimpl Forecast {
     pub fn transition_audit_readout(&self)->serde_json::Value {
         serde_json::json!({"elapsed":self.elapsed_frames,"pieces":self.pieces_placed,
@@ -44,8 +45,17 @@ await patch('src/forecast.rs',s=>{
     }
 }\n`;
 });
-for(const name of corrections){
-  const tests=await readFile(`tools/cc2-transition-audit/${name}-tests.rs`,'utf8');
+const testNames=[...corrections];
+if(variant==='storage')testNames.push('failed-insert');
+for(const name of testNames){
+  let tests=await readFile(`tools/cc2-transition-audit/${name}-tests.rs`,'utf8');
+  if(name==='storage' && variant==='failed-insert'){
+    tests=tests.replace('known_separate_bug_failed_insert_consumes_one_pending_line','failed_insert_preserves_pending_after_correction')
+      .replace('// Diagnostic characterization, NOT a parity assertion. Authority keeps','// Corrected transaction boundary. Authority keeps')
+      .replace('assert_eq!(f.remaining(),1);','assert_eq!(f.remaining(),2);')
+      .replace('// deliberately unchanged by clipping patch','// insertion rejection must not debit pending')
+      .replace('eprintln!("KNOWN_DIVERGENCE failed-insert pending: Rust=1 authority=2");','');
+  }
   const file=`${root}/src/forecast.rs`;
   await writeFile(file,(await readFile(file,'utf8'))+'\n'+tests);
   await writeFile(`${dest}/${name}-tests.rs`,tests);

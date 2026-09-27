@@ -14,6 +14,10 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
+接續工作：[failed-insertion單項修正](audits/cc2-alignment/FAILED_INSERT_PLAN.md)已準備，Actions對照storage與failed-insert，要求原72個placement案例不變及6個primitive邊界修正。請查最新transition diagnostic run；未讀結果前不可宣稱Rust驗收完成。
+
+最新驗收：storage clipping [run 36254801181 通過](audits/cc2-alignment/RESULT_36254801181.md)，72例由4差異降至0，其餘68例comparisons不變；Rust候選15 tests passed（包含一項已知bug characterization，不能混當parity）。保留timing+queue+storage修正。下一步單獨修failed-insertion先扣pending的交易順序，再進movegen／Hold／spawn。Production未替換、不開FT7。
+
 目標仍是做出能在公平 TL S2 KO arena 贏過 Legacy、且能在 Tetrp 純前端運行的 Kiwi。停止的是目前 Native v0 beam 的局部救援與全層 lookahead 候選，不是放棄目標。
 
 使用者提供兩個 upstream branches，希望回頭檢查當初為何未完全對齊。現在選定的下一步是：**以現行 kiwi-v1 為起點，審查 CC2 搜尋內部與 Tetrp authority 的規則耦合；tetrp-authority 作為歷史實作及測試來源。** 不直接合併 branches，不退回舊 adapter，不先調 evaluator，也不現在另造搜尋器。

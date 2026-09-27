@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [queue-scan, storage]
+        variant: [storage, failed-insert]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -43,6 +43,7 @@ jobs:
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-transition-results/Cargo.lock
       - name: Forecast regression and multi-placement correction tests
         run: |
+          export CC2_FAILED_INSERT_REPORT="$GITHUB_WORKSPACE/.cache/cc2-transition-results/failed-insert-boundaries.json"
           cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib forecast::
       - name: Run transition diagnostics (known mismatches are evidence, not a parity pass)
         run: node scripts/kiwi-cc2-transition-audit.js compare .cache/cc2-transition-results tools/cc2-transition-audit/target/release/cc2-transition-audit
@@ -68,22 +69,22 @@ jobs:
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-queue-scan
-          path: .cache/cc2-storage-results/queue-scan
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-storage
+          path: .cache/cc2-failed-insert-results/storage
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-storage
-          path: .cache/cc2-storage-results/storage
-      - name: Require clipping-only correction
-        run: node scripts/kiwi-cc2-storage-gate.js
+          name: cc2-transition-${{ github.run_id }}-${{ github.run_attempt }}-failed-insert
+          path: .cache/cc2-failed-insert-results/failed-insert
+      - name: Require failed-insertion-only correction
+        run: node scripts/kiwi-cc2-failed-insert-gate.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cc2-storage-gate-${{ github.run_id }}
-          path: .cache/cc2-storage-results/summary.json
+          name: cc2-failed-insert-gate-${{ github.run_id }}
+          path: .cache/cc2-failed-insert-results/
           include-hidden-files: true
           if-no-files-found: warn
       - name: Notify completion or failure
         if: always()
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-storage-results
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-failed-insert-results
