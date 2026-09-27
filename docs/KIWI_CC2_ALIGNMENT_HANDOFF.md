@@ -14,6 +14,10 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
+最新：建立[combined correctness workflow](audits/cc2-alignment/COMBINED_PLAN.md)，四transaction corrections先套，再加movegen/spawn/air；最終cache build重跑transaction＋lifecycle＋snapshot，合併gate共2038 checks。查 `CC2 Tetrp combined correctness` 新workflow（不是舊movegen）。本機72fixtures/6boundary expectations重產成功，Rust整合結果待Actions。尚未做多手authority/DAG trace，production未改。
+
+最新：[run36308069080 Hold/reveal驗收](audits/cc2-alignment/RESULT_36308069080.md)：30 Rust requests零差異、8 hidden-tail pairs相同；16 authority Holds後14次locked reanalysis無Hold候選，2 terminal不重分析。本機核raw output與pairs；141 lifecycle/1746 rotation/43 placement-cost回歸通過。Rust5 spawn+8 snapshot+6 movegen通過。下一步將transaction四項修正與movegen/air/spawn整合於同一diagnostic build，重跑combined suites，再查多手state/DAG replay一致性；未接production、不開FT7。
+
 最新：[run36307348238 spawn修正驗收](audits/cc2-alignment/RESULT_36307348238.md)：141 cases零差異、8 baseline cases修好、其餘輸出不變；5 spawn tests含二層DAG通過，1746旋轉/43落點回歸通過，本機重算gates。已保留隔離修正。接著建立[standalone Hold/reveal audit](audits/cc2-alignment/SNAPSHOT_HOLD_PLAN.md)：30 requests、8 hidden-tail pairs、16 authority Holds，本機generation通過；Rust實際parse/post_hold_root/analyze_text待Actions。production未改。
 
 最新：已建立[spawn-terminal隔離修正](audits/cc2-alignment/SPAWN_FIX_PLAN.md)：GameState增加empty-Hold lineage旗標納入hash，actual current的spawn/clutch guard套在DAG expansion與public API，authority active-root allowlist豁免respawn。141配對fixtures含8個empty-Hold反例控制與terminal try_play；要求至少6例修好、其他已通過輸出不變。Rust與二層DAG測試等Actions，尚未宣稱修正驗收。production/evaluator未改。
