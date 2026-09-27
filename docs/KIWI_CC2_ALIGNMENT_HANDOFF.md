@@ -14,6 +14,8 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
+最新：[run36311975213 observer問題](audits/cc2-alignment/RESULT_36311975213.md)：96手40 mismatch只在tanked/cancelled/sent且加倍，Bot.current與Dag.root各advance一次被同observer重複計數。raw40非空events前後半相同，单次重算96手零transaction差異；90623 edges/4542 selection replays/depth6無assert失敗。正式gate未過。已改Bot.current.advance後drain committed sample，DAG replay另取且要求相同，重跑同corpus；未改bot規則/production。
+
 最新：建立[4手trace＋DAG replay audit](audits/cc2-alignment/TRACE_PLAN.md)：本機24traces/96placements生成通過，persistent Bot不補queue，每step對authority transaction及known pieces。診斷observer記published parent/next/move→child，Dag::select重播核fullstate；要求actual replay及depth>=2，禁止speculated expansion。combined workflow先重跑2038 checks再trace，查最新run的cc2-trace-results；Rust尚待驗證。production未改。
 
 最新：[run36309185307 combined gate通過](audits/cc2-alignment/RESULT_36309185307.md)：2038 checks零差異，最終cache build Forecast16/spawn5/snapshot8 tests通過，movegen6 tests通過。本機重跑spawn/air gate、raw72transition comparator、6boundary與Hold/rotation驗證。保留combined candidate。下一步多手known-prefix authority trace＋DAG selection replay/stored-child一致性，然後browser budget；production/evaluator未改，不開FT7。

@@ -86,7 +86,7 @@ jobs:
         run: node scripts/kiwi-cc2-rotation-gate.js
       - name: Require every combined correctness gate
         run: node scripts/kiwi-cc2-combined-gate.js
-      - name: Trace accumulated authority state and actual DAG replay
+      - name: Trace authority state with separate commit and DAG replay samples
         run: |
           node scripts/kiwi-cc2-trace-prepare.js
           RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features trace-audit --bin trace

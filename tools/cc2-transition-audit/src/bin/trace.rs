@@ -28,7 +28,10 @@ fn run(r:Input)->Result<Value,String>{
   }
   let before=state_json(&bot.state());let multiplier=bot.state().forecast.next_attack_multiplier();observer::reset();
   let p=Placement{location:step.placement.location.canonical_form(),spin:step.placement.spin};
-  let info=bot.try_play(p,step.use_hold)?;let events=observer::take();let state=bot.state();
+  let info=bot.try_play(p,step.use_hold)?;
+  let events=dag::take_committed();let replay_events=observer::take();
+  assert_eq!(events,replay_events,"Bot commit and DAG root replay transactions differ");
+  let state=bot.state();
   let attack=tetrio::attack_with_multiplier_and_rules(&info,multiplier,state.rules);
   steps.push(json!({"before":before,"after":state_json(&state),"pieces":bot.player_pieces(),
     "placement":info.placement,"cells":info.placement.location.cells(),"clear":{"lines":info.lines_cleared,"garbageRows":info.garbage_cleared,"allClear":info.perfect_clear},
