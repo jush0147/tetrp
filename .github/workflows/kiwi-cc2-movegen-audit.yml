@@ -25,9 +25,9 @@ jobs:
           path: .cache/cc2-transition-source
       - name: Enumerate and replay authority witnesses
         run: |
-          node --test test/kiwi-cc2-movegen-audit.test.js
+          node --test test/kiwi-cc2-movegen-audit.test.js test/kiwi-height-domain.test.js
           node scripts/kiwi-cc2-movegen-audit.js prepare
-          node scripts/kiwi-cc2-rotation-audit.js prepare .cache/cc2-rotation-results/reference
+          node scripts/kiwi-cc2-reachable-rotation.js .cache/cc2-rotation-results/reference
           cp -r .cache/cc2-rotation-results/reference .cache/cc2-rotation-results/candidate
       - name: Compile full reference and empty-air compression candidate
         run: |

@@ -14,7 +14,11 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
-接續：[rotation專項](audits/cc2-alignment/ROTATION_PLAN.md)已建立，564個合法條件pose，包含kick3／180／history30與31。Actions真實呼叫CC2 private rotation functions，reference/cache結果必須一致；對Tetrp差異分開報告。另10例整數y條件出現authority slam與certificate landing guard不一致，已明確標記、不算certified placements、不在本輪混修。查最新movegen diagnostic run；尚未拿到Rust結果。
+最新：已建立[spawn-reachable rotation 診斷](audits/cc2-alignment/REACHABLE_ROTATION_PLAN.md)，本機1746 probes、71507 prefixes通過，包含history30/31+、kick3、180、mini/full；零integer pose、零certificate差異。14條額外旋轉後接原路徑失敗已記錄，未納入失敗後姿態。Workflow改用此corpus，下一次查 `CC2 Tetrp movegen diagnostic` artifact；Rust結果未得前不宣稱parity。原564 conditional probes generator保留可重跑。
+
+最新：[height domain 審查](audits/cc2-alignment/HEIGHT_DOMAIN.md)完成。正常 default TL generated lineage 的 y 寫入都保留非整數；新增5 tests及 replay16 tests共21通過，包含40×/無限緩降、實際40次旋轉、垃圾推升、restore/fork、anchor不覆寫。外部checkpoint確實接受整數y，且同cells旋轉不同，不能無條件normalize。暫不因186個conditional probes擴充核心；下一步以spawn實際可達路徑建立kick/180/history fixtures，再跑Rust雙版本。完整domain／spin parity尚未認證，production未改，不開FT7。
+
+最新：[rotation run36293876659](audits/cc2-alignment/RESULT_36293876659.md)完成。564條件probes中186差異，全為精確整數current.y且history0／30；spin18皆伴隨cells差異，沒有spin-only。兩Rust版本完全相同，43例movegen回歸零差異。已實查同cells的y38與37.96旋轉不同、後者與CC2相同。下一步先確認正常Engine/replay是否能產生精確整數y，再決定表示或明確支援域，不能把條件probe失敗率當實戰錯誤率。10個authority certificate邊界仍待可達性辨識，不混修、不開FT7。
 
 最新：[空中摘要run 36293197534](audits/cc2-alignment/RESULT_36293197534.md)已驗收，本機重跑gate成功。43例candidate/shared-cache與完整reference逐筆placement及cost一致、authority集合零差異；warm倍率中位0.3186（約3.14×），cold無穩定加速結論，27entry payload170688bytes。保留隔離候選，不接production。下一步原定kick／180／rotation-history專項，同時跑兩個Rust版本以區分規則模型與cache差異；不要只對43例持續微調效能。未來timing-aware execution需求已記錄，現在仍placement模型。
 

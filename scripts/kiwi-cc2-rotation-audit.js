@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 import * as B from '../src/board.js';
 import {visibleState} from '../src/analysis/visible-state.js';
@@ -14,7 +15,7 @@ const [mode,dir='.cache/cc2-rotation-results',arg]=process.argv.slice(2);
 const key=c=>c.map(([x,y])=>`${x},${Math.ceil(y)}`).sort().join(';');
 const tools=createPlacementTools({Engine,boardModule:B,rotationModule:R});
 const orientations=['north','east','south','west'];
-function convert(p){
+export function convert(p){
   const wanted=key(B.cells(p));
   for(let x=p.x-2;x<=p.x+2;x++)for(let y=39-Math.ceil(p.y)-2;y<=39-Math.ceil(p.y)+2;y++){
     const location={type:p.type.toUpperCase(),orientation:orientations[p.r],x,y};
@@ -107,9 +108,11 @@ async function compare(){
   await writeFile(`${dir}/comparisons.json`,JSON.stringify(comparisons));
   console.log(JSON.stringify({cases:cases.length,mismatches:comparisons.filter(c=>c.fields.length).length}));
 }
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
 if(mode==='prepare')await prepare();
 else if(mode==='compare')await compare();
 else if(mode==='install'){
   const file=`${dir}/src/movegen.rs`,s=await readFile(file,'utf8');assert.ok(!s.includes('audit_rotation_probe'));
   await writeFile(file,s+'\n'+await readFile('tools/cc2-transition-audit/rotation-probe.rs','utf8'));
 }else throw Error('prepare | compare | install <source checkout>');
+}
