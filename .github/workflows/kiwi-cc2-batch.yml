@@ -1,0 +1,70 @@
+name: Corrected Kiwi 24-game paired regression
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-batch.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cc2-fixed-batch-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        leg: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch verified unchanged candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 36323060219 --name cc2-wasm-36323060219-1 --dir .cache/cc2-candidate
+      - name: Regression checks
+        run: node --test test/placement-authority.test.js test/native-arena.test.js test/kiwi-cc2-series-score.test.js
+      - name: One KO-only paired leg
+        timeout-minutes: 120
+        env:
+          CC2_BATCH_LEG: ${{ matrix.leg }}
+        run: node scripts/kiwi-cc2-arena-integration.js .cache/cc2-candidate .cache/cc2-batch-result --batch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-batch-leg-${{ matrix.leg }}
+          path: .cache/cc2-batch-result/
+          include-hidden-files: true
+          compression-level: 9
+          retention-days: 7
+  summary:
+    if: always()
+    needs: game
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: cc2-batch-leg-*
+          path: .cache/cc2-batch-downloads
+      - name: Aggregate and notify once
+        env:
+          BATCH_JOB_STATUS: ${{ needs.game.result }}
+        run: node scripts/kiwi-cc2-batch-summary.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-batch-summary
+          path: .cache/cc2-batch-summary.json
+          retention-days: 30

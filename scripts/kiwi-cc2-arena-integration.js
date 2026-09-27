@@ -12,6 +12,9 @@ import {scoreKO} from './kiwi-cc2-series-score.js';
 const artifact=resolve(process.argv[2]??'.cache/cc2-candidate'),out=process.argv[3]??'.cache/cc2-integration-results';
 const smoke=process.argv.includes('--smoke');
 const ft7=process.argv.includes('--ft7');
+const batch=process.argv.includes('--batch');
+const leg=batch?Number(process.env.CC2_BATCH_LEG):null;
+if(batch){assert.ok(Number.isInteger(leg)&&leg>=0&&leg<24);assert.ok(!smoke&&!ft7);}
 assert.ok(!(smoke&&ft7),'A bounded smoke cannot be a strength series');
 await mkdir(out,{recursive:true});
 const hash=b=>createHash('sha256').update(b).digest('hex');
@@ -23,7 +26,8 @@ const report={schema:ft7?'cc2-authority-ft7/1':'cc2-authority-integration/1',git
  artifactRun:36323060219,artifactHashes:expected,nodeBudget:NODE_BUDGET,executionModel:'tl-placement-v1',
  framesPerPiece:24,maxFrames:smoke?48:null,watchdogFrames:360000,smokeOnly:smoke,complete:false,games:[],
  baseline:'Tetrp vendored Kiwi snapshot-v3.2; not original CC2',promotionEligible:false,
- ...(ft7?{target:7,score:[0,0],seed:2026092801,scoring:'KO only; simultaneous KO unscored and replayed; technical failure aborts'}:{})};
+ ...(ft7?{target:7,score:[0,0],seed:2026092801,scoring:'KO only; simultaneous KO unscored and replayed; technical failure aborts'}:{}),
+ ...(batch?{batchLeg:leg,pair:Math.floor(leg/2),batchScored:false}: {})};
 const save=()=>writeFile(`${out}/result.json`,JSON.stringify(report,null,2));await save();
 try{
  for(const [name,sha]of Object.entries(expected))assert.equal(hash(await readFile(`${artifact}/pkg/${name}`)),sha,`Artifact hash ${name}`);
@@ -37,8 +41,11 @@ try{
   return normalizeTopRecommendation(s,p,r);
  };
  report.profiles=[{name:'corrected-cc2-kiwi',artifactRun:report.artifactRun},{name:'tetrp-vendored-kiwi',version:legacy.version}];
- for(let game=0;ft7?Math.max(...report.score)<7:game<2;game++){
-  const seed=(ft7?report.seed:2026092701)+game*4,swapped=game%2===1,fd=openSync(`${out}/game-${game+1}.jsonl`,'w');
+ for(let game=0;batch?!report.batchScored:ft7?Math.max(...report.score)<7:game<2;game++){
+  // Separate retry seed range per pair; identical seat streams on paired legs.
+  if(batch)assert.ok(game<25,'Repeated simultaneous KO: incomplete batch leg');
+  const seed=batch?2026100001+Math.floor(leg/2)*100+game*4:(ft7?report.seed:2026092701)+game*4;
+  const swapped=batch?leg%2===1:game%2===1,fd=openSync(`${out}/game-${game+1}.jsonl`,'w');
   const pending=[null,null],counts={placements:[0,0],holds:[0,0],reanalyses:[0,0],receives:[0,0],spins:{},clears:{}};
   const record=event=>{
    // Retain snapshots, original intent, provenance and actual lock before checking.
@@ -78,12 +85,16 @@ try{
    const scored=scoreKO(report.score,result,swapped);report.score=scored.score;
    Object.assign(report.games.at(-1),scored);await save();
   }
+  if(batch){
+   const scored=scoreKO([0,0],result,swapped);report.batchScored=scored.scored;
+   Object.assign(report.games.at(-1),scored);await save();
+  }
   console.log(JSON.stringify({type:'game-end',game:game+1,reason:result.reason,parity:result.parity,counts,...(ft7?{score:report.score}:{})}));
  }
- if(!smoke)for(let policy=0;policy<2;policy++){
+ if(!smoke&&!batch)for(let policy=0;policy<2;policy++){
   const total=k=>report.games.reduce((n,g)=>n+g.counts[k][g.swapped?1-policy:policy],0);
   assert.ok(total('placements')>=24,'Insufficient placement coverage');
   assert.ok(total('reanalyses')>0,'No Hold/reveal coverage');assert.ok(total('receives')>0,'No incoming garbage coverage');
  }
- report.complete=true;report.status=ft7?'ft7-completed':smoke?'local-smoke-completed':'arena-integration-passed';await save();
+ report.complete=true;report.status=batch?'batch-leg-completed':ft7?'ft7-completed':smoke?'local-smoke-completed':'arena-integration-passed';await save();
 }catch(e){report.status=ft7?'ft7-failed':'integration-failed';report.error={message:e.message,stack:e.stack,details:e.details};await save();throw e;}
