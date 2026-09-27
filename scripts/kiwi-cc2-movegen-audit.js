@@ -66,6 +66,11 @@ async function fixtures(){
   const high=new PlacementArenaEngine().state.board;
   high.rows[18][4]='j';high.rows[18][5]='j';
   for(const piece of ['i','o','t'])for(const clutch of [false,true])add('spawn-obstruction',piece,high,clutch);
+  for(const mirror of [false,true])for(const lift of [0,2,8])for(const piece of ['j','l']){
+    const board=new PlacementArenaEngine().state.board;
+    overhang.rows.forEach((row,y)=>{if(y>=lift)board.rows[y-lift]=mirror?[...row].reverse():[...row];});
+    add(`descent-mirror-${mirror}-lift-${lift}`,piece,board);
+  }
   return out;
 }
 export function compareSets(c,row){

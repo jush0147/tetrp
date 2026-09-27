@@ -27,7 +27,7 @@ jobs:
         run: |
           node --test test/kiwi-cc2-movegen-audit.test.js
           node scripts/kiwi-cc2-movegen-audit.js prepare
-      - name: Compile and execute pinned CC2 movegen
+      - name: Compile and execute paired CC2 movegen kernels
         run: |
           rustup toolchain install 1.90.0 --profile minimal
           cp .cache/cc2-transition-source/Cargo.lock tools/cc2-transition-audit/Cargo.lock
@@ -35,13 +35,26 @@ jobs:
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-movegen-results/Cargo.lock
           rustc +1.90.0 --version > .cache/cc2-movegen-results/rust-version.txt
           node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-movegen-results tools/cc2-transition-audit/target/release/movegen
+          mkdir -p .cache/cc2-descent-results
+          cp -r .cache/cc2-movegen-results .cache/cc2-descent-results/baseline
+          cp -r .cache/cc2-movegen-results .cache/cc2-descent-results/candidate
+          git -C .cache/cc2-transition-source apply --check "$GITHUB_WORKSPACE/tools/cc2-transition-audit/mid-descent.patch"
+          git -C .cache/cc2-transition-source apply "$GITHUB_WORKSPACE/tools/cc2-transition-audit/mid-descent.patch"
+          git -C .cache/cc2-transition-source diff > .cache/cc2-descent-results/correction.patch
+          sha256sum tools/cc2-transition-audit/mid-descent.patch > .cache/cc2-descent-results/correction.sha256
+          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --bin movegen
+          node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-descent-results/candidate tools/cc2-transition-audit/target/release/movegen
+      - name: Require geometry correction and preserve timing evidence
+        run: node scripts/kiwi-cc2-mid-descent-gate.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cc2-movegen-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .cache/cc2-movegen-results/
+          name: cc2-mid-descent-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .cache/cc2-descent-results/
+            .cache/cc2-movegen-results/
           include-hidden-files: true
           retention-days: 30
       - name: Notify completion or failure
         if: always()
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-movegen-results
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-descent-results

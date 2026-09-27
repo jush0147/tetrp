@@ -14,7 +14,9 @@ Run `36246453477` 已完整跑完並核對，見[結果](audits/cc2-alignment/RE
 
 ## 固定目標與目前決定
 
-目前接續：[spawn movegen集合診斷](audits/cc2-alignment/MOVEGEN_PLAN.md)已建立，27例直接Engine列舉與certificate本機完成；Actions編譯原始pinned CC2 `find_moves_with_clutch`做cells／cells+spin比較。查最新`CC2 Tetrp movegen diagnostic` run；尚未取得Rust差異，不改movegen／evaluator、不開FT7。
+接續候選：[中途下降展開配對計畫](audits/cc2-alignment/MID_DESCENT_PLAN.md)。停用endpoint-only fast seed並新增逐格下降edge，spin不改；39例authority fixtures已本機完成，Actions對照pinned baseline／candidate，保存kernel timing與soft-drop cost變化。請查最新movegen diagnostic run，未讀結果不得保留或宣稱parity。
+
+目前最新：[spawn movegen run 36290851396結果](audits/cc2-alignment/RESULT_36290851396.md)已下載並重算。26/27例cells+spin集合相同，605個authority落點中CC2缺1個J中途下降再左移的落點，無CC2-only或同cells spin差異。Witness重新驗證通過；full drop多掉1格後不能左移，吻合fast path省略中間下降pose的風險。下一步只做這類geometry展開的介入修正與配對回歸，不調evaluator、不開FT7；詳細限制見報告。
 
 最新進度：[failed-insertion run 36290267203驗收通過](audits/cc2-alignment/RESULT_36290267203.md)。原72個placement案例comparisons完全不變、6個primitive邊界全部對齊；Rust兩邊各16 tests passed，ntfy accepted，本機已重跑gate。保留四項局部transaction修正。下一步CC2 movegen／spin provenance集合差異審查，再查Hold與spawn／clutch；不開FT7、不改production。
 

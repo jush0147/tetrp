@@ -1,0 +1,27 @@
+diff --git a/src/movegen.rs b/src/movegen.rs
+--- a/src/movegen.rs
++++ b/src/movegen.rs
+@@ -14,7 +14,9 @@ pub fn find_moves_with_clutch(board: &Board, piece: Piece, allow_clutch: bool) -> Ve
+     let mut underground_locks = AHashMap::new();
+     let mut locks = Vec::with_capacity(64);
+     let collision_map = CollisionMaps::new(board, piece);
+-    let fast_mode = board.cols.iter().all(|&c| c.leading_zeros() > 64 - 16);
++    // Diagnostic candidate: seed the actual spawn and retain intermediate
++    // descent poses; endpoint-only seeding can miss mid-air lateral entries.
++    let fast_mode = false;
+     if fast_mode {
+         for &rotation in &[Rotation::North, Rotation::East, Rotation::South, Rotation::West] {
+             for x in 0..10 {
+@@ -60,6 +62,12 @@ pub fn find_moves_with_clutch(board: &Board, piece: Piece, allow_clutch: bool) -> Ve
+         *sds = expand.soft_drops.min(*sds);
+         let mut update = update_position(&mut queue, &mut values, fast_mode, board);
+         update(dropped, expand.soft_drops + drop_dist as u32);
++        if drop_dist > 0 {
++            update(Placement {
++                location: PieceLocation { y: expand.mv.location.y - 1, ..expand.mv.location },
++                spin: Spin::None,
++            }, expand.soft_drops + 1);
++        }
+         if let Some(mv) = shift(expand.mv.location, &collision_map, -1) { update(mv, expand.soft_drops); }
+         if let Some(mv) = shift(expand.mv.location, &collision_map, 1) { update(mv, expand.soft_drops); }
+         if let Some(mv) = rotate_cw(expand.mv.location, &collision_map, board) { update(mv, expand.soft_drops); }

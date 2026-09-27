@@ -13,7 +13,19 @@ fn run(r:Input)->Result<Value,String>{
     let bot=try_create_bot_with_context(r.start,Arc::new(BotConfig::review_h9_h12()),r.rules,false)?;
     let board=bot.state().board;
     let moves=movegen::find_moves_with_clutch(&board,piece,r.clutch);
-    Ok(json!({"id":r.id,"moves":moves.iter().map(|(p,cost)|json!({
+    // Same-run kernel timing, excludes parsing and bot construction. This is
+    // diagnostic native latency, not a browser performance acceptance test.
+    let mut timing_ns=Vec::new();
+    for _ in 0..7 {
+        let begin=std::time::Instant::now();
+        for _ in 0..25 {
+            let again=movegen::find_moves_with_clutch(std::hint::black_box(&board),piece,r.clutch);
+            assert_eq!(again,moves,"movegen must be repeatable");
+            std::hint::black_box(again);
+        }
+        timing_ns.push(begin.elapsed().as_nanos() as u64/25);
+    }
+    Ok(json!({"id":r.id,"timingNs":timing_ns,"moves":moves.iter().map(|(p,cost)|json!({
         "placement":p,"cells":p.location.cells(),"softDrops":cost})).collect::<Vec<_>>() }))
 }
 fn main(){
