@@ -27,36 +27,44 @@ jobs:
         run: |
           node --test test/kiwi-cc2-movegen-audit.test.js
           node scripts/kiwi-cc2-movegen-audit.js prepare
+          node scripts/kiwi-cc2-rotation-audit.js prepare .cache/cc2-rotation-results/reference
+          cp -r .cache/cc2-rotation-results/reference .cache/cc2-rotation-results/candidate
       - name: Compile full reference and empty-air compression candidate
         run: |
           rustup toolchain install 1.90.0 --profile minimal
           cp .cache/cc2-transition-source/Cargo.lock tools/cc2-transition-audit/Cargo.lock
           git -C .cache/cc2-transition-source apply --check "$GITHUB_WORKSPACE/tools/cc2-transition-audit/mid-descent.patch"
           git -C .cache/cc2-transition-source apply "$GITHUB_WORKSPACE/tools/cc2-transition-audit/mid-descent.patch"
-          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --bin movegen
+          node scripts/kiwi-cc2-rotation-audit.js install .cache/cc2-transition-source
+          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit --bin movegen --bin rotation
           cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-movegen-results/Cargo.lock
           rustc +1.90.0 --version > .cache/cc2-movegen-results/rust-version.txt
           node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-movegen-results tools/cc2-transition-audit/target/release/movegen
+          node scripts/kiwi-cc2-rotation-audit.js compare .cache/cc2-rotation-results/reference tools/cc2-transition-audit/target/release/rotation
           mkdir -p .cache/cc2-air-results
           cp -r .cache/cc2-movegen-results .cache/cc2-air-results/reference
           cp -r .cache/cc2-movegen-results .cache/cc2-air-results/candidate
           cp -r .cache/cc2-movegen-results .cache/cc2-air-results/shared-cache
           node scripts/kiwi-cc2-air-prefix-prepare.js
-          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --bin movegen
+          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit --bin movegen --bin rotation
           cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib movegen::
           node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-air-results/candidate tools/cc2-transition-audit/target/release/movegen
           CC2_KEEP_AIR_CACHE=1 node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-air-results/shared-cache tools/cc2-transition-audit/target/release/movegen
+          node scripts/kiwi-cc2-rotation-audit.js compare .cache/cc2-rotation-results/candidate tools/cc2-transition-audit/target/release/rotation
       - name: Require exact placement and cost parity, report cold and warm latency
         run: node scripts/kiwi-cc2-air-prefix-gate.js
+      - name: Separate rotation rule differences from cache changes
+        run: node scripts/kiwi-cc2-rotation-gate.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cc2-air-prefix-${{ github.run_id }}-${{ github.run_attempt }}
+          name: cc2-rotation-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             .cache/cc2-air-results/
             .cache/cc2-movegen-results/
+            .cache/cc2-rotation-results/
           include-hidden-files: true
           retention-days: 30
       - name: Notify completion or failure
         if: always()
-        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-air-results
+        run: node scripts/kiwi-cc2-transition-audit.js notify .cache/cc2-rotation-results
