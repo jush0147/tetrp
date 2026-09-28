@@ -35,3 +35,11 @@ test('simultaneous KO is unscored and requires a new-seed retry',()=>{
  retry.game=2;retry.seeds=retry.seeds.map(s=>s+4);retry.holeSeeds=retry.holeSeeds.map(s=>s+4);rs[0].games.push(retry);
  assert.ok(summarizeDense(rs,'success').complete);
 });
+test('landing integration accepts only its exact artifact and retains all gates',()=>{
+ const rs=fixtures();assert.ok(!summarizeDense(rs,'success',{landing:true}).complete);
+ for(const r of rs){r.artifactRun=36387270053;r.artifactHashes['cold_clear_2_bg.wasm']='ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767';}
+ assert.ok(summarizeDense(rs,'success',{landing:true}).complete);
+ assert.ok(!summarizeDense(rs,'success').complete);
+ rs[0].games[0].transportStats[0].fallbackRequests++;
+ assert.ok(!summarizeDense(rs,'success',{landing:true}).complete);
+});

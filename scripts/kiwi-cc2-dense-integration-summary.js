@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
-import {readFile,readdir,writeFile,appendFile} from 'node:fs/promises';
+import {readFile,readdir,writeFile,appendFile,mkdir} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {scoreKO} from './kiwi-cc2-series-score.js';
 
-export function summarizeDense(reports,jobStatus){
+export function summarizeDense(reports,jobStatus,{landing=false}={}){
  const legs=[],problems=[],score=[0,0],coverage=[0,1].map(()=>({placements:0,holds:0,reanalyses:0,receives:0}));
  for(const [index,r]of reports.entries())try{
   assert.ok(Number.isInteger(r.batchLeg)&&r.batchLeg>=0&&r.batchLeg<8);
   assert.equal(r.pair,Math.floor(r.batchLeg/2));assert.ok(!legs.some(l=>l.leg===r.batchLeg));
   assert.ok(r.complete&&r.batchScored&&!r.smokeOnly);assert.equal(r.status,'batch-leg-completed');
   assert.equal(r.maxFrames,null);assert.equal(r.nodeBudget,200000);assert.equal(r.framesPerPiece,24);
-  assert.equal(r.executionModel,'tl-placement-v1');assert.equal(r.artifactRun,36380902069);
-  assert.equal(r.artifactHashes['cold_clear_2_bg.wasm'],'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba');
+  assert.equal(r.executionModel,'tl-placement-v1');assert.equal(r.artifactRun,landing?36387270053:36380902069);
+  assert.equal(r.artifactHashes['cold_clear_2_bg.wasm'],landing?'ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767':'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba');
   assert.equal(r.artifactHashes['cold_clear_2.js'],'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691');
   assert.ok(r.games.length>0&&r.games.length<=25);
   const local=[0,1].map(()=>({placements:0,holds:0,reanalyses:0,receives:0}));
@@ -42,15 +42,17 @@ export function summarizeDense(reports,jobStatus){
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
- const root='.cache/cc2-dense-integration-downloads',reports=[],readErrors=[];
+ await mkdir('.cache',{recursive:true});
+ const landing=process.argv.includes('--landing'),label=landing?'landing':'dense';
+ const root=`.cache/cc2-${label}-integration-downloads`,reports=[],readErrors=[];
  for(const folder of await readdir(root).catch(()=>[]))try{reports.push(JSON.parse(await readFile(`${root}/${folder}/result.json`)));}
  catch(e){readErrors.push({folder,error:e.message});}
- const result=summarizeDense(reports,process.env.BATCH_JOB_STATUS);result.readErrors=readErrors;if(readErrors.length)result.complete=false;
- await writeFile('.cache/cc2-dense-integration-summary.json',JSON.stringify(result,null,2));
+ const result=summarizeDense(reports,process.env.BATCH_JOB_STATUS,{landing});result.readErrors=readErrors;if(readErrors.length)result.complete=false;
+ await writeFile(`.cache/cc2-${label}-integration-summary.json`,JSON.stringify(result,null,2));
  const url=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
  const sum=k=>result.coverage.reduce((n,c)=>n+c[k],0);
- const message=`Dense Kiwi integration: ${result.validLegs}/8 valid KO legs; ${sum('placements')} placements; ${sum('holds')} Holds. Score ${result.score.join(':')} vs vendored Kiwi (diagnostic only). ${result.complete?'Correctness gates passed.':'Incomplete/failed; inspect artifacts.'}`;
+ const message=`Kiwi ${label} integration: ${result.validLegs}/8 valid KO legs; ${sum('placements')} placements; ${sum('holds')} Holds. Score ${result.score.join(':')} vs vendored Kiwi (diagnostic only). ${result.complete?'Correctness gates passed.':'Incomplete/failed; inspect artifacts.'}`;
  console.log(message);if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,message+'\n\n'+url+'\n');
- const response=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:result.complete?'Kiwi dense integration passed':'Kiwi dense integration needs review',message:message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});
+ const response=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:result.complete?`Kiwi ${label} integration passed`:`Kiwi ${label} integration needs review`,message:message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});
  assert.ok(response.ok);assert.ok((await response.json()).id);if(!result.complete)process.exitCode=1;
 }
