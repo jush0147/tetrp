@@ -1,0 +1,15 @@
+# Landing-cost map experiment
+
+Motivation: [post-dense profile](RESULT_36386507410.md). Reference is the accepted dense visited artifact from run 36380902069, WASM `bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba`. No evaluator, rules, node budget, heap, visited table or air-cache changes.
+
+Replace only `underground_locks` with a 4,800-slot u16 index into a vector of `(Placement, u32 cost)`. Empty slot is u16::MAX; costs retain their full u32 range, including u32::MAX and values >=40. Repeated keys retain their minimum cost. Keep the original final sorting/dedup, so vector insertion order cannot reorder output. Slot initialization costs and the additional 9,600 bytes per invocation are included in measurements.
+
+Canonicalization moves anchors for O/I/S/Z. The canonical piece occupies exactly the original cells and includes the anchor cell; legal cells inside the 10x40 board therefore imply a legal canonical anchor. Validate exhaustively in Rust for seven pieces, four rotations and anchors spanning beyond all board boundaries on an empty board, comparing occupied cells and checking every spin index. Any pose legal on an occupied board is a subset of empty-board legal poses. Preserve runtime domain and fixed-piece assertions. Exhaustively compare slot min updates against HashMap over all 4,800 keys, with u32::MAX, >=40, ties and zero.
+
+Required gates: existing 43 ordered placement/spin/cost fixtures, combined 2,038 authority checks, 96 multi-placement trace checks, and complete fixed-budget recommendation equality against accepted dense WASM on 12 real public snapshots. Build the release WASM separately without observers, with Rust 1.90.0 and locked dependencies. Candidate source transform records before/after hashes and complete diff.
+
+Browser protocol: Chromium Worker, 200,000 nodes, five passes (one first-use plus four warm), alternating arm order. All 60 complete report pairs and 120 top-1 authority checks must pass. Average four warm timings per state; use the established nearest-rank median of paired latency reductions. Predeclared performance gate: **at least 5% median reduction, no state more than 5% slower**. This new threshold is chosen before results for a smaller measured target (~9% visible hash/rehash cost), not a change to the prior visited-table experiment's 10% gate. Retain raw timings and WASM memory; do not automatically adopt a candidate passing a single noisy run.
+
+One bounded Actions job reuses the existing correctness/build/browser pipeline. No arena until correctness and performance justify it. Completion/failure ntfy once. Production vendor unchanged. Local identical-artifact smoke validates harness only; Rust and candidate performance require Actions because there is no local Rust toolchain.
+
+Local preflight passed: exact transform anchors, duplicate-transform rejection, byte-identical original visited/rotation/air helper suffix, 12 JS authority/adapter tests, and identical-artifact Chromium smoke with 12 full-report pairs and 24 top-1 checks (16 placement, 8 Hold). No candidate speed claim from this smoke.

@@ -5,8 +5,8 @@ import path from 'node:path';
 import {chromium} from '@playwright/test';
 import {createHash} from 'node:crypto';
 const out='.cache/cc2-wasm-results';await mkdir(out,{recursive:true});
-const dense=process.argv.includes('--dense');
-const smoke=process.argv.includes('--smoke'),budgets=smoke?[2000]:dense?[200000]:[2000,20000,200000],rounds=smoke?1:dense?3:2;
+const landing=process.argv.includes('--landing'),dense=landing||process.argv.includes('--dense');
+const smoke=process.argv.includes('--smoke'),budgets=smoke?[2000]:dense?[200000]:[2000,20000,200000],rounds=smoke?1:landing?5:dense?3:2;
 const cases=JSON.parse(await readFile(dense?'docs/audits/cc2-alignment/perf-snapshots.json':'.cache/cc2-trace-results/cases.json'));
 // Every starting condition, both Hold states. No offline future enters the worker.
 const inputs=dense?cases.map(c=>({id:c.id,snapshot:c.snapshot})):cases.filter(c=>c.id.endsWith('/holdfalse')).map(c=>({id:c.id,snapshot:c.initial}));
@@ -16,9 +16,9 @@ if(dense){
  const hash=v=>createHash('sha256').update(v).digest('hex');
  const referenceWasm=hash(await readFile('.'+reference+'/cold_clear_2_bg.wasm'));
  const referenceJs=hash(await readFile('.'+reference+'/cold_clear_2.js'));
- assert.equal(referenceWasm,'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa');
+ assert.equal(referenceWasm,landing?'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba':'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa');
  assert.equal(referenceJs,'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691');
- await writeFile(`${out}/comparison.json`,JSON.stringify({referenceRun:36323060219,referenceWasm,referenceJs,
+ await writeFile(`${out}/comparison.json`,JSON.stringify({referenceRun:landing?36380902069:36323060219,referenceWasm,referenceJs,
   candidateWasm:hash(await readFile(`${out}/pkg/cold_clear_2_bg.wasm`)),corpus:hash(await readFile('docs/audits/cc2-alignment/perf-snapshots.json'))},null,2));
 }
 await writeFile(`${out}/inputs.json`,JSON.stringify(inputs));
@@ -106,10 +106,12 @@ try{
    return {id:input.id,candidateMs,referenceMs,reduction:1-candidateMs/referenceMs};
   });
   const medianReduction=percentile(perState.map(r=>r.reduction),.5);
-  const performancePassed=!smoke&&medianReduction>=.10&&perState.every(r=>r.reduction>=-.10);
-  Object.assign(summary,{status:'dense-report-parity-passed',referenceName:'accepted corrected Kiwi (not vendored Legacy)',
+  const minimumReduction=landing ? 0.05 : 0.10,maxRegression=landing ? 0.05 : 0.10;
+  const performancePassed=!smoke&&medianReduction>=minimumReduction&&perState.every(r=>r.reduction>=-maxRegression);
+  Object.assign(summary,{status:landing?'landing-report-parity-passed':'dense-report-parity-passed',referenceName:landing?'accepted dense visited Kiwi':'accepted corrected Kiwi (not vendored Legacy)',
    fullReportPairs:rows.length,perState,medianReduction,performancePassed,
-   note:'Storage-only experiment: exact full-report parity required. Performance pass: >=10% median paired reduction and no state >10% slower. No strength promotion.'});
+   minimumReduction,maxRegression,warmPasses:rounds-1,
+   note:`Storage-only experiment: exact full-report parity required. Performance pass: >=${minimumReduction*100}% median paired reduction and no state >${maxRegression*100}% slower. No strength promotion.`});
  }
  await writeFile(`${out}/summary.json`,JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
 }catch(e){await writeFile(`${out}/failure.json`,JSON.stringify({error:e.stack,completedPairs:rows.length}));throw e;}
