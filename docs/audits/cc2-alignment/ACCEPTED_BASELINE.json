@@ -1,0 +1,28 @@
+{
+  "schema": "cc2-tetrp-experimental-baseline/1",
+  "name": "Tetrp-aligned Kiwi with dense visited and indexed landing costs",
+  "status": "accepted-experimental-baseline",
+  "experiment": "landing-cost-storage-closed",
+  "sourcePin": "2e243242b674d57491f99b445f75e35fc48a0e26",
+  "buildCommit": "3d783e21052ab37bd32e23df5fc27c46582fa105",
+  "artifactRun": 36387270053,
+  "artifactName": "cc2-landing-36387270053-1",
+  "packagePathWithinArtifact": "cc2-wasm-results/pkg",
+  "wasmSha256": "ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767",
+  "jsSha256": "728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691",
+  "nodeBudget": 200000,
+  "framesPerPlacement": 24,
+  "executionModel": "tl-placement-v1",
+  "informationBoundary": "PublicSnapshot only; current and NEXT 5; no bag inference or hidden future",
+  "evidence": {
+    "correctnessAndInitialBrowser": 36387270053,
+    "browserReplication": 36388266939,
+    "finalArenaIntegration": 36412878864,
+    "trajectoryReference": 36382935572,
+    "matchingDecisions": 12838,
+    "placementParityChecks": 9378,
+    "holdParityChecks": 3460
+  },
+  "productionVendorChanged": false,
+  "note": "Documentation of the pinned experimental baseline, not an automatic runtime configuration or production deployment. Repeated regression seeds do not establish new strength evidence."
+}
