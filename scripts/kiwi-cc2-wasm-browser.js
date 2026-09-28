@@ -3,17 +3,29 @@ import {createServer} from 'node:http';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {chromium} from '@playwright/test';
+import {createHash} from 'node:crypto';
 const out='.cache/cc2-wasm-results';await mkdir(out,{recursive:true});
-const smoke=process.argv.includes('--smoke'),budgets=smoke?[2000]:[2000,20000,200000],rounds=smoke?1:2;
-const cases=JSON.parse(await readFile('.cache/cc2-trace-results/cases.json'));
+const dense=process.argv.includes('--dense');
+const smoke=process.argv.includes('--smoke'),budgets=smoke?[2000]:dense?[200000]:[2000,20000,200000],rounds=smoke?1:dense?3:2;
+const cases=JSON.parse(await readFile(dense?'docs/audits/cc2-alignment/perf-snapshots.json':'.cache/cc2-trace-results/cases.json'));
 // Every starting condition, both Hold states. No offline future enters the worker.
-const inputs=cases.filter(c=>c.id.endsWith('/holdfalse')).map(c=>({id:c.id,snapshot:c.initial}));
+const inputs=dense?cases.map(c=>({id:c.id,snapshot:c.snapshot})):cases.filter(c=>c.id.endsWith('/holdfalse')).map(c=>({id:c.id,snapshot:c.initial}));
 assert.equal(inputs.length,12);
+const reference=dense?'/.cache/cc2-dense-reference/pkg':'/vendor/kiwi-v1/pkg';
+if(dense){
+ const hash=v=>createHash('sha256').update(v).digest('hex');
+ const referenceWasm=hash(await readFile('.'+reference+'/cold_clear_2_bg.wasm'));
+ const referenceJs=hash(await readFile('.'+reference+'/cold_clear_2.js'));
+ assert.equal(referenceWasm,'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa');
+ assert.equal(referenceJs,'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691');
+ await writeFile(`${out}/comparison.json`,JSON.stringify({referenceRun:36323060219,referenceWasm,referenceJs,
+  candidateWasm:hash(await readFile(`${out}/pkg/cold_clear_2_bg.wasm`)),corpus:hash(await readFile('docs/audits/cc2-alignment/perf-snapshots.json'))},null,2));
+}
 await writeFile(`${out}/inputs.json`,JSON.stringify(inputs));
 const worker=`
 try {
 const {default:initCandidate,analyze_snapshot_json:candidate}=await import('/.cache/cc2-wasm-results/pkg/cold_clear_2.js');
-const {default:initLegacy,analyze_snapshot_json:legacy}=await import('/vendor/kiwi-v1/pkg/cold_clear_2.js');
+const {default:initLegacy,analyze_snapshot_json:legacy}=await import('${reference}/cold_clear_2.js');
 const {prepareKiwi,normalizeTopRecommendation}=await import('/src/analysis/kiwi.js');
 const {validatePlacement,PlacementArenaEngine,commitHold}=await import('/src/analysis/placement-authority.js');
 const candidateModule=await initCandidate(),legacyModule=await initLegacy();
@@ -47,7 +59,7 @@ const server=createServer(async(req,res)=>{
   const p=new URL(req.url,'http://localhost').pathname;
   if(p==='/'){res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>CC2 Worker budget audit</title>');return;}
   if(p==='/worker.js'){res.setHeader('Content-Type','text/javascript');res.end(worker);return;}
-  if(!['/src/','/vendor/kiwi-v1/','/.cache/cc2-wasm-results/pkg/'].some(a=>p.startsWith(a))){res.writeHead(404);res.end();return;}
+  if(!['/src/','/vendor/kiwi-v1/','/.cache/cc2-wasm-results/pkg/','/.cache/cc2-dense-reference/pkg/'].some(a=>p.startsWith(a))){res.writeHead(404);res.end();return;}
   const file=path.resolve('.'+p);assert.ok(file.startsWith(root+path.sep));
   res.setHeader('Content-Type',file.endsWith('.wasm')?'application/wasm':file.endsWith('.json')?'application/json':'text/javascript');res.end(await readFile(file));
  }catch(e){res.writeHead(500);res.end(String(e));}
@@ -75,6 +87,7 @@ try{
   }),{input,budget,round,order:(i+round)%2?['candidate','legacy']:['legacy','candidate']});
   rows.push(row);await writeFile(`${out}/rows.json`,JSON.stringify(rows));
   assert.ok(!row.error,JSON.stringify(row));
+  if(dense)assert.deepEqual(row.results.candidate.report,row.results.legacy.report,`Full recommendation mismatch: ${row.id}, round ${round}`);
  }
  const percentile=(a,p)=>[...a].sort((x,y)=>x-y)[Math.ceil(a.length*p)-1];
  const timings=budgets.map(budget=>({budget,...Object.fromEntries(['candidate','legacy'].map(name=>{
@@ -85,6 +98,19 @@ try{
   timings,placements:rows.flatMap(r=>Object.values(r.results)).filter(r=>r.checked.kind==='place').length,
   holds:rows.flatMap(r=>Object.values(r.results)).filter(r=>r.checked.kind==='hold').length,
   note:'Top-1 geometry/Hold validation and cost only; no candidate fallback. Latency is reported, not an automatic performance or strength promotion.'};
+ if(dense){
+  const perState=inputs.map(input=>{
+   const rs=rows.filter(r=>r.id===input.id&&(smoke||r.round>0));
+   const mean=name=>rs.reduce((sum,r)=>sum+r.results[name].searchMs,0)/rs.length;
+   const candidateMs=mean('candidate'),referenceMs=mean('legacy');
+   return {id:input.id,candidateMs,referenceMs,reduction:1-candidateMs/referenceMs};
+  });
+  const medianReduction=percentile(perState.map(r=>r.reduction),.5);
+  const performancePassed=!smoke&&medianReduction>=.10&&perState.every(r=>r.reduction>=-.10);
+  Object.assign(summary,{status:'dense-report-parity-passed',referenceName:'accepted corrected Kiwi (not vendored Legacy)',
+   fullReportPairs:rows.length,perState,medianReduction,performancePassed,
+   note:'Storage-only experiment: exact full-report parity required. Performance pass: >=10% median paired reduction and no state >10% slower. No strength promotion.'});
+ }
  await writeFile(`${out}/summary.json`,JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));
 }catch(e){await writeFile(`${out}/failure.json`,JSON.stringify({error:e.stack,completedPairs:rows.length}));throw e;}
 finally{await browser?.close();await new Promise(r=>server.close(r));}

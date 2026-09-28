@@ -1,0 +1,144 @@
+name: CC2 dense visited correctness and browser
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-dense-audit.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cc2-dense-audit-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-transition-source
+      - name: Enumerate authority witnesses and supported lifecycle fixtures
+        run: |
+          node --test test/kiwi-cc2-movegen-audit.test.js test/kiwi-height-domain.test.js test/kiwi-cc2-transition-audit.test.js test/cc2-storage-boundary.test.js
+          node scripts/kiwi-cc2-transition-audit.js prepare .cache/cc2-transition-results
+          node scripts/kiwi-cc2-trace.js prepare
+          node scripts/kiwi-cc2-failed-insert-gate.js .cache/cc2-combined-results prepare
+          node scripts/kiwi-cc2-audit-prepare.js .cache/cc2-transition-source .cache/cc2-transition-results failed-insert
+          node scripts/kiwi-cc2-movegen-audit.js prepare
+          node scripts/kiwi-cc2-reachable-rotation.js .cache/cc2-rotation-results/reference
+          cp -r .cache/cc2-rotation-results/reference .cache/cc2-rotation-results/candidate
+          node scripts/kiwi-cc2-lifecycle-audit.js prepare
+          mkdir -p .cache/cc2-spawn-results
+          cp -r .cache/cc2-lifecycle-results .cache/cc2-spawn-results/reference
+          cp -r .cache/cc2-lifecycle-results .cache/cc2-spawn-results/candidate
+          node scripts/kiwi-cc2-snapshot-hold.js prepare
+      - name: Compile full reference and empty-air compression candidate
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          cp .cache/cc2-transition-source/Cargo.lock tools/cc2-transition-audit/Cargo.lock
+          git -C .cache/cc2-transition-source apply --check "$GITHUB_WORKSPACE/tools/cc2-transition-audit/mid-descent.patch"
+          git -C .cache/cc2-transition-source apply "$GITHUB_WORKSPACE/tools/cc2-transition-audit/mid-descent.patch"
+          node scripts/kiwi-cc2-rotation-audit.js install .cache/cc2-transition-source
+          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit --bin movegen --bin rotation --bin lifecycle
+          node scripts/kiwi-cc2-lifecycle-audit.js compare .cache/cc2-spawn-results/reference tools/cc2-transition-audit/target/release/lifecycle
+          node scripts/kiwi-cc2-spawn-prepare.js
+          node scripts/kiwi-cc2-snapshot-hold.js install .cache/cc2-transition-source
+          cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit,snapshot-hold-audit --bin movegen --bin rotation --bin lifecycle --bin snapshot_hold
+          cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib spawn_audit_tests
+          cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib snapshot::tests
+          node scripts/kiwi-cc2-snapshot-hold.js compare .cache/cc2-snapshot-hold-results tools/cc2-transition-audit/target/release/snapshot_hold
+          node scripts/kiwi-cc2-lifecycle-audit.js compare .cache/cc2-spawn-results/candidate tools/cc2-transition-audit/target/release/lifecycle
+          node scripts/kiwi-cc2-spawn-gate.js
+          cp tools/cc2-transition-audit/Cargo.lock .cache/cc2-movegen-results/Cargo.lock
+          rustc +1.90.0 --version > .cache/cc2-movegen-results/rust-version.txt
+          node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-movegen-results tools/cc2-transition-audit/target/release/movegen
+          node scripts/kiwi-cc2-rotation-audit.js compare .cache/cc2-rotation-results/reference tools/cc2-transition-audit/target/release/rotation
+          mkdir -p .cache/cc2-air-results
+          cp -r .cache/cc2-movegen-results .cache/cc2-air-results/reference
+          cp -r .cache/cc2-movegen-results .cache/cc2-air-results/candidate
+          cp -r .cache/cc2-movegen-results .cache/cc2-air-results/shared-cache
+          node scripts/kiwi-cc2-air-prefix-prepare.js
+          node scripts/kiwi-cc2-dense-prepare.js
+          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit --bin movegen --bin rotation
+          cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib movegen::
+          node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-air-results/candidate tools/cc2-transition-audit/target/release/movegen
+          CC2_KEEP_AIR_CACHE=1 node scripts/kiwi-cc2-movegen-audit.js compare .cache/cc2-air-results/shared-cache tools/cc2-transition-audit/target/release/movegen
+          node scripts/kiwi-cc2-rotation-audit.js compare .cache/cc2-rotation-results/candidate tools/cc2-transition-audit/target/release/rotation
+      - name: Verify transaction kernel in the final combined build
+        run: |
+          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features rotation-audit,snapshot-hold-audit --bin cc2-transition-audit --bin lifecycle --bin snapshot_hold
+          node scripts/kiwi-cc2-lifecycle-audit.js compare .cache/cc2-spawn-results/candidate tools/cc2-transition-audit/target/release/lifecycle
+          node scripts/kiwi-cc2-spawn-gate.js
+          node scripts/kiwi-cc2-snapshot-hold.js compare .cache/cc2-snapshot-hold-results tools/cc2-transition-audit/target/release/snapshot_hold
+          export CC2_FAILED_INSERT_REPORT="$GITHUB_WORKSPACE/.cache/cc2-transition-results/failed-insert-boundaries.json"
+          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib forecast::
+          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib spawn_audit_tests
+          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 test --manifest-path .cache/cc2-transition-source/Cargo.toml --lib snapshot::tests
+          node scripts/kiwi-cc2-transition-audit.js compare .cache/cc2-transition-results tools/cc2-transition-audit/target/release/cc2-transition-audit
+      - name: Require exact placement and cost parity, report cold and warm latency
+        run: node scripts/kiwi-cc2-air-prefix-gate.js
+      - name: Separate rotation rule differences from cache changes
+        run: node scripts/kiwi-cc2-rotation-gate.js
+      - name: Require every combined correctness gate
+        run: node scripts/kiwi-cc2-combined-gate.js
+      - name: Trace authority state with separate commit and DAG replay samples
+        run: |
+          node scripts/kiwi-cc2-trace-prepare.js
+          RUSTFLAGS="--cfg cc2_air_prefix" cargo +1.90.0 build --release --manifest-path tools/cc2-transition-audit/Cargo.toml --features trace-audit --bin trace
+          node scripts/kiwi-cc2-trace.js compare .cache/cc2-trace-results tools/cc2-transition-audit/target/release/trace
+      - name: Download exact accepted corrected reference
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 36323060219 --repo jush0147/tetrp --name cc2-wasm-36323060219-1 --dir .cache/cc2-dense-reference
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-wasm-source
+      - name: Prepare uninstrumented candidate and public inputs
+        run: |
+          node scripts/kiwi-cc2-wasm-prepare.js
+          node scripts/kiwi-cc2-dense-prepare.js .cache/cc2-wasm-source .cache/cc2-wasm-results/dense
+          git -C .cache/cc2-wasm-source diff > .cache/cc2-wasm-results/dense-final.patch
+      - name: Build single-threaded WASM
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --target wasm32-unknown-unknown
+          cargo +1.90.0 install wasm-bindgen-cli --version "$(cat .cache/cc2-wasm-results/bindgen-version.txt)" --locked
+          cargo +1.90.0 build --locked --release --target wasm32-unknown-unknown --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib
+          wasm-bindgen .cache/cc2-wasm-source/target/wasm32-unknown-unknown/release/cold_clear_2.wasm --target web --out-dir .cache/cc2-wasm-results/pkg
+          sha256sum .cache/cc2-wasm-results/pkg/* > .cache/cc2-wasm-results/pkg-sha256.txt
+      - name: Run actual Chromium Worker
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          node scripts/kiwi-cc2-wasm-browser.js --dense
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-dense-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .cache/cc2-dense-results/
+            .cache/cc2-wasm-results/
+            .cache/cc2-transition-results/
+            .cache/cc2-combined-results/
+            .cache/cc2-trace-results/
+            .cache/cc2-air-results/
+            .cache/cc2-movegen-results/
+            .cache/cc2-rotation-results/
+            .cache/cc2-lifecycle-results/
+            .cache/cc2-spawn-results/
+            .cache/cc2-snapshot-hold-results/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify completion or failure
+        if: always()
+        env:
+          AUDIT_JOB_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-cc2-dense-notify.js
