@@ -1,0 +1,70 @@
+name: Dense Kiwi eight-game integration
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-dense-integration.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cc2-dense-integration-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 130
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        leg: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch verified unchanged candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 36380902069 --repo jush0147/tetrp --name cc2-dense-36380902069-1 --dir .cache/cc2-dense-artifact
+      - name: Regression checks
+        run: node --test test/placement-authority.test.js test/native-arena.test.js test/kiwi-cc2-series-score.test.js test/kiwi-cc2-dense-integration.test.js
+      - name: One KO-only paired leg
+        timeout-minutes: 120
+        env:
+          CC2_BATCH_LEG: ${{ matrix.leg }}
+        run: node scripts/kiwi-cc2-arena-integration.js .cache/cc2-dense-artifact/cc2-wasm-results .cache/cc2-dense-integration-result --batch --dense
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-dense-integration-leg-${{ matrix.leg }}
+          path: .cache/cc2-dense-integration-result/
+          include-hidden-files: true
+          compression-level: 9
+          retention-days: 7
+  summary:
+    if: always()
+    needs: game
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: cc2-dense-integration-leg-*
+          path: .cache/cc2-dense-integration-downloads
+      - name: Aggregate and notify once
+        env:
+          BATCH_JOB_STATUS: ${{ needs.game.result }}
+        run: node scripts/kiwi-cc2-dense-integration-summary.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-dense-integration-summary
+          path: .cache/cc2-dense-integration-summary.json
+          retention-days: 30

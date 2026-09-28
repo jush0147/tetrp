@@ -13,17 +13,19 @@ const artifact=resolve(process.argv[2]??'.cache/cc2-candidate'),out=process.argv
 const smoke=process.argv.includes('--smoke');
 const ft7=process.argv.includes('--ft7');
 const batch=process.argv.includes('--batch');
+const dense=process.argv.includes('--dense');
 const leg=batch?Number(process.env.CC2_BATCH_LEG):null;
 if(batch){assert.ok(Number.isInteger(leg)&&leg>=0&&leg<24);assert.ok(!smoke&&!ft7);}
+if(dense){assert.ok(!ft7&&(smoke||batch));if(batch)assert.ok(leg<8);}
 assert.ok(!(smoke&&ft7),'A bounded smoke cannot be a strength series');
 await mkdir(out,{recursive:true});
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const expected={
  'cold_clear_2.js':'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691',
- 'cold_clear_2_bg.wasm':'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa',
+ 'cold_clear_2_bg.wasm':dense?'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba':'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa',
 };
 const report={schema:ft7?'cc2-authority-ft7/1':'cc2-authority-integration/1',git:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
- artifactRun:36323060219,artifactHashes:expected,nodeBudget:NODE_BUDGET,executionModel:'tl-placement-v1',
+ artifactRun:dense?36380902069:36323060219,artifactHashes:expected,nodeBudget:NODE_BUDGET,executionModel:'tl-placement-v1',
  framesPerPiece:24,maxFrames:smoke?48:null,watchdogFrames:360000,smokeOnly:smoke,complete:false,games:[],
  baseline:'Tetrp vendored Kiwi snapshot-v3.2; not original CC2',promotionEligible:false,
  ...(ft7?{target:7,score:[0,0],seed:2026092801,scoring:'KO only; simultaneous KO unscored and replayed; technical failure aborts'}:{}),
