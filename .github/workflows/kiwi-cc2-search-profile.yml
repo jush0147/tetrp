@@ -1,0 +1,38 @@
+name: CC2 unchanged WASM search profiling
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-search-profile.yml]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch exact accepted artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download 36323060219 --name cc2-wasm-36323060219-1 --dir .cache/cc2-candidate
+      - name: Profile corrected kernel
+        run: node scripts/kiwi-cc2-search-profile.js candidate
+      - name: Profile vendored reference in a fresh process
+        run: node scripts/kiwi-cc2-search-profile.js legacy
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-search-profile-${{ github.run_id }}
+          path: .cache/cc2-search-profile/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once
+        if: always()
+        env:
+          AUDIT_JOB_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-cc2-search-profile-notify.js
