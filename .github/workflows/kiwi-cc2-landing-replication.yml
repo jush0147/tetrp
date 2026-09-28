@@ -1,0 +1,48 @@
+name: CC2 landing-cost browser replication
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-landing-replication.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cc2-landing-replication-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch and verify exact existing WASM artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36387270053 --repo jush0147/tetrp --name cc2-landing-36387270053-1 --dir .cache/cc2-landing-candidate
+          gh run download 36380902069 --repo jush0147/tetrp --name cc2-dense-36380902069-1 --dir .cache/cc2-landing-reference
+          mkdir -p .cache/cc2-wasm-results .cache/cc2-dense-reference
+          cp -r .cache/cc2-landing-candidate/cc2-wasm-results/pkg .cache/cc2-wasm-results/pkg
+          cp -r .cache/cc2-landing-reference/cc2-wasm-results/pkg .cache/cc2-dense-reference/pkg
+          node scripts/kiwi-cc2-landing-replication.js verify
+      - name: Repeat unchanged paired Chromium Worker protocol
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          node scripts/kiwi-cc2-wasm-browser.js --landing
+      - name: Summarize and notify once
+        if: always()
+        env:
+          AUDIT_JOB_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-cc2-landing-replication.js notify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-landing-replication-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .cache/cc2-wasm-results/
+          include-hidden-files: true
+          retention-days: 30
