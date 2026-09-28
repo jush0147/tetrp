@@ -20,17 +20,19 @@ if(mode==='prepare'){
   }
  }
  await writeFile(corpus,JSON.stringify(inputs));console.log(`Saved ${inputs.length} detached PublicSnapshots`);
-}else if(mode==='candidate'||mode==='legacy'){
+}else if(['candidate','legacy','dense'].includes(mode)){
  await mkdir(out,{recursive:true});
  const smoke=process.argv.includes('--smoke'),budget=smoke?2000:200000;
  const all=JSON.parse(await readFile(corpus)),inputs=smoke?all.slice(0,2):all;
- const pkg=resolve(mode==='candidate'?`${artifact}/pkg`:'vendor/kiwi-v1/pkg');
+ const pkg=resolve(mode==='legacy'?'vendor/kiwi-v1/pkg':`${artifact}/pkg`);
  const wasm=await readFile(`${pkg}/cold_clear_2_bg.wasm`);
- assert.equal(hash(wasm),mode==='candidate'?'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa':'af7849aa18649ebeca5e0af411499f6dc16afcdbc35ea4e094b2abffce59fa95');
+ assert.equal(hash(wasm),({candidate:'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa',dense:'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba',legacy:'af7849aa18649ebeca5e0af411499f6dc16afcdbc35ea4e094b2abffce59fa95'})[mode]);
+ if(mode!=='legacy')assert.equal(hash(await readFile(`${pkg}/cold_clear_2.js`)),'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691');
  const kernel=await import(pathToFileURL(`${pkg}/cold_clear_2.js`).href);await kernel.default({module_or_path:wasm});
  const requests=inputs.map(input=>{const t=performance.now(),prepared=prepareKiwi(input.snapshot),geometryMs=performance.now()-t;
   prepared.request.node_budget=budget;return {input,prepared,geometryMs,text:JSON.stringify(prepared.request)};});
- const call=x=>JSON.parse(kernel.analyze_snapshot_json(x.text));
+ const call=x=>{const r=JSON.parse(kernel.analyze_snapshot_json(x.text));
+  assert.equal(r.bag_knowledge,'unknown');assert.equal(r.unknown_tail,'finite_visible');assert.ok(r.nodes<=budget);return r;};
  const expected=requests.map(x=>{const r=call(x);normalizeTopRecommendation(x.input.snapshot,x.prepared,r);return r;});
  const latencies=[];
  // Two unprofiled passes. Complete reports, not only top-1, must stay identical.
@@ -69,4 +71,4 @@ if(mode==='prepare'){
  await writeFile(`${out}/${mode}.json`,JSON.stringify(summary,null,2));
  await writeFile(`${out}/${mode}-reports.json`,JSON.stringify(expected));
  console.log(JSON.stringify({mode,requests:summary.requests,checks:summary.fullReportParityChecks,samples:summary.samples,top:summary.self.slice(0,10)}));
-}else throw Error('prepare | candidate | legacy');
+}else throw Error('prepare | candidate | legacy | dense');

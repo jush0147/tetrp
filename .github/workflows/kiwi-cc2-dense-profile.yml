@@ -1,0 +1,43 @@
+name: CC2 accepted dense WASM profiling
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-cc2-dense-profile.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: cc2-dense-profile-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch exact accepted artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36323060219 --repo jush0147/tetrp --name cc2-wasm-36323060219-1 --dir .cache/cc2-candidate
+          gh run download 36380902069 --repo jush0147/tetrp --name cc2-dense-36380902069-1 --dir .cache/cc2-dense-artifact
+      - name: Profile pre-dense corrected reference
+        run: node scripts/kiwi-cc2-search-profile.js candidate
+      - name: Profile accepted dense kernel in a fresh process
+        run: node scripts/kiwi-cc2-search-profile.js dense .cache/cc2-dense-artifact/cc2-wasm-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cc2-dense-profile-${{ github.run_id }}
+          path: .cache/cc2-search-profile/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once
+        if: always()
+        env:
+          AUDIT_JOB_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-cc2-search-profile-notify.js --dense
