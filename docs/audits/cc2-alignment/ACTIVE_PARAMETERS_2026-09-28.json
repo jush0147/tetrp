@@ -1,0 +1,88 @@
+{
+  "schema": "kiwi-active-parameter-source-audit/1",
+  "date": "2026-09-28",
+  "sourcePin": "2e243242b674d57491f99b445f75e35fc48a0e26",
+  "artifactRun": 36387270053,
+  "profile": "review_h9_h12",
+  "method": "Pinned default.json + source-asserted profile overrides; accepted final patch does not modify these assignments. Not a runtime config API.",
+  "config": {
+    "freestyle_weights": {
+      "cell_coveredness": -0.2,
+      "max_cell_covered_height": 6,
+      "holes": -1.5,
+      "row_transitions": -0.5,
+      "height": -0.4,
+      "height_upper_half": -1.5,
+      "height_upper_quarter": -5,
+      "tetris_well_depth": 0.3,
+      "tslot": [
+        0.1,
+        1.5,
+        2,
+        4
+      ],
+      "has_back_to_back": 0.5,
+      "wasted_t": -1.5,
+      "softdrop": 0,
+      "normal_clears": [
+        0,
+        -2,
+        -1.5,
+        -1,
+        3.5
+      ],
+      "mini_spin_clears": [
+        0,
+        -1.5,
+        -1
+      ],
+      "spin_clears": [
+        0,
+        1,
+        4,
+        6
+      ],
+      "back_to_back_clear": 1,
+      "combo_attack": 1.5,
+      "perfect_clear": 15,
+      "perfect_clear_override": true,
+      "tetrio_s2": false,
+      "attack_reward": 1,
+      "surge_value": 1,
+      "b2b_charge_value": 0.5,
+      "legacy_shape_value": 0.5,
+      "pending_safety": 1,
+      "useful_attack_reward": 1,
+      "cancellation_reward": 0,
+      "h3_b2b_charge_value": 0,
+      "h3_surge_bank_value": 0,
+      "h6_base_holes_scale": 1,
+      "h6_base_coveredness_scale": 1,
+      "h9_cavity_excavation": -0.5
+    },
+    "freestyle_exploitation": 0.6931471805599453,
+    "dag_backprop_best_demotion": true,
+    "freestyle_speculated_exploitation": 0.6931471805599453,
+    "dag_backprop_despeculated_values": false
+  },
+  "inactiveEvaluatorFields": [
+    "attack_reward",
+    "surge_value",
+    "b2b_charge_value",
+    "legacy_shape_value"
+  ],
+  "inactiveSearchFieldsForFiniteVisible": [
+    "freestyle_speculated_exploitation",
+    "dag_backprop_despeculated_values"
+  ],
+  "request": {
+    "nodeBudget": 200000,
+    "framesPerPlacement": 24,
+    "unlockedRootBudgetSplit": {
+      "place": 100000,
+      "hold": 100000
+    },
+    "scenarioCount": "1 without incoming; 10 with known activation; 30 with unknown activation",
+    "profileOverrideAccepted": false
+  }
+}

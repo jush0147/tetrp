@@ -1,0 +1,665 @@
+{
+  "schema": "kiwi-evaluator-semantics/1",
+  "date": "2026-09-29",
+  "artifactRun": 36387270053,
+  "scope": "Source coverage and actual JS authority transaction examples; no Rust evaluation execution, no ranking attribution, no arena or strength evidence.",
+  "sourceHashes": {
+    "acceptedFreestyle": "9fe27a686c21515eb729af2ec73c4b99cd0ad6201b783fd35319a93c265f03d1",
+    "authorityAttack": "7664f84e13d797c7cb1620d09b55a40fb3ebe95b3cfdfab1809aa2593a4de3ac"
+  },
+  "fieldCount": 32,
+  "scalarNumericCount": 42,
+  "fields": [
+    {
+      "name": "useful_attack_reward",
+      "value": 1,
+      "group": "transaction",
+      "semantics": "Forecast sent delta; cleared-transition pending reduction. Exact within the modeled scenario, not a prediction of opponent response.",
+      "execution": "active",
+      "sourceLine": 168,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "cancellation_reward",
+      "value": 0,
+      "group": "transaction",
+      "semantics": "Forecast sent delta; cleared-transition pending reduction. Exact within the modeled scenario, not a prediction of opponent response.",
+      "execution": "zero-weight",
+      "sourceLine": 171,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "normal_clears",
+      "value": [
+        0,
+        -2,
+        -1.5,
+        -1,
+        3.5
+      ],
+      "group": "legacy-clear-shaping",
+      "semantics": "Extra edge preferences, NOT the TL attack formula; combined with sent reward.",
+      "execution": "active",
+      "sourceLine": 202,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "mini_spin_clears",
+      "value": [
+        0,
+        -1.5,
+        -1
+      ],
+      "group": "legacy-clear-shaping",
+      "semantics": "Extra edge preferences, NOT the TL attack formula; combined with sent reward.",
+      "execution": "active",
+      "sourceLine": 203,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "spin_clears",
+      "value": [
+        0,
+        1,
+        4,
+        6
+      ],
+      "group": "legacy-clear-shaping",
+      "semantics": "Extra edge preferences, NOT the TL attack formula; combined with sent reward.",
+      "execution": "active",
+      "sourceLine": 204,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "back_to_back_clear",
+      "value": 1,
+      "group": "legacy-clear-shaping",
+      "semantics": "Extra edge preferences, NOT the TL attack formula; combined with sent reward.",
+      "execution": "active",
+      "sourceLine": 205,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "combo_attack",
+      "value": 1.5,
+      "group": "legacy-clear-shaping",
+      "semantics": "Extra edge preferences, NOT the TL attack formula; combined with sent reward.",
+      "execution": "active",
+      "sourceLine": 206,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "perfect_clear",
+      "value": 15,
+      "group": "all-clear-shaping",
+      "semantics": "Board-empty reward; override only suppresses legacy clear/B2B/combo shaping. Not conditional on rules.all_clears.",
+      "execution": "active",
+      "sourceLine": 207,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "perfect_clear_override",
+      "value": true,
+      "group": "all-clear-shaping",
+      "semantics": "Board-empty reward; override only suppresses legacy clear/B2B/combo shaping. Not conditional on rules.all_clears.",
+      "execution": "switch",
+      "sourceLine": 208,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "wasted_t",
+      "value": -1.5,
+      "group": "t-resource-shaping",
+      "semantics": "T-only cost except full spin clearing >=2; not an opportunity-cost calculation from visible alternatives.",
+      "execution": "active",
+      "sourceLine": 199,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "has_back_to_back",
+      "value": 0.5,
+      "group": "b2b-inventory",
+      "semantics": "Boolean inventory is active; extra charge/bank weights are zero. Released attack still enters transaction.",
+      "execution": "active",
+      "sourceLine": 198,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "h3_b2b_charge_value",
+      "value": 0,
+      "group": "b2b-inventory",
+      "semantics": "Boolean inventory is active; extra charge/bank weights are zero. Released attack still enters transaction.",
+      "execution": "zero-weight",
+      "sourceLine": 174,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "h3_surge_bank_value",
+      "value": 0,
+      "group": "b2b-inventory",
+      "semantics": "Boolean inventory is active; extra charge/bank weights are zero. Released attack still enters transaction.",
+      "execution": "zero-weight",
+      "sourceLine": 177,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "pending_safety",
+      "value": 1,
+      "group": "pending-pressure",
+      "semantics": "Real post-transition board; pending quantity multiplies shared board coefficients without time-to-arrival weighting.",
+      "execution": "active",
+      "sourceLine": 165,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "holes",
+      "value": -1.5,
+      "group": "base-holes",
+      "semantics": "Base board after optimistic T-slot cutouts. Shared holes/coverage coefficients also affect real-board pending pressure; H6 scales do not.",
+      "execution": "active",
+      "sourceLine": 190,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "cell_coveredness",
+      "value": -0.2,
+      "group": "base-holes",
+      "semantics": "Base board after optimistic T-slot cutouts. Shared holes/coverage coefficients also affect real-board pending pressure; H6 scales do not.",
+      "execution": "active",
+      "sourceLine": 188,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "max_cell_covered_height",
+      "value": 6,
+      "group": "base-holes",
+      "semantics": "Base board after optimistic T-slot cutouts. Shared holes/coverage coefficients also affect real-board pending pressure; H6 scales do not.",
+      "execution": "active",
+      "sourceLine": 189,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "h6_base_holes_scale",
+      "value": 1,
+      "group": "base-holes",
+      "semantics": "Base board after optimistic T-slot cutouts. Shared holes/coverage coefficients also affect real-board pending pressure; H6 scales do not.",
+      "execution": "active",
+      "sourceLine": 180,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "h6_base_coveredness_scale",
+      "value": 1,
+      "group": "base-holes",
+      "semantics": "Base board after optimistic T-slot cutouts. Shared holes/coverage coefficients also affect real-board pending pressure; H6 scales do not.",
+      "execution": "active",
+      "sourceLine": 183,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "height",
+      "value": -0.4,
+      "group": "height",
+      "semantics": "Base max height after cutouts; upper-height coefficients also affect real-board pending pressure. No exact spawn-escape proof.",
+      "execution": "active",
+      "sourceLine": 192,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "height_upper_half",
+      "value": -1.5,
+      "group": "height",
+      "semantics": "Base max height after cutouts; upper-height coefficients also affect real-board pending pressure. No exact spawn-escape proof.",
+      "execution": "active",
+      "sourceLine": 193,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "height_upper_quarter",
+      "value": -5,
+      "group": "height",
+      "semantics": "Base max height after cutouts; upper-height coefficients also affect real-board pending pressure. No exact spawn-escape proof.",
+      "execution": "active",
+      "sourceLine": 194,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "row_transitions",
+      "value": -0.5,
+      "group": "surface",
+      "semantics": "After cutouts; counts horizontal filled/empty transitions with walls. Not landing reachability.",
+      "execution": "active",
+      "sourceLine": 191,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "tetris_well_depth",
+      "value": 0.3,
+      "group": "well",
+      "semantics": "After cutouts; lowest-column geometric well, no available-I or execution certificate check.",
+      "execution": "active",
+      "sourceLine": 195,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "h9_cavity_excavation",
+      "value": -0.5,
+      "group": "cavity",
+      "semantics": "Real board empty-component minimum vertical blockers; lower-bound excavation proxy, not a legal downstack path.",
+      "execution": "active",
+      "sourceLine": 187,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "tslot",
+      "value": [
+        0.1,
+        1.5,
+        2,
+        4
+      ],
+      "group": "tslot",
+      "semantics": "Synthetic bag and normalized reserve control number of optimistic cutouts; array zero does not disable board rewriting.",
+      "execution": "active",
+      "sourceLine": 196,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "softdrop",
+      "value": 0,
+      "group": "transport",
+      "semantics": "Zero in placement profile. Nonzero would import movegen cost while authority root cost is supplied as zero.",
+      "execution": "zero-weight",
+      "sourceLine": 200,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "tetrio_s2",
+      "value": false,
+      "group": "evaluator-switch",
+      "semantics": "False only selects legacy-shaping evaluator branch; does not disable TL transitions.",
+      "execution": "switch",
+      "sourceLine": 211,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "attack_reward",
+      "value": 1,
+      "group": "inactive-old-s2",
+      "semantics": "Inactive under tetrio_s2=false; do not enable without reviewing multiplier/default-rule and double-reward semantics.",
+      "execution": "inactive-branch",
+      "sourceLine": 213,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "surge_value",
+      "value": 1,
+      "group": "inactive-old-s2",
+      "semantics": "Inactive under tetrio_s2=false; do not enable without reviewing multiplier/default-rule and double-reward semantics.",
+      "execution": "inactive-branch",
+      "sourceLine": 215,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "b2b_charge_value",
+      "value": 0.5,
+      "group": "inactive-old-s2",
+      "semantics": "Inactive under tetrio_s2=false; do not enable without reviewing multiplier/default-rule and double-reward semantics.",
+      "execution": "inactive-branch",
+      "sourceLine": 217,
+      "usefulness": "not established by this source audit"
+    },
+    {
+      "name": "legacy_shape_value",
+      "value": 0.5,
+      "group": "inactive-old-s2",
+      "semantics": "Inactive under tetrio_s2=false; do not enable without reviewing multiplier/default-rule and double-reward semantics.",
+      "execution": "inactive-branch",
+      "sourceLine": 219,
+      "usefulness": "not established by this source audit"
+    }
+  ],
+  "witnesses": [
+    {
+      "id": "tsd-send",
+      "input": {
+        "lines": 2,
+        "spin": "full",
+        "allClear": false,
+        "garbageRows": 0,
+        "pending": 0,
+        "pieces": 20,
+        "combo": 0,
+        "btb": 0,
+        "multiplier": 1,
+        "overrides": {}
+      },
+      "transaction": {
+        "surge": [],
+        "normal": {
+          "generated": 4,
+          "cancelled": 0,
+          "sent": 4,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 4,
+        "cancelled": 0,
+        "sent": 4,
+        "combo": 1,
+        "btb": 1,
+        "pending": 0
+      }
+    },
+    {
+      "id": "tsd-cancel",
+      "input": {
+        "lines": 2,
+        "spin": "full",
+        "allClear": false,
+        "garbageRows": 0,
+        "pending": 4,
+        "pieces": 20,
+        "combo": 0,
+        "btb": 0,
+        "multiplier": 1,
+        "overrides": {}
+      },
+      "transaction": {
+        "surge": [],
+        "normal": {
+          "generated": 4,
+          "cancelled": 4,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 4,
+        "cancelled": 4,
+        "sent": 0,
+        "combo": 1,
+        "btb": 1,
+        "pending": 0
+      }
+    },
+    {
+      "id": "tsd-opener-defense",
+      "input": {
+        "lines": 2,
+        "spin": "full",
+        "allClear": false,
+        "garbageRows": 0,
+        "pending": 8,
+        "pieces": 0,
+        "combo": 0,
+        "btb": 0,
+        "multiplier": 1,
+        "overrides": {}
+      },
+      "transaction": {
+        "surge": [],
+        "normal": {
+          "generated": 4,
+          "cancelled": 8,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 4,
+        "cancelled": 8,
+        "sent": 0,
+        "combo": 1,
+        "btb": 1,
+        "pending": 0
+      }
+    },
+    {
+      "id": "tsd-double-multiplier",
+      "input": {
+        "lines": 2,
+        "spin": "full",
+        "allClear": false,
+        "garbageRows": 0,
+        "pending": 0,
+        "pieces": 20,
+        "combo": 0,
+        "btb": 0,
+        "multiplier": 2,
+        "overrides": {}
+      },
+      "transaction": {
+        "surge": [],
+        "normal": {
+          "generated": 8,
+          "cancelled": 0,
+          "sent": 8,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 8,
+        "cancelled": 0,
+        "sent": 8,
+        "combo": 1,
+        "btb": 1,
+        "pending": 0
+      }
+    },
+    {
+      "id": "tsd-garbage-bonus",
+      "input": {
+        "lines": 2,
+        "spin": "full",
+        "allClear": false,
+        "garbageRows": 1,
+        "pending": 0,
+        "pieces": 20,
+        "combo": 0,
+        "btb": 0,
+        "multiplier": 1,
+        "overrides": {}
+      },
+      "transaction": {
+        "surge": [],
+        "normal": {
+          "generated": 5,
+          "cancelled": 0,
+          "sent": 5,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 5,
+        "cancelled": 0,
+        "sent": 5,
+        "combo": 1,
+        "btb": 1,
+        "pending": 0
+      }
+    },
+    {
+      "id": "pc-enabled",
+      "input": {
+        "lines": 2,
+        "spin": "none",
+        "allClear": true,
+        "garbageRows": 0,
+        "pending": 0,
+        "pieces": 20,
+        "combo": 0,
+        "btb": 0,
+        "multiplier": 1,
+        "overrides": {}
+      },
+      "transaction": {
+        "surge": [],
+        "normal": {
+          "generated": 1,
+          "cancelled": 0,
+          "sent": 1,
+          "unused_defense_budget": 0
+        },
+        "all_clear": {
+          "generated": 5,
+          "cancelled": 0,
+          "sent": 5,
+          "unused_defense_budget": 0
+        },
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 6,
+        "cancelled": 0,
+        "sent": 6,
+        "combo": 1,
+        "btb": 1,
+        "pending": 0
+      }
+    },
+    {
+      "id": "pc-bonus-disabled",
+      "input": {
+        "lines": 2,
+        "spin": "none",
+        "allClear": true,
+        "garbageRows": 0,
+        "pending": 0,
+        "pieces": 20,
+        "combo": 0,
+        "btb": 0,
+        "multiplier": 1,
+        "overrides": {
+          "allclears": false
+        }
+      },
+      "transaction": {
+        "surge": [],
+        "normal": {
+          "generated": 1,
+          "cancelled": 0,
+          "sent": 1,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 1,
+        "cancelled": 0,
+        "sent": 1,
+        "combo": 1,
+        "btb": 1,
+        "pending": 0
+      }
+    },
+    {
+      "id": "normal-single-surge",
+      "input": {
+        "lines": 1,
+        "spin": "none",
+        "allClear": false,
+        "garbageRows": 0,
+        "pending": 0,
+        "pieces": 20,
+        "combo": 0,
+        "btb": 8,
+        "multiplier": 1,
+        "overrides": {}
+      },
+      "transaction": {
+        "surge": [
+          {
+            "generated": 1,
+            "cancelled": 0,
+            "sent": 1,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 1,
+            "cancelled": 0,
+            "sent": 1,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 2,
+            "cancelled": 0,
+            "sent": 2,
+            "unused_defense_budget": 0
+          }
+        ],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 4,
+        "cancelled": 0,
+        "sent": 4,
+        "combo": 1,
+        "btb": 0,
+        "pending": 0
+      }
+    },
+    {
+      "id": "normal-single-uncharged",
+      "input": {
+        "lines": 1,
+        "spin": "none",
+        "allClear": false,
+        "garbageRows": 0,
+        "pending": 0,
+        "pieces": 20,
+        "combo": 0,
+        "btb": 0,
+        "multiplier": 1,
+        "overrides": {}
+      },
+      "transaction": {
+        "surge": [],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "actual": {
+        "generated": 0,
+        "cancelled": 0,
+        "sent": 0,
+        "combo": 1,
+        "btb": 0,
+        "pending": 0
+      }
+    }
+  ]
+}
