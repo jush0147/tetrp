@@ -1,3 +1,18 @@
+fn typed_report_json<T: serde::Serialize>(report:&T)->String {
+    serde_json::to_string(report).unwrap()
+}
+
+#[test]
+fn eval_audit_runner_preserves_f32_json() {
+    #[derive(serde::Serialize)]
+    struct Scores { worst_score:f32, mean_score:f64 }
+    let scores=Scores { worst_score:-58.4, mean_score:-58.400001525878906 };
+    assert_eq!(typed_report_json(&scores),
+        "{\"worst_score\":-58.4,\"mean_score\":-58.400001525878906}");
+    assert_ne!(typed_report_json(&scores),
+        serde_json::to_string(&serde_json::to_value(&scores).unwrap()).unwrap());
+}
+
 #[test]
 fn eval_audit_runner(){
     let input=std::env::var("EVAL_AUDIT_INPUT").expect("input path");
@@ -7,10 +22,15 @@ fn eval_audit_runner(){
     for row in rows {
         #[cfg(eval_observer)] crate::eval_observer::reset();
         let report=crate::snapshot::analyze_text(&row["request"].to_string()).expect("snapshot accepted");
-        let value=serde_json::to_value(report).unwrap();
+        // Serialize the typed report directly, exactly as the WASM API does.
+        // to_value widens f32 worst_score to a JSON Number backed by f64 and
+        // changes decimal rendering without changing the underlying f32 score.
+        let report_json=typed_report_json(&report);
         #[cfg(eval_observer)] let diagnostic=crate::eval_observer::finish();
         #[cfg(not(eval_observer))] let diagnostic=serde_json::Value::Null;
-        reports.push(serde_json::json!({"id":row["id"],"report":value,"diagnostic":diagnostic}));
+        reports.push(format!("{{\"id\":{},\"report\":{},\"diagnostic\":{}}}",
+            serde_json::to_string(&row["id"]).unwrap(),report_json,
+            serde_json::to_string(&diagnostic).unwrap()));
     }
-    std::fs::write(output,serde_json::to_string(&reports).unwrap()).unwrap();
+    std::fs::write(output,format!("[{}]",reports.join(","))).unwrap();
 }
