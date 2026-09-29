@@ -44,3 +44,5 @@ Run 36566413689 已成功：16 次完整 report parity、160 萬次資源斷言�
 決策差異離線分析已完成，見 TSLOT_DECISION_RESULT.md／TSLOT_DECISION_AUDIT.json。原 Place mean 降 2.31，Hold 降 0.14；根據真實公開資訊，放 T 後沒有其他已知 T，因此 candidate 的 Place 分支 100k evaluates 無 cutout。121 個配對 witness 的 reward 與 pre-cutout stages 一致。無法精確分解 root backup／search reordering，也不為此再擴張 instrumentation。T-slot 候選封存待機制比較，baseline 不換。下一項固定為 H1 pending-safety／base board 的有效係數、cancellation 反應與重疊語意。一般 CI run 36566930087 已成功。
 
 H1 語意分析完成，見 H1_SEMANTIC_RESULT.md／H1_SEMANTIC_EVIDENCE.json：1,100 個既存 Rust witness 重現；pressure=min(pending,16)/8，真實盤面 danger weighting。已證實低乾淨盤面 H1=0、20→16 抵銷的 H1 改善=0；但 forecast／盤面與原 clear shaping 仍包含防守效果，不宣稱 cancellation 完全缺失。不改係數、不另加 bonus、不開 arena。下一項 H9 cavity 與 holes/coveredness 的語意重疊；之後彙整最小機制比較清單。
+
+H9 完成：1,100 個 witness 重現，合成對照證明不等同 holes/coveredness，七種 piece 的 authority 幾何驗證證明 H9=0 不保證每種 piece 可達。見 H9_SEMANTIC_RESULT.md。局部語意取證收束，MECHANISM_EXPERIMENT_PLAN.md 固定下一順序：visible-T 候選 WASM/browser gate → 單項機制比較；H9-off、H1-off 後續各獨立對 accepted baseline，不同時改、不同時派三組。現在未啟動新 arena 或 promotion。

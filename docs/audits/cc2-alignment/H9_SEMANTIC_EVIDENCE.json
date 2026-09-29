@@ -1,0 +1,1051 @@
+{
+  "schema": "kiwi-h9-semantics/1",
+  "sourceFunctionSha256": "e66fa643ac0b3ee04e03fd4fc9978cf213eadbed177dbdcba07131dce0998b50",
+  "audits": [
+    {
+      "run": 36551709585,
+      "witnesses": 729,
+      "nonzero": 502,
+      "maxError": 2.384185791015625e-7
+    },
+    {
+      "run": 36566413689,
+      "witnesses": 371,
+      "nonzero": 212,
+      "maxError": 2.384185791015625e-7
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "sealed-single",
+      "columns": [
+        7,
+        5,
+        7,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "height": 3,
+      "holes": 1,
+      "covered": 2,
+      "cost": 1,
+      "h9": -0.5,
+      "components": [
+        {
+          "cells": [
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              2
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              7,
+              0
+            ],
+            [
+              7,
+              1
+            ],
+            [
+              7,
+              2
+            ],
+            [
+              8,
+              2
+            ],
+            [
+              9,
+              2
+            ],
+            [
+              9,
+              1
+            ],
+            [
+              9,
+              0
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              4,
+              0
+            ]
+          ],
+          "minBlockers": 0
+        },
+        {
+          "cells": [
+            [
+              1,
+              1
+            ]
+          ],
+          "minBlockers": 1
+        }
+      ]
+    },
+    {
+      "id": "side-open-single",
+      "columns": [
+        7,
+        7,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "height": 3,
+      "holes": 1,
+      "covered": 2,
+      "cost": 0,
+      "h9": 0,
+      "components": [
+        {
+          "cells": [
+            [
+              3,
+              0
+            ],
+            [
+              3,
+              1
+            ],
+            [
+              3,
+              2
+            ],
+            [
+              4,
+              2
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              7,
+              0
+            ],
+            [
+              7,
+              1
+            ],
+            [
+              7,
+              2
+            ],
+            [
+              8,
+              2
+            ],
+            [
+              9,
+              2
+            ],
+            [
+              9,
+              1
+            ],
+            [
+              9,
+              0
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              2,
+              1
+            ],
+            [
+              4,
+              0
+            ]
+          ],
+          "minBlockers": 0
+        }
+      ]
+    },
+    {
+      "id": "sealed-double",
+      "columns": [
+        7,
+        5,
+        5,
+        7,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "height": 3,
+      "holes": 2,
+      "covered": 4,
+      "cost": 1,
+      "h9": -0.5,
+      "components": [
+        {
+          "cells": [
+            [
+              4,
+              0
+            ],
+            [
+              4,
+              1
+            ],
+            [
+              4,
+              2
+            ],
+            [
+              5,
+              2
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              6,
+              1
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              7,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              8,
+              2
+            ],
+            [
+              9,
+              2
+            ],
+            [
+              9,
+              1
+            ],
+            [
+              9,
+              0
+            ],
+            [
+              7,
+              1
+            ],
+            [
+              7,
+              2
+            ],
+            [
+              5,
+              1
+            ],
+            [
+              5,
+              0
+            ]
+          ],
+          "minBlockers": 0
+        },
+        {
+          "cells": [
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              1
+            ]
+          ],
+          "minBlockers": 1
+        }
+      ]
+    },
+    {
+      "id": "one-cell-high-tunnel",
+      "columns": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        0
+      ],
+      "height": 2,
+      "holes": 9,
+      "covered": 18,
+      "cost": 0,
+      "h9": 0,
+      "components": [
+        {
+          "cells": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              3,
+              0
+            ],
+            [
+              4,
+              0
+            ],
+            [
+              5,
+              0
+            ],
+            [
+              6,
+              0
+            ],
+            [
+              7,
+              0
+            ],
+            [
+              8,
+              0
+            ],
+            [
+              9,
+              0
+            ],
+            [
+              9,
+              1
+            ]
+          ],
+          "minBlockers": 0
+        }
+      ]
+    }
+  ],
+  "geometry": {
+    "board": {
+      "width": 10,
+      "height": 20,
+      "buffer": 20,
+      "rows": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "j",
+          "j",
+          "j",
+          "j",
+          "j",
+          "j",
+          "j",
+          "j",
+          "j",
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "lastWasAttack": false
+    },
+    "targetCell": [
+      0,
+      39
+    ],
+    "atomicModel": "tl-placement-v1",
+    "completeForSevenFreshSpawnPieces": true,
+    "pieces": [
+      {
+        "piece": "i",
+        "states": 92382,
+        "legalLandings": 24,
+        "targetCoveringLandings": 1,
+        "witness": {
+          "action": {
+            "kind": "place"
+          },
+          "move": {
+            "piece": "i",
+            "x": 1,
+            "y": 38,
+            "rotation": 2,
+            "cells": [
+              [
+                3,
+                39
+              ],
+              [
+                2,
+                39
+              ],
+              [
+                1,
+                39
+              ],
+              [
+                0,
+                39
+              ]
+            ],
+            "useHold": false
+          },
+          "execution": {
+            "moves": [
+              "moveRight",
+              "moveRight",
+              "moveRight",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "down",
+              "rotateCCW",
+              "down",
+              "rotateCCW",
+              "moveLeft",
+              "moveLeft",
+              "moveLeft",
+              "moveLeft",
+              "moveLeft",
+              "moveLeft",
+              "hardDrop"
+            ],
+            "spin": "none"
+          }
+        }
+      },
+      {
+        "piece": "o",
+        "states": 44460,
+        "legalLandings": 9,
+        "targetCoveringLandings": 0,
+        "witness": null
+      },
+      {
+        "piece": "t",
+        "states": 78401,
+        "legalLandings": 35,
+        "targetCoveringLandings": 0,
+        "witness": null
+      },
+      {
+        "piece": "s",
+        "states": 78760,
+        "legalLandings": 17,
+        "targetCoveringLandings": 0,
+        "witness": null
+      },
+      {
+        "piece": "z",
+        "states": 77432,
+        "legalLandings": 17,
+        "targetCoveringLandings": 0,
+        "witness": null
+      },
+      {
+        "piece": "j",
+        "states": 77632,
+        "legalLandings": 34,
+        "targetCoveringLandings": 0,
+        "witness": null
+      },
+      {
+        "piece": "l",
+        "states": 78617,
+        "legalLandings": 35,
+        "targetCoveringLandings": 0,
+        "witness": null
+      }
+    ]
+  },
+  "limits": "H9 arithmetic reproduction, not a second gameplay model. Geometry counterexample concerns one placement on a fixed synthetic board, not eventual excavation, physical input timing or KO strength. Quota samples are not population frequencies."
+}
