@@ -38,8 +38,9 @@ pub fn observe(before:[u64;10],state:GameState,info:&PlacementInfo,count:usize,c
             let v=json!({"stage":name,"eval":e,"reward":r,"deltaEval":e-prev.0,"deltaReward":r-prev.1});prev=(e,r);v
         }).collect();
         let depth=a.depth;
+        let category_name=["board_rewrite","template_only","control"][category];
         a.rows.push(json!({"depth":depth,"branch":branch,"scenario":scenario,"scenarioIncoming":incoming,
-            "category":["board_rewrite","template_only","control"][category],
+            "category":category_name,
             "normalizedBranchQueue":queue,"normalizedRemainingAfter":remaining,"selectedPathBefore":path,
             "placement":info.placement,"lines":info.lines_cleared,
             "comboBefore":info.combo,"b2bBefore":info.b2b_count_before,"b2bAfter":info.b2b_count_after,
