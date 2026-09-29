@@ -1,0 +1,857 @@
+{
+  "run": 36551709585,
+  "fullReportChecks": 8,
+  "mismatches": 0,
+  "lineageChecks": 729,
+  "inputSha256": "1837dd1858d08b393b55ff112124e446b99a408390b43dca98225be911a4e089",
+  "rows": [
+    {
+      "id": "leg0/request346",
+      "groups": {
+        "place/0": [
+          15308,
+          14692,
+          170000
+        ]
+      },
+      "evaluations": 200000,
+      "boardRewritten": 15308,
+      "retained": 24,
+      "retainedNoKnownT": 0,
+      "example": null
+    },
+    {
+      "id": "leg4/request419",
+      "groups": {
+        "place/0": [
+          42,
+          1910,
+          98048
+        ],
+        "post_hold/0": [
+          0,
+          1437,
+          98563
+        ]
+      },
+      "evaluations": 200000,
+      "boardRewritten": 42,
+      "retained": 24,
+      "retainedNoKnownT": 9,
+      "example": {
+        "b2bAfter": 0,
+        "b2bBefore": 0,
+        "branch": "place",
+        "category": "board_rewrite",
+        "comboBefore": 0,
+        "cutoutAllowance": 1,
+        "cutouts": [
+          {
+            "before": [
+              2016,
+              639,
+              63391,
+              32767,
+              16383,
+              16383,
+              32767,
+              8191,
+              3583,
+              16383
+            ],
+            "lines": 2,
+            "location": {
+              "orientation": "south",
+              "type": "T",
+              "x": 1,
+              "y": 11
+            }
+          }
+        ],
+        "depth": 6,
+        "evaluatedBoardCols": [
+          992,
+          639,
+          16287,
+          8191,
+          4095,
+          4095,
+          8191,
+          2047,
+          511,
+          4095
+        ],
+        "holdIsEmpty": false,
+        "lines": 0,
+        "normalizedBranchQueue": [
+          "T",
+          "Z",
+          "I",
+          "T",
+          "J",
+          "S"
+        ],
+        "normalizedRemainingAfter": [],
+        "pendingAfter": 0,
+        "placement": {
+          "location": {
+            "orientation": "east",
+            "type": "T",
+            "x": 2,
+            "y": 14
+          },
+          "spin": "none"
+        },
+        "realBoardCols": [
+          2016,
+          639,
+          63391,
+          32767,
+          16383,
+          16383,
+          32767,
+          8191,
+          3583,
+          16383
+        ],
+        "reserve": "S",
+        "scenario": 0,
+        "scenarioIncoming": [],
+        "selectedPathBefore": [
+          [
+            "T",
+            {
+              "location": {
+                "orientation": "west",
+                "type": "T",
+                "x": 3,
+                "y": 13
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "Z",
+            {
+              "location": {
+                "orientation": "east",
+                "type": "S",
+                "x": 0,
+                "y": 10
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "I",
+            {
+              "location": {
+                "orientation": "east",
+                "type": "I",
+                "x": 4,
+                "y": 12
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "T",
+            {
+              "location": {
+                "orientation": "east",
+                "type": "Z",
+                "x": 5,
+                "y": 13
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "J",
+            {
+              "location": {
+                "orientation": "west",
+                "type": "J",
+                "x": 9,
+                "y": 12
+              },
+              "spin": "none"
+            }
+          ]
+        ],
+        "sentAfter": 263,
+        "stages": [
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "pending_safety"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "legacy_or_s2"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "transaction"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "h3_inventory"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": -1.5,
+            "eval": 0,
+            "reward": -1.5,
+            "stage": "wasted_t_b2b_softdrop"
+          },
+          {
+            "deltaEval": -8.5,
+            "deltaReward": 0,
+            "eval": -8.5,
+            "reward": -1.5,
+            "stage": "cavity"
+          },
+          {
+            "deltaEval": 2,
+            "deltaReward": 0,
+            "eval": -6.5,
+            "reward": -1.5,
+            "stage": "tslot"
+          },
+          {
+            "deltaEval": -13.5,
+            "deltaReward": 0,
+            "eval": -20,
+            "reward": -1.5,
+            "stage": "holes"
+          },
+          {
+            "deltaEval": -9.400001525878906,
+            "deltaReward": 0,
+            "eval": -29.400001525878906,
+            "reward": -1.5,
+            "stage": "coveredness"
+          },
+          {
+            "deltaEval": 0.2999992370605469,
+            "deltaReward": 0,
+            "eval": -29.10000228881836,
+            "reward": -1.5,
+            "stage": "well"
+          },
+          {
+            "deltaEval": -11.599998474121094,
+            "deltaReward": 0,
+            "eval": -40.70000076293945,
+            "reward": -1.5,
+            "stage": "height"
+          },
+          {
+            "deltaEval": -69,
+            "deltaReward": 0,
+            "eval": -109.69999694824219,
+            "reward": -1.5,
+            "stage": "transitions"
+          }
+        ],
+        "syntheticBag": "EnumSet(O | L)"
+      }
+    },
+    {
+      "id": "leg12/request383",
+      "groups": {
+        "place/0": [
+          38,
+          1479,
+          98483
+        ],
+        "post_hold/0": [
+          66,
+          1384,
+          98550
+        ]
+      },
+      "evaluations": 200000,
+      "boardRewritten": 104,
+      "retained": 48,
+      "retainedNoKnownT": 48,
+      "example": {
+        "b2bAfter": 0,
+        "b2bBefore": 0,
+        "branch": "place",
+        "category": "board_rewrite",
+        "comboBefore": 0,
+        "cutoutAllowance": 1,
+        "cutouts": [
+          {
+            "before": [
+              127,
+              127,
+              255,
+              127,
+              1023,
+              511,
+              511,
+              447,
+              16,
+              47
+            ],
+            "lines": 2,
+            "location": {
+              "orientation": "south",
+              "type": "T",
+              "x": 8,
+              "y": 6
+            }
+          }
+        ],
+        "depth": 6,
+        "evaluatedBoardCols": [
+          31,
+          31,
+          63,
+          31,
+          255,
+          127,
+          127,
+          127,
+          16,
+          15
+        ],
+        "holdIsEmpty": false,
+        "lines": 1,
+        "normalizedBranchQueue": [
+          "T",
+          "L",
+          "O",
+          "Z",
+          "O",
+          "J"
+        ],
+        "normalizedRemainingAfter": [],
+        "pendingAfter": 0,
+        "placement": {
+          "location": {
+            "orientation": "south",
+            "type": "J",
+            "x": 8,
+            "y": 6
+          },
+          "spin": "none"
+        },
+        "realBoardCols": [
+          127,
+          127,
+          255,
+          127,
+          1023,
+          511,
+          511,
+          447,
+          16,
+          47
+        ],
+        "reserve": "Z",
+        "scenario": 0,
+        "scenarioIncoming": [],
+        "selectedPathBefore": [
+          [
+            "T",
+            {
+              "location": {
+                "orientation": "east",
+                "type": "T",
+                "x": 2,
+                "y": 7
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "L",
+            {
+              "location": {
+                "orientation": "east",
+                "type": "L",
+                "x": 5,
+                "y": 8
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "O",
+            {
+              "location": {
+                "orientation": "north",
+                "type": "O",
+                "x": 0,
+                "y": 6
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "Z",
+            {
+              "location": {
+                "orientation": "east",
+                "type": "I",
+                "x": 4,
+                "y": 9
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "O",
+            {
+              "location": {
+                "orientation": "north",
+                "type": "O",
+                "x": 6,
+                "y": 8
+              },
+              "spin": "none"
+            }
+          ]
+        ],
+        "sentAfter": 216,
+        "stages": [
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "pending_safety"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": -2,
+            "eval": 0,
+            "reward": -2,
+            "stage": "legacy_or_s2"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": -2,
+            "stage": "transaction"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": -2,
+            "stage": "h3_inventory"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": -2,
+            "stage": "wasted_t_b2b_softdrop"
+          },
+          {
+            "deltaEval": -1,
+            "deltaReward": 0,
+            "eval": -1,
+            "reward": -2,
+            "stage": "cavity"
+          },
+          {
+            "deltaEval": 2,
+            "deltaReward": 0,
+            "eval": 1,
+            "reward": -2,
+            "stage": "tslot"
+          },
+          {
+            "deltaEval": -6,
+            "deltaReward": 0,
+            "eval": -5,
+            "reward": -2,
+            "stage": "holes"
+          },
+          {
+            "deltaEval": -2.8000001907348633,
+            "deltaReward": 0,
+            "eval": -7.800000190734863,
+            "reward": -2,
+            "stage": "coveredness"
+          },
+          {
+            "deltaEval": 0.3000001907348633,
+            "deltaReward": 0,
+            "eval": -7.5,
+            "reward": -2,
+            "stage": "well"
+          },
+          {
+            "deltaEval": -3.1999998092651367,
+            "deltaReward": 0,
+            "eval": -10.699999809265137,
+            "reward": -2,
+            "stage": "height"
+          },
+          {
+            "deltaEval": -68,
+            "deltaReward": 0,
+            "eval": -78.69999694824219,
+            "reward": -2,
+            "stage": "transitions"
+          }
+        ],
+        "syntheticBag": "EnumSet(I | S)"
+      }
+    },
+    {
+      "id": "leg20/request493",
+      "groups": {
+        "place/0": [
+          0,
+          160,
+          9840
+        ],
+        "place/1": [
+          0,
+          85,
+          9915
+        ],
+        "place/2": [
+          96,
+          506,
+          9398
+        ],
+        "place/3": [
+          47,
+          399,
+          9554
+        ],
+        "place/4": [
+          37,
+          304,
+          9659
+        ],
+        "place/5": [
+          63,
+          220,
+          9717
+        ],
+        "place/6": [
+          203,
+          533,
+          9264
+        ],
+        "place/7": [
+          31,
+          293,
+          9676
+        ],
+        "place/8": [
+          458,
+          177,
+          9365
+        ],
+        "place/9": [
+          0,
+          78,
+          9922
+        ],
+        "post_hold/0": [
+          99,
+          666,
+          9235
+        ],
+        "post_hold/1": [
+          64,
+          495,
+          9441
+        ],
+        "post_hold/2": [
+          70,
+          517,
+          9413
+        ],
+        "post_hold/3": [
+          36,
+          425,
+          9539
+        ],
+        "post_hold/4": [
+          67,
+          365,
+          9568
+        ],
+        "post_hold/5": [
+          0,
+          234,
+          9766
+        ],
+        "post_hold/6": [
+          33,
+          190,
+          9777
+        ],
+        "post_hold/7": [
+          0,
+          247,
+          9753
+        ],
+        "post_hold/8": [
+          21,
+          358,
+          9621
+        ],
+        "post_hold/9": [
+          0,
+          195,
+          9805
+        ]
+      },
+      "evaluations": 200000,
+      "boardRewritten": 1325,
+      "retained": 333,
+      "retainedNoKnownT": 330,
+      "example": {
+        "b2bAfter": 1,
+        "b2bBefore": 1,
+        "branch": "place",
+        "category": "board_rewrite",
+        "comboBefore": 0,
+        "cutoutAllowance": 1,
+        "cutouts": [
+          {
+            "before": [
+              127,
+              127,
+              32,
+              31,
+              191,
+              255,
+              255,
+              511,
+              511,
+              127
+            ],
+            "lines": 2,
+            "location": {
+              "orientation": "south",
+              "type": "T",
+              "x": 3,
+              "y": 6
+            }
+          }
+        ],
+        "depth": 5,
+        "evaluatedBoardCols": [
+          31,
+          31,
+          0,
+          31,
+          63,
+          63,
+          63,
+          127,
+          127,
+          31
+        ],
+        "holdIsEmpty": false,
+        "lines": 0,
+        "normalizedBranchQueue": [
+          "T",
+          "S",
+          "I",
+          "Z",
+          "O",
+          "J"
+        ],
+        "normalizedRemainingAfter": [
+          "J"
+        ],
+        "pendingAfter": 0,
+        "placement": {
+          "location": {
+            "orientation": "north",
+            "type": "O",
+            "x": 0,
+            "y": 5
+          },
+          "spin": "none"
+        },
+        "realBoardCols": [
+          127,
+          127,
+          32,
+          31,
+          191,
+          255,
+          255,
+          511,
+          511,
+          127
+        ],
+        "reserve": "Z",
+        "scenario": 2,
+        "scenarioIncoming": [
+          [
+            5,
+            0
+          ]
+        ],
+        "selectedPathBefore": [
+          [
+            "T",
+            {
+              "location": {
+                "orientation": "north",
+                "type": "T",
+                "x": 8,
+                "y": 5
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "S",
+            {
+              "location": {
+                "orientation": "north",
+                "type": "S",
+                "x": 7,
+                "y": 11
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "I",
+            {
+              "location": {
+                "orientation": "east",
+                "type": "I",
+                "x": 0,
+                "y": 7
+              },
+              "spin": "none"
+            }
+          ],
+          [
+            "Z",
+            {
+              "location": {
+                "orientation": "north",
+                "type": "Z",
+                "x": 5,
+                "y": 6
+              },
+              "spin": "none"
+            }
+          ]
+        ],
+        "sentAfter": 338,
+        "stages": [
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "pending_safety"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "legacy_or_s2"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "transaction"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "h3_inventory"
+          },
+          {
+            "deltaEval": 0.5,
+            "deltaReward": 0,
+            "eval": 0.5,
+            "reward": 0,
+            "stage": "wasted_t_b2b_softdrop"
+          },
+          {
+            "deltaEval": -0.5,
+            "deltaReward": 0,
+            "eval": 0,
+            "reward": 0,
+            "stage": "cavity"
+          },
+          {
+            "deltaEval": 2,
+            "deltaReward": 0,
+            "eval": 2,
+            "reward": 0,
+            "stage": "tslot"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 2,
+            "reward": 0,
+            "stage": "holes"
+          },
+          {
+            "deltaEval": 0,
+            "deltaReward": 0,
+            "eval": 2,
+            "reward": 0,
+            "stage": "coveredness"
+          },
+          {
+            "deltaEval": 1.5,
+            "deltaReward": 0,
+            "eval": 3.5,
+            "reward": 0,
+            "stage": "well"
+          },
+          {
+            "deltaEval": -2.799999952316284,
+            "deltaReward": 0,
+            "eval": 0.7000000476837158,
+            "reward": 0,
+            "stage": "height"
+          },
+          {
+            "deltaEval": -66,
+            "deltaReward": 0,
+            "eval": -65.30000305175781,
+            "reward": 0,
+            "stage": "transitions"
+          }
+        ],
+        "syntheticBag": "EnumSet(L | J)"
+      }
+    }
+  ],
+  "warning": "No-known-T counts apply only to quota-selected witnesses; unknown tail may still contain T; no root-choice attribution or strength inference."
+}

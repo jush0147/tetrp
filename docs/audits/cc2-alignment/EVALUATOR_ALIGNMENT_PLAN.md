@@ -31,5 +31,7 @@
 - 規則擴展 ARE 留為獨立支援域工作，不混入零 ARE arena 的 evaluator 調整。
 - 2026-09-29 run 36548712730 正式通過，8 次完整 report parity 零差異。結果見 RESULT_36548712730.md：已確認 cutout 的跨項影響，但樣本保留方式漏掉三組後段 board-rewrite witnesses，尚不足以歸因 top-1。下一步補分類取樣與 branch/scenario/visible-queue lineage，不調參。
 - Observer v2 已加入上述分類取樣、正規化可見序列及 DAG selected-path，待相同四局面 CI 診斷驗證。僅修診斷覆蓋，不修改任何 evaluate/search expression；每個 strata 的覆蓋與 queue 消耗加入 gate。
+- v2 run 36551709585 已通過並本機复核。729 個資源 lineage checks 一致；取得 remaining queue/hold 無 T 卻因 synthetic bag.len<=3 假想 T 消行的真實節點。見 RESULT_36551709585.md。下一步使用已存 witness 做離線幾何與分項對照，不需再跑同一批搜尋取證；未開始調參或 arena。
+- 離線幾何／分項對照已完成，見 TSLOT_WITNESS_RESULT.md：12/12 fresh-T conditional full-spin geometry/clear parity；429 個保留節點的 cutout 局部分數效果 +4.4～+22。取證到此停止重複；接下來提出局部資源／兌現語意處理方案，不直接調 bonus 或刪模板。
 
 不要求使用者重新拆解此問題；沿此文件逐項推進，發現新證據才更新判定。
