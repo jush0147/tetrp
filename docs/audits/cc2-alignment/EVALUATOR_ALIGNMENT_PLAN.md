@@ -36,3 +36,5 @@
 - 局部候選規格已完成：TSLOT_RESOURCE_PROPOSAL.md。僅替換 snapshot-only cutout 資源計數，其他公式與權重固定；未知 tail 暫不預支是假設而非正確性真理。靜態影響 632 降／34 升／63 不變，尚未建置候選／改 bot／開 arena。下一步是隔離候選與 resource invariants。
 
 不要求使用者重新拆解此問題；沿此文件逐項推進，發現新證據才更新判定。
+
+2026-09-29 最新接續點：隔離 visible-T 候選 source transform、四個 Rust resource tests、八個 public input 的精確 report／計數／Hold lineage／top-1 gate 已實作。本機 accepted WASM 八局面通過；Rust candidate 由 `kiwi-tslot-resource-audit.yml` 單 job 建置診斷，完成 ntfy 通知後讀結果。不換 production，不調權重、不開 FT7；詳見 TSLOT_RESOURCE_PROPOSAL.md。

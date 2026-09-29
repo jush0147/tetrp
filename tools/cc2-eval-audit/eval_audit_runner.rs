@@ -21,16 +21,18 @@ fn eval_audit_runner(){
     let mut reports=Vec::new();
     for row in rows {
         #[cfg(eval_observer)] crate::eval_observer::reset();
+        let started=std::time::Instant::now();
         let report=crate::snapshot::analyze_text(&row["request"].to_string()).expect("snapshot accepted");
+        let elapsed_ms=started.elapsed().as_secs_f64()*1000.0;
         // Serialize the typed report directly, exactly as the WASM API does.
         // to_value widens f32 worst_score to a JSON Number backed by f64 and
         // changes decimal rendering without changing the underlying f32 score.
         let report_json=typed_report_json(&report);
         #[cfg(eval_observer)] let diagnostic=crate::eval_observer::finish();
         #[cfg(not(eval_observer))] let diagnostic=serde_json::Value::Null;
-        reports.push(format!("{{\"id\":{},\"report\":{},\"diagnostic\":{}}}",
+        reports.push(format!("{{\"id\":{},\"report\":{},\"diagnostic\":{},\"elapsedMs\":{}}}",
             serde_json::to_string(&row["id"]).unwrap(),report_json,
-            serde_json::to_string(&diagnostic).unwrap()));
+            serde_json::to_string(&diagnostic).unwrap(),elapsed_ms));
     }
     std::fs::write(output,format!("[{}]",reports.join(","))).unwrap();
 }

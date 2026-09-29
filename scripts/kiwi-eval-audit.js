@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
 import {prepareKiwi,normalizeTopRecommendation} from '../src/analysis/kiwi.js';
-const mode=process.argv[2],out='.cache/cc2-eval-results',fixture='docs/audits/cc2-alignment/eval-public-inputs.json';
+const mode=process.argv[2],out='.cache/cc2-eval-results',fixture=process.env.KIWI_EVAL_FIXTURE??'docs/audits/cc2-alignment/eval-public-inputs.json';
 const hash=s=>createHash('sha256').update(s).digest('hex');
 if(mode==='prepare'){
  const corpus=await readFile('docs/audits/cc2-alignment/perf-snapshots.json','utf8');

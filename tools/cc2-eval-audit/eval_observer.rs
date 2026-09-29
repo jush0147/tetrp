@@ -6,7 +6,7 @@ use serde_json::{json,Value};
 #[derive(Default)]
 struct Audit { depth:usize, count:u64, with_slot:u64, changed_board:u64, rows:Vec<Value>,
     branch:String, scenario:u32, queue:Vec<Piece>, incoming:Vec<(u32,u32)>, path:Vec<(Piece,Placement)>,
-    retained:[usize;3], groups:BTreeMap<String,[u64;3]> }
+    retained:[usize;3], groups:BTreeMap<String,[u64;3]>, resource_checks:u64 }
 thread_local! { static AUDIT:RefCell<Audit> = RefCell::new(Audit::default()); }
 pub fn reset(){ AUDIT.with(|a|*a.borrow_mut()=Audit::default()); }
 pub fn set_depth(depth:usize){ AUDIT.with(|a|a.borrow_mut().depth=depth); }
@@ -19,6 +19,14 @@ pub fn path_step(next:Piece,p:Placement){ AUDIT.with(|a|a.borrow_mut().path.push
 pub fn observe(before:[u64;10],state:GameState,info:&PlacementInfo,count:usize,cutouts:Vec<Value>,points:Vec<(&str,f32,f32)>){
     AUDIT.with(|a|{
         let mut a=a.borrow_mut();a.count+=1;
+        #[cfg(snapshot_visible_t)] {
+            // Independent context supplied by the public request, not candidate DAG helper.
+            assert!(a.depth<=a.queue.len());
+            let expected=a.queue[a.depth..].iter().filter(|&&p|p==Piece::T).count()
+                + usize::from(state.reserve==Piece::T);
+            assert_eq!(count,expected,"visible-T resource mismatch");
+            a.resource_checks+=1;
+        }
         if !cutouts.is_empty(){a.with_slot+=1;}
         if before!=state.board.cols {a.changed_board+=1;}
         // Separate quotas per branch/scenario prevent early non-clearing templates
@@ -50,7 +58,7 @@ pub fn observe(before:[u64;10],state:GameState,info:&PlacementInfo,count:usize,c
     });
 }
 pub fn finish()->Value { AUDIT.with(|a|{let a=a.borrow();json!({"evaluations":a.count,"withSlot":a.with_slot,
-    "boardRewritten":a.changed_board,"groups":a.groups,"version":2,
+    "boardRewritten":a.changed_board,"groups":a.groups,"version":2,"resourceChecks":a.resource_checks,
     "sampling":"per branch/scenario: first 24 board rewrites + 8 template-only + 4 controls; not random",
     "limitations":"terminal early-return not sampled; selected path is one witness to DAG state, not backed-up best continuation; normalized queue plus reserve require Hold-lineage interpretation",
     "rows":a.rows})}) }

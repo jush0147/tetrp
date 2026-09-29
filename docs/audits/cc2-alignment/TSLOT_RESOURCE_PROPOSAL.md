@@ -1,6 +1,6 @@
 # T-slot 第一個局部候選：可見 T 資源計數
 
-2026-09-29。狀態：**候選規格與離線影響盤點完成；尚未修改、建置或採用 bot 候選。** 本文件不是強度結果或 production promotion。
+2026-09-29。狀態：**隔離候選與診斷 gate 已實作；本機 source-transform／八個 accepted WASM fixture 驗證通過，候選 Rust 編譯與 runtime gate 待 CI。** 未採用候選；本文件不是強度結果或 production promotion。
 
 ## 固定一個假設
 
@@ -40,4 +40,10 @@
 
 ## 接續工作
 
-下一個具體工程項目是依上述規格準備隔離候選與 regression gate，**不再補同一現象的 observer，不開始權重 tuning**。沒有證據前保留 accepted baseline；此 T-slot 項完成局部候選驗證後，回到其餘現有機制審查表，不把所有工作縮成只研究 T-spin。
+隔離候選由 `scripts/kiwi-tslot-candidate-prepare.js` 安裝，僅在 `--cfg snapshot_visible_t` 且 finite-visible snapshot 分支開啟。從當前 DAG layer 的下一層開始遍歷，遇 unknown 停止；每次 expansion 計算一次，最多目前的公開 horizon，不在每個 child 重掃。無 mutable global policy 資源計數。
+
+`kiwi-tslot-resource-audit.yml` 執行單一 30 分鐘上限診斷 job：四個既有真實 snapshot 加四個明確標記的 synthetic Hold/T 邊界局面，全部維持 200k shared node cap。default-off 與 accepted WASM 完整 report 精確相同；candidate observer-on/off 完整 report 精確相同。診斷 observer 以獨立公開 queue context 對每次非 terminal evaluate 斷言資源計數，保留樣本再核對 path 消耗與完整方塊 multiset 守恆。候選 top-1 必須通過既有 authority 幾何／spin 驗證，禁止 fallback。Rust 單元測試覆蓋資源計數與消耗，並跑既有 snapshot contract tests。
+
+記錄 native 單次耗時只供診斷，不當作 browser performance benchmark；尚未建立新 WASM/browser candidate。這輪不是 authority transaction arena，不能由 top-1 geometry 檢查宣稱完整 lock-frame／garbage parity。
+
+CI 完成後先讀 gate 與候選差異，**不開始權重 tuning 或自動開 arena**。沒有證據前保留 accepted baseline；此 T-slot 項完成局部候選驗證後，回到其餘現有機制審查表，不把所有工作縮成只研究 T-spin。
