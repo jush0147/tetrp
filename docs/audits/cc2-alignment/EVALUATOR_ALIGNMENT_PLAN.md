@@ -40,3 +40,5 @@
 2026-09-29 最新接續點：隔離 visible-T 候選 source transform、四個 Rust resource tests、八個 public input 的精確 report／計數／Hold lineage／top-1 gate 已實作。本機 accepted WASM 八局面通過；Rust candidate 由 `kiwi-tslot-resource-audit.yml` 單 job 建置診斷，完成 ntfy 通知後讀結果。不換 production，不調權重、不開 FT7；詳見 TSLOT_RESOURCE_PROPOSAL.md。
 
 Run 36566413689 已成功：16 次完整 report parity、160 萬次資源斷言、371 個 lineage witnesses 通過；8 個 top-1 中只有 leg20/request493 改為 occupied Hold。見 RESULT_36566413689.md。下一步讀這個決策差異，不重跑已成功的診斷或直接宣稱更強。同 commit 的一般 CI 失敗是兩個診斷 Rust 檔漏登記 publication allowlist，已做精確路徑修正。
+
+決策差異離線分析已完成，見 TSLOT_DECISION_RESULT.md／TSLOT_DECISION_AUDIT.json。原 Place mean 降 2.31，Hold 降 0.14；根據真實公開資訊，放 T 後沒有其他已知 T，因此 candidate 的 Place 分支 100k evaluates 無 cutout。121 個配對 witness 的 reward 與 pre-cutout stages 一致。無法精確分解 root backup／search reordering，也不為此再擴張 instrumentation。T-slot 候選封存待機制比較，baseline 不換。下一項固定為 H1 pending-safety／base board 的有效係數、cancellation 反應與重疊語意。一般 CI run 36566930087 已成功。
