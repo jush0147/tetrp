@@ -1,0 +1,279 @@
+{
+  "schema": "kiwi-h1-semantics/1",
+  "profile": "review_h9_h12",
+  "sourcePin": "2e243242b674d57491f99b445f75e35fc48a0e26",
+  "hashes": {
+    "freestyle": "9fe27a686c21515eb729af2ec73c4b99cd0ad6201b783fd35319a93c265f03d1",
+    "boardDanger": "26117b681fd847709815d8d8147c6c7003855745da21e2d4e5a855ed8fbd0361"
+  },
+  "formula": "H1 = -pending_safety * min(post_transition_pending,16)/8 * D(real_post_transition_board)",
+  "danger": "D = 1.5*holes + 0.2*coveredness + 1.5*max(height-10,0) + 5*max(height-15,0)",
+  "audits": [
+    {
+      "run": 36551709585,
+      "witnesses": 729,
+      "maxFloatArithmeticError": 9.536743172944284e-8
+    },
+    {
+      "run": 36566413689,
+      "witnesses": 371,
+      "maxFloatArithmeticError": 9.536743172944284e-8
+    }
+  ],
+  "selected": {
+    "run": 36551709585,
+    "id": "leg20/request493",
+    "index": 0,
+    "columns": [
+      24,
+      15,
+      15,
+      7,
+      15,
+      15,
+      15,
+      15,
+      15,
+      15
+    ],
+    "features": {
+      "height": 5,
+      "holes": 3,
+      "covered": 12,
+      "danger": 6.9
+    },
+    "pending": 4,
+    "recordedH1": -3.450000047683716
+  },
+  "pressureTable": [
+    {
+      "pending": 0,
+      "pressure": 0,
+      "h1": 0,
+      "effectiveHoles": -1.5,
+      "effectiveCovered": -0.2,
+      "heightAbove10Extra": -1.5,
+      "heightAbove15Extra": -5,
+      "ordinaryHeight": -0.4
+    },
+    {
+      "pending": 1,
+      "pressure": 0.125,
+      "h1": -0.8625,
+      "effectiveHoles": -1.6875,
+      "effectiveCovered": -0.225,
+      "heightAbove10Extra": -1.6875,
+      "heightAbove15Extra": -5.625,
+      "ordinaryHeight": -0.4
+    },
+    {
+      "pending": 4,
+      "pressure": 0.5,
+      "h1": -3.45,
+      "effectiveHoles": -2.25,
+      "effectiveCovered": -0.30000000000000004,
+      "heightAbove10Extra": -2.25,
+      "heightAbove15Extra": -7.5,
+      "ordinaryHeight": -0.4
+    },
+    {
+      "pending": 8,
+      "pressure": 1,
+      "h1": -6.9,
+      "effectiveHoles": -3,
+      "effectiveCovered": -0.4,
+      "heightAbove10Extra": -3,
+      "heightAbove15Extra": -10,
+      "ordinaryHeight": -0.4
+    },
+    {
+      "pending": 12,
+      "pressure": 1.5,
+      "h1": -10.350000000000001,
+      "effectiveHoles": -3.75,
+      "effectiveCovered": -0.5,
+      "heightAbove10Extra": -3.75,
+      "heightAbove15Extra": -12.5,
+      "ordinaryHeight": -0.4
+    },
+    {
+      "pending": 16,
+      "pressure": 2,
+      "h1": -13.8,
+      "effectiveHoles": -4.5,
+      "effectiveCovered": -0.6000000000000001,
+      "heightAbove10Extra": -4.5,
+      "heightAbove15Extra": -15,
+      "ordinaryHeight": -0.4
+    },
+    {
+      "pending": 20,
+      "pressure": 2,
+      "h1": -13.8,
+      "effectiveHoles": -4.5,
+      "effectiveCovered": -0.6000000000000001,
+      "heightAbove10Extra": -4.5,
+      "heightAbove15Extra": -15,
+      "ordinaryHeight": -0.4
+    }
+  ],
+  "transactions": [
+    {
+      "id": "send-four",
+      "input": {
+        "pending": 0,
+        "pieces": 20,
+        "active": true,
+        "lines": 2,
+        "spin": "full"
+      },
+      "generated": 4,
+      "cancelled": 0,
+      "sent": 4,
+      "pendingAfter": 0,
+      "blocked": true,
+      "fixedBoardH1Relief": 0,
+      "directH2": 4,
+      "caveat": "Hold board features fixed to isolate pressure effect; clear geometry, other leaf terms and edge shaping are excluded."
+    },
+    {
+      "id": "cancel-four",
+      "input": {
+        "pending": 4,
+        "pieces": 20,
+        "active": true,
+        "lines": 2,
+        "spin": "full"
+      },
+      "generated": 4,
+      "cancelled": 4,
+      "sent": 0,
+      "pendingAfter": 0,
+      "blocked": true,
+      "fixedBoardH1Relief": 3.45,
+      "directH2": 0,
+      "caveat": "Hold board features fixed to isolate pressure effect; clear geometry, other leaf terms and edge shaping are excluded."
+    },
+    {
+      "id": "partial-cancel",
+      "input": {
+        "pending": 8,
+        "pieces": 20,
+        "active": true,
+        "lines": 2,
+        "spin": "full"
+      },
+      "generated": 4,
+      "cancelled": 4,
+      "sent": 0,
+      "pendingAfter": 4,
+      "blocked": true,
+      "fixedBoardH1Relief": 3.45,
+      "directH2": 0,
+      "caveat": "Hold board features fixed to isolate pressure effect; clear geometry, other leaf terms and edge shaping are excluded."
+    },
+    {
+      "id": "saturated-pressure",
+      "input": {
+        "pending": 20,
+        "pieces": 20,
+        "active": true,
+        "lines": 2,
+        "spin": "full"
+      },
+      "generated": 4,
+      "cancelled": 4,
+      "sent": 0,
+      "pendingAfter": 16,
+      "blocked": true,
+      "fixedBoardH1Relief": 0,
+      "directH2": 0,
+      "caveat": "Hold board features fixed to isolate pressure effect; clear geometry, other leaf terms and edge shaping are excluded."
+    },
+    {
+      "id": "opener-defense",
+      "input": {
+        "pending": 8,
+        "pieces": 0,
+        "active": true,
+        "lines": 2,
+        "spin": "full"
+      },
+      "generated": 4,
+      "cancelled": 8,
+      "sent": 0,
+      "pendingAfter": 0,
+      "blocked": true,
+      "fixedBoardH1Relief": 6.9,
+      "directH2": 0,
+      "caveat": "Hold board features fixed to isolate pressure effect; clear geometry, other leaf terms and edge shaping are excluded."
+    },
+    {
+      "id": "cancel-not-yet-active",
+      "input": {
+        "pending": 4,
+        "pieces": 20,
+        "active": false,
+        "lines": 2,
+        "spin": "full"
+      },
+      "generated": 4,
+      "cancelled": 4,
+      "sent": 0,
+      "pendingAfter": 0,
+      "blocked": true,
+      "fixedBoardH1Relief": 3.45,
+      "directH2": 0,
+      "caveat": "Hold board features fixed to isolate pressure effect; clear geometry, other leaf terms and edge shaping are excluded."
+    },
+    {
+      "id": "single-blocks-without-cancel",
+      "input": {
+        "pending": 4,
+        "pieces": 20,
+        "active": true,
+        "lines": 1,
+        "spin": "none"
+      },
+      "generated": 0,
+      "cancelled": 0,
+      "sent": 0,
+      "pendingAfter": 4,
+      "blocked": true,
+      "fixedBoardH1Relief": 0,
+      "directH2": 0,
+      "caveat": "Hold board features fixed to isolate pressure effect; clear geometry, other leaf terms and edge shaping are excluded."
+    }
+  ],
+  "tank": {
+    "holeScenario": 2,
+    "tanked": 4,
+    "cancelled": 0,
+    "pendingAfter": 0,
+    "before": {
+      "height": 5,
+      "holes": 3,
+      "covered": 12,
+      "danger": 6.9
+    },
+    "after": {
+      "height": 9,
+      "holes": 7,
+      "covered": 35,
+      "danger": 17.5
+    },
+    "h1Before": -3.45,
+    "h1After": 0,
+    "baseSubsetBefore": -8.9,
+    "baseSubsetAfter": -21.1,
+    "caveat": "Actual authority tank and board insertion, fixed synthetic hole scenario; no placement, active-piece repair, future opponent, complete evaluator or KO comparison."
+  },
+  "conclusions": [
+    "Cancellation has zero explicit H2 weight but can improve H1 and avoid future tank geometry; not absent from modeled defense.",
+    "H1 sees pending quantity after transaction, including inactive packets; urgency is only indirect through forecast transitions.",
+    "Pressure saturates at 16; cancellation from 20 to 16 has zero fixed-board H1 relief.",
+    "Tanking also reduces pending, but changes board; it is not authority cancellation and H2 excludes no-clear pending reduction.",
+    "Overlap is conditional danger weighting, not evidence of uselessness. No weights or policy changed."
+  ],
+  "limits": "Arithmetic reproduces stored Rust H1 witnesses within 0.001 due to f32 versus JS arithmetic. It is not a Rust evaluator replacement, root-ranking attribution, new search run or strength test."
+}
