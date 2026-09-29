@@ -1,5 +1,15 @@
 # 評分 observer：執行與判讀限制
 
+## 2026-09-29 v2 補強
+
+第一輪 36548712730 已正式通過。以下舊版 64/8 取樣描述保留作歷史，現版本改為 **每個 branch/scenario 各取 24 board-rewrite、8 template-only、4 control**，並記錄各類全量計數。Gate 要求每個 strata 的取樣數精確等於 min(總數, quota)，避免只看到總樣本數就誤判覆蓋。
+
+新增 Place/post-Hold branch、scenario id/packet delays、正規化 branch queue、after-evaluation remaining queue、DAG select 經過的 (next, placement) 路徑。Observer 只插入 analysis/dag 的讀取紀錄，移除標記後需逐字等於原檔。Runtime assertions 檢查 path/depth、queue horizon；JS gate 再檢查每個 path next 消耗順序。
+
+empty-Hold 時 normalized reserve 代表 current，occupied-Hold 時代表 Hold；remaining queue 必須與 reserve/holdIsEmpty 一起解讀，不能把 reserve 一律當 Hold。Path 是 DAG 本次選擇到該 state 的路徑，不是完整 backprop 最佳續招；多 parent DAG 的根節點歸因仍不可由單一路徑推定。模板可達性／spin certificate 也尚未由此自動證明。
+
+不變：四個 public requests、200k nodes、權重、搜尋；完整 on/off/native/WASM report 精確 parity，無 epsilon。此輪不變更 fixture 挑選、不開 arena。
+
 2026-09-29。4 個既有真實 PublicSnapshots，各 200k nodes。輸入取自已入庫 perf corpus 的 index 1/4/7/10；固定機械選樣，不按結果挑選。保留 source trace metadata；沒有輸入 private checkpoint。
 
 ## 三份完整 report 必須一致

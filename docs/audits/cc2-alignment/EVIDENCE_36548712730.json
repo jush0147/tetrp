@@ -1,0 +1,214 @@
+{
+  "run": 36548712730,
+  "independentFullReportChecks": 8,
+  "mismatches": 0,
+  "inputSha256": "1837dd1858d08b393b55ff112124e446b99a408390b43dca98225be911a4e089",
+  "summary": [
+    {
+      "id": "leg0/request346",
+      "evaluations": 200000,
+      "withSlot": 30000,
+      "boardRewritten": 15308,
+      "samples": 72
+    },
+    {
+      "id": "leg4/request419",
+      "evaluations": 200000,
+      "withSlot": 3389,
+      "boardRewritten": 42,
+      "samples": 72
+    },
+    {
+      "id": "leg12/request383",
+      "evaluations": 200000,
+      "withSlot": 2967,
+      "boardRewritten": 104,
+      "samples": 72
+    },
+    {
+      "id": "leg20/request493",
+      "evaluations": 200000,
+      "withSlot": 7772,
+      "boardRewritten": 1325,
+      "samples": 72
+    }
+  ],
+  "selectedWitness": {
+    "b2bAfter": 0,
+    "b2bBefore": 0,
+    "comboBefore": 0,
+    "cutoutAllowance": 1,
+    "cutouts": [
+      {
+        "before": [
+          255,
+          15,
+          0,
+          111,
+          63,
+          63,
+          63,
+          63,
+          127,
+          63
+        ],
+        "lines": 2,
+        "location": {
+          "orientation": "south",
+          "type": "T",
+          "x": 2,
+          "y": 4
+        }
+      }
+    ],
+    "depth": 2,
+    "evaluatedBoardCols": [
+      63,
+      7,
+      0,
+      31,
+      15,
+      15,
+      15,
+      15,
+      31,
+      15
+    ],
+    "holdIsEmpty": false,
+    "lines": 0,
+    "pendingAfter": 0,
+    "placement": {
+      "location": {
+        "orientation": "east",
+        "type": "S",
+        "x": 3,
+        "y": 5
+      },
+      "spin": "none"
+    },
+    "realBoardCols": [
+      255,
+      15,
+      0,
+      111,
+      63,
+      63,
+      63,
+      63,
+      127,
+      63
+    ],
+    "reserve": "T",
+    "sentAfter": 263,
+    "stages": [
+      {
+        "deltaEval": 0,
+        "deltaReward": 0,
+        "eval": 0,
+        "reward": 0,
+        "stage": "pending_safety"
+      },
+      {
+        "deltaEval": 0,
+        "deltaReward": 0,
+        "eval": 0,
+        "reward": 0,
+        "stage": "legacy_or_s2"
+      },
+      {
+        "deltaEval": 0,
+        "deltaReward": 0,
+        "eval": 0,
+        "reward": 0,
+        "stage": "transaction"
+      },
+      {
+        "deltaEval": 0,
+        "deltaReward": 0,
+        "eval": 0,
+        "reward": 0,
+        "stage": "h3_inventory"
+      },
+      {
+        "deltaEval": 0,
+        "deltaReward": 0,
+        "eval": 0,
+        "reward": 0,
+        "stage": "wasted_t_b2b_softdrop"
+      },
+      {
+        "deltaEval": 0,
+        "deltaReward": 0,
+        "eval": 0,
+        "reward": 0,
+        "stage": "cavity"
+      },
+      {
+        "deltaEval": 2,
+        "deltaReward": 0,
+        "eval": 2,
+        "reward": 0,
+        "stage": "tslot"
+      },
+      {
+        "deltaEval": 0,
+        "deltaReward": 0,
+        "eval": 2,
+        "reward": 0,
+        "stage": "holes"
+      },
+      {
+        "deltaEval": 0,
+        "deltaReward": 0,
+        "eval": 2,
+        "reward": 0,
+        "stage": "coveredness"
+      },
+      {
+        "deltaEval": 0.9000000953674316,
+        "deltaReward": 0,
+        "eval": 2.9000000953674316,
+        "reward": 0,
+        "stage": "well"
+      },
+      {
+        "deltaEval": -2.4000000953674316,
+        "deltaReward": 0,
+        "eval": 0.5,
+        "reward": 0,
+        "stage": "height"
+      },
+      {
+        "deltaEval": -66,
+        "deltaReward": 0,
+        "eval": -65.5,
+        "reward": 0,
+        "stage": "transitions"
+      }
+    ],
+    "syntheticBag": "EnumSet(O | L | J | S | Z)"
+  },
+  "sampleCoverage": [
+    {
+      "id": "leg0/request346",
+      "retainedBoardRewriteSamples": 60,
+      "retainedEmptyHoldSamples": 0
+    },
+    {
+      "id": "leg4/request419",
+      "retainedBoardRewriteSamples": 0,
+      "retainedEmptyHoldSamples": 0
+    },
+    {
+      "id": "leg12/request383",
+      "retainedBoardRewriteSamples": 0,
+      "retainedEmptyHoldSamples": 0
+    },
+    {
+      "id": "leg20/request493",
+      "retainedBoardRewriteSamples": 0,
+      "retainedEmptyHoldSamples": 0
+    }
+  ],
+  "limits": "Bounded prefix samples, not independent positions or root-choice attribution."
+}

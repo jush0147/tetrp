@@ -31,6 +31,21 @@ export function instrument(source){
  assert.equal(s.replace(/\n\/\/ EVAL_OBSERVER_BEGIN\n[\s\S]*?\/\/ EVAL_OBSERVER_END\n/g,''),source,'observer must only insert code');
  return s;
 }
+export function instrumentContext(source,kind){
+ let s=source;
+ const insert=(anchor,code)=>{assert.equal(s.split(anchor).length,2,anchor);s=s.replace(anchor,tag(code)+anchor);};
+ if(kind==='analysis')insert('        let start = Start {',`{
+   let normalized_queue = if request.start.hold.is_none() { &request.start.queue[1..] } else { &request.start.queue[..] };
+   crate::eval_observer::set_context(if root_legal_placements.is_some() { "place" } else { "post_hold" },
+       scenario, normalized_queue, &scenario_incoming);
+ }`);
+ else if(kind==='dag'){
+  insert('        let mut game_state = self.root;','{ crate::eval_observer::reset_path(); }');
+  insert('                    game_state.advance(next, placement);','{ crate::eval_observer::path_step(next, placement); }');
+ }else throw Error('unknown context source');
+ assert.equal(s.replace(/\n\/\/ EVAL_OBSERVER_BEGIN\n[\s\S]*?\/\/ EVAL_OBSERVER_END\n/g,''),source);
+ return s;
+}
 if(mode==='runner'){
  let lib=await readFile(`${root}/src/lib.rs`,'utf8');assert(!lib.includes('eval_audit_runner'));
  lib+='\n#[cfg(test)]\nmod eval_audit_runner;\n#[cfg(eval_observer)]\nmod eval_observer;\n';
@@ -38,8 +53,10 @@ if(mode==='runner'){
  for(const f of ['eval_audit_runner','eval_observer'])await copyFile(`tools/cc2-eval-audit/${f}.rs`,`${root}/src/${f}.rs`);
 }else if(mode==='instrument'){
  const file=`${root}/src/bot/freestyle.rs`;await writeFile(file,instrument(await readFile(file,'utf8')));
+ for(const kind of ['analysis','dag']){const path=`${root}/src/${kind}.rs`;await writeFile(path,instrumentContext(await readFile(path,'utf8'),kind));}
 }else if(mode==='smoke'){
  const source=await readFile('.cache/cc2-parameter-audit/src/bot/freestyle.rs','utf8');
  const changed=instrument(source);assert.throws(()=>instrument(changed));
+ for(const kind of ['analysis','dag']){const path=kind==='dag'?'.cache/cc2-audit-source/src__dag.rs':'.cache/cc2-parameter-audit/src/analysis.rs';instrumentContext((await readFile(path,'utf8')).replace(/\r/g,''),kind);}
  console.log('Insertion-only observer transform and duplicate-install guard passed. Rust compilation still required.');
 }

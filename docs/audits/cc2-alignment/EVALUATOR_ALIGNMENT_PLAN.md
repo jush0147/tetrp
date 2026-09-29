@@ -29,5 +29,7 @@
 - 下一個具體深入項：T-slot 的 synthetic bag／empty-Hold reserve／假想消行如何聯動其他 leaf 項目。要以真實 continuation 的診斷證據評估影響，尚未授予它「有害」判定。
 - 2026-09-29 已實作隔離 observer 與四個真實 PublicSnapshot fixture；本機 accepted WASM baseline 可執行。Rust 編譯／完整報告 parity 尚待 `kiwi-evaluator-audit.yml`。一次限時 30 分鐘的診斷 job，不開 arena。完工後讀 artifact，勿直接進入 tuning。
 - 規則擴展 ARE 留為獨立支援域工作，不混入零 ARE arena 的 evaluator 調整。
+- 2026-09-29 run 36548712730 正式通過，8 次完整 report parity 零差異。結果見 RESULT_36548712730.md：已確認 cutout 的跨項影響，但樣本保留方式漏掉三組後段 board-rewrite witnesses，尚不足以歸因 top-1。下一步補分類取樣與 branch/scenario/visible-queue lineage，不調參。
+- Observer v2 已加入上述分類取樣、正規化可見序列及 DAG selected-path，待相同四局面 CI 診斷驗證。僅修診斷覆蓋，不修改任何 evaluate/search expression；每個 strata 的覆蓋與 queue 消耗加入 gate。
 
 不要求使用者重新拆解此問題；沿此文件逐項推進，發現新證據才更新判定。

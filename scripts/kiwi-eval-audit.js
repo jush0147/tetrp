@@ -33,7 +33,16 @@ if(mode==='prepare'){
   assert.deepEqual(observed[i].report,baseline[i].report,'observer altered complete report');
   assert.deepEqual(baseline[i].report,wasm[i].report,'native/accepted WASM report mismatch; do not infer artifact behavior');
   assert(observed[i].diagnostic.evaluations>0);assert(observed[i].diagnostic.rows.length>0);
+  assert.equal(observed[i].diagnostic.version,2);
+  const categoryNames=['board_rewrite','template_only','control'];
+  for(const [key,counts] of Object.entries(observed[i].diagnostic.groups))for(let c=0;c<3;c++){
+   const retained=observed[i].diagnostic.rows.filter(r=>`${r.branch}/${r.scenario}`===key&&r.category===categoryNames[c]).length;
+   assert.equal(retained,Math.min(counts[c],[24,8,4][c]),'stratified coverage');
+  }
   for(const row of observed[i].diagnostic.rows){
+   assert.equal(row.selectedPathBefore.length+1,row.depth);
+   row.selectedPathBefore.forEach(([next],index)=>assert.equal(next,row.normalizedBranchQueue[index],'path must consume visible queue in order'));
+   assert.deepEqual(row.normalizedRemainingAfter,row.normalizedBranchQueue.slice(row.depth));
    assert.equal(row.stages.length,12);assert(row.stages.every(s=>Number.isFinite(s.eval)&&Number.isFinite(s.reward)));
    assert(row.cutouts.length<=row.cutoutAllowance);
   }
