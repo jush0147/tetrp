@@ -9,11 +9,18 @@ import {prepareKiwi,normalizeTopRecommendation,NODE_BUDGET} from '../src/analysi
 import {profile} from './kiwi-profiles.js';
 import {match} from './kiwi-arena-core.js';
 import {scoreKO} from './kiwi-cc2-series-score.js';
+import pilot from '../docs/audits/cc2-alignment/VISIBLE_T_PILOT.json' with {type:'json'};
 const artifact=resolve(process.argv[2]??'.cache/cc2-candidate'),out=process.argv[3]??'.cache/cc2-integration-results';
 const smoke=process.argv.includes('--smoke');
 const ft7=process.argv.includes('--ft7');
 const batch=process.argv.includes('--batch');
-const landing=process.argv.includes('--landing'),dense=landing||process.argv.includes('--dense');
+const visibleT=process.argv.includes('--visible-t');
+if(visibleT){
+ assert.equal(pilot.nodeBudget,NODE_BUDGET);assert.equal(pilot.framesPerPiece,24);
+ assert.equal(pilot.watchdogFrames,360000);assert.equal(pilot.retryStride,4);
+ assert.equal(pilot.maxAttemptsPerLeg,25);assert.equal(pilot.seeds.length,4);
+}
+const landing=process.argv.includes('--landing'),dense=visibleT||landing||process.argv.includes('--dense');
 const leg=batch?Number(process.env.CC2_BATCH_LEG):null;
 if(batch){assert.ok(Number.isInteger(leg)&&leg>=0&&leg<24);assert.ok(!smoke&&!ft7);}
 if(dense){assert.ok(!ft7&&(smoke||batch));if(batch)assert.ok(leg<8);}
@@ -22,12 +29,13 @@ await mkdir(out,{recursive:true});
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const expected={
  'cold_clear_2.js':'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691',
- 'cold_clear_2_bg.wasm':landing?'ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767':dense?'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba':'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa',
+ 'cold_clear_2_bg.wasm':visibleT?pilot.candidateWasm:landing?'ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767':dense?'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba':'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa',
 };
 const report={schema:ft7?'cc2-authority-ft7/1':'cc2-authority-integration/1',git:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
- artifactRun:landing?36387270053:dense?36380902069:36323060219,artifactHashes:expected,nodeBudget:NODE_BUDGET,executionModel:'tl-placement-v1',
+ artifactRun:visibleT?pilot.candidateRun:landing?36387270053:dense?36380902069:36323060219,artifactHashes:expected,nodeBudget:NODE_BUDGET,executionModel:'tl-placement-v1',
  framesPerPiece:24,maxFrames:smoke?48:null,watchdogFrames:360000,smokeOnly:smoke,complete:false,games:[],
- baseline:'Tetrp vendored Kiwi snapshot-v3.2; not original CC2',promotionEligible:false,
+ baseline:visibleT?'Accepted Tetrp-aligned CC2 baseline; not vendored Legacy':'Tetrp vendored Kiwi snapshot-v3.2; not original CC2',promotionEligible:false,
+ ...(visibleT?{pilot,baselineArtifactRun:pilot.baselineRun,baselineWasm:pilot.baselineWasm}:{}),
  ...(ft7?{target:7,score:[0,0],seed:2026092801,scoring:'KO only; simultaneous KO unscored and replayed; technical failure aborts'}:{}),
  ...(batch?{batchLeg:leg,pair:Math.floor(leg/2),batchScored:false}: {})};
 const save=()=>writeFile(`${out}/result.json`,JSON.stringify(report,null,2));await save();
@@ -36,17 +44,27 @@ try{
  assert.equal(hash(await readFile('vendor/kiwi-v1/pkg/cold_clear_2_bg.wasm')),'af7849aa18649ebeca5e0af411499f6dc16afcdbc35ea4e094b2abffce59fa95');
  const kernel=await import(pathToFileURL(`${artifact}/pkg/cold_clear_2.js`).href);
  await kernel.default({module_or_path:await readFile(`${artifact}/pkg/cold_clear_2_bg.wasm`)});
- const legacy=await profile('legacy');
+ let legacy;
+ if(visibleT){
+  const pkg=resolve(process.env.KIWI_PILOT_BASELINE_PKG??'.cache/visible-t-baseline/cc2-wasm-results/pkg');
+  for(const [file,sha] of [['cold_clear_2_bg.wasm',pilot.baselineWasm],['cold_clear_2.js',pilot.js]])assert.equal(hash(await readFile(`${pkg}/${file}`)),sha);
+  const ref=await import(pathToFileURL(`${pkg}/cold_clear_2.js`).href);await ref.default({module_or_path:await readFile(`${pkg}/cold_clear_2_bg.wasm`)});
+  legacy={version:`accepted-run-${pilot.baselineRun}`,decide:s=>{
+   const p=prepareKiwi(s),r=JSON.parse(ref.analyze_snapshot_json(JSON.stringify(p.request)));
+   assert.equal(r.bag_knowledge,'unknown');assert.equal(r.unknown_tail,'finite_visible');assert.equal(r.node_budget,NODE_BUDGET);assert.ok(r.nodes<=NODE_BUDGET);
+   return normalizeTopRecommendation(s,p,r);
+  }};
+ }else legacy=await profile('legacy');
  const corrected=s=>{
   const p=prepareKiwi(s),r=JSON.parse(kernel.analyze_snapshot_json(JSON.stringify(p.request)));
-  assert.equal(r.bag_knowledge,'unknown');assert.equal(r.unknown_tail,'finite_visible');assert.ok(r.nodes<=NODE_BUDGET);
+  assert.equal(r.bag_knowledge,'unknown');assert.equal(r.unknown_tail,'finite_visible');assert.equal(r.node_budget,NODE_BUDGET);assert.ok(r.nodes<=NODE_BUDGET);
   return normalizeTopRecommendation(s,p,r);
  };
- report.profiles=[{name:'corrected-cc2-kiwi',artifactRun:report.artifactRun},{name:'tetrp-vendored-kiwi',version:legacy.version}];
+ report.profiles=[{name:visibleT?'visible-t-candidate':'corrected-cc2-kiwi',artifactRun:report.artifactRun},{name:visibleT?'accepted-baseline':'tetrp-vendored-kiwi',version:legacy.version}];
  for(let game=0;batch?!report.batchScored:ft7?Math.max(...report.score)<7:game<2;game++){
   // Separate retry seed range per pair; identical seat streams on paired legs.
   if(batch)assert.ok(game<25,'Repeated simultaneous KO: incomplete batch leg');
-  const seed=batch?2026100001+Math.floor(leg/2)*100+game*4:(ft7?report.seed:2026092701)+game*4;
+  const seed=batch?(visibleT?pilot.seeds[Math.floor(leg/2)]:2026100001+Math.floor(leg/2)*100)+game*4:(ft7?report.seed:2026092701)+game*4;
   const swapped=batch?leg%2===1:game%2===1,fd=openSync(`${out}/game-${game+1}.jsonl`,'w');
   const pending=[null,null],counts={placements:[0,0],holds:[0,0],reanalyses:[0,0],receives:[0,0],spins:{},clears:{}};
   const record=event=>{

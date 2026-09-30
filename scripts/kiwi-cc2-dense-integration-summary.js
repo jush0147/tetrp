@@ -2,16 +2,18 @@ import assert from 'node:assert/strict';
 import {readFile,readdir,writeFile,appendFile,mkdir} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {scoreKO} from './kiwi-cc2-series-score.js';
+import pilot from '../docs/audits/cc2-alignment/VISIBLE_T_PILOT.json' with {type:'json'};
 
-export function summarizeDense(reports,jobStatus,{landing=false}={}){
+export function summarizeDense(reports,jobStatus,{landing=false,visibleT=false}={}){
  const legs=[],problems=[],score=[0,0],coverage=[0,1].map(()=>({placements:0,holds:0,reanalyses:0,receives:0}));
  for(const [index,r]of reports.entries())try{
   assert.ok(Number.isInteger(r.batchLeg)&&r.batchLeg>=0&&r.batchLeg<8);
   assert.equal(r.pair,Math.floor(r.batchLeg/2));assert.ok(!legs.some(l=>l.leg===r.batchLeg));
   assert.ok(r.complete&&r.batchScored&&!r.smokeOnly);assert.equal(r.status,'batch-leg-completed');
   assert.equal(r.maxFrames,null);assert.equal(r.nodeBudget,200000);assert.equal(r.framesPerPiece,24);
-  assert.equal(r.executionModel,'tl-placement-v1');assert.equal(r.artifactRun,landing?36387270053:36380902069);
-  assert.equal(r.artifactHashes['cold_clear_2_bg.wasm'],landing?'ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767':'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba');
+  assert.equal(r.executionModel,'tl-placement-v1');assert.equal(r.artifactRun,visibleT?pilot.candidateRun:landing?36387270053:36380902069);
+  assert.equal(r.artifactHashes['cold_clear_2_bg.wasm'],visibleT?pilot.candidateWasm:landing?'ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767':'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba');
+  if(visibleT){assert.deepEqual(r.pilot,pilot);assert.equal(r.baselineArtifactRun,pilot.baselineRun);assert.equal(r.baselineWasm,pilot.baselineWasm);assert.equal(r.watchdogFrames,pilot.watchdogFrames);}
   assert.equal(r.artifactHashes['cold_clear_2.js'],'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691');
   assert.ok(r.games.length>0&&r.games.length<=25);
   const local=[0,1].map(()=>({placements:0,holds:0,reanalyses:0,receives:0}));
@@ -21,7 +23,7 @@ export function summarizeDense(reports,jobStatus,{landing=false}={}){
    assert.equal(g.transportStats.length,2);
    assert.ok(g.transportStats.every(s=>s.fallbackRequests===0&&s.rejectedCandidates===0&&s.maxSelectedRank===0));
    assert.equal(g.swapped,r.batchLeg%2===1);assert.equal(g.framesPerPiece,24);
-   const seed=2026100001+r.pair*100+i*4;assert.deepEqual(g.seeds,[seed,seed]);assert.deepEqual(g.holeSeeds,[seed+1,seed+2]);
+   const seed=(visibleT?pilot.seeds[r.pair]:2026100001+r.pair*100)+i*4;assert.deepEqual(g.seeds,[seed,seed]);assert.deepEqual(g.holeSeeds,[seed+1,seed+2]);
    const scored=scoreKO([0,0],g,g.swapped);assert.equal(g.scored,scored.scored);assert.equal(g.seriesWinner,scored.seriesWinner);
    assert.equal(g.scored,i===r.games.length-1,'Only final attempt may score; double KO must retry');
    for(let policy=0;policy<2;policy++){
@@ -43,15 +45,15 @@ export function summarizeDense(reports,jobStatus,{landing=false}={}){
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  await mkdir('.cache',{recursive:true});
- const landing=process.argv.includes('--landing'),label=landing?'landing':'dense';
+  const landing=process.argv.includes('--landing'),visibleT=process.argv.includes('--visible-t'),label=visibleT?'visible-t':landing?'landing':'dense';
  const root=`.cache/cc2-${label}-integration-downloads`,reports=[],readErrors=[];
  for(const folder of await readdir(root).catch(()=>[]))try{reports.push(JSON.parse(await readFile(`${root}/${folder}/result.json`)));}
  catch(e){readErrors.push({folder,error:e.message});}
- const result=summarizeDense(reports,process.env.BATCH_JOB_STATUS,{landing});result.readErrors=readErrors;if(readErrors.length)result.complete=false;
+ const result=summarizeDense(reports,process.env.BATCH_JOB_STATUS,{landing,visibleT});result.readErrors=readErrors;if(readErrors.length)result.complete=false;
  await writeFile(`.cache/cc2-${label}-integration-summary.json`,JSON.stringify(result,null,2));
  const url=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
  const sum=k=>result.coverage.reduce((n,c)=>n+c[k],0);
- const message=`Kiwi ${label} integration: ${result.validLegs}/8 valid KO legs; ${sum('placements')} placements; ${sum('holds')} Holds. Score ${result.score.join(':')} vs vendored Kiwi (diagnostic only). ${result.complete?'Correctness gates passed.':'Incomplete/failed; inspect artifacts.'}`;
+ const message=`Kiwi ${label} integration: ${result.validLegs}/8 valid KO legs; ${sum('placements')} placements; ${sum('holds')} Holds. Score ${result.score.join(':')} vs ${visibleT?'accepted baseline':'vendored Kiwi'} (pilot only). ${result.complete?'Correctness gates passed.':'Incomplete/failed; score is partial, inspect artifacts.'}`;
  console.log(message);if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,message+'\n\n'+url+'\n');
  const response=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:result.complete?`Kiwi ${label} integration passed`:`Kiwi ${label} integration needs review`,message:message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});
  assert.ok(response.ok);assert.ok((await response.json()).id);if(!result.complete)process.exitCode=1;

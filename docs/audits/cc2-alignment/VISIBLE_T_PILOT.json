@@ -1,0 +1,21 @@
+{
+  "schema": "kiwi-visible-t-pilot/1",
+  "candidateRun": 36702845823,
+  "candidateArtifact": "kiwi-tslot-wasm-36702845823",
+  "candidateWasm": "8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0",
+  "baselineRun": 36387270053,
+  "baselineArtifact": "cc2-landing-36387270053-1",
+  "baselineWasm": "ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767",
+  "js": "728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691",
+  "seeds": [2026093001, 2026093101, 2026093201, 2026093301],
+  "retryStride": 4,
+  "maxAttemptsPerLeg": 25,
+  "legs": 8,
+  "nodeBudget": 200000,
+  "framesPerPiece": 24,
+  "watchdogFrames": 360000,
+  "maxParallel": 8,
+  "executionModel": "tl-placement-v1",
+  "scoring": "KO only. Same piece seed for both seats; paired legs reverse policy seats. Hole seeds fixed to seat: seed+1,seed+2. Simultaneous KO unscored and retried; technical failure aborts leg and invalidates complete batch. No gameplay frame cap or early score-based stopping.",
+  "interpretation": "Integration and severe-regression pilot only; no promotion or reliable strength estimate from eight games. Retry attempts can differ between paired legs; retain every attempt and do not claim matching seeds where they diverge."
+}

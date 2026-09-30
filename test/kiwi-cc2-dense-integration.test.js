@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {summarizeDense} from '../scripts/kiwi-cc2-dense-integration-summary.js';
+import pilot from '../docs/audits/cc2-alignment/VISIBLE_T_PILOT.json' with {type:'json'};
 
 function fixtures(){return Array.from({length:8},(_,leg)=>{
  const seed=2026100001+Math.floor(leg/2)*100,swapped=leg%2===1;
@@ -42,4 +43,25 @@ test('landing integration accepts only its exact artifact and retains all gates'
  assert.ok(!summarizeDense(rs,'success').complete);
  rs[0].games[0].transportStats[0].fallbackRequests++;
  assert.ok(!summarizeDense(rs,'success',{landing:true}).complete);
+});
+
+test('visible-T pilot freezes both artifacts and paired seeds; no partial batch promotion',()=>{
+ const rs=fixtures();
+ for(const r of rs){
+  Object.assign(r,{pilot:structuredClone(pilot),artifactRun:pilot.candidateRun,baselineArtifactRun:pilot.baselineRun,baselineWasm:pilot.baselineWasm,watchdogFrames:pilot.watchdogFrames});
+  r.artifactHashes['cold_clear_2_bg.wasm']=pilot.candidateWasm;
+  const seed=pilot.seeds[r.pair];r.games[0].seeds=[seed,seed];r.games[0].holeSeeds=[seed+1,seed+2];
+ }
+ assert(summarizeDense(rs,'success',{visibleT:true}).complete);
+ for(const change of [r=>r.baselineWasm='wrong',r=>r.artifactRun++,r=>r.pilot.seeds[0]++,
+  r=>r.games[0].seeds[0]++,r=>r.games[0].failures[0]={error:'watchdog'},r=>r.games[0].transportStats[0].fallbackRequests++,
+  r=>r.games[0].parity[0].mismatches++,r=>r.watchdogFrames=48]){
+  const altered=structuredClone(rs);change(altered[0]);assert(!summarizeDense(altered,'success',{visibleT:true}).complete);
+ }
+ assert(!summarizeDense(rs.slice(0,7),'success',{visibleT:true}).complete);
+ assert(!summarizeDense(rs,'failure',{visibleT:true}).complete);
+ const g=rs[0].games[0],retry=structuredClone(g);
+ Object.assign(g,{ko:[true,true],winner:null,scored:false,seriesWinner:null});
+ retry.game=2;retry.seeds=retry.seeds.map(s=>s+4);retry.holeSeeds=retry.holeSeeds.map(s=>s+4);rs[0].games.push(retry);
+ assert(summarizeDense(rs,'success',{visibleT:true}).complete);
 });
