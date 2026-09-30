@@ -4,7 +4,7 @@
 
 | 順序 | 唯一改動 | 要回答的問題 | 現況與必要前置 |
 |---|---|---|---|
-| 1 | T-slot 額度換成 remaining known T + reserve T | 不預支未知 T 的完整 policy 是否更強？ | native 與 WASM/Worker gate 已通過（run 36702845823）；下一步四 seeds × seat swap 的八局 KO pilot，dispatch 前固定完整配置；未啟動 |
+| 1 | T-slot 額度換成 remaining known T + reserve T | 不預支未知 T 的完整 policy 是否更強？ | pilot run 36707273929 correctness通過，KO 3–5；不promotion、候選封存。樣本不足判定長期效果，不追加追測 |
 | 2 | accepted profile 僅 H9 weight=0 | 洞穴連通性懲罰是否提供其他現有 features／search 之外的 KO 收益？ | 語意已清楚，不是 holes/coveredness 的同一 scalar；尚未建立獨立候選，不換成新 downstack feature |
 | 3 | accepted profile 僅 H1 weight=0 | incoming 條件化盤面懲罰是否改善 KO 勝率？ | shared coefficients、cap16、低乾淨盤面零值已確認；不另加 cancel bonus，不改 cap/timing |
 

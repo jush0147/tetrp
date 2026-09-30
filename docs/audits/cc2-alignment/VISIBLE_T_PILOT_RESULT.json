@@ -1,0 +1,242 @@
+{
+  "run": 36707273929,
+  "summary": {
+    "complete": true,
+    "expectedLegs": 8,
+    "validLegs": 8,
+    "score": [
+      3,
+      5
+    ],
+    "coverage": [
+      {
+        "placements": 3622,
+        "holds": 1308,
+        "reanalyses": 1308,
+        "receives": 938
+      },
+      {
+        "placements": 3622,
+        "holds": 1387,
+        "reanalyses": 1387,
+        "receives": 938
+      }
+    ],
+    "coveragePassed": true,
+    "problems": [],
+    "legs": [
+      {
+        "leg": 0,
+        "pair": 0,
+        "winner": 0,
+        "attempts": 1
+      },
+      {
+        "leg": 1,
+        "pair": 0,
+        "winner": 1,
+        "attempts": 1
+      },
+      {
+        "leg": 2,
+        "pair": 1,
+        "winner": 1,
+        "attempts": 1
+      },
+      {
+        "leg": 3,
+        "pair": 1,
+        "winner": 1,
+        "attempts": 1
+      },
+      {
+        "leg": 4,
+        "pair": 2,
+        "winner": 1,
+        "attempts": 1
+      },
+      {
+        "leg": 5,
+        "pair": 2,
+        "winner": 0,
+        "attempts": 1
+      },
+      {
+        "leg": 6,
+        "pair": 3,
+        "winner": 0,
+        "attempts": 1
+      },
+      {
+        "leg": 7,
+        "pair": 3,
+        "winner": 1,
+        "attempts": 1
+      }
+    ],
+    "purpose": "Full-runner correctness regression; not strength promotion"
+  },
+  "rawAudit": {
+    "decisions": 9939,
+    "placements": 7244,
+    "holds": 2695,
+    "reanalyses": 2695,
+    "mismatches": 0,
+    "authorityCertificatesRevalidated": 7244
+  },
+  "legs": [
+    {
+      "leg": 0,
+      "seed": 2026093001,
+      "swapped": false,
+      "winner": 0,
+      "frames": 15960,
+      "deathReasons": [
+        null,
+        "garbagesmash"
+      ],
+      "placements": [
+        665,
+        665
+      ],
+      "sent": [
+        726,
+        550
+      ]
+    },
+    {
+      "leg": 1,
+      "seed": 2026093001,
+      "swapped": true,
+      "winner": 1,
+      "frames": 12696,
+      "deathReasons": [
+        null,
+        "garbagesmash"
+      ],
+      "placements": [
+        529,
+        529
+      ],
+      "sent": [
+        518,
+        454
+      ]
+    },
+    {
+      "leg": 2,
+      "seed": 2026093101,
+      "swapped": false,
+      "winner": 1,
+      "frames": 8784,
+      "deathReasons": [
+        "garbagesmash",
+        null
+      ],
+      "placements": [
+        366,
+        366
+      ],
+      "sent": [
+        279,
+        368
+      ]
+    },
+    {
+      "leg": 3,
+      "seed": 2026093101,
+      "swapped": true,
+      "winner": 1,
+      "frames": 2712,
+      "deathReasons": [
+        null,
+        "garbagesmash"
+      ],
+      "placements": [
+        113,
+        113
+      ],
+      "sent": [
+        110,
+        94
+      ]
+    },
+    {
+      "leg": 4,
+      "seed": 2026093201,
+      "swapped": false,
+      "winner": 1,
+      "frames": 15624,
+      "deathReasons": [
+        "garbagesmash",
+        null
+      ],
+      "placements": [
+        651,
+        651
+      ],
+      "sent": [
+        637,
+        683
+      ]
+    },
+    {
+      "leg": 5,
+      "seed": 2026093201,
+      "swapped": true,
+      "winner": 0,
+      "frames": 3312,
+      "deathReasons": [
+        "garbagesmash",
+        null
+      ],
+      "placements": [
+        138,
+        138
+      ],
+      "sent": [
+        102,
+        157
+      ]
+    },
+    {
+      "leg": 6,
+      "seed": 2026093301,
+      "swapped": false,
+      "winner": 0,
+      "frames": 15144,
+      "deathReasons": [
+        null,
+        "garbagesmash"
+      ],
+      "placements": [
+        631,
+        631
+      ],
+      "sent": [
+        639,
+        601
+      ]
+    },
+    {
+      "leg": 7,
+      "seed": 2026093301,
+      "swapped": true,
+      "winner": 1,
+      "frames": 12696,
+      "deathReasons": [
+        null,
+        "garbagesmash"
+      ],
+      "placements": [
+        529,
+        529
+      ],
+      "sent": [
+        502,
+        483
+      ]
+    }
+  ],
+  "interpretation": "Eight KO games from four paired seeds. Valid pilot evidence, not evidence of improvement or a conclusive regression. Do not assume paired legs are independent samples."
+}

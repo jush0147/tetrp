@@ -52,3 +52,5 @@ H9 完成：1,100 個 witness 重現，合成對照證明不等同 holes/covered
 Run 36702845823 已成功並本機重核：48 exact report checks 零差異，27 placement／21 Hold checks，候選 artifact hash 已驗證；performance screen 通過。見 RESULT_36702845823.md。可前進四 seeds × seat swap 的八局 KO pilot，先固定配置與 seeds 再 dispatch；本次結果審查沒有啟動 arena、不 promotion、不改 H1/H9。
 
 八局 pilot 已準備：VISIBLE_T_PILOT.json 固定兩個 artifact hash、seeds 2026093001/2026093101/2026093201/2026093301、seat swap 與重試規則；`kiwi-visible-t-pilot.yml` 8 平行 jobs，每局步驟120分鐘技術上限，無 gameplay frame cap。19 個回歸測試通過，實際兩個 WASM 的本機 bounded smoke（不計強度）完成8 placements、4 Holds/reanalyses，零 parity mismatch。runner 與 summary 沿用既有 correctness gates，加入 accepted baseline artifact驗證；沒有使用 vendored Legacy 作對手。完成 ntfy 後再讀8局結果，勿持續輪詢或自動追加對戰。
+
+Run 36707273929 已完成：visible-T 對 accepted baseline **3–5**。本機逐事件重核 7,244 placement certificates、2,695 Holds/reanalyses、9,939 top-1 decisions，零差異；8局全KO、無technical failure/fallback/retry。見 RESULT_36707273929.md。候選不promotion、不追加同機制追正分；保留baseline。下一步依原順序準備只關閉H9的獨立候選，不疊visible-T；尚未開新run。
