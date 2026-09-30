@@ -48,3 +48,5 @@ H1 語意分析完成，見 H1_SEMANTIC_RESULT.md／H1_SEMANTIC_EVIDENCE.json：
 H9 完成：1,100 個 witness 重現，合成對照證明不等同 holes/coveredness，七種 piece 的 authority 幾何驗證證明 H9=0 不保證每種 piece 可達。見 H9_SEMANTIC_RESULT.md。局部語意取證收束，MECHANISM_EXPERIMENT_PLAN.md 固定下一順序：visible-T 候選 WASM/browser gate → 單項機制比較；H9-off、H1-off 後續各獨立對 accepted baseline，不同時改、不同時派三組。現在未啟動新 arena 或 promotion。
 
 2026-09-30：已準備 `kiwi-tslot-wasm-audit.yml`，用 accepted exact patch + 同一 visible-T transform，無 observer、單執行緒 WASM；與 run 36566413689 的 native 完整 report 做 Chromium module Worker 比對。8 fixtures × 3 passes × 2 kernels = 48 checks，包含 top-1 geometry／Hold transition、200k budget、UI heartbeat，並記錄 memory／paired latency。明確不依賴 cross-origin isolation。相對效能篩查預先固定為 warm per-state ratio 中位數≤1.25、最差局面≤1.5；這是工程 regression screen，不是 24-frame deadline 或使用者裝置的 SLA。效能未過需另審，不能由 correctness pass promotion。單 job 30 分鐘上限、完成 ntfy，不跑 arena。
+
+Run 36702845823 已成功並本機重核：48 exact report checks 零差異，27 placement／21 Hold checks，候選 artifact hash 已驗證；performance screen 通過。見 RESULT_36702845823.md。可前進四 seeds × seat swap 的八局 KO pilot，先固定配置與 seeds 再 dispatch；本次結果審查沒有啟動 arena、不 promotion、不改 H1/H9。
