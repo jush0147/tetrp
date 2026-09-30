@@ -38,9 +38,17 @@
     "snapshot-browser-request.json": "b937a26e4352f57fe51f2302aa405afd70b540d4ba113596e414663b669f88f9",
     "snapshot-example-result.json": "ac4eadf262e9ef919adc20ffd6c6d3059fb207f0b15c1b9ebaefca9fe927ff6c",
     "tests/test-kiwi-packaged-e2e.mjs": "2e95841cc2f03014c1a3ce707917865c16108d04521707cb498c9202412b1310",
-    "tetrp-placement-path.mjs": "1f0a450cb1e1d38acb1ca0ca39ac8ae03e6bd3d78b714b79590aefef16f0148f",
+    "tetrp-placement-path.mjs": "0702630a11ae8934feba53d1bf1d20788c0bc2bc4f24d18404c86550abe1ae93",
     "TETRP_RULE_PARITY_GAPS.md": "d53e0186871e6d531df7c3f4e7a4433cd3644dda67a8f241f83ff969011131b6",
     "THIRD_PARTY_NOTICES.md": "3562fd06535d9c189f5ed0c95c97ea39a0cd3a3f0d768a8dfe941a19bf57bf2d",
     "verify-kiwi-artifact.mjs": "b98d580b0224cc5572854c14db3cdb467850efad4bd946bab15ce73a9829417a"
-  }
+  },
+  "localPatches": [
+    {
+      "file": "tetrp-placement-path.mjs",
+      "date": "2026-09-30",
+      "originalSha256": "1f0a450cb1e1d38acb1ca0ca39ac8ae03e6bd3d78b714b79590aefef16f0148f",
+      "description": "Share immutable edge geometry/key prefixes across root BFS rotation-counter states. Preserve all states, traversal order and placement output; no search kernel or weight change."
+    }
+  ]
 }

@@ -1,0 +1,2076 @@
+{
+  "schema": "kiwi-recommendation-efficiency/1",
+  "node": "v24.15.0",
+  "platform": "win32",
+  "hashes": {
+    "candidate": "8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0",
+    "baseline": "ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767"
+  },
+  "facadeSha256": "1b742a71f79c493ccfe33bb73db5458c5da37924d44dbd1ea67af45cfc6dde94",
+  "originalToolsSha256": "b21c63c335fa672579f53ce42bf2d4e505913b8252560eb20c44869acb796330",
+  "optimizedToolsSha256": "0702630a11ae8934feba53d1bf1d20788c0bc2bc4f24d18404c86550abe1ae93",
+  "samples": 24,
+  "passes": 2,
+  "parityPairs": 96,
+  "coverage": {
+    "place": 74,
+    "hold": 22
+  },
+  "totals": {
+    "candidate": {
+      "original": {
+        "prepare": 13039.552600000061,
+        "search": 41260.85380000002,
+        "normalize": 1307.642000000028,
+        "certificate": 15.472300000008545,
+        "total": 55623.52070000011
+      },
+      "optimized": {
+        "prepare": 4806.067600000066,
+        "search": 41027.406799999975,
+        "normalize": 1334.441899999989,
+        "certificate": 14.486699999993107,
+        "total": 47182.40300000002
+      },
+      "speedup": 1.1789039379787436,
+      "reduction": 0.1517544663439485
+    },
+    "baseline": {
+      "original": {
+        "prepare": 12882.856800000034,
+        "search": 41748.130599999924,
+        "normalize": 1337.0960000000396,
+        "certificate": 14.1098000000311,
+        "total": 55982.19320000003
+      },
+      "optimized": {
+        "prepare": 4719.532099999909,
+        "search": 41395.230500000194,
+        "normalize": 1297.6919999999136,
+        "certificate": 13.933399999908943,
+        "total": 47426.387999999926
+      },
+      "speedup": 1.1804017881353335,
+      "reduction": 0.1528308326441219
+    }
+  },
+  "measurements": [
+    {
+      "id": "leg0/269",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 314.7393999999995,
+        "search": 901.9728000000005,
+        "normalize": 0.5562999999992826,
+        "certificate": 0.4699000000000524,
+        "total": 1217.7383999999993
+      },
+      "optimized": {
+        "prepare": 110.15530000000035,
+        "search": 1031.3868999999995,
+        "normalize": 0.5676000000003114,
+        "certificate": 0.43099999999958527,
+        "total": 1142.5407999999998
+      }
+    },
+    {
+      "id": "leg0/269",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 273.4351000000006,
+        "search": 982.6948999999995,
+        "normalize": 0.4735000000000582,
+        "certificate": 0.3389999999999418,
+        "total": 1256.9425
+      },
+      "optimized": {
+        "prepare": 104.63910000000033,
+        "search": 894.0818999999992,
+        "normalize": 0.3793000000005122,
+        "certificate": 0.256599999998798,
+        "total": 999.3568999999989
+      }
+    },
+    {
+      "id": "leg0/897",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 438.22180000000117,
+        "search": 762.612799999999,
+        "normalize": 0.36150000000088767,
+        "certificate": 0.2775000000001455,
+        "total": 1201.4736000000012
+      },
+      "optimized": {
+        "prepare": 138.50990000000093,
+        "search": 814.5697,
+        "normalize": 0.6848999999983789,
+        "certificate": 0.4805000000014843,
+        "total": 954.2450000000008
+      }
+    },
+    {
+      "id": "leg0/897",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 458.8101999999999,
+        "search": 769.8626000000004,
+        "normalize": 0.4650000000001455,
+        "certificate": 0.4861000000000786,
+        "total": 1229.6239000000005
+      },
+      "optimized": {
+        "prepare": 154.78240000000005,
+        "search": 746.7561999999998,
+        "normalize": 0.3709999999991851,
+        "certificate": 0.5423000000009779,
+        "total": 902.4519
+      }
+    },
+    {
+      "id": "leg0/1524",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 311.6977999999999,
+        "search": 872.5463,
+        "normalize": 192.66029999999955,
+        "certificate": 0.7811999999994441,
+        "total": 1377.6855999999989
+      },
+      "optimized": {
+        "prepare": 128.98419999999896,
+        "search": 736.1602999999996,
+        "normalize": 199.21299999999974,
+        "certificate": 0.5652000000009139,
+        "total": 1064.9226999999992
+      }
+    },
+    {
+      "id": "leg0/1524",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 286.6923999999999,
+        "search": 852.6499000000003,
+        "normalize": 198.37320000000182,
+        "certificate": 1.2633999999998196,
+        "total": 1338.9789000000019
+      },
+      "optimized": {
+        "prepare": 117.02930000000197,
+        "search": 796.7454999999973,
+        "normalize": 193.70310000000245,
+        "certificate": 0.9688999999998487,
+        "total": 1108.4468000000015
+      }
+    },
+    {
+      "id": "leg1/219",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 430.08420000000115,
+        "search": 788.1502,
+        "normalize": 0.5073999999985972,
+        "certificate": 0.5258000000030734,
+        "total": 1219.2676000000029
+      },
+      "optimized": {
+        "prepare": 140.4451999999983,
+        "search": 770.5152000000016,
+        "normalize": 0.42450000000098953,
+        "certificate": 0.42079999999987194,
+        "total": 911.8057000000008
+      }
+    },
+    {
+      "id": "leg1/219",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 438.8208000000013,
+        "search": 866.5012999999999,
+        "normalize": 0.4871999999995751,
+        "certificate": 0.3276999999980035,
+        "total": 1306.1369999999988
+      },
+      "optimized": {
+        "prepare": 147.377199999999,
+        "search": 747.0503000000026,
+        "normalize": 0.42519999999785796,
+        "certificate": 0.4147999999986496,
+        "total": 895.2674999999981
+      }
+    },
+    {
+      "id": "leg1/731",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 378.9356999999982,
+        "search": 1006.5600000000013,
+        "normalize": 10.395800000002055,
+        "certificate": 0.48109999999724096,
+        "total": 1396.3725999999988
+      },
+      "optimized": {
+        "prepare": 144.254399999998,
+        "search": 766.5074000000022,
+        "normalize": 3.1576999999997497,
+        "certificate": 0.35239999999976135,
+        "total": 914.2718999999997
+      }
+    },
+    {
+      "id": "leg1/731",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 296.47910000000047,
+        "search": 897.7700999999979,
+        "normalize": 11.920799999999872,
+        "certificate": 0.6141000000025088,
+        "total": 1206.7841000000008
+      },
+      "optimized": {
+        "prepare": 116.67429999999877,
+        "search": 827.4311000000016,
+        "normalize": 7.721299999997427,
+        "certificate": 0.675600000002305,
+        "total": 952.5023000000001
+      }
+    },
+    {
+      "id": "leg1/1243",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 74.39849999999933,
+        "search": 1195.4793000000027,
+        "normalize": 1.3738999999986845,
+        "certificate": 0.45969999999942956,
+        "total": 1271.7114000000001
+      },
+      "optimized": {
+        "prepare": 25.915000000000873,
+        "search": 1160.6749999999993,
+        "normalize": 1.6225000000013097,
+        "certificate": 0.5636000000013155,
+        "total": 1188.7761000000028
+      }
+    },
+    {
+      "id": "leg1/1243",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 75.5576000000001,
+        "search": 1013.2703999999976,
+        "normalize": 0.3135000000002037,
+        "certificate": 0.2407999999995809,
+        "total": 1089.3822999999975
+      },
+      "optimized": {
+        "prepare": 27.733400000000984,
+        "search": 1082.6836000000003,
+        "normalize": 0.6186999999990803,
+        "certificate": 0.5275000000001455,
+        "total": 1111.5632000000005
+      }
+    },
+    {
+      "id": "leg2/149",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 320.47130000000107,
+        "search": 871.0438999999969,
+        "normalize": 1.7398000000030152,
+        "certificate": 0.6001000000032946,
+        "total": 1193.8551000000043
+      },
+      "optimized": {
+        "prepare": 84.45509999999922,
+        "search": 839.5978000000032,
+        "normalize": 0.8485000000000582,
+        "certificate": 0.26380000000062864,
+        "total": 925.1652000000031
+      }
+    },
+    {
+      "id": "leg2/149",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 249.65540000000328,
+        "search": 845.1794999999984,
+        "normalize": 0.28090000000520376,
+        "certificate": 0.21019999999407446,
+        "total": 1095.326000000001
+      },
+      "optimized": {
+        "prepare": 78.21970000000147,
+        "search": 970.2492999999959,
+        "normalize": 0.28730000000359723,
+        "certificate": 0.22780000000057044,
+        "total": 1048.9841000000015
+      }
+    },
+    {
+      "id": "leg2/497",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 351.3061000000016,
+        "search": 883.2304999999978,
+        "normalize": 3.7456999999994878,
+        "certificate": 0.29579999999987194,
+        "total": 1238.5780999999988
+      },
+      "optimized": {
+        "prepare": 151.0827000000063,
+        "search": 872.8780999999944,
+        "normalize": 3.076100000005681,
+        "certificate": 0.26829999999608845,
+        "total": 1027.3052000000025
+      }
+    },
+    {
+      "id": "leg2/497",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 406.94770000000426,
+        "search": 911.258299999994,
+        "normalize": 3.3228000000017346,
+        "certificate": 0.4013000000049942,
+        "total": 1321.930100000005
+      },
+      "optimized": {
+        "prepare": 119.51580000000104,
+        "search": 1008.7335000000021,
+        "normalize": 5.392299999999523,
+        "certificate": 0.4878000000026077,
+        "total": 1134.1294000000053
+      }
+    },
+    {
+      "id": "leg2/844",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 260.64890000000014,
+        "search": 932.2767999999996,
+        "normalize": 0.15989999999874271,
+        "certificate": 0.0013000000035390258,
+        "total": 1193.086900000002
+      },
+      "optimized": {
+        "prepare": 87.90380000000005,
+        "search": 872.6268000000055,
+        "normalize": 0.07529999999678694,
+        "certificate": 0.0003999999971711077,
+        "total": 960.6062999999995
+      }
+    },
+    {
+      "id": "leg2/844",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 249.40140000000247,
+        "search": 1005.4988999999987,
+        "normalize": 0.0738000000055763,
+        "certificate": 0.0003999999971711077,
+        "total": 1254.974500000004
+      },
+      "optimized": {
+        "prepare": 96.23950000000332,
+        "search": 930.2476999999999,
+        "normalize": 0.05789999999979045,
+        "certificate": 0.00029999999969732016,
+        "total": 1026.5454000000027
+      }
+    },
+    {
+      "id": "leg3/46",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 244.3695000000007,
+        "search": 1057.6826,
+        "normalize": 2.6691999999966356,
+        "certificate": 0.2684000000008382,
+        "total": 1304.9896999999983
+      },
+      "optimized": {
+        "prepare": 94.17220000000088,
+        "search": 1109.1237000000037,
+        "normalize": 4.840700000000652,
+        "certificate": 0.584499999997206,
+        "total": 1208.7211000000025
+      }
+    },
+    {
+      "id": "leg3/46",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 216.05919999999605,
+        "search": 1003.0187000000005,
+        "normalize": 1.8626000000003842,
+        "certificate": 0.27739999999903375,
+        "total": 1221.217899999996
+      },
+      "optimized": {
+        "prepare": 68.91359999999986,
+        "search": 1015.7602000000043,
+        "normalize": 1.6978999999992084,
+        "certificate": 0.2639999999955762,
+        "total": 1086.635699999999
+      }
+    },
+    {
+      "id": "leg3/154",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 365.9698999999964,
+        "search": 840.3920000000071,
+        "normalize": 320.42469999999594,
+        "certificate": 0.6514999999999418,
+        "total": 1527.4380999999994
+      },
+      "optimized": {
+        "prepare": 168.3171000000002,
+        "search": 802.5659000000014,
+        "normalize": 320.57070000000385,
+        "certificate": 0.938399999999092,
+        "total": 1292.3921000000046
+      }
+    },
+    {
+      "id": "leg3/154",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 397.40119999999297,
+        "search": 830.9338000000062,
+        "normalize": 308.98999999999796,
+        "certificate": 0.6814000000013039,
+        "total": 1538.0063999999984
+      },
+      "optimized": {
+        "prepare": 134.8963999999978,
+        "search": 839.3002000000051,
+        "normalize": 296.7103999999963,
+        "certificate": 0.49780000000464497,
+        "total": 1271.404800000004
+      }
+    },
+    {
+      "id": "leg3/262",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 354.5324999999939,
+        "search": 1032.8337000000029,
+        "normalize": 0.38519999999698484,
+        "certificate": 0.252200000002631,
+        "total": 1388.0035999999964
+      },
+      "optimized": {
+        "prepare": 131.72210000000632,
+        "search": 884.0835999999981,
+        "normalize": 0.8329999999987194,
+        "certificate": 0.4665000000022701,
+        "total": 1017.1052000000054
+      }
+    },
+    {
+      "id": "leg3/262",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 349.86849999999686,
+        "search": 894.9399000000049,
+        "normalize": 0.6818999999959487,
+        "certificate": 0.24710000000050059,
+        "total": 1245.7373999999982
+      },
+      "optimized": {
+        "prepare": 130.27530000000115,
+        "search": 857.8076999999976,
+        "normalize": 0.6860999999989872,
+        "certificate": 0.26230000000214204,
+        "total": 989.0313999999998
+      }
+    },
+    {
+      "id": "leg4/271",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 292.4991000000009,
+        "search": 749.9033000000054,
+        "normalize": 7.479299999999057,
+        "certificate": 0.2713999999978114,
+        "total": 1050.1531000000032
+      },
+      "optimized": {
+        "prepare": 103.91809999999532,
+        "search": 871.1587,
+        "normalize": 6.680200000002515,
+        "certificate": 0.272899999996298,
+        "total": 982.0298999999941
+      }
+    },
+    {
+      "id": "leg4/271",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 301.64420000000246,
+        "search": 792.1763999999966,
+        "normalize": 0.13320000000385335,
+        "certificate": 0.0044999999954598024,
+        "total": 1093.9582999999984
+      },
+      "optimized": {
+        "prepare": 120.89770000000135,
+        "search": 815.5734999999986,
+        "normalize": 0.1260000000038417,
+        "certificate": 0.0011999999987892807,
+        "total": 936.5984000000026
+      }
+    },
+    {
+      "id": "leg4/903",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 411.50599999999395,
+        "search": 885.1722000000009,
+        "normalize": 0.04989999999816064,
+        "certificate": 0.0004000000044470653,
+        "total": 1296.7284999999974
+      },
+      "optimized": {
+        "prepare": 134.34769999999844,
+        "search": 741.2743000000046,
+        "normalize": 0.05259999999543652,
+        "certificate": 0.0007000000041443855,
+        "total": 875.6753000000026
+      }
+    },
+    {
+      "id": "leg4/903",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 412.19710000000487,
+        "search": 799.0210999999981,
+        "normalize": 0.05789999999979045,
+        "certificate": 0.0004000000044470653,
+        "total": 1211.2765000000072
+      },
+      "optimized": {
+        "prepare": 147.05370000000403,
+        "search": 837.9134000000049,
+        "normalize": 0.05619999999180436,
+        "certificate": 0.0005999999993946403,
+        "total": 985.0239000000001
+      }
+    },
+    {
+      "id": "leg4/1535",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 79.65480000000389,
+        "search": 725.1154999999999,
+        "normalize": 0.7502999999996973,
+        "certificate": 0.3004999999975553,
+        "total": 805.821100000001
+      },
+      "optimized": {
+        "prepare": 22.40350000000035,
+        "search": 737.7341000000015,
+        "normalize": 0.7547999999951571,
+        "certificate": 0.272899999996298,
+        "total": 761.1652999999933
+      }
+    },
+    {
+      "id": "leg4/1535",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 69.18210000000545,
+        "search": 761.9423999999999,
+        "normalize": 0.5494999999937136,
+        "certificate": 0.26700000000710133,
+        "total": 831.9410000000062
+      },
+      "optimized": {
+        "prepare": 39.58030000000144,
+        "search": 735.7930000000051,
+        "normalize": 0.6396999999997206,
+        "certificate": 0.29569999998784624,
+        "total": 776.3086999999941
+      }
+    },
+    {
+      "id": "leg5/56",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 118.38390000000072,
+        "search": 754.7306000000099,
+        "normalize": 0.07140000000072177,
+        "certificate": 0.0008999999990919605,
+        "total": 873.1868000000104
+      },
+      "optimized": {
+        "prepare": 37.373300000006566,
+        "search": 753.4545999999973,
+        "normalize": 0.07549999999173451,
+        "certificate": 0.003400000001420267,
+        "total": 790.906799999997
+      }
+    },
+    {
+      "id": "leg5/56",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 117.40519999999378,
+        "search": 777.5773000000045,
+        "normalize": 0.0629999999946449,
+        "certificate": 0.0010000000038417056,
+        "total": 895.0464999999967
+      },
+      "optimized": {
+        "prepare": 31.647400000001653,
+        "search": 693.1781000000046,
+        "normalize": 0.04979999999341089,
+        "certificate": 0.0014999999984866008,
+        "total": 724.8767999999982
+      }
+    },
+    {
+      "id": "leg5/188",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 300.01929999999993,
+        "search": 713.0342999999993,
+        "normalize": 6.802000000010594,
+        "certificate": 0.5935999999928754,
+        "total": 1020.4492000000027
+      },
+      "optimized": {
+        "prepare": 156.30929999999353,
+        "search": 695.1528000000108,
+        "normalize": 5.518400000000838,
+        "certificate": 0.2855999999883352,
+        "total": 857.2660999999935
+      }
+    },
+    {
+      "id": "leg5/188",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 308.75,
+        "search": 752.5155999999988,
+        "normalize": 5.977200000008452,
+        "certificate": 0.286099999997532,
+        "total": 1067.5289000000048
+      },
+      "optimized": {
+        "prepare": 111.71259999999893,
+        "search": 736.0274000000063,
+        "normalize": 5.421900000001187,
+        "certificate": 0.2868999999918742,
+        "total": 853.4487999999983
+      }
+    },
+    {
+      "id": "leg5/320",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 241.92059999999765,
+        "search": 1027.7270000000135,
+        "normalize": 0.5385999999998603,
+        "certificate": 0.5043000000005122,
+        "total": 1270.6905000000115
+      },
+      "optimized": {
+        "prepare": 86.05680000000575,
+        "search": 1024.335699999996,
+        "normalize": 0.3190000000031432,
+        "certificate": 0.2509999999892898,
+        "total": 1110.9624999999942
+      }
+    },
+    {
+      "id": "leg5/320",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 227.38790000000154,
+        "search": 989.4615999999951,
+        "normalize": 0.5078999999968801,
+        "certificate": 0.5039000000106171,
+        "total": 1217.8613000000041
+      },
+      "optimized": {
+        "prepare": 82.08879999999772,
+        "search": 1000.0100999999995,
+        "normalize": 0.27650000000721775,
+        "certificate": 0.23119999999471474,
+        "total": 1082.6065999999992
+      }
+    },
+    {
+      "id": "leg6/261",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 151.30049999999756,
+        "search": 846.3138000000035,
+        "normalize": 0.0650000000023283,
+        "certificate": 0.003700000001117587,
+        "total": 997.6830000000045
+      },
+      "optimized": {
+        "prepare": 47.05549999998766,
+        "search": 806.1723000000056,
+        "normalize": 0.061199999996460974,
+        "certificate": 0.0005000000091968104,
+        "total": 853.289499999999
+      }
+    },
+    {
+      "id": "leg6/261",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 158.74799999999232,
+        "search": 816.2069000000047,
+        "normalize": 0.053899999998975545,
+        "certificate": 0.00029999999969732016,
+        "total": 975.0090999999957
+      },
+      "optimized": {
+        "prepare": 48.725399999995716,
+        "search": 722.3438000000024,
+        "normalize": 0.0729999999894062,
+        "certificate": 0.0008000000088941306,
+        "total": 771.1429999999964
+      }
+    },
+    {
+      "id": "leg6/871",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 353.287599999996,
+        "search": 1019.2082000000082,
+        "normalize": 118.31609999999637,
+        "certificate": 0.6270999999978812,
+        "total": 1491.4389999999985
+      },
+      "optimized": {
+        "prepare": 98.88999999999942,
+        "search": 990.2198000000062,
+        "normalize": 119.90529999999853,
+        "certificate": 0.4051999999937834,
+        "total": 1209.420299999998
+      }
+    },
+    {
+      "id": "leg6/871",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 297.63640000000305,
+        "search": 1080.4281000000046,
+        "normalize": 108.69000000000233,
+        "certificate": 0.4033999999955995,
+        "total": 1487.1579000000056
+      },
+      "optimized": {
+        "prepare": 137.66019999999844,
+        "search": 1043.8237999999983,
+        "normalize": 123.6527999999962,
+        "certificate": 0.42940000000817236,
+        "total": 1305.5662000000011
+      }
+    },
+    {
+      "id": "leg6/1481",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 35.484900000010384,
+        "search": 739.7403999999951,
+        "normalize": 1.3153000000020256,
+        "certificate": 0.2581999999965774,
+        "total": 776.7988000000041
+      },
+      "optimized": {
+        "prepare": 22.861999999993714,
+        "search": 700.2590000000055,
+        "normalize": 1.363500000006752,
+        "certificate": 0.25709999998798594,
+        "total": 724.7415999999939
+      }
+    },
+    {
+      "id": "leg6/1481",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 40.32739999999467,
+        "search": 750.6169999999984,
+        "normalize": 1.3110000000015134,
+        "certificate": 0.2556999999942491,
+        "total": 792.5110999999888
+      },
+      "optimized": {
+        "prepare": 13.978099999992992,
+        "search": 762.6819000000105,
+        "normalize": 1.3189999999885913,
+        "certificate": 0.2560000000084983,
+        "total": 778.2350000000006
+      }
+    },
+    {
+      "id": "leg7/217",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 181.5610000000015,
+        "search": 688.4863999999943,
+        "normalize": 0.07920000000740401,
+        "certificate": 0.0004999999946448952,
+        "total": 870.1270999999979
+      },
+      "optimized": {
+        "prepare": 73.42710000000079,
+        "search": 743.925700000007,
+        "normalize": 0.07790000000386499,
+        "certificate": 0.0030999999871710315,
+        "total": 817.4337999999989
+      }
+    },
+    {
+      "id": "leg7/217",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 192.9423999999999,
+        "search": 704.0951000000059,
+        "normalize": 0.09299999999348074,
+        "certificate": 0.0005000000091968104,
+        "total": 897.1310000000085
+      },
+      "optimized": {
+        "prepare": 67.6368000000075,
+        "search": 713.3098999999929,
+        "normalize": 0.055600000006961636,
+        "certificate": 0.0004000000044470653,
+        "total": 781.0027000000118
+      }
+    },
+    {
+      "id": "leg7/726",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 374.9389000000083,
+        "search": 860.2143999999971,
+        "normalize": 5.361099999994622,
+        "certificate": 0.3007999999972526,
+        "total": 1240.8151999999973
+      },
+      "optimized": {
+        "prepare": 134.19610000000102,
+        "search": 867.6480999999912,
+        "normalize": 3.1301000000094064,
+        "certificate": 0.2622999999875901,
+        "total": 1005.2365999999893
+      }
+    },
+    {
+      "id": "leg7/726",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 348.29469999999856,
+        "search": 946.9744000000064,
+        "normalize": 1.8778000000020256,
+        "certificate": 0.26159999999799766,
+        "total": 1297.408500000005
+      },
+      "optimized": {
+        "prepare": 140.46630000000005,
+        "search": 835.8815000000031,
+        "normalize": 3.369699999995646,
+        "certificate": 0.29869999999937136,
+        "total": 980.0161999999982
+      }
+    },
+    {
+      "id": "leg7/1234",
+      "pass": 0,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 326.69920000000275,
+        "search": 857.050900000002,
+        "normalize": 5.32050000000163,
+        "certificate": 0.28149999999732245,
+        "total": 1189.3521000000037
+      },
+      "optimized": {
+        "prepare": 119.04950000000827,
+        "search": 855.9777999999933,
+        "normalize": 6.8193000000028405,
+        "certificate": 0.3059999999968568,
+        "total": 982.1526000000013
+      }
+    },
+    {
+      "id": "leg7/1234",
+      "pass": 0,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 317.0031999999919,
+        "search": 939.6488000000099,
+        "normalize": 5.216599999999744,
+        "certificate": 0.6085999999922933,
+        "total": 1262.477199999994
+      },
+      "optimized": {
+        "prepare": 133.62630000000354,
+        "search": 910.5604000000021,
+        "normalize": 2.526399999987916,
+        "certificate": 0.33680000000458676,
+        "total": 1047.0498999999982
+      }
+    },
+    {
+      "id": "leg0/269",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 274.0317000000068,
+        "search": 914.8358000000007,
+        "normalize": 0.32089999999152496,
+        "certificate": 0.3093000000080792,
+        "total": 1189.4977000000072
+      },
+      "optimized": {
+        "prepare": 133.93189999999595,
+        "search": 975.9907999999996,
+        "normalize": 0.40769999999611173,
+        "certificate": 0.2796000000089407,
+        "total": 1110.6100000000006
+      }
+    },
+    {
+      "id": "leg0/269",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 296.2262999999948,
+        "search": 918.2459999999992,
+        "normalize": 0.5722000000096159,
+        "certificate": 0.526400000002468,
+        "total": 1215.570900000006
+      },
+      "optimized": {
+        "prepare": 113.37240000000747,
+        "search": 933.7191999999923,
+        "normalize": 0.6290000000008149,
+        "certificate": 0.5149000000092201,
+        "total": 1048.2355000000098
+      }
+    },
+    {
+      "id": "leg0/897",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 442.49220000000787,
+        "search": 709.9394000000029,
+        "normalize": 0.34549999999580905,
+        "certificate": 0.2586999999912223,
+        "total": 1153.0357999999978
+      },
+      "optimized": {
+        "prepare": 162.75359999999637,
+        "search": 781.0197000000044,
+        "normalize": 0.5692999999882886,
+        "certificate": 0.3911999999982072,
+        "total": 944.7337999999872
+      }
+    },
+    {
+      "id": "leg0/897",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 431.67140000000654,
+        "search": 722.6647999999986,
+        "normalize": 0.28669999999692664,
+        "certificate": 0.23099999999976717,
+        "total": 1154.8539000000019
+      },
+      "optimized": {
+        "prepare": 139.1524999999965,
+        "search": 765.4152000000031,
+        "normalize": 0.2930999999953201,
+        "certificate": 0.22740000000339933,
+        "total": 905.0881999999983
+      }
+    },
+    {
+      "id": "leg0/1524",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 318.6296000000002,
+        "search": 851.1128000000026,
+        "normalize": 205.21050000000105,
+        "certificate": 0.4744000000064261,
+        "total": 1375.4273000000103
+      },
+      "optimized": {
+        "prepare": 111.5731999999989,
+        "search": 825.3585000000021,
+        "normalize": 219.5752000000066,
+        "certificate": 1.080099999991944,
+        "total": 1157.5869999999995
+      }
+    },
+    {
+      "id": "leg0/1524",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 276.7289999999921,
+        "search": 929.3962000000029,
+        "normalize": 214.2835999999952,
+        "certificate": 0.4387000000133412,
+        "total": 1420.8475000000035
+      },
+      "optimized": {
+        "prepare": 104.45359999999346,
+        "search": 765.5590000000084,
+        "normalize": 201.37639999999374,
+        "certificate": 0.5788999999931548,
+        "total": 1071.9678999999887
+      }
+    },
+    {
+      "id": "leg1/219",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 403.0764999999956,
+        "search": 713.4994000000006,
+        "normalize": 0.28470000000379514,
+        "certificate": 0.22590000000491273,
+        "total": 1117.086500000005
+      },
+      "optimized": {
+        "prepare": 125.66120000000228,
+        "search": 809.6728999999905,
+        "normalize": 0.27449999999953434,
+        "certificate": 0.22540000001026783,
+        "total": 935.8340000000026
+      }
+    },
+    {
+      "id": "leg1/219",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 405.72660000000906,
+        "search": 755.0534999999945,
+        "normalize": 0.31910000000789296,
+        "certificate": 0.24319999999715947,
+        "total": 1161.3424000000086
+      },
+      "optimized": {
+        "prepare": 168.7725999999966,
+        "search": 790.915399999998,
+        "normalize": 0.2780999999959022,
+        "certificate": 0.2286000000021886,
+        "total": 960.1946999999927
+      }
+    },
+    {
+      "id": "leg1/731",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 260.6127000000124,
+        "search": 727.9605999999912,
+        "normalize": 3.1493000000045868,
+        "certificate": 0.2811999999976251,
+        "total": 992.0038000000059
+      },
+      "optimized": {
+        "prepare": 95.60010000001057,
+        "search": 841.2016999999905,
+        "normalize": 3.24900000001071,
+        "certificate": 0.2945999999938067,
+        "total": 940.3454000000056
+      }
+    },
+    {
+      "id": "leg1/731",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 257.69370000000345,
+        "search": 897.6108000000095,
+        "normalize": 3.1159999999945285,
+        "certificate": 0.37140000000363216,
+        "total": 1158.791900000011
+      },
+      "optimized": {
+        "prepare": 91.78620000000228,
+        "search": 814.7823999999964,
+        "normalize": 3.133799999995972,
+        "certificate": 0.2835999999952037,
+        "total": 909.9859999999899
+      }
+    },
+    {
+      "id": "leg1/1243",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 99.04910000000382,
+        "search": 986.5086999999767,
+        "normalize": 0.621000000013737,
+        "certificate": 0.808099999994738,
+        "total": 1086.986899999989
+      },
+      "optimized": {
+        "prepare": 30.832300000009127,
+        "search": 979.1124999999884,
+        "normalize": 0.5904999999911524,
+        "certificate": 0.5212000000174157,
+        "total": 1011.056500000006
+      }
+    },
+    {
+      "id": "leg1/1243",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 110.42449999999371,
+        "search": 1188.5720000000147,
+        "normalize": 0.7282999999879394,
+        "certificate": 0.25260000000707805,
+        "total": 1299.9774000000034
+      },
+      "optimized": {
+        "prepare": 22.125599999999395,
+        "search": 1129.9657000000007,
+        "normalize": 0.7253999999957159,
+        "certificate": 0.24279999997816049,
+        "total": 1153.059499999974
+      }
+    },
+    {
+      "id": "leg2/149",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 238.77700000000186,
+        "search": 880.0990000000165,
+        "normalize": 0.22599999999511056,
+        "certificate": 0.2109000000054948,
+        "total": 1119.312900000019
+      },
+      "optimized": {
+        "prepare": 100.7776999999769,
+        "search": 924.270600000018,
+        "normalize": 0.2796999999845866,
+        "certificate": 0.22410000002128072,
+        "total": 1025.5521000000008
+      }
+    },
+    {
+      "id": "leg2/149",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 259.0917999999947,
+        "search": 882.643699999986,
+        "normalize": 1.0549000000173692,
+        "certificate": 0.30369999998947605,
+        "total": 1143.0940999999875
+      },
+      "optimized": {
+        "prepare": 90.60820000001695,
+        "search": 898.1209999999846,
+        "normalize": 1.6195000000006985,
+        "certificate": 0.5540000000037253,
+        "total": 990.902700000006
+      }
+    },
+    {
+      "id": "leg2/497",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 285.9847000000009,
+        "search": 871.1777000000002,
+        "normalize": 5.873700000025565,
+        "certificate": 0.4588999999978114,
+        "total": 1163.4950000000244
+      },
+      "optimized": {
+        "prepare": 125.31620000000112,
+        "search": 943.6247000000149,
+        "normalize": 2.8667999999888707,
+        "certificate": 0.26529999999911524,
+        "total": 1072.073000000004
+      }
+    },
+    {
+      "id": "leg2/497",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 291.5032999999821,
+        "search": 861.431500000006,
+        "normalize": 4.5332000000053085,
+        "certificate": 0.2907999999879394,
+        "total": 1157.7587999999814
+      },
+      "optimized": {
+        "prepare": 130.21369999999297,
+        "search": 890.1522000000114,
+        "normalize": 2.939299999998184,
+        "certificate": 0.2656999999890104,
+        "total": 1023.5708999999915
+      }
+    },
+    {
+      "id": "leg2/844",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 217.9933000000019,
+        "search": 930.6009999999951,
+        "normalize": 0.060200000007171184,
+        "certificate": 0.0004999999946448952,
+        "total": 1148.6549999999988
+      },
+      "optimized": {
+        "prepare": 87.88409999999567,
+        "search": 911.0733000000182,
+        "normalize": 0.07089999999152496,
+        "certificate": 0.0027999999874737114,
+        "total": 999.0310999999929
+      }
+    },
+    {
+      "id": "leg2/844",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 223.23620000001392,
+        "search": 893.4500999999873,
+        "normalize": 0.04990000001271255,
+        "certificate": 0.00039999998989515007,
+        "total": 1116.7366000000038
+      },
+      "optimized": {
+        "prepare": 86.24160000000848,
+        "search": 915.9211999999825,
+        "normalize": 0.05240000001504086,
+        "certificate": 0.0004999999946448952,
+        "total": 1002.2157000000007
+      }
+    },
+    {
+      "id": "leg3/46",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 217.12789999999222,
+        "search": 1045.5994000000064,
+        "normalize": 1.8905999999842606,
+        "certificate": 0.2741000000096392,
+        "total": 1264.8919999999925
+      },
+      "optimized": {
+        "prepare": 87.89019999999437,
+        "search": 1126.0249999999942,
+        "normalize": 2.9878000000026077,
+        "certificate": 0.4974999999976717,
+        "total": 1217.4004999999888
+      }
+    },
+    {
+      "id": "leg3/46",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 278.8409999999858,
+        "search": 1199.551999999996,
+        "normalize": 1.7208000000100583,
+        "certificate": 0.2646999999997206,
+        "total": 1480.3784999999916
+      },
+      "optimized": {
+        "prepare": 99.64040000000386,
+        "search": 1118.9876999999979,
+        "normalize": 1.883399999991525,
+        "certificate": 0.2833000000100583,
+        "total": 1220.7948000000033
+      }
+    },
+    {
+      "id": "leg3/154",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 372.10250000000815,
+        "search": 824.4120999999868,
+        "normalize": 297.7927999999956,
+        "certificate": 0.7341000000014901,
+        "total": 1495.041499999992
+      },
+      "optimized": {
+        "prepare": 193.86429999998654,
+        "search": 796.9159000000218,
+        "normalize": 274.4799999999814,
+        "certificate": 0.5859000000054948,
+        "total": 1265.8460999999952
+      }
+    },
+    {
+      "id": "leg3/154",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 373.5553999999829,
+        "search": 835.945400000026,
+        "normalize": 265.35229999999865,
+        "certificate": 0.48519999999552965,
+        "total": 1475.338300000003
+      },
+      "optimized": {
+        "prepare": 131.44820000001346,
+        "search": 816.7868000000017,
+        "normalize": 272.0180999999866,
+        "certificate": 0.534700000018347,
+        "total": 1220.78780000002
+      }
+    },
+    {
+      "id": "leg3/262",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 357.9631999999983,
+        "search": 761.5544999999984,
+        "normalize": 0.6492000000143889,
+        "certificate": 0.2479999999923166,
+        "total": 1120.4149000000034
+      },
+      "optimized": {
+        "prepare": 106.57339999999385,
+        "search": 899.4075000000012,
+        "normalize": 0.6537000000244007,
+        "certificate": 0.24639999997452833,
+        "total": 1006.880999999994
+      }
+    },
+    {
+      "id": "leg3/262",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 361.7854000000225,
+        "search": 953.5077999999921,
+        "normalize": 0.4478999999992084,
+        "certificate": 0.26029999999445863,
+        "total": 1316.0014000000083
+      },
+      "optimized": {
+        "prepare": 134.64470000000438,
+        "search": 903.0558000000019,
+        "normalize": 0.3973999999871012,
+        "certificate": 0.23660000000381842,
+        "total": 1038.3344999999972
+      }
+    },
+    {
+      "id": "leg4/271",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 319.44939999998314,
+        "search": 818.7068000000145,
+        "normalize": 0.05879999999888241,
+        "certificate": 0.00039999998989515007,
+        "total": 1138.2153999999864
+      },
+      "optimized": {
+        "prepare": 109.93439999999828,
+        "search": 845.232799999998,
+        "normalize": 0.10070000000996515,
+        "certificate": 0.005199999985052273,
+        "total": 955.2730999999912
+      }
+    },
+    {
+      "id": "leg4/271",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 294.81910000002244,
+        "search": 890.3476999999839,
+        "normalize": 3.331000000005588,
+        "certificate": 0.3421000000089407,
+        "total": 1188.8399000000209
+      },
+      "optimized": {
+        "prepare": 119.26449999999022,
+        "search": 791.8291000000027,
+        "normalize": 3.3515000000188593,
+        "certificate": 0.2748999999894295,
+        "total": 914.7200000000012
+      }
+    },
+    {
+      "id": "leg4/903",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 424.37119999999413,
+        "search": 819.5884000000078,
+        "normalize": 0.05019999999785796,
+        "certificate": 0.00020000000949949026,
+        "total": 1244.0100000000093
+      },
+      "optimized": {
+        "prepare": 163.4422000000195,
+        "search": 848.249599999981,
+        "normalize": 0.05680000002030283,
+        "certificate": 0.00029999998514540493,
+        "total": 1011.748900000006
+      }
+    },
+    {
+      "id": "leg4/903",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 431.63120000000345,
+        "search": 769.6471999999776,
+        "normalize": 0.059999999997671694,
+        "certificate": 0.0004000000189989805,
+        "total": 1201.3387999999977
+      },
+      "optimized": {
+        "prepare": 138.72399999998743,
+        "search": 869.1857000000018,
+        "normalize": 0.05240000001504086,
+        "certificate": 0.00029999998514540493,
+        "total": 1007.9623999999894
+      }
+    },
+    {
+      "id": "leg4/1535",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 62.30770000000484,
+        "search": 779.5284999999858,
+        "normalize": 0.9041999999899417,
+        "certificate": 0.4459000000206288,
+        "total": 843.1863000000012
+      },
+      "optimized": {
+        "prepare": 26.39329999999609,
+        "search": 717.4489000000176,
+        "normalize": 0.6497999999846797,
+        "certificate": 0.28590000001713634,
+        "total": 744.7779000000155
+      }
+    },
+    {
+      "id": "leg4/1535",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 73.48319999998785,
+        "search": 704.7452000000048,
+        "normalize": 0.6306999999796972,
+        "certificate": 0.4691000000166241,
+        "total": 779.328199999989
+      },
+      "optimized": {
+        "prepare": 31.698399999993853,
+        "search": 828.2213000000047,
+        "normalize": 1.0745999999926426,
+        "certificate": 0.45600000000558794,
+        "total": 861.4502999999968
+      }
+    },
+    {
+      "id": "leg5/56",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 107.82680000000983,
+        "search": 725.0938000000024,
+        "normalize": 0.0717000000004191,
+        "certificate": 0.003599999996367842,
+        "total": 832.995900000009
+      },
+      "optimized": {
+        "prepare": 31.057800000009593,
+        "search": 716.7960000000021,
+        "normalize": 0.06289999998989515,
+        "certificate": 0.0004000000189989805,
+        "total": 747.9171000000206
+      }
+    },
+    {
+      "id": "leg5/56",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 104.6027999999933,
+        "search": 760.0782999999938,
+        "normalize": 0.06109999999171123,
+        "certificate": 0.0006000000284984708,
+        "total": 864.7428000000073
+      },
+      "optimized": {
+        "prepare": 37.91909999999916,
+        "search": 759.5865000000049,
+        "normalize": 0.05340000000433065,
+        "certificate": 0.0007000000041443855,
+        "total": 797.5597000000125
+      }
+    },
+    {
+      "id": "leg5/188",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 327.25230000002193,
+        "search": 820.9327999999805,
+        "normalize": 10.533100000000559,
+        "certificate": 0.29290000000037253,
+        "total": 1159.0111000000034
+      },
+      "optimized": {
+        "prepare": 113.800900000002,
+        "search": 718.625,
+        "normalize": 5.568700000003446,
+        "certificate": 0.3007999999972526,
+        "total": 838.2954000000027
+      }
+    },
+    {
+      "id": "leg5/188",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 353.5983000000124,
+        "search": 742.894100000005,
+        "normalize": 8.746099999989383,
+        "certificate": 0.28169999999227,
+        "total": 1105.520199999999
+      },
+      "optimized": {
+        "prepare": 141.22080000001006,
+        "search": 742.9968999999983,
+        "normalize": 5.4676999999792315,
+        "certificate": 0.30510000002686866,
+        "total": 889.9905000000144
+      }
+    },
+    {
+      "id": "leg5/320",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 219.28179999999702,
+        "search": 1066.094299999997,
+        "normalize": 0.38610000000335276,
+        "certificate": 0.3062999999965541,
+        "total": 1286.068499999994
+      },
+      "optimized": {
+        "prepare": 87.00480000002426,
+        "search": 1031.718899999978,
+        "normalize": 0.2729000000108499,
+        "certificate": 0.2355000000097789,
+        "total": 1119.232100000023
+      }
+    },
+    {
+      "id": "leg5/320",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 190.35039999999572,
+        "search": 1064.5351000000082,
+        "normalize": 0.27650000000721775,
+        "certificate": 0.23689999998896383,
+        "total": 1255.3989000000001
+      },
+      "optimized": {
+        "prepare": 66.2265999999945,
+        "search": 1144.4331000000238,
+        "normalize": 0.2721999999776017,
+        "certificate": 0.22299999999813735,
+        "total": 1211.154899999994
+      }
+    },
+    {
+      "id": "leg6/261",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 137.48589999999967,
+        "search": 735.0974999999744,
+        "normalize": 0.06880000000819564,
+        "certificate": 0.00020000000949949026,
+        "total": 872.6523999999918
+      },
+      "optimized": {
+        "prepare": 40.21419999998761,
+        "search": 739.4529000000039,
+        "normalize": 0.07750000001396984,
+        "certificate": 0.0030999999726191163,
+        "total": 779.7476999999781
+      }
+    },
+    {
+      "id": "leg6/261",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 163.83840000000782,
+        "search": 809.6755000000121,
+        "normalize": 0.05659999998169951,
+        "certificate": 0.0008000000088941306,
+        "total": 973.5713000000105
+      },
+      "optimized": {
+        "prepare": 46.30960000000778,
+        "search": 766.4369000000006,
+        "normalize": 0.07560000001103617,
+        "certificate": 0.0009999999892897904,
+        "total": 812.8231000000087
+      }
+    },
+    {
+      "id": "leg6/871",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 267.19880000001285,
+        "search": 1070.2342000000062,
+        "normalize": 124.90789999999106,
+        "certificate": 0.39979999998467974,
+        "total": 1462.7406999999948
+      },
+      "optimized": {
+        "prepare": 115.10109999999986,
+        "search": 997.8527000000176,
+        "normalize": 153.68469999998342,
+        "certificate": 0.40100000001257285,
+        "total": 1267.0395000000135
+      }
+    },
+    {
+      "id": "leg6/871",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 290.1639000000141,
+        "search": 867.4761999999755,
+        "normalize": 129.58970000001136,
+        "certificate": 0.5223999999871012,
+        "total": 1287.752199999988
+      },
+      "optimized": {
+        "prepare": 106.511599999998,
+        "search": 967.4279000000097,
+        "normalize": 127.73110000000452,
+        "certificate": 0.7172999999893364,
+        "total": 1202.3879000000015
+      }
+    },
+    {
+      "id": "leg6/1481",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 35.95889999999781,
+        "search": 711.2602999999945,
+        "normalize": 2.797900000005029,
+        "certificate": 0.5524000000150409,
+        "total": 750.5695000000123
+      },
+      "optimized": {
+        "prepare": 12.918699999980163,
+        "search": 703.3227000000188,
+        "normalize": 1.3421999999845866,
+        "certificate": 0.25140000000828877,
+        "total": 717.8349999999919
+      }
+    },
+    {
+      "id": "leg6/1481",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 44.4658000000054,
+        "search": 742.2124999999942,
+        "normalize": 1.4400000000023283,
+        "certificate": 0.49989999999525025,
+        "total": 788.6181999999972
+      },
+      "optimized": {
+        "prepare": 19.110799999994924,
+        "search": 689.7198999999964,
+        "normalize": 1.4664000000047963,
+        "certificate": 0.26259999998728745,
+        "total": 710.5596999999834
+      }
+    },
+    {
+      "id": "leg7/217",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 257.81119999999646,
+        "search": 684.434500000003,
+        "normalize": 0.07320000001345761,
+        "certificate": 0.003200000006472692,
+        "total": 942.3221000000194
+      },
+      "optimized": {
+        "prepare": 71.95100000000093,
+        "search": 737.8436999999976,
+        "normalize": 0.06789999999455176,
+        "certificate": 0.0007000000041443855,
+        "total": 809.8632999999973
+      }
+    },
+    {
+      "id": "leg7/217",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "hold",
+      "nodes": 200000,
+      "original": {
+        "prepare": 207.43290000001434,
+        "search": 709.7513999999792,
+        "normalize": 0.05560000002151355,
+        "certificate": 0.000699999975040555,
+        "total": 917.2405999999901
+      },
+      "optimized": {
+        "prepare": 59.477799999993294,
+        "search": 678.2179000000178,
+        "normalize": 0.05599999998230487,
+        "certificate": 0.0007000000041443855,
+        "total": 737.7523999999976
+      }
+    },
+    {
+      "id": "leg7/726",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 391.4971000000078,
+        "search": 899.9119000000064,
+        "normalize": 3.65669999999227,
+        "certificate": 0.5510000000067521,
+        "total": 1295.6167000000132
+      },
+      "optimized": {
+        "prepare": 119.49719999998342,
+        "search": 864.454700000002,
+        "normalize": 3.3373000000137836,
+        "certificate": 0.3323999999847729,
+        "total": 987.621599999984
+      }
+    },
+    {
+      "id": "leg7/726",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 325.57500000001164,
+        "search": 916.6140000000014,
+        "normalize": 1.835800000000745,
+        "certificate": 0.2571999999927357,
+        "total": 1244.2820000000065
+      },
+      "optimized": {
+        "prepare": 134.70619999998598,
+        "search": 912.6839000000036,
+        "normalize": 1.854300000006333,
+        "certificate": 0.255299999989802,
+        "total": 1049.4996999999858
+      }
+    },
+    {
+      "id": "leg7/1234",
+      "pass": 1,
+      "kernel": "candidate",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 318.0603000000119,
+        "search": 835.1515999999829,
+        "normalize": 2.547900000005029,
+        "certificate": 0.29740000001038425,
+        "total": 1156.0572000000102
+      },
+      "optimized": {
+        "prepare": 129.1380000000063,
+        "search": 894.7486999999965,
+        "normalize": 2.4853000000002794,
+        "certificate": 0.2791999999899417,
+        "total": 1026.651199999993
+      }
+    },
+    {
+      "id": "leg7/1234",
+      "pass": 1,
+      "kernel": "baseline",
+      "kind": "place",
+      "nodes": 200000,
+      "original": {
+        "prepare": 316.3433999999834,
+        "search": 813.8775000000023,
+        "normalize": 10.80449999999837,
+        "certificate": 0.2752000000036787,
+        "total": 1141.3005999999878
+      },
+      "optimized": {
+        "prepare": 115.68330000000424,
+        "search": 927.1496000000043,
+        "normalize": 5.331600000004983,
+        "certificate": 0.3411999999952968,
+        "total": 1048.5057000000088
+      }
+    }
+  ],
+  "scope": "Fixed recorded PublicSnapshots, complete prepare/search/normalize/certificate pipeline. Excludes match engine advancement, I/O and post-Hold continuation. Local timing, not Actions SLA or strength evidence."
+}

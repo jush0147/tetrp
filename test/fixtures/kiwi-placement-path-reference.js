@@ -1,3 +1,6 @@
+// Frozen Tetrp pre-optimization placement tools from commit e46e62d.
+// Original source SHA-256: 1f0a450cb1e1d38acb1ca0ca39ac8ae03e6bd3d78b714b79590aefef16f0148f
+// Differential oracle only; do not update alongside the implementation.
 const upperPiece=piece=>piece==null?null:String(piece).toUpperCase();
 
 export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) {
@@ -107,21 +110,15 @@ export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) 
     // Engine: that would read hidden queue/RNG even though geometry needs neither.
     const board=structuredClone(state.board),rules=structuredClone(state.rules);
     const initial=copyPiece(state.piece);
-    const poseKeyFor=p=>[p.x,p.y,p.r,p.kick,p.rotated?1:0].join(',');
-    // Keep each counter state, but share immutable geometry across its visits.
-    const q=[{piece:initial,totalRotations:initial.totalRotations||0,poseKey:poseKeyFor(initial)}];
-    const initialKey=pathStateKey(initial,rules),separator=initialKey.lastIndexOf(',');
-    const seenByGeometry=new Map([[initialKey.slice(0,separator+1),
-      new Set([Math.min(initial.totalRotations||0,(rules.lockresets||15)+16)])]]);
-    let statesExplored=1;
-    const placements=new Map();
+    const q=[initial],seen=new Set([pathStateKey(initial,rules)]),placements=new Map();
     const landingCache=new Set();
     const edgeCache=new Map();
     const actions=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
     let head=0;
     while(head<q.length) {
-      if(statesExplored>250000)throw new Error('ROOT_GEOMETRY_STATE_LIMIT');
-      const node=q[head++],p=node.piece,poseKey=node.poseKey;
+      if(seen.size>250000)throw new Error('ROOT_GEOMETRY_STATE_LIMIT');
+      const p=q[head++];
+      const poseKey=[p.x,p.y,p.r,p.kick,p.rotated?1:0].join(',');
       if(!landingCache.has(poseKey)) {
         const drop=dropped(board,p);
         const spin=p.rotated?R.classifySpin(board,p,rules.spinbonuses):'none';
@@ -138,32 +135,21 @@ export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) 
       // SRS+ kick geometry only distinguishes counters on either side of its
       // anti-stall threshold. Cache edge geometry within each regime, but keep
       // every original rotation-counter state in the traversal and seen set.
-      const edgeKey=poseKey+','+p.spin+','+(node.totalRotations>rules.lockresets+15?1:0);
+      const edgeKey=poseKey+','+p.spin+','+((p.totalRotations||0)>rules.lockresets+15?1:0);
       let edges=edgeCache.get(edgeKey);
       if(!edges) {
-        edges=actions.map(action=>{
-          const piece=applyPathMove(board,{...p,totalRotations:node.totalRotations},action,rules);
-          if(!piece)return null;
-          // Only the rotation counter varies when this cached edge is reused.
-          // Preserve the exact original key encoding, including fractional Y,
-          // but format its invariant prefix once per edge instead of per visit.
-          const key=pathStateKey(piece,rules);
-          const prefix=key.slice(0,key.lastIndexOf(',')+1);
-          let counters=seenByGeometry.get(prefix);
-          if(!counters){counters=new Set();seenByGeometry.set(prefix,counters);}
-          return {piece,poseKey:poseKeyFor(piece),counters,
-            rotating:action.startsWith('rotate')};
-        });
+        edges=actions.map(action=>applyPathMove(board,p,action,rules));
         edgeCache.set(edgeKey,edges);
       }
       for(let i=0;i<actions.length;i++) {
         const edge=edges[i];
         if(!edge)continue;
-        const totalRotations=node.totalRotations+(edge.rotating?1:0);
-        const counter=Math.min(totalRotations,(rules.lockresets||15)+16);
-        if(edge.counters.has(counter))continue;
-        edge.counters.add(counter);statesExplored++;
-        q.push({piece:edge.piece,totalRotations,poseKey:edge.poseKey});
+        const rotating=actions[i].startsWith('rotate');
+        const next={...edge,totalRotations:(p.totalRotations||0)+(rotating?1:0)};
+        const key=pathStateKey(next,rules);
+        if(seen.has(key))continue;
+        seen.add(key);
+        q.push(next);
       }
     }
     const list=[...placements.values()].sort((a,b)=>
@@ -174,7 +160,7 @@ export function createPlacementTools({Engine, boardModule:B, rotationModule:R}) 
     );
     return {
       placements:list,
-      states_explored:statesExplored,
+      states_explored:seen.size,
       semantics:'geometry_only_no_hold_no_frame_clock',
       timing_validated:false,
     };

@@ -1,0 +1,449 @@
+{
+  "schema": "kiwi-root-enumeration-efficiency/1",
+  "samples": 24,
+  "passes": 2,
+  "geometryParityChecks": 48,
+  "fullReportChecks": 6,
+  "totals": {
+    "original": 12645.792400000002,
+    "optimized": 4632.899999999997
+  },
+  "speedup": 2.7295629951002636,
+  "measurements": [
+    {
+      "id": "leg0/269",
+      "pass": 0,
+      "states": 58048,
+      "placements": 34,
+      "original": 259.3177999999998,
+      "optimized": 91.2482
+    },
+    {
+      "id": "leg0/897",
+      "pass": 0,
+      "states": 81031,
+      "placements": 34,
+      "optimized": 131.47050000000013,
+      "original": 383.5227000000002
+    },
+    {
+      "id": "leg0/1524",
+      "pass": 0,
+      "states": 57320,
+      "placements": 39,
+      "original": 267.3301999999999,
+      "optimized": 100.78940000000011
+    },
+    {
+      "id": "leg1/219",
+      "pass": 0,
+      "states": 78706,
+      "placements": 34,
+      "optimized": 125.04799999999977,
+      "original": 351.66399999999976
+    },
+    {
+      "id": "leg1/731",
+      "pass": 0,
+      "states": 55559,
+      "placements": 34,
+      "original": 275.5059000000001,
+      "optimized": 96.1223
+    },
+    {
+      "id": "leg1/1243",
+      "pass": 0,
+      "states": 19019,
+      "placements": 36,
+      "optimized": 36.88610000000017,
+      "original": 93.19380000000001
+    },
+    {
+      "id": "leg2/149",
+      "pass": 0,
+      "states": 49040,
+      "placements": 34,
+      "original": 234.56669999999986,
+      "optimized": 115.70830000000024
+    },
+    {
+      "id": "leg2/497",
+      "pass": 0,
+      "states": 61508,
+      "placements": 36,
+      "optimized": 139.22710000000006,
+      "original": 353.942
+    },
+    {
+      "id": "leg2/844",
+      "pass": 0,
+      "states": 47457,
+      "placements": 36,
+      "original": 229.33770000000004,
+      "optimized": 78.94539999999961
+    },
+    {
+      "id": "leg3/46",
+      "pass": 0,
+      "states": 46206,
+      "placements": 34,
+      "optimized": 88.6842999999999,
+      "original": 214.07840000000033
+    },
+    {
+      "id": "leg3/154",
+      "pass": 0,
+      "states": 70877,
+      "placements": 38,
+      "original": 379.5751999999993,
+      "optimized": 135.57510000000002
+    },
+    {
+      "id": "leg3/262",
+      "pass": 0,
+      "states": 67597,
+      "placements": 34,
+      "optimized": 123.9353000000001,
+      "original": 318.9535999999998
+    },
+    {
+      "id": "leg4/271",
+      "pass": 0,
+      "states": 58174,
+      "placements": 35,
+      "original": 277.22299999999996,
+      "optimized": 117.04830000000038
+    },
+    {
+      "id": "leg4/903",
+      "pass": 0,
+      "states": 81281,
+      "placements": 34,
+      "optimized": 146.64079999999922,
+      "original": 446.3716000000004
+    },
+    {
+      "id": "leg4/1535",
+      "pass": 0,
+      "states": 14890,
+      "placements": 34,
+      "original": 88.05370000000039,
+      "optimized": 37.78660000000036
+    },
+    {
+      "id": "leg5/56",
+      "pass": 0,
+      "states": 24700,
+      "placements": 36,
+      "optimized": 39.69220000000041,
+      "original": 104.59200000000055
+    },
+    {
+      "id": "leg5/188",
+      "pass": 0,
+      "states": 61408,
+      "placements": 36,
+      "original": 330.6401999999998,
+      "optimized": 126.5659999999998
+    },
+    {
+      "id": "leg5/320",
+      "pass": 0,
+      "states": 41863,
+      "placements": 34,
+      "optimized": 73.25939999999991,
+      "original": 201.51589999999942
+    },
+    {
+      "id": "leg6/261",
+      "pass": 0,
+      "states": 30875,
+      "placements": 40,
+      "original": 139.29680000000008,
+      "optimized": 47.60540000000037
+    },
+    {
+      "id": "leg6/871",
+      "pass": 0,
+      "states": 58066,
+      "placements": 38,
+      "optimized": 111.57849999999962,
+      "original": 306.4324999999999
+    },
+    {
+      "id": "leg6/1481",
+      "pass": 0,
+      "states": 10127,
+      "placements": 36,
+      "original": 39.918400000000474,
+      "optimized": 11.231499999999869
+    },
+    {
+      "id": "leg7/217",
+      "pass": 0,
+      "states": 41496,
+      "placements": 36,
+      "optimized": 52.636899999999514,
+      "original": 208.33760000000075
+    },
+    {
+      "id": "leg7/726",
+      "pass": 0,
+      "states": 72008,
+      "placements": 34,
+      "original": 399.27729999999974,
+      "optimized": 154.38410000000113
+    },
+    {
+      "id": "leg7/1234",
+      "pass": 0,
+      "states": 64206,
+      "placements": 35,
+      "optimized": 120.6911,
+      "original": 332.35169999999925
+    },
+    {
+      "id": "leg0/269",
+      "pass": 1,
+      "states": 58048,
+      "placements": 34,
+      "optimized": 92.77729999999974,
+      "original": 269.14300000000003
+    },
+    {
+      "id": "leg0/897",
+      "pass": 1,
+      "states": 81031,
+      "placements": 34,
+      "original": 426.70939999999973,
+      "optimized": 132.10189999999966
+    },
+    {
+      "id": "leg0/1524",
+      "pass": 1,
+      "states": 57320,
+      "placements": 39,
+      "optimized": 94.5640999999996,
+      "original": 281.8881000000001
+    },
+    {
+      "id": "leg1/219",
+      "pass": 1,
+      "states": 78706,
+      "placements": 34,
+      "original": 402.2523999999994,
+      "optimized": 186.4921000000013
+    },
+    {
+      "id": "leg1/731",
+      "pass": 1,
+      "states": 55559,
+      "placements": 34,
+      "optimized": 108.55849999999919,
+      "original": 297.7366000000002
+    },
+    {
+      "id": "leg1/1243",
+      "pass": 1,
+      "states": 19019,
+      "placements": 36,
+      "original": 93.98890000000029,
+      "optimized": 31.375099999999293
+    },
+    {
+      "id": "leg2/149",
+      "pass": 1,
+      "states": 49040,
+      "placements": 34,
+      "optimized": 75.40990000000056,
+      "original": 279.3721000000005
+    },
+    {
+      "id": "leg2/497",
+      "pass": 1,
+      "states": 61508,
+      "placements": 36,
+      "original": 304.45410000000084,
+      "optimized": 120.34100000000035
+    },
+    {
+      "id": "leg2/844",
+      "pass": 1,
+      "states": 47457,
+      "placements": 36,
+      "optimized": 85.26369999999952,
+      "original": 215.0640999999996
+    },
+    {
+      "id": "leg3/46",
+      "pass": 1,
+      "states": 46206,
+      "placements": 34,
+      "original": 242.34640000000036,
+      "optimized": 69.19920000000093
+    },
+    {
+      "id": "leg3/154",
+      "pass": 1,
+      "states": 70877,
+      "placements": 38,
+      "optimized": 133.3173999999999,
+      "original": 374.72309999999925
+    },
+    {
+      "id": "leg3/262",
+      "pass": 1,
+      "states": 67597,
+      "placements": 34,
+      "original": 351.41660000000047,
+      "optimized": 155.0000999999993
+    },
+    {
+      "id": "leg4/271",
+      "pass": 1,
+      "states": 58174,
+      "placements": 35,
+      "optimized": 117.79740000000129,
+      "original": 275.5103999999992
+    },
+    {
+      "id": "leg4/903",
+      "pass": 1,
+      "states": 81281,
+      "placements": 34,
+      "original": 454.40400000000045,
+      "optimized": 154.63100000000122
+    },
+    {
+      "id": "leg4/1535",
+      "pass": 1,
+      "states": 14890,
+      "placements": 34,
+      "optimized": 21.312800000001516,
+      "original": 74.79550000000017
+    },
+    {
+      "id": "leg5/56",
+      "pass": 1,
+      "states": 24700,
+      "placements": 36,
+      "original": 130.16760000000068,
+      "optimized": 33.70099999999911
+    },
+    {
+      "id": "leg5/188",
+      "pass": 1,
+      "states": 61408,
+      "placements": 36,
+      "optimized": 122.75959999999941,
+      "original": 291.3243000000002
+    },
+    {
+      "id": "leg5/320",
+      "pass": 1,
+      "states": 41863,
+      "placements": 34,
+      "original": 219.36729999999807,
+      "optimized": 75.18860000000132
+    },
+    {
+      "id": "leg6/261",
+      "pass": 1,
+      "states": 30875,
+      "placements": 40,
+      "optimized": 41.14440000000104,
+      "original": 125.89559999999983
+    },
+    {
+      "id": "leg6/871",
+      "pass": 1,
+      "states": 58066,
+      "placements": 38,
+      "original": 319.3822,
+      "optimized": 121.4480999999978
+    },
+    {
+      "id": "leg6/1481",
+      "pass": 1,
+      "states": 10127,
+      "placements": 36,
+      "optimized": 11.068199999997887,
+      "original": 54.359700000000885
+    },
+    {
+      "id": "leg7/217",
+      "pass": 1,
+      "states": 41496,
+      "placements": 36,
+      "original": 192.37189999999828,
+      "optimized": 77.27829999999813
+    },
+    {
+      "id": "leg7/726",
+      "pass": 1,
+      "states": 72008,
+      "placements": 34,
+      "optimized": 141.3787999999986,
+      "original": 420.4354000000021
+    },
+    {
+      "id": "leg7/1234",
+      "pass": 1,
+      "states": 64206,
+      "placements": 35,
+      "original": 313.6850000000013,
+      "optimized": 128.03069999999934
+    }
+  ],
+  "decisions": [
+    {
+      "id": "leg0/269",
+      "kind": "place",
+      "nodes": 200000,
+      "fullReportParity": true
+    },
+    {
+      "id": "leg1/731",
+      "kind": "place",
+      "nodes": 200000,
+      "fullReportParity": true
+    },
+    {
+      "id": "leg2/844",
+      "kind": "hold",
+      "nodes": 200000,
+      "fullReportParity": true
+    },
+    {
+      "id": "leg4/271",
+      "kind": "place",
+      "nodes": 200000,
+      "fullReportParity": true
+    },
+    {
+      "id": "leg5/188",
+      "kind": "place",
+      "nodes": 200000,
+      "fullReportParity": true
+    },
+    {
+      "id": "leg6/1481",
+      "kind": "place",
+      "nodes": 200000,
+      "fullReportParity": true
+    }
+  ],
+  "scope": "Local paired root geometry benchmark; unchanged traversal/results. Not whole arena speedup or strength evidence.",
+  "provenance": {
+    "node": "v24.15.0",
+    "platform": "win32",
+    "arch": "x64",
+    "pilotRun": 36707273929,
+    "candidateRun": 36702845823,
+    "files": {
+      "vendor/kiwi-v1/tetrp-placement-path.mjs": "0702630a11ae8934feba53d1bf1d20788c0bc2bc4f24d18404c86550abe1ae93",
+      "test/fixtures/kiwi-placement-path-reference.js": "b21c63c335fa672579f53ce42bf2d4e505913b8252560eb20c44869acb796330",
+      ".cache/tslot-wasm-run-36702845823/pkg/cold_clear_2_bg.wasm": "8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0"
+    }
+  }
+}
