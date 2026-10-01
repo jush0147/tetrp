@@ -1,0 +1,72 @@
+name: Kiwi exact movegen cache experiment
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-movegen-cache.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-movegen-cache-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-wasm-source
+      - name: Restore frozen sources and references
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36387270053 --repo jush0147/tetrp --name cc2-landing-36387270053-1 --dir .cache/eval-artifact
+          gh run download 36702845823 --repo jush0147/tetrp --name kiwi-tslot-wasm-36702845823 --dir .cache/visible-t-artifact
+          git -C .cache/cc2-wasm-source apply --check "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          node scripts/kiwi-tslot-candidate-prepare.js install
+          node scripts/kiwi-movegen-cache-prepare.js
+          mkdir -p .cache/movegen-cache-results
+          git -C .cache/cc2-wasm-source diff > .cache/movegen-cache-results/experiment.patch
+      - name: Build isolated kernels and test cache invariants
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal --target wasm32-unknown-unknown
+          cargo +1.90.0 install wasm-bindgen-cli --version "$(cat .cache/eval-artifact/cc2-wasm-results/bindgen-version.txt)" --locked
+          for policy in accepted visible-t; do
+            policy_flags=""
+            if [ "$policy" = visible-t ]; then policy_flags="--cfg snapshot_visible_t"; fi
+            for kind in off on verify; do
+              flags="$policy_flags"
+              if [ "$kind" != off ]; then flags="$flags --cfg snapshot_movegen_cache"; fi
+              if [ "$kind" = verify ]; then
+                flags="$flags --cfg snapshot_cache_verify"
+                RUSTFLAGS="$flags" cargo +1.90.0 test --locked --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib movegen::
+                RUSTFLAGS="$flags" cargo +1.90.0 test --locked --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib snapshot::tests
+              fi
+              RUSTFLAGS="$flags" cargo +1.90.0 build --locked --release --target wasm32-unknown-unknown --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib
+              wasm-bindgen .cache/cc2-wasm-source/target/wasm32-unknown-unknown/release/cold_clear_2.wasm --target web --out-dir ".cache/movegen-cache-results/$policy-$kind"
+            done
+          done
+          rustc +1.90.0 --version > .cache/movegen-cache-results/rust-version.txt
+      - name: Full parity and paired uninstrumented request timing
+        run: node scripts/kiwi-movegen-cache-bench.js bench
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-movegen-cache-${{ github.run_id }}
+          path: .cache/movegen-cache-results/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once
+        if: always()
+        env:
+          AUDIT_JOB_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-movegen-cache-bench.js notify

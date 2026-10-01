@@ -1,5 +1,7 @@
 # Arena 效率插入工作（2026-09-30）
 
+2026-10-01 最新接續：已實作隔離、default-off 的 512-entry request-local movegen cache 實驗，見 [MOVEGEN_CACHE_EXPERIMENT.md](MOVEGEN_CACHE_EXPERIMENT.md)。本機 source transform 驗證通過；Rust / 六個 WASM builds / 完整 parity / 三輪 paired request timing 交由單一有界 CI。沒有 arena、沒有 production promotion；10% 收益門檻與原參數次序不變。下段「尚未實作」是前一輪狀態。
+
 2026-10-01：現行搜尋核心已 profile 完成，見 [CURRENT_SEARCH_COST.md](CURRENT_SEARCH_COST.md) 與 JSON；兩個 artifact 共 72 完整 report parity。movegen inclusive 約 41–43%，GameState hash self 約 8–10%，do_work self 不能解讀為 evaluator 單項。下一個有限候選是 request-scoped bounded exact-input movegen result cache，需先證明命中與完整 request 收益；尚未實作或派 CI。不是重寫搜尋或改參數，不重跑已完成的 dense/landing 優化。
 
 最新接續：完整 recommendation 已量完，見 [RECOMMENDATION_EFFICIENCY.md](RECOMMENDATION_EFFICIENCY.md)。兩個 frozen kernels、24 公開局面、兩輪交錯順序，96 組完整 request/report/action/certificate parity；candidate 耗時減少 15.18%，baseline 15.28%。WASM search 現占約 87%，沒有改核心或預算。不得把局部 2.73× 當整場加速；尚未跑新 arena。若再做效能調查，定位搜尋核心成本而非繼續微調小占比 runner，不改參數主線。
