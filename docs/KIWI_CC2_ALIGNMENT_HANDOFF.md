@@ -176,3 +176,14 @@ Tetrp workspace：`C:\Users\jush\Documents\ChatGPT\Tetrp`。
 - 最後一次 git status 中有其他工作：`third-party/kiwi-notices.md`、`.codex-remote-attachments/`、`docs/UI_TEXT_INVENTORY.md` 與本工作無關，不要刪改或一起 stage。不要 `git reset/clean` 丟掉未提交紀錄。
 - PowerShell。完整 Python oracle tests 使用 `.cache/python-runtime/cpython-3.12.13-windows-x86_64-none/python.exe` 設為 `$env:PYTHON` 再跑 `npm test`。外部 network／必要 subprocess 操作遵守當前權限。
 - 不因記錄／交接而自動建立新任務、merge、push、開跑 experiments；不宣稱背景工作會自行繼續。下一次接續從上面的耦合表開始。
+
+## 2026-10-02 overnight strength batch
+
+User authorized the prepared visible-T versus accepted CC2-based profile:
+[fixed 200-game plan](audits/cc2-alignment/VISIBLE_T_200_PLAN.md).
+100 new paired seeds, 200 KO games; 16 runners maximum, two isolated matches
+per runner, frozen verified native kernels and parallelDecisions. No new
+performance pilot or evaluator change. H9-off/H1-off are not queued. Await
+one ntfy completion/failure message; inspect full correctness and paired
+outcomes before deciding next step. No automatic promotion or score-based
+extension. Dispatch identity is recorded separately once confirmed.

@@ -1,0 +1,79 @@
+name: Kiwi visible-T fixed 200 KO games
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-visible-t-200.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-visible-t-200-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: true
+      max-parallel: 16
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Download frozen verified native binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36849221714 --repo jush0147/tetrp --name kiwi-native-runtime-36849221714 --dir .cache/native-artifact
+          chmod +x .cache/native-artifact/snapshot-accepted .cache/native-artifact/snapshot-visible-t
+      - name: Four KO legs with two isolated match workers
+        timeout-minutes: 170
+        env:
+          KIWI_200_SHARD: ${{ matrix.shard }}
+        run: node scripts/kiwi-visible-t-200.js shard
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-visible-t-200-summary-${{ matrix.shard }}
+          path: .cache/visible-t-200/summaries/
+          include-hidden-files: true
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-visible-t-200-traces-${{ matrix.shard }}
+          path: .cache/visible-t-200/games/
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 3
+  aggregate:
+    if: always()
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: kiwi-visible-t-200-summary-*
+          path: .cache/visible-t-200-downloads
+      - name: Audit all 200 games, summarize paired outcomes, notify once
+        if: always()
+        env:
+          SHARDS_STATUS: ${{ needs.shard.result }}
+        run: node scripts/kiwi-visible-t-200.js aggregate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-visible-t-200-result
+          path: .cache/visible-t-200/aggregate/
+          include-hidden-files: true
+          retention-days: 30

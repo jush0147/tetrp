@@ -68,3 +68,16 @@
 
 - https://docs.github.com/en/actions/reference/limits
 - https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features#actions
+
+## 2026-10-02 overnight batch authorization
+
+User authorized running the prepared visible-T comparison overnight. The fixed
+[200-game plan](VISIBLE_T_200_PLAN.md) and VISIBLE_T_200.json supersede the
+unlaunched 48-game draft. 100 new seed pairs, shared piece stream per game,
+seat swap, 200k nodes, 24 virtual frames, KO only; 50 shards, 16 concurrent
+runners, two isolated match workers each. Native + parallelDecisions preserves
+verified timing semantics. Technical failure stops the batch; no optional
+extension or automatic next candidate. One aggregate ntfy notification.
+Parameter order stays visible-T, H9-off, H1-off; only visible-T is authorized
+for this launch. No additional performance pilot. Dispatch URL recorded after
+push, not assumed from configuration.

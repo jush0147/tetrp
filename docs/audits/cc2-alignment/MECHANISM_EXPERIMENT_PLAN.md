@@ -50,3 +50,12 @@
 ## 本輪以外的項目
 
 既有 inventory 的 clear shaping、wasted T、B2B Boolean、PC override、well、transitions、height 等仍保留。它們不是「已證明重要」；本輪沒有足夠 outcome evidence 判定無用，也不新增 TSD／mini／Hold bonus。不同 shared coefficient 的作用域已記錄，之後調參前須重看；不把本輪變成全參數 sweep。
+
+## 2026-10-02 overnight fixed sample
+
+User authorized the prepared visible-T fixed 200 single-KO games (100 new
+seed pairs), using the verified native parallel two-match runtime. See
+[bounded execution plan](VISIBLE_T_200_PLAN.md). Do not dispatch the old 48-game
+draft, repeat performance pilots, queue H9/H1, promote automatically, or extend
+sample size after seeing the score. H9-off then H1-off remain independent
+future candidates; this run changes no evaluator weights.

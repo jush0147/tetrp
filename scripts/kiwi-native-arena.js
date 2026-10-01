@@ -1,4 +1,4 @@
-// Runtime-equivalence test, not a policy strength experiment.
+// Runtime-equivalence audit, or an explicitly configured frozen-policy batch leg.
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {openSync,closeSync,writeSync,createReadStream} from 'node:fs';
@@ -9,9 +9,12 @@ import {pathToFileURL} from 'node:url';
 import {nativeClient} from './kiwi-native-client.js';
 import {match} from './kiwi-arena-core.js';
 import {prepareKiwi,normalizeTopRecommendation,NODE_BUDGET} from '../src/analysis/kiwi.js';
+import {config as batchConfig,legSettings} from './kiwi-visible-t-200-config.js';
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const parallelAudit=process.argv.includes('--parallel');
 const single=process.argv.includes('--single');
+const batchLeg=process.argv.includes('--batch-leg');
+assert.ok(!batchLeg||single&&parallelAudit);
 assert.ok(!single||parallelAudit,'Single execution is restricted to native parallel validation');
 const candidate=parallelAudit?'parallel':'native',control=parallelAudit?'serial':'wasm';
 const artifactPrefix=parallelAudit?'kiwi-parallel-arena':'kiwi-native-arena';
@@ -28,11 +31,13 @@ if(process.argv[2]==='notify'){
  const response=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:`Kiwi ${parallelAudit?'parallel':'native'} arena ${ok?'parity complete':'needs review'}`,message:message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});assert.ok(response.ok);assert.ok((await response.json()).id);
  if(!ok)process.exitCode=1;
 }else if(process.argv[2]==='run'){
- assert.ok(leg===0||leg===1);assert.equal(NODE_BUDGET,200000);
+ const batch=batchLeg?legSettings(leg,Number(process.env.KIWI_BATCH_ATTEMPT??0)):null;
+ assert.ok(batchLeg||leg===0||leg===1);assert.equal(NODE_BUDGET,200000);
  await mkdir(root,{recursive:true});
- const summary={leg,seed:2026093001,nodeBudget:NODE_BUDGET,framesPerPiece:24,complete:false,runs:{},candidate,control,strengthEvidence:false,hashes:profiles};
+ const summary={leg,seed:batch?.seed??2026093001,nodeBudget:NODE_BUDGET,framesPerPiece:24,complete:false,runs:{},candidate,control,strengthEvidence:batchLeg,hashes:profiles,...(batch?{batch}: {})};
  const save=()=>writeFile(`${root}/result.json`,JSON.stringify(summary,null,2));await save();
- const seatNames=leg===0?['visible-t','accepted']:['accepted','visible-t'];
+ const seatNames=leg%2===0?['visible-t','accepted']:['accepted','visible-t'];
+ if(batchLeg){assert.equal(profiles.accepted.native,batchConfig.baselineNative);assert.equal(profiles['visible-t'].native,batchConfig.candidateNative);}
  try{
   for(const [name,p] of Object.entries(profiles)){
    if(!single){assert.equal(hash(await readFile(`${p.pkg}/cold_clear_2_bg.wasm`)),p.wasm);
@@ -69,7 +74,7 @@ if(process.argv[2]==='notify'){
     summary.runs[runtime]={wallMs:performance.now()-start,counts,result};await save();
     assert.equal(result.reason,'topout','watchdog/technical failure is not KO');assert.ok(result.failures.every(x=>x===null));assert.ok(result.parity.every(p=>p.mismatches===0));
     assert.ok(result.transportStats.every(s=>s.fallbackRequests===0&&s.rejectedCandidates===0&&s.maxSelectedRank===0));
-    for(let seat=0;seat<2;seat++){assert.equal(result.parity[seat].placements,counts.placements[seat]);assert.equal(result.parity[seat].holds,counts.holds[seat]);assert.equal(counts.holds[seat],counts.reanalyses[seat]+(pending[seat]?.playing===false?1:0));assert.ok(counts.placements[seat]>=24);assert.ok(counts.reanalyses[seat]>0);assert.ok(counts.receives[seat]>0);}
+    for(let seat=0;seat<2;seat++){assert.equal(result.parity[seat].placements,counts.placements[seat]);assert.equal(result.parity[seat].holds,counts.holds[seat]);assert.equal(counts.holds[seat],counts.reanalyses[seat]+(pending[seat]?.playing===false?1:0));if(!batchLeg){assert.ok(counts.placements[seat]>=24);assert.ok(counts.reanalyses[seat]>0);assert.ok(counts.receives[seat]>0);}}
    }finally{closeSync(reportFd);closeSync(traceFd);for(const close of closers)await close();}
   }
   async function compare(kind){
@@ -78,7 +83,9 @@ if(process.argv[2]==='notify'){
    try{for await(const line of a){const next=await it.next(),expected=next.done?null:JSON.parse(next.value),actual=JSON.parse(line);try{assert.deepEqual(actual,expected);}catch(e){await writeFile(`${root}/mismatch.json`,JSON.stringify({kind,index:n,actual,expected},null,2));throw e;}n++;}const extra=await it.next();if(!extra.done){await writeFile(`${root}/mismatch.json`,JSON.stringify({kind,index:n,actual:null,expected:JSON.parse(extra.value)},null,2));throw Error('extra WASM records');}}finally{a.close();b.close();sa.destroy();sb.destroy();}return n;
   }
   const deterministic=r=>{const {latencies,...rest}=r;return rest;};
-  if(single){
+  if(batchLeg){
+   summary.batchValidated=true;
+  }else if(single){
    // Offline oracle only after the complete match; never fed to policy.
    const reference=JSON.parse(await readFile('docs/audits/cc2-alignment/PARALLEL_ARENA_RESULT_36859147183.json')).legs.find(r=>r.leg===leg);
    summary.referenceRun=36859147183;summary.traceHashes={};
