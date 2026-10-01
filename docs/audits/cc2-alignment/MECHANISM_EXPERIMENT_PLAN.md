@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-01 最新 gate：native 完整 arena run 36851791560 通過，整場耗時減少 17.68%，全部 reports/events 一致。接下來可用凍結 native profiles 落實 visible-T 的 200 場固定樣本批次；未 dispatch。舊 pilot seed 的 runtime 重打不納入強度樣本。visible-T → H9-off → H1-off 順序不變。
+
 2026-10-01 最新效率 gate：native vs WASM 的 170 次完整比較通過，兩個 profile 完整 request 均約省 16.5%。下一步先接離線 arena 並驗證連續 authority/Hold parity；尚未完成整場驗證，200 場仍未啟動。本表的參數先後不變。
 
 2026-10-01 最新：使用者要求不要因 cache 失敗就結束效率工作，已授權 native release vs WASM 等價性／效能實驗（NATIVE_RUNTIME_EXPERIMENT.md）。下段的「已結案」不再是現況。參數順序仍保留；200 場暫不啟動。
