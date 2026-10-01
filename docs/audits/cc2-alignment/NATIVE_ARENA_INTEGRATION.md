@@ -1,5 +1,7 @@
 # Native arena runtime integration
 
+已由 commit `b999f6662477126793ee8b108d47b10813e23a9c` 啟動 [run 36851791560](https://github.com/jush0147/tetrp/actions/runs/36851791560)。建立時 queued，尚無結果；不持續輪詢。本機 protocol / authority / scoring / publication 共 21 tests 通過；完整 Linux native arena 等價性待該 CI，不宣稱已通過。
+
 2026-10-01。承接 run 36849221714：固定 corpus 完整 report parity 全過，包含 IPC 的完整 request 約省 16.5%。這次只驗證離線 arena runtime 等價性與整場成本，不做強度判定。
 
 ## 執行
