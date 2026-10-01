@@ -37,11 +37,12 @@ function publicPlan(snapshot,action,cadence){
  * Virtual frames advance together, independent of policy wall-clock speed.
  * Hold is a submitted action and reveals a new snapshot before another request.
  */
-export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece=24,maxFrames=18000,watchdogFrames=360000,onProgress=()=>{},record=null,executionModel=PLACEMENT_MODEL,startCheckpoint=null,onBoundary=null}={}){
+export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece=24,maxFrames=18000,watchdogFrames=360000,onProgress=()=>{},record=null,executionModel=PLACEMENT_MODEL,startCheckpoint=null,onBoundary=null,parallelDecisions=false}={}){
   if(bots.length!==2||!Number.isInteger(framesPerPiece)||framesPerPiece<2||maxFrames!==null&&(!Number.isInteger(maxFrames)||maxFrames<1)||
     !Number.isInteger(watchdogFrames)||watchdogFrames<1)
     throw new Error('Invalid arena configuration');
   if(![PLACEMENT_MODEL,'physical-input-v1'].includes(executionModel))throw new Error('Unknown arena execution model');
+  if(typeof parallelDecisions!=='boolean'||parallelDecisions&&executionModel!==PLACEMENT_MODEL)throw new Error('Parallel decisions require placement authority');
   const Authority=executionModel===PLACEMENT_MODEL?PlacementArenaEngine:Engine;
   const engines=seeds.map((seed,i)=>{const e=new Authority({seed});e.state.holes=createHoles(holeSeeds[i]);return e;});
   if(startCheckpoint){
@@ -59,14 +60,14 @@ export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece
   const failures=[null,null],latencies=[[],[]],decisions=[0,0],holds=[0,0],sent=[0,0];
   const transportStats=[0,1].map(()=>({fallbackRequests:0,rejectedCandidates:0,maxSelectedRank:0}));
   const parity=[0,1].map(()=>({placements:0,holds:0,mismatches:0})),requests=[null,null];
-  function failure(seat,error){
+  function failure(seat,error,emitRecord=record){
     parity[seat].mismatches++;
     const request=requests[seat];
     failures[seat]={frame:engines[seat].state.frame,message:String(error.message),executionModel,
       snapshot:request?.snapshot??null,policyAction:request?.action??error.details?.policyAction??null,
       validated:plans[seat]?.proof??null,details:error.details??null,
       actual:{visible:visibleState(engines[seat].state),reason:engines[seat].state.reason,stats:structuredClone(engines[seat].state.stats)}};
-    record?.({type:'technical-failure',seat,dump:structuredClone(failures[seat])});
+    emitRecord?.({type:'technical-failure',seat,dump:structuredClone(failures[seat])});
   }
   let frame=startFrame,deliveries=[[],[]],plans=[null,null];
   while(frame<startFrame+(maxFrames??watchdogFrames)&&engines.every(e=>e.state.playing)&&failures.every(f=>f===null)){
@@ -79,7 +80,11 @@ export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece
       onBoundary?.({frame,states:engines.map(e=>structuredClone(e.state))});
       // Capture both before either policy runs. No opponent action is observed.
       const snapshots=engines.map(e=>visibleState(e.state));
-      for(let i=0;i<2;i++){
+      // Each task can mutate only its own Hold state. Frame stepping, deliveries
+      // and placement commits stay behind the join barrier below.
+      const decisionEvents=[[],[]];
+      const decideSeat=async i=>{
+        const emitRecord=parallelDecisions?(record?e=>decisionEvents[i].push(e):null):record;
         try{
           let snapshot=snapshots[i],action;
           for(let attempt=0;attempt<2;attempt++){
@@ -96,20 +101,25 @@ export async function match(bots,{seeds=[1,2],holeSeeds=[101,102],framesPerPiece
               const proof=validatePlacement(snapshot,action);
               plans[i]=executionModel===PLACEMENT_MODEL?{action,proof,locks:[]}:{...publicPlan(snapshot,action,framesPerPiece),proof};
             }
-            record?.({type:'decision',seat:i,frame,snapshot:structuredClone(snapshot),selected:action,validated:plans[i].proof??null});
+            emitRecord?.({type:'decision',seat:i,frame,snapshot:structuredClone(snapshot),selected:action,validated:plans[i].proof??null});
             latencies[i].push(performance.now()-start);
             if(action?.action?.kind!=='hold')break;
             if(attempt)throw new Error('Repeated Hold');
             const actual=commitHold(engines[i],snapshot,action);parity[i].holds++;
-            record?.({type:'parity',kind:'hold',seat:i,frame,intent:action,actual});
-            record?.({type:'hold',seat:i,frame});
+            emitRecord?.({type:'parity',kind:'hold',seat:i,frame,intent:action,actual});
+            emitRecord?.({type:'hold',seat:i,frame});
             holds[i]++;snapshot=visibleState(engines[i].state);
             if(!snapshot.playing)break;
           }
-          if(!engines[i].state.playing)continue;
+          if(!engines[i].state.playing)return;
           if(action?.action?.kind!=='place')throw new Error('Missing placement after Hold');
-        }catch(error){failure(i,error);}
-      }
+        }catch(error){failure(i,error,emitRecord);}
+      };
+      if(parallelDecisions){
+        await Promise.all([decideSeat(0),decideSeat(1)]);
+        // Record order remains seat order, independent of CPU completion order.
+        for(const events of decisionEvents)for(const event of events)record?.(event);
+      }else for(let i=0;i<2;i++)await decideSeat(i);
       if(failures.some(Boolean)||engines.some(e=>!e.state.playing))break;
     }
     for(let i=0;i<2;i++){

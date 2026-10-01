@@ -1,5 +1,7 @@
 # Arena 效率插入工作（2026-09-30）
 
+2026-10-01 最新：使用者追問計算成本後，接續 bounded parallel native decision 實驗，見 PARALLEL_ARENA_EXPERIMENT.md。原串行不影響 virtual attack timing；新增 default-off parallelDecisions 只重疊各席搜尋/Hold reanalysis，join 後才推進雙邊 authority。完整 serial/parallel KO traces 比較待 CI；不再重跑 WASM，不改 evaluator 或 200k budget。
+
 2026-10-01 最新已完成：native arena run 36851791560 全過。3,257 reports / 10,383 events 兩 runtime 檔案 hashes 完全相同，2,388 placements / 869 Holds（每 runtime），zero technical/fallback/parity failures；整場耗時兩例合計減少 17.68%。見 NATIVE_ARENA_INTEGRATION.md 與 NATIVE_ARENA_RESULT_36851791560.json。兩凍結 policy 可採 native 離線 runtime；正式批次不再每局重跑 WASM。下一步回到 visible-T 200 場固定樣本批次配置與成本，尚未 dispatch；不誤發舊 48 場草案，不新增效能研究或 evaluator 改動。
 
 2026-10-01 最新接續：已建立 native arena 隔離 integration runner，計畫見 NATIVE_ARENA_INTEGRATION.md。兩個座位案例各 native/WASM 重打相同 KO game，逐筆完整 report 與 authority event parity，再量整場耗時。不改原有含 48 場草案的 integration script、不啟動強度批次。
