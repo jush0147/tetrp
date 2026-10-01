@@ -1,0 +1,193 @@
+{
+  "run": 36863657491,
+  "verdict": "two-worker-snapshot-throughput-gate-passed",
+  "sourceSummarySha256": "6757c506d5eda526d4ba1ad346ea355af762854d632c23f1329acf6dfc1ba95d",
+  "totals": {
+    "1": {
+      "wallMs": 62084.086001,
+      "meanTrialMs": 20694.695333666667,
+      "cpuSeconds": 114.23990899999998,
+      "averageBusyCores": 1.8400836085137806
+    },
+    "2": {
+      "wallMs": 47405.114284999996,
+      "meanTrialMs": 15801.704761666666,
+      "cpuSeconds": 173.108361,
+      "averageBusyCores": 3.6516811236709796
+    }
+  },
+  "timedParityChecks": 288,
+  "warmupParityChecks": 18,
+  "throughputMultiplier": 1.3096495375530557,
+  "cpuTimeIncrease": 0.5153054875069976,
+  "capacity": {
+    "availableParallelism": 4,
+    "logicalCpus": 4,
+    "cpu": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "cpuMax": null,
+    "quotaCores": null,
+    "procSelfStatus": "Name:\tMainThread\nUmask:\t0022\nState:\tS (sleeping)\nTgid:\t2377\nNgid:\t0\nPid:\t2377\nPPid:\t2334\nTracerPid:\t0\nUid:\t1001\t1001\t1001\t1001\nGid:\t1001\t1001\t1001\t1001\nFDSize:\t256\nGroups:\t4 100 118 999 1001 \nNStgid:\t2377\nNSpid:\t2377\nNSpgid:\t2082\nNSsid:\t2082\nKthread:\t0\nVmPeak:\t 1513324 kB\nVmSize:\t 1485732 kB\nVmLck:\t       0 kB\nVmPin:\t       0 kB\nVmHWM:\t   55352 kB\nVmRSS:\t   55352 kB\nRssAnon:\t   14600 kB\nRssFile:\t   40752 kB\nRssShmem:\t       0 kB\nVmData:\t  652596 kB\nVmStk:\t     136 kB\nVmExe:\t   43756 kB\nVmLib:\t    4012 kB\nVmPTE:\t     716 kB\nVmSwap:\t       0 kB\nHugetlbPages:\t       0 kB\nCoreDumping:\t0\nTHP_enabled:\t1\nuntag_mask:\t0xffffffffffffffff\nThreads:\t11\nSigQ:\t0/63842\nSigPnd:\t0000000000000000\nShdPnd:\t0000000000000000\nSigBlk:\t0000000000000000\nSigIgn:\t0000000001001000\nSigCgt:\t0000000100004602\nCapInh:\t0000000000000000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\nCapBnd:\t000001ffffffffff\nCapAmb:\t0000000000000000\nNoNewPrivs:\t0\nSeccomp:\t0\nSeccomp_filters:\t0\nSpeculation_Store_Bypass:\tvulnerable\nSpeculationIndirectBranch:\talways enabled\nCpus_allowed:\tf\nCpus_allowed_list:\t0-3\nMems_allowed:\t00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001\nMems_allowed_list:\t0\nvoluntary_ctxt_switches:\t11\nnonvoluntary_ctxt_switches:\t0\nx86_Thread_features:\t\nx86_Thread_features_locked:\t\n",
+    "cgroup": "0::/system.slice/hosted-compute-agent.service\n",
+    "node": "v24.21.0",
+    "effectiveCores": 4
+  },
+  "headroom": true,
+  "trials": [
+    {
+      "workers": 1,
+      "round": 0,
+      "requests": 48,
+      "wallMs": 20365.395205,
+      "cpuSeconds": 37.62380699999999,
+      "averageBusyCores": 1.8474380988571633,
+      "workerResults": [
+        {
+          "type": "result",
+          "copies": 2,
+          "requests": 48,
+          "wallMs": 20361.776937,
+          "nativeCpuSeconds": 30.169999999999995,
+          "nodeCpuSeconds": 7.453807,
+          "averageBusyCores": 1.8477663868143372
+        }
+      ],
+      "cgroupBefore": "usage_usec 35615000\nuser_usec 23357000\nsystem_usec 12258000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "cgroupAfter": "usage_usec 73550000\nuser_usec 61047000\nsystem_usec 12503000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n"
+    },
+    {
+      "workers": 2,
+      "round": 0,
+      "requests": 48,
+      "wallMs": 15676.497381000001,
+      "cpuSeconds": 57.612909,
+      "averageBusyCores": 3.675113617524483,
+      "workerResults": [
+        {
+          "type": "result",
+          "copies": 1,
+          "requests": 24,
+          "wallMs": 15672.093837,
+          "nativeCpuSeconds": 23.78,
+          "nodeCpuSeconds": 5.041077,
+          "averageBusyCores": 1.839006153214625
+        },
+        {
+          "type": "result",
+          "copies": 1,
+          "requests": 24,
+          "wallMs": 15660.259915,
+          "nativeCpuSeconds": 23.759999999999998,
+          "nodeCpuSeconds": 5.031832,
+          "averageBusyCores": 1.8385283613602141
+        }
+      ],
+      "cgroupBefore": "usage_usec 79325000\nuser_usec 66613000\nsystem_usec 12712000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "cgroupAfter": "usage_usec 137043000\nuser_usec 124099000\nsystem_usec 12944000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n"
+    },
+    {
+      "workers": 2,
+      "round": 1,
+      "requests": 48,
+      "wallMs": 15767.314637000003,
+      "cpuSeconds": 57.690149,
+      "averageBusyCores": 3.658844281867931,
+      "workerResults": [
+        {
+          "type": "result",
+          "copies": 1,
+          "requests": 24,
+          "wallMs": 15763.790644,
+          "nativeCpuSeconds": 23.830000000000002,
+          "nodeCpuSeconds": 5.052348,
+          "averageBusyCores": 1.8321956090550577
+        },
+        {
+          "type": "result",
+          "copies": 1,
+          "requests": 24,
+          "wallMs": 15654.278386,
+          "nativeCpuSeconds": 23.82,
+          "nodeCpuSeconds": 4.987801,
+          "averageBusyCores": 1.8402509709910049
+        }
+      ],
+      "cgroupBefore": "usage_usec 142766000\nuser_usec 129557000\nsystem_usec 13209000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "cgroupAfter": "usage_usec 200657000\nuser_usec 187169000\nsystem_usec 13488000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n"
+    },
+    {
+      "workers": 1,
+      "round": 1,
+      "requests": 48,
+      "wallMs": 20138.442839000003,
+      "cpuSeconds": 37.23324,
+      "averageBusyCores": 1.848863901626709,
+      "workerResults": [
+        {
+          "type": "result",
+          "copies": 2,
+          "requests": 48,
+          "wallMs": 20133.939978000002,
+          "nativeCpuSeconds": 29.92,
+          "nodeCpuSeconds": 7.31324,
+          "averageBusyCores": 1.8492773913443719
+        }
+      ],
+      "cgroupBefore": "usage_usec 202757000\nuser_usec 189163000\nsystem_usec 13594000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "cgroupAfter": "usage_usec 240140000\nuser_usec 226300000\nsystem_usec 13840000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n"
+    },
+    {
+      "workers": 1,
+      "round": 2,
+      "requests": 48,
+      "wallMs": 21580.247957,
+      "cpuSeconds": 39.382861999999996,
+      "averageBusyCores": 1.8249494666823487,
+      "workerResults": [
+        {
+          "type": "result",
+          "copies": 2,
+          "requests": 48,
+          "wallMs": 21575.240757,
+          "nativeCpuSeconds": 31.269999999999996,
+          "nodeCpuSeconds": 8.112862,
+          "averageBusyCores": 1.8253730024876957
+        }
+      ],
+      "cgroupBefore": "usage_usec 242181000\nuser_usec 228240000\nsystem_usec 13941000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "cgroupAfter": "usage_usec 285892000\nuser_usec 271609000\nsystem_usec 14283000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n"
+    },
+    {
+      "workers": 2,
+      "round": 2,
+      "requests": 48,
+      "wallMs": 15961.302266999992,
+      "cpuSeconds": 57.805302999999995,
+      "averageBusyCores": 3.6215906467426855,
+      "workerResults": [
+        {
+          "type": "result",
+          "copies": 1,
+          "requests": 24,
+          "wallMs": 15958.076051999999,
+          "nativeCpuSeconds": 23.47,
+          "nodeCpuSeconds": 5.486898,
+          "averageBusyCores": 1.8145607218340634
+        },
+        {
+          "type": "result",
+          "copies": 1,
+          "requests": 24,
+          "wallMs": 15747.179541999998,
+          "nativeCpuSeconds": 24.099999999999998,
+          "nodeCpuSeconds": 4.748405,
+          "averageBusyCores": 1.8319728255499435
+        }
+      ],
+      "cgroupBefore": "usage_usec 291711000\nuser_usec 277177000\nsystem_usec 14534000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "cgroupAfter": "usage_usec 349686000\nuser_usec 334857000\nsystem_usec 14829000\nnice_usec 9000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n"
+    }
+  ],
+  "reduction": 0.23643694643041968,
+  "meetsGate": true,
+  "scope": "Fixed equal workload (48 exact-parity requests/trial), 1 worker with 2 sequential batches vs 2 workers with 1 batch each. Each worker has two native seat processes. Startup/warmup excluded. Synthetic snapshot workload, not full arena or strength evidence."
+}

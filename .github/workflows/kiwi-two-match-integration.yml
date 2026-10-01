@@ -1,0 +1,43 @@
+name: Kiwi two-match runner integration
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-two-match-integration.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-two-match-integration-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Download verified native binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36849221714 --repo jush0147/tetrp --name kiwi-native-runtime-36849221714 --dir .cache/native-artifact
+          chmod +x .cache/native-artifact/snapshot-accepted .cache/native-artifact/snapshot-visible-t
+      - name: Pool and gameplay timing regression checks
+        run: node --test test/kiwi-match-pool.test.js test/kiwi-parallel-arena.test.js test/kiwi-native-client.test.js test/placement-authority.test.js test/kiwi-cc2-series-score.test.js
+      - name: Two isolated KO matches and frozen trace parity
+        run: node scripts/kiwi-two-match-integration.js run
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-two-match-${{ github.run_id }}
+          path: .cache/two-match-results/
+          include-hidden-files: true
+          retention-days: 14
+      - name: Notify once
+        if: always()
+        env:
+          AUDIT_JOB_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-two-match-integration.js notify

@@ -1,5 +1,9 @@
 # Arena 效率插入工作（2026-09-30）
 
+2026-10-01 接續：two-match pool 已接入實際 arena，以兩個獨立 Node processes 各持有自己的 native seat processes／Engine／output。最小固定二案例 integration 見 TWO_MATCH_INTEGRATION.md；只各打一次，對前次 validated trace hashes，不重跑 serial/WASM。200 場尚未派送，generic 固定種子全批配置尚未完成。
+
+2026-10-01 最新結果：run 36863657491 CPU/throughput probe 通過。runner OS 回報 4 邏輯 CPU；1 worker 約 1.84 busy cores、2 worker 約 3.65；固定等量 workload 耗時減少 23.64%（1.31×吞吐），288 timed +18 warmup 完整 parity checks 通過。CPU time 卻增加約 51.5%，不能說省總搜尋工作。見 RUNNER_THROUGHPUT_EXPERIMENT.md / RESULT JSON。下一步 batch harness 可採每 runner 兩個隔離 match workers；不是已驗證完整雙場 arena 加速，不直接重算保證 ETA，不掃更多 workers，不 dispatch 200 場。
+
 2026-10-01 最新接續：使用者同意 runner CPU/throughput 短測試（RUNNER_THROUGHPUT_EXPERIMENT.md）。量 native + Node 實際 CPU time、OS affinity/cgroup quota；有 headroom 才比較一個 worker 兩份批次 vs 兩 worker 各一份，同樣 48 requests/trial。固定 public corpus、精確 report parity；不再打整場、不減樣本、不 dispatch 200 場。
 
 2026-10-01 最新結果：parallel run 36859147183 全過。3,257 reports / 10,383 events 與 serial 及前次 native run byte-identical；整場計算時間本次 serial 38:02 → parallel 24:38（兩例合計，省 35.26%）。native parallel 可供後續離線批次使用，generic 預設不改。見 PARALLEL_ARENA_EXPERIMENT.md / RESULT JSON。平均 12.31 分／場，200 場在假定 16 有效並行下理想 2h34，初步規劃 3–4h 但 seed 長尾未知；尚未 dispatch。正式批次不重打對照 runtime，回 visible-T 主線，不新增效能支線。

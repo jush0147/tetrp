@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-01 最新 throughput 結果：run 36863657491 等量 public-snapshot workload 的 2 workers/runner 比 1 worker 省 23.64% wall time，完整 parity 通過；可用於下一步固定 visible-T batch harness 設計，尚未量完整雙場 arena，也未啟動 200 場。停止 worker 數掃描；visible-T → H9-off → H1-off 順序保持。
+
 2026-10-01 最新：parallel native gate run 36859147183 通過，完整 reports/events 與 serial 及舊 native 一致，整場較同 run 串行省 35.26%。可用 native + parallelDecisions 跑後续 visible-T 固定樣本比較；200 場尚未 dispatch，visible-T → H9-off → H1-off 次序維持。
 
 2026-10-01 接續：200 場仍未啟動。使用者不接受目前成本，現做唯一 bounded native serial/parallel decision gate（PARALLEL_ARENA_EXPERIMENT.md），保留同 virtual frame 與 transaction order。沒有新 evaluator 假設、沒有改參數次序。

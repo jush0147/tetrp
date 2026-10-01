@@ -11,9 +11,11 @@ import {match} from './kiwi-arena-core.js';
 import {prepareKiwi,normalizeTopRecommendation,NODE_BUDGET} from '../src/analysis/kiwi.js';
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const parallelAudit=process.argv.includes('--parallel');
+const single=process.argv.includes('--single');
+assert.ok(!single||parallelAudit,'Single execution is restricted to native parallel validation');
 const candidate=parallelAudit?'parallel':'native',control=parallelAudit?'serial':'wasm';
 const artifactPrefix=parallelAudit?'kiwi-parallel-arena':'kiwi-native-arena';
-const root=parallelAudit?'.cache/parallel-arena-results':'.cache/native-arena-results',leg=Number(process.env.NATIVE_ARENA_LEG);
+const root=process.env.NATIVE_ARENA_OUT??(parallelAudit?'.cache/parallel-arena-results':'.cache/native-arena-results'),leg=Number(process.env.NATIVE_ARENA_LEG);
 const profiles={
  accepted:{pkg:'.cache/eval-artifact/cc2-wasm-results/pkg',wasm:'ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767',native:'386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb'},
  'visible-t':{pkg:'.cache/visible-t-artifact/pkg',wasm:'8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0',native:'38d541f37b40f296c306053bee7521e755b33ed256a942f449ffcdbeb27db820'},
@@ -33,11 +35,11 @@ if(process.argv[2]==='notify'){
  const seatNames=leg===0?['visible-t','accepted']:['accepted','visible-t'];
  try{
   for(const [name,p] of Object.entries(profiles)){
-   assert.equal(hash(await readFile(`${p.pkg}/cold_clear_2_bg.wasm`)),p.wasm);
-   assert.equal(hash(await readFile(`${p.pkg}/cold_clear_2.js`)),'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691');
+   if(!single){assert.equal(hash(await readFile(`${p.pkg}/cold_clear_2_bg.wasm`)),p.wasm);
+   assert.equal(hash(await readFile(`${p.pkg}/cold_clear_2.js`)),'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691');}
    assert.equal(hash(await readFile(`.cache/native-artifact/snapshot-${name}`)),p.native);
   }
-  for(const runtime of leg===0?[candidate,control]:[control,candidate]){
+  for(const runtime of single?[candidate]:leg===0?[candidate,control]:[control,candidate]){
    const closers=[],calls={};
    const reportFd=openSync(`${root}/${runtime}-reports.jsonl`,'w'),traceFd=openSync(`${root}/${runtime}-events.jsonl`,'w');
    const pending=[null,null],reportQueues=[[],[]],counts={requests:[0,0],placements:[0,0],holds:[0,0],reanalyses:[0,0],receives:[0,0],spins:{}};
@@ -75,8 +77,20 @@ if(process.argv[2]==='notify'){
    const a=createInterface({input:sa}),b=createInterface({input:sb}),it=b[Symbol.asyncIterator]();let n=0;
    try{for await(const line of a){const next=await it.next(),expected=next.done?null:JSON.parse(next.value),actual=JSON.parse(line);try{assert.deepEqual(actual,expected);}catch(e){await writeFile(`${root}/mismatch.json`,JSON.stringify({kind,index:n,actual,expected},null,2));throw e;}n++;}const extra=await it.next();if(!extra.done){await writeFile(`${root}/mismatch.json`,JSON.stringify({kind,index:n,actual:null,expected:JSON.parse(extra.value)},null,2));throw Error('extra WASM records');}}finally{a.close();b.close();sa.destroy();sb.destroy();}return n;
   }
-  summary.reportComparisons=await compare('reports');summary.eventComparisons=await compare('events');
-  const deterministic=r=>{const {latencies,...rest}=r;return rest;};assert.deepEqual(deterministic(summary.runs[candidate].result),deterministic(summary.runs[control].result));
-  summary.reduction=1-summary.runs[candidate].wallMs/summary.runs[control].wallMs;summary.complete=true;await save();
+  const deterministic=r=>{const {latencies,...rest}=r;return rest;};
+  if(single){
+   // Offline oracle only after the complete match; never fed to policy.
+   const reference=JSON.parse(await readFile('docs/audits/cc2-alignment/PARALLEL_ARENA_RESULT_36859147183.json')).legs.find(r=>r.leg===leg);
+   summary.referenceRun=36859147183;summary.traceHashes={};
+   for(const kind of ['reports','events']){const bytes=await readFile(`${root}/${candidate}-${kind}.jsonl`);summary.traceHashes[kind]=hash(bytes);assert.equal(summary.traceHashes[kind],reference.traceHashes[kind],`${kind} differs from validated single-match execution`);}
+   assert.deepEqual(deterministic(summary.runs[candidate].result),reference.runs.parallel.result);
+   assert.deepEqual(summary.runs[candidate].counts,reference.runs.parallel.counts);
+   summary.reportComparisons=reference.reportComparisons;summary.eventComparisons=reference.eventComparisons;
+  }else{
+   summary.reportComparisons=await compare('reports');summary.eventComparisons=await compare('events');
+   assert.deepEqual(deterministic(summary.runs[candidate].result),deterministic(summary.runs[control].result));
+   summary.reduction=1-summary.runs[candidate].wallMs/summary.runs[control].wallMs;
+  }
+  summary.complete=true;await save();
  }catch(e){summary.error={message:e.message,stack:e.stack};await save();throw e;}
 }else throw Error('run | notify');
