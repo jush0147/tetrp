@@ -1,5 +1,7 @@
 # Native release versus WASM — offline execution experiment
 
+已由 commit `1c8eebba342335e71abf737f9671318f6d7f10ea` 啟動 [run 36849221714](https://github.com/jush0147/tetrp/actions/runs/36849221714)。建立時 queued，尚無結果。另有普通 engine CI 隨 push 觸發，不是額外 arena。已通過本機 protocol / publication 共 7 tests；Rust compilation 和跨 runtime parity 尚待 CI，不持續輪詢。
+
 2026-10-01。使用者不同意因一次快取失敗就接受目前 arena 耗時，授權比較同一核心的 native release / WASM。前一輪「效率插入工作結束」已撤回，並不是回頭救快取。原參數順序 visible-T → H9-off → H1-off 不變，200 場與 48 場均不啟動。
 
 ## 固定比較
