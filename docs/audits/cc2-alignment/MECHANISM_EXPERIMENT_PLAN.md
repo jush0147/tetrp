@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-01：效率插入工作已結案。Root 枚舉優化保留；request-local movegen cache 在 run 36844153120 完整 parity 通過但變慢，依預定門檻淘汰。回到本文件的 visible-T 主線，下一步落實較大固定樣本的批次配置與成本；尚未啟動 200 場提案或 48 場草案，不跳 H9、不改權重。
+
 ## 2026-09-30 接續索引：參數主線保持不變
 
 使用者明確要求保留的是「各個參數的處理順序」。arena 效率是另外的插入工作，記在 [ARENA_EFFICIENCY_HANDOFF.md](ARENA_EFFICIENCY_HANDOFF.md)，不能取代本表或造成參數重排。

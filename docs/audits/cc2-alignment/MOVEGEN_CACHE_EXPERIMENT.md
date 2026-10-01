@@ -22,6 +22,23 @@ RAII guard 在 parse 前建立、離開 request 時清空，包含 parse error�
 
 ## 執行與結果
 
+### 已完成：淘汰快取，不 promotion（2026-10-01）
+
+Run 36844153120 成功，job 7 分 43 秒，ntfy step 成功。結果資料保存於 MOVEGEN_CACHE_RESULT_36844153120.json；下載後重新核對六份 WASM hashes、樣本／計時數、cache counters 及門檻。
+
+| Policy | 完整 request 耗時變化（on / off） | Cache 命中 | 判定 |
+|---|---:|---:|---|
+| Accepted | 增加 5.85% | 2,187 / 103,555 = 2.11% | 淘汰 |
+| Visible-T | 增加 1.11% | 2,357 / 103,514 = 2.28% | 淘汰 |
+
+兩個 policy 各 12 個 public states × 三轮 paired timing；各 108 次完整輸出比較，合計 216 次零差異。verify build 的 4,544 次 cache hit 均重算並通過有序 placement / spin / cost 一致性。Rust 每個 policy 的 movegen 13 tests + snapshot 8 tests 全過，共 42 test executions。此證據限定於 fixtures 與固定 corpus，不是新的 arena correctness 報告。
+
+Accepted 三輪分別慢 5.38%、5.30%、6.86%；Visible-T 分別慢 1.24%、1.51%、0.58%。沒有任何一輪達到預定至少 10% 耗時減少。兩個 policy 各約 95,000 次 eviction；peak stored payload 約 197,040 / 199,848 bytes，不含容器和配置器成本。
+
+解讀：本次固定 512-entry FIFO exact-key 設計的重用率太低，整體收益不足以抵銷查找、插入、複製與淘汰的成本；没有再分解這些 overhead，不能指定某一項為已證實的唯一原因。也不能從這個負結果推論所有快取都無效。
+
+決定依事前規則封存，不改容量或換 eviction policy 續追數字；production 與 arena 繼續使用原凍結 WASM。保留已通過的 root 枚舉優化（先前本機完整 request 約減少 15%，不保證 arena 同比）。本輪效能插入工作結束，下一項回到 visible-T 固定樣本 KO 比較的批次配置，不再新增搜尋效能假設。200 場提案與舊 48 場草案均未啟動；需先把前者的配置、成本與結果判讀落實，不能誤發舊草案。參數順序 visible-T → H9-off → H1-off 不變。
+
 已由 commit `e2873dd55c1dc712d8e6d39181846d166f069cef` 的 push 啟動 [run 36844153120](https://github.com/jush0147/tetrp/actions/runs/36844153120)。建立時確認 in_progress；尚無結果，不持續輪詢。另有既有 engine CI 隨 push 正常觸發，並非第二場實驗。
 
 workflow `kiwi-movegen-cache.yml`：單一 runner，上限 45 分鐘，固定有限 corpus；完成或失敗透過既有 ntfy topic 通知。artifact 保留 patch、六份 kernels、reports、逐 request 計時與統計。本次不自動 promotion、不排 arena、不持續監看。

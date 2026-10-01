@@ -1,5 +1,7 @@
 # Arena 效率插入工作（2026-09-30）
 
+2026-10-01 結案：run 36844153120 parity 全過但 cache 淘汰；accepted 耗時增加 5.85%、visible-T 增加 1.11%，命中率約 2.1–2.3%。結果與決定見 [MOVEGEN_CACHE_EXPERIMENT.md](MOVEGEN_CACHE_EXPERIMENT.md)，原始量測已保存。依事前門檻不掃容量、不 promotion。保留 root 枚舉優化；本輪效能插入工作結束。下一步回到 visible-T 較大固定樣本比較，落實 200 場提案的具體批次配置與成本，不誤發舊 48 場草案；尚未 dispatch 新 arena。下方內容為歷程。
+
 2026-10-01 最新接續：已實作隔離、default-off 的 512-entry request-local movegen cache 實驗，見 [MOVEGEN_CACHE_EXPERIMENT.md](MOVEGEN_CACHE_EXPERIMENT.md)。本機 source transform 驗證通過；Rust / 六個 WASM builds / 完整 parity / 三輪 paired request timing 交由單一有界 CI。沒有 arena、沒有 production promotion；10% 收益門檻與原參數次序不變。下段「尚未實作」是前一輪狀態。
 
 2026-10-01：現行搜尋核心已 profile 完成，見 [CURRENT_SEARCH_COST.md](CURRENT_SEARCH_COST.md) 與 JSON；兩個 artifact 共 72 完整 report parity。movegen inclusive 約 41–43%，GameState hash self 約 8–10%，do_work self 不能解讀為 evaluator 單項。下一個有限候選是 request-scoped bounded exact-input movegen result cache，需先證明命中與完整 request 收益；尚未實作或派 CI。不是重寫搜尋或改參數，不重跑已完成的 dense/landing 優化。

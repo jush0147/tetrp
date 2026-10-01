@@ -1,0 +1,698 @@
+{
+  "run": 36844153120,
+  "verdict": "reject-cache-no-promotion",
+  "sourceSummarySha256": "d2a8d1638f3d62db0ba6f9370724ee7f9127a4906ab5413767c9f54325679e51",
+  "corpusSha256": "348c09730248410adb8b2e4dd96749afe809c21187bfd82399c6c9379be17261",
+  "node": "v24.21.0",
+  "policies": [
+    {
+      "policy": "accepted",
+      "hashes": {
+        "frozen": "ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767",
+        "off": "a5acc7ca64b400b72f92f41cb52aae854db064e87c144acb9b418ba9ae2ae4c2",
+        "on": "edd3e2fef9fc4c9db87131c1b503635565952539a90ee14869331187700a6ce6",
+        "verify": "fb47d6b5b2e171e4754ab5745b972f11b0d63a0413d5b5a17dd85cda3c4d9014"
+      },
+      "samples": 12,
+      "fullReportComparisons": 108,
+      "capacity": 512,
+      "eviction": "FIFO",
+      "stats": [
+        {
+          "id": "leg0/request138",
+          "calls": 6589,
+          "hits": 19,
+          "misses": 6570,
+          "evictions": 6058,
+          "peakEntries": 512,
+          "peakPayloadBytes": 197040
+        },
+        {
+          "id": "leg0/request346",
+          "calls": 6817,
+          "hits": 30,
+          "misses": 6787,
+          "evictions": 6275,
+          "peakEntries": 512,
+          "peakPayloadBytes": 189912
+        },
+        {
+          "id": "leg0/request553",
+          "calls": 8203,
+          "hits": 146,
+          "misses": 8057,
+          "evictions": 7545,
+          "peakEntries": 512,
+          "peakPayloadBytes": 156012
+        },
+        {
+          "id": "leg4/request167",
+          "calls": 10213,
+          "hits": 336,
+          "misses": 9877,
+          "evictions": 9365,
+          "peakEntries": 512,
+          "peakPayloadBytes": 131052
+        },
+        {
+          "id": "leg4/request419",
+          "calls": 7690,
+          "hits": 118,
+          "misses": 7572,
+          "evictions": 7060,
+          "peakEntries": 512,
+          "peakPayloadBytes": 169008
+        },
+        {
+          "id": "leg4/request670",
+          "calls": 6991,
+          "hits": 204,
+          "misses": 6787,
+          "evictions": 6275,
+          "peakEntries": 512,
+          "peakPayloadBytes": 181884
+        },
+        {
+          "id": "leg12/request153",
+          "calls": 9117,
+          "hits": 603,
+          "misses": 8514,
+          "evictions": 8002,
+          "peakEntries": 512,
+          "peakPayloadBytes": 145020
+        },
+        {
+          "id": "leg12/request383",
+          "calls": 9947,
+          "hits": 90,
+          "misses": 9857,
+          "evictions": 9345,
+          "peakEntries": 512,
+          "peakPayloadBytes": 134028
+        },
+        {
+          "id": "leg12/request613",
+          "calls": 7120,
+          "hits": 102,
+          "misses": 7018,
+          "evictions": 6506,
+          "peakEntries": 512,
+          "peakPayloadBytes": 180936
+        },
+        {
+          "id": "leg20/request197",
+          "calls": 8284,
+          "hits": 211,
+          "misses": 8073,
+          "evictions": 7561,
+          "peakEntries": 512,
+          "peakPayloadBytes": 154524
+        },
+        {
+          "id": "leg20/request493",
+          "calls": 10986,
+          "hits": 273,
+          "misses": 10713,
+          "evictions": 10201,
+          "peakEntries": 512,
+          "peakPayloadBytes": 123204
+        },
+        {
+          "id": "leg20/request788",
+          "calls": 11598,
+          "hits": 55,
+          "misses": 11543,
+          "evictions": 11031,
+          "peakEntries": 512,
+          "peakPayloadBytes": 120348
+        }
+      ],
+      "measurements": [
+        {
+          "id": "leg0/request138",
+          "pass": 0,
+          "off": 865.4739659999977,
+          "on": 899.3286109999972
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 0,
+          "on": 992.2313299999951,
+          "off": 987.6805380000005
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 0,
+          "off": 809.1501599999974,
+          "on": 861.0960020000057
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 0,
+          "on": 901.0957259999996,
+          "off": 858.579512999997
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 0,
+          "off": 781.369365999999,
+          "on": 833.7222600000023
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 0,
+          "on": 779.2267790000042,
+          "off": 734.8395870000022
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 0,
+          "off": 798.5266629999969,
+          "on": 824.5965219999998
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 0,
+          "on": 976.352856999998,
+          "off": 923.3185200000007
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 0,
+          "off": 828.949483000004,
+          "on": 903.8382639999982
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 0,
+          "on": 831.255462000001,
+          "off": 792.7220630000011
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 0,
+          "off": 871.0252069999988,
+          "on": 924.2045230000003
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 0,
+          "on": 1070.7330020000009,
+          "off": 994.9975459999987
+        },
+        {
+          "id": "leg0/request138",
+          "pass": 1,
+          "on": 900.8218320000015,
+          "off": 863.3046439999962
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 1,
+          "off": 974.0952050000051,
+          "on": 1014.5126000000018
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 1,
+          "on": 869.7989700000035,
+          "off": 817.4571979999891
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 1,
+          "off": 860.8300739999977,
+          "on": 905.3794970000017
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 1,
+          "on": 844.6077439999935,
+          "off": 810.1319530000037
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 1,
+          "off": 733.8527420000028,
+          "on": 774.7021729999979
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 1,
+          "on": 845.6980949999997,
+          "off": 822.0729299999948
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 1,
+          "off": 928.8304740000021,
+          "on": 977.5522849999979
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 1,
+          "on": 876.2415099999926,
+          "off": 835.7073860000091
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 1,
+          "off": 790.9471720000001,
+          "on": 860.9710090000008
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 1,
+          "on": 928.6071010000014,
+          "off": 874.5449440000084
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 1,
+          "off": 996.676204000003,
+          "on": 1056.1816110000073
+        },
+        {
+          "id": "leg0/request138",
+          "pass": 2,
+          "off": 863.1409649999987,
+          "on": 903.6899280000071
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 2,
+          "on": 991.8537289999949,
+          "off": 951.141380999994
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 2,
+          "off": 809.5624780000071,
+          "on": 849.101880999995
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 2,
+          "on": 903.9585570000054,
+          "off": 879.4878880000033
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 2,
+          "off": 777.4368059999979,
+          "on": 848.8321750000032
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 2,
+          "on": 793.1968060000072,
+          "off": 737.6287370000064
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 2,
+          "off": 790.5305809999991,
+          "on": 857.5118320000038
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 2,
+          "on": 1006.0194510000001,
+          "off": 920.1234839999961
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 2,
+          "off": 901.903066999992,
+          "on": 919.9573539999983
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 2,
+          "on": 854.3241379999963,
+          "off": 789.2338799999998
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 2,
+          "off": 871.9543479999993,
+          "on": 962.1040879999928
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 2,
+          "on": 1104.3721379999915,
+          "off": 996.8011939999997
+        }
+      ],
+      "reduction": -0.05847645692413028,
+      "meetsThreshold": false,
+      "memoryNote": "Payload bytes count stored placement/cost elements; excludes BTreeMap nodes, keys, Vec headers, FIFO and allocator overhead. Entries bounded at 512; WASM memory is not claimed to shrink after requests."
+    },
+    {
+      "policy": "visible-t",
+      "hashes": {
+        "frozen": "8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0",
+        "off": "477bc9694de200b6e891e43eac67a0ac171a411f17b9690cfd9025c1c89a7437",
+        "on": "71cadb46e858c5a1eafe71a0db165431673eca2965b41fa3a065c4ea99cad619",
+        "verify": "eb6cbefdbd415e36ea12bf6c99b07b55cc27826d4596c76367fa05fea0752469"
+      },
+      "samples": 12,
+      "fullReportComparisons": 108,
+      "capacity": 512,
+      "eviction": "FIFO",
+      "stats": [
+        {
+          "id": "leg0/request138",
+          "calls": 6465,
+          "hits": 22,
+          "misses": 6443,
+          "evictions": 5931,
+          "peakEntries": 512,
+          "peakPayloadBytes": 199848
+        },
+        {
+          "id": "leg0/request346",
+          "calls": 6805,
+          "hits": 29,
+          "misses": 6776,
+          "evictions": 6264,
+          "peakEntries": 512,
+          "peakPayloadBytes": 188640
+        },
+        {
+          "id": "leg0/request553",
+          "calls": 8187,
+          "hits": 196,
+          "misses": 7991,
+          "evictions": 7479,
+          "peakEntries": 512,
+          "peakPayloadBytes": 157116
+        },
+        {
+          "id": "leg4/request167",
+          "calls": 10177,
+          "hits": 378,
+          "misses": 9799,
+          "evictions": 9287,
+          "peakEntries": 512,
+          "peakPayloadBytes": 130392
+        },
+        {
+          "id": "leg4/request419",
+          "calls": 7716,
+          "hits": 116,
+          "misses": 7600,
+          "evictions": 7088,
+          "peakEntries": 512,
+          "peakPayloadBytes": 171468
+        },
+        {
+          "id": "leg4/request670",
+          "calls": 6940,
+          "hits": 190,
+          "misses": 6750,
+          "evictions": 6238,
+          "peakEntries": 512,
+          "peakPayloadBytes": 183264
+        },
+        {
+          "id": "leg12/request153",
+          "calls": 9328,
+          "hits": 669,
+          "misses": 8659,
+          "evictions": 8147,
+          "peakEntries": 512,
+          "peakPayloadBytes": 140256
+        },
+        {
+          "id": "leg12/request383",
+          "calls": 9997,
+          "hits": 97,
+          "misses": 9900,
+          "evictions": 9388,
+          "peakEntries": 512,
+          "peakPayloadBytes": 132996
+        },
+        {
+          "id": "leg12/request613",
+          "calls": 7079,
+          "hits": 106,
+          "misses": 6973,
+          "evictions": 6461,
+          "peakEntries": 512,
+          "peakPayloadBytes": 181848
+        },
+        {
+          "id": "leg20/request197",
+          "calls": 8172,
+          "hits": 198,
+          "misses": 7974,
+          "evictions": 7462,
+          "peakEntries": 512,
+          "peakPayloadBytes": 161100
+        },
+        {
+          "id": "leg20/request493",
+          "calls": 10991,
+          "hits": 306,
+          "misses": 10685,
+          "evictions": 10173,
+          "peakEntries": 512,
+          "peakPayloadBytes": 124152
+        },
+        {
+          "id": "leg20/request788",
+          "calls": 11657,
+          "hits": 50,
+          "misses": 11607,
+          "evictions": 11095,
+          "peakEntries": 512,
+          "peakPayloadBytes": 118920
+        }
+      ],
+      "measurements": [
+        {
+          "id": "leg0/request138",
+          "pass": 0,
+          "off": 873.1736039999814,
+          "on": 882.9219079999893
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 0,
+          "on": 990.1840739999898,
+          "off": 985.9725869999966
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 0,
+          "off": 850.2426489999925,
+          "on": 853.9491660000058
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 0,
+          "on": 880.2119229999953,
+          "off": 876.6234159999876
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 0,
+          "off": 800.0176989999891,
+          "on": 819.8797070000146
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 0,
+          "on": 761.8377259999979,
+          "off": 752.0032010000141
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 0,
+          "off": 815.0040080000181,
+          "on": 825.8696309999796
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 0,
+          "on": 987.8691930000205,
+          "off": 953.9322280000197
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 0,
+          "off": 861.3317450000031,
+          "on": 861.351290999999
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 0,
+          "on": 832.6014990000112,
+          "off": 819.2791560000041
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 0,
+          "off": 909.0457959999912,
+          "on": 911.665932999982
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 0,
+          "on": 1059.7832099999941,
+          "off": 1040.9739220000047
+        },
+        {
+          "id": "leg0/request138",
+          "pass": 1,
+          "on": 897.8742609999899,
+          "off": 883.5022910000116
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 1,
+          "off": 972.9972389999893,
+          "on": 1000.9945709999884
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 1,
+          "on": 851.166888000007,
+          "off": 834.649734000006
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 1,
+          "off": 874.4590889999818,
+          "on": 878.6176929999783
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 1,
+          "on": 822.9833740000031,
+          "off": 808.7430400000012
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 1,
+          "off": 753.907910000009,
+          "on": 756.1766019999923
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 1,
+          "on": 806.5380590000132,
+          "off": 809.7169770000037
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 1,
+          "off": 949.9964349999791,
+          "on": 982.2969080000184
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 1,
+          "on": 857.5840559999924,
+          "off": 855.9010030000063
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 1,
+          "off": 824.0511769999866,
+          "on": 831.1046230000211
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 1,
+          "on": 925.0362899999891,
+          "off": 914.4642420000164
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 1,
+          "off": 1045.8788789999962,
+          "on": 1076.8584120000014
+        },
+        {
+          "id": "leg0/request138",
+          "pass": 2,
+          "off": 900.1751529999892,
+          "on": 897.2433480000182
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 2,
+          "on": 992.8640440000163,
+          "off": 979.0901789999916
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 2,
+          "off": 851.8267570000025,
+          "on": 858.2349670000258
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 2,
+          "on": 879.1519250000129,
+          "off": 899.523789000028
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 2,
+          "off": 805.6527070000011,
+          "on": 821.8854160000046
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 2,
+          "on": 766.9885330000252,
+          "off": 758.4555300000065
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 2,
+          "off": 813.4693320000079,
+          "on": 814.3544709999987
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 2,
+          "on": 972.5572519999987,
+          "off": 959.0795130000042
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 2,
+          "off": 843.136136999994,
+          "on": 858.6956260000006
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 2,
+          "on": 813.642703999998,
+          "off": 821.9280389999913
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 2,
+          "off": 897.7257999999856,
+          "on": 919.4875880000181
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 2,
+          "on": 1065.8756209999847,
+          "off": 1069.0425969999924
+        }
+      ],
+      "reduction": -0.011096328008432188,
+      "meetsThreshold": false,
+      "memoryNote": "Payload bytes count stored placement/cost elements; excludes BTreeMap nodes, keys, Vec headers, FIFO and allocator overhead. Entries bounded at 512; WASM memory is not claimed to shrink after requests."
+    }
+  ],
+  "scope": "Fixed public corpus; full prepare/search/normalize/certificate requests. No arena, no Hold transition execution, no strength claim. Threshold is engineering gate only."
+}
