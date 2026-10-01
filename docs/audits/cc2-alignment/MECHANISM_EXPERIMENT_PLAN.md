@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-01 最新：parallel native gate run 36859147183 通過，完整 reports/events 與 serial 及舊 native 一致，整場較同 run 串行省 35.26%。可用 native + parallelDecisions 跑後续 visible-T 固定樣本比較；200 場尚未 dispatch，visible-T → H9-off → H1-off 次序維持。
+
 2026-10-01 接續：200 場仍未啟動。使用者不接受目前成本，現做唯一 bounded native serial/parallel decision gate（PARALLEL_ARENA_EXPERIMENT.md），保留同 virtual frame 與 transaction order。沒有新 evaluator 假設、沒有改參數次序。
 
 2026-10-01 最新 gate：native 完整 arena run 36851791560 通過，整場耗時減少 17.68%，全部 reports/events 一致。接下來可用凍結 native profiles 落實 visible-T 的 200 場固定樣本批次；未 dispatch。舊 pilot seed 的 runtime 重打不納入強度樣本。visible-T → H9-off → H1-off 順序不變。

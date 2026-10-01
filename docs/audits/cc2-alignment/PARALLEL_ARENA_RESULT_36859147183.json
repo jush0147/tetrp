@@ -1,0 +1,533 @@
+{
+  "run": 36859147183,
+  "verdict": "parallel-arena-equivalence-passed",
+  "legs": [
+    {
+      "leg": 0,
+      "seed": 2026093001,
+      "nodeBudget": 200000,
+      "framesPerPiece": 24,
+      "complete": true,
+      "runs": {
+        "parallel": {
+          "wallMs": 758819.313892,
+          "counts": {
+            "requests": [
+              886,
+              908
+            ],
+            "placements": [
+              665,
+              665
+            ],
+            "holds": [
+              221,
+              243
+            ],
+            "reanalyses": [
+              221,
+              243
+            ],
+            "receives": [
+              155,
+              181
+            ],
+            "spins": {
+              "none": 1130,
+              "full": 121,
+              "mini": 79
+            }
+          },
+          "result": {
+            "winner": 0,
+            "reason": "topout",
+            "ko": [
+              false,
+              true
+            ],
+            "deathReasons": [
+              null,
+              "garbagesmash"
+            ],
+            "executionModel": "tl-placement-v1",
+            "parity": [
+              {
+                "placements": 665,
+                "holds": 221,
+                "mismatches": 0
+              },
+              {
+                "placements": 665,
+                "holds": 243,
+                "mismatches": 0
+              }
+            ],
+            "frames": 15960,
+            "seeds": [
+              2026093001,
+              2026093001
+            ],
+            "holeSeeds": [
+              2026093002,
+              2026093003
+            ],
+            "framesPerPiece": 24,
+            "maxFrames": null,
+            "watchdogFrames": 360000,
+            "failures": [
+              null,
+              null
+            ],
+            "decisions": [
+              886,
+              908
+            ],
+            "holds": [
+              221,
+              243
+            ],
+            "sent": [
+              726,
+              550
+            ],
+            "transportStats": [
+              {
+                "fallbackRequests": 0,
+                "rejectedCandidates": 0,
+                "maxSelectedRank": 0
+              },
+              {
+                "fallbackRequests": 0,
+                "rejectedCandidates": 0,
+                "maxSelectedRank": 0
+              }
+            ],
+            "pieces": [
+              665,
+              665
+            ],
+            "totals": [
+              {
+                "generated": 879,
+                "cancelled": 153,
+                "sent": 726,
+                "tanked": 221,
+                "received": 114
+              },
+              {
+                "generated": 816,
+                "cancelled": 266,
+                "sent": 550,
+                "tanked": 284,
+                "received": 152
+              }
+            ]
+          }
+        },
+        "serial": {
+          "wallMs": 1158959.3866849998,
+          "counts": {
+            "requests": [
+              886,
+              908
+            ],
+            "placements": [
+              665,
+              665
+            ],
+            "holds": [
+              221,
+              243
+            ],
+            "reanalyses": [
+              221,
+              243
+            ],
+            "receives": [
+              155,
+              181
+            ],
+            "spins": {
+              "none": 1130,
+              "full": 121,
+              "mini": 79
+            }
+          },
+          "result": {
+            "winner": 0,
+            "reason": "topout",
+            "ko": [
+              false,
+              true
+            ],
+            "deathReasons": [
+              null,
+              "garbagesmash"
+            ],
+            "executionModel": "tl-placement-v1",
+            "parity": [
+              {
+                "placements": 665,
+                "holds": 221,
+                "mismatches": 0
+              },
+              {
+                "placements": 665,
+                "holds": 243,
+                "mismatches": 0
+              }
+            ],
+            "frames": 15960,
+            "seeds": [
+              2026093001,
+              2026093001
+            ],
+            "holeSeeds": [
+              2026093002,
+              2026093003
+            ],
+            "framesPerPiece": 24,
+            "maxFrames": null,
+            "watchdogFrames": 360000,
+            "failures": [
+              null,
+              null
+            ],
+            "decisions": [
+              886,
+              908
+            ],
+            "holds": [
+              221,
+              243
+            ],
+            "sent": [
+              726,
+              550
+            ],
+            "transportStats": [
+              {
+                "fallbackRequests": 0,
+                "rejectedCandidates": 0,
+                "maxSelectedRank": 0
+              },
+              {
+                "fallbackRequests": 0,
+                "rejectedCandidates": 0,
+                "maxSelectedRank": 0
+              }
+            ],
+            "pieces": [
+              665,
+              665
+            ],
+            "totals": [
+              {
+                "generated": 879,
+                "cancelled": 153,
+                "sent": 726,
+                "tanked": 221,
+                "received": 114
+              },
+              {
+                "generated": 816,
+                "cancelled": 266,
+                "sent": 550,
+                "tanked": 284,
+                "received": 152
+              }
+            ]
+          }
+        }
+      },
+      "candidate": "parallel",
+      "control": "serial",
+      "strengthEvidence": false,
+      "hashes": {
+        "accepted": {
+          "pkg": ".cache/eval-artifact/cc2-wasm-results/pkg",
+          "wasm": "ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767",
+          "native": "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb"
+        },
+        "visible-t": {
+          "pkg": ".cache/visible-t-artifact/pkg",
+          "wasm": "8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0",
+          "native": "38d541f37b40f296c306053bee7521e755b33ed256a942f449ffcdbeb27db820"
+        }
+      },
+      "reportComparisons": 1794,
+      "eventComparisons": 5722,
+      "reduction": 0.34525806287097804,
+      "traceHashes": {
+        "reports": "ef9836d9f5e31ed711845c00e56a72239a903df46b53dd5dab543f39f04b78e6",
+        "events": "33e99d7a0d8749096e55a66073b458553edde05fb2629c865dc4a717ddeadf05"
+      }
+    },
+    {
+      "leg": 1,
+      "seed": 2026093001,
+      "nodeBudget": 200000,
+      "framesPerPiece": 24,
+      "complete": true,
+      "runs": {
+        "serial": {
+          "wallMs": 1123430.818627,
+          "counts": {
+            "requests": [
+              727,
+              736
+            ],
+            "placements": [
+              529,
+              529
+            ],
+            "holds": [
+              198,
+              207
+            ],
+            "reanalyses": [
+              198,
+              207
+            ],
+            "receives": [
+              124,
+              144
+            ],
+            "spins": {
+              "none": 908,
+              "full": 89,
+              "mini": 61
+            }
+          },
+          "result": {
+            "winner": 0,
+            "reason": "topout",
+            "ko": [
+              false,
+              true
+            ],
+            "deathReasons": [
+              null,
+              "garbagesmash"
+            ],
+            "executionModel": "tl-placement-v1",
+            "parity": [
+              {
+                "placements": 529,
+                "holds": 198,
+                "mismatches": 0
+              },
+              {
+                "placements": 529,
+                "holds": 207,
+                "mismatches": 0
+              }
+            ],
+            "frames": 12696,
+            "seeds": [
+              2026093001,
+              2026093001
+            ],
+            "holeSeeds": [
+              2026093002,
+              2026093003
+            ],
+            "framesPerPiece": 24,
+            "maxFrames": null,
+            "watchdogFrames": 360000,
+            "failures": [
+              null,
+              null
+            ],
+            "decisions": [
+              727,
+              736
+            ],
+            "holds": [
+              198,
+              207
+            ],
+            "sent": [
+              518,
+              454
+            ],
+            "transportStats": [
+              {
+                "fallbackRequests": 0,
+                "rejectedCandidates": 0,
+                "maxSelectedRank": 0
+              },
+              {
+                "fallbackRequests": 0,
+                "rejectedCandidates": 0,
+                "maxSelectedRank": 0
+              }
+            ],
+            "pieces": [
+              529,
+              529
+            ],
+            "totals": [
+              {
+                "generated": 689,
+                "cancelled": 171,
+                "sent": 518,
+                "tanked": 217,
+                "received": 110
+              },
+              {
+                "generated": 639,
+                "cancelled": 185,
+                "sent": 454,
+                "tanked": 265,
+                "received": 127
+              }
+            ]
+          }
+        },
+        "parallel": {
+          "wallMs": 718781.4716040001,
+          "counts": {
+            "requests": [
+              727,
+              736
+            ],
+            "placements": [
+              529,
+              529
+            ],
+            "holds": [
+              198,
+              207
+            ],
+            "reanalyses": [
+              198,
+              207
+            ],
+            "receives": [
+              124,
+              144
+            ],
+            "spins": {
+              "none": 908,
+              "full": 89,
+              "mini": 61
+            }
+          },
+          "result": {
+            "winner": 0,
+            "reason": "topout",
+            "ko": [
+              false,
+              true
+            ],
+            "deathReasons": [
+              null,
+              "garbagesmash"
+            ],
+            "executionModel": "tl-placement-v1",
+            "parity": [
+              {
+                "placements": 529,
+                "holds": 198,
+                "mismatches": 0
+              },
+              {
+                "placements": 529,
+                "holds": 207,
+                "mismatches": 0
+              }
+            ],
+            "frames": 12696,
+            "seeds": [
+              2026093001,
+              2026093001
+            ],
+            "holeSeeds": [
+              2026093002,
+              2026093003
+            ],
+            "framesPerPiece": 24,
+            "maxFrames": null,
+            "watchdogFrames": 360000,
+            "failures": [
+              null,
+              null
+            ],
+            "decisions": [
+              727,
+              736
+            ],
+            "holds": [
+              198,
+              207
+            ],
+            "sent": [
+              518,
+              454
+            ],
+            "transportStats": [
+              {
+                "fallbackRequests": 0,
+                "rejectedCandidates": 0,
+                "maxSelectedRank": 0
+              },
+              {
+                "fallbackRequests": 0,
+                "rejectedCandidates": 0,
+                "maxSelectedRank": 0
+              }
+            ],
+            "pieces": [
+              529,
+              529
+            ],
+            "totals": [
+              {
+                "generated": 689,
+                "cancelled": 171,
+                "sent": 518,
+                "tanked": 217,
+                "received": 110
+              },
+              {
+                "generated": 639,
+                "cancelled": 185,
+                "sent": 454,
+                "tanked": 265,
+                "received": 127
+              }
+            ]
+          }
+        }
+      },
+      "candidate": "parallel",
+      "control": "serial",
+      "strengthEvidence": false,
+      "hashes": {
+        "accepted": {
+          "pkg": ".cache/eval-artifact/cc2-wasm-results/pkg",
+          "wasm": "ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767",
+          "native": "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb"
+        },
+        "visible-t": {
+          "pkg": ".cache/visible-t-artifact/pkg",
+          "wasm": "8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0",
+          "native": "38d541f37b40f296c306053bee7521e755b33ed256a942f449ffcdbeb27db820"
+        }
+      },
+      "reportComparisons": 1463,
+      "eventComparisons": 4661,
+      "reduction": 0.3601907125153837,
+      "traceHashes": {
+        "reports": "b0104c165d87c254755e45b4c8a4d9c2be0a6c0e9baaac6bbaec0cd287cccc79",
+        "events": "6dbabb5446d669767c6b194debc7266518b2c8b2f6a4564b565028f92877d777"
+      }
+    }
+  ],
+  "reportComparisons": 3257,
+  "eventComparisons": 10383,
+  "parallelMs": 1477600.7854960002,
+  "serialMs": 2282390.2053119997,
+  "reduction": 0.3526081639953348
+}

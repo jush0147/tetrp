@@ -1,5 +1,22 @@
 # Parallel native decision experiment
 
+## 結果：通過並採用於後續 native 離線批次
+
+Run 36859147183 完成，兩個 integration jobs 與 ntfy 均成功。下載後重新核對各 leg 的 serial/parallel reports、events 檔案 SHA-256 完全相同，筆數符合摘要；並核對新 serial traces 與前次已通過的 run 36851791560 native traces 也 byte-identical，避免 refactor 同時改掉兩邊而漏查。原始摘要保存於 PARALLEL_ARENA_RESULT_36859147183.json。
+
+| 案例 | 本次 native serial | 本次 native parallel | 耗時減少 |
+|---|---:|---:|---:|
+| leg 0 | 19 分 19 秒 | 12 分 39 秒 | 34.53% |
+| leg 1 | 18 分 43 秒 | 11 分 59 秒 | 36.02% |
+
+兩案例計算時間合計 38 分 02 秒 → 24 分 38 秒，減少 35.26%（約 1.545×）。使用同一 job 中的 serial 作時間對照；不把不同 run 的 runner 速度混為因果收益。Workflow 約 32 分鐘是每 job 都做兩遍驗證的時間，不是未來每場需要 32 分鐘。
+
+Correctness：3,257 次完整 decision reports、10,383 筆 authority events 零差異；每模式涵蓋 2,388 placements、869 Holds / reanalyses、210 full spins、140 minis、604 receives。四次執行全 KO；zero technical failures、fallback、rejected candidates、parity mismatches。包括攻擊生成／取消／垃圾交付、lock frame、clear 與最終狀態完全一致。此為執行效率證據，不加進強度樣本。
+
+決定：達到事前 >=10% 門檻。後續固定 native artifact 的離線 arena 批次可開 parallelDecisions；generic match 預設仍 false，browser/PWA 不變。正式批次只跑 parallel，不逐場重打 serial/WASM。
+
+成本更新：本次平均約 12.31 分鐘／場，200 場約 41.04 runner-hours。若假設平均能代表新 seeds、16 jobs 全程有效並行，理想排程約 2 小時 34 分；含 setup／排隊／長局拖尾的初步規劃抓 3–4 小時，不是保證或統計區間。只有一組 seed 的兩個座位案例，不足以可靠估計長尾。尚未 dispatch 200 場，也未改任何參數。下一步回 visible-T 固定樣本批次的配置與成本，不新增搜尋優化假設。以下為事前紀錄。
+
 已由 commit `dfeac6330513d4e31b25fb0bce7a821486db02d3` 啟動 [run 36859147183](https://github.com/jush0147/tetrp/actions/runs/36859147183)，建立時 queued，尚無結果。本機 parallel timing / authority / protocol / scoring / publication 共 24 tests 通過。CI 完整 KO parity 與速度尚待結果，不持續輪詢。
 
 2026-10-01。原串行決策不影響遊戲時鐘；它讓 seat 0、seat 1 的搜尋 wall time 相加。這次只把兩席的獨立決策與各自 Hold reanalysis 同時等待，保留 24-frame cadence、200k budget、兩邊同 seed、既有 authority transaction。
