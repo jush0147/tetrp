@@ -1,0 +1,207 @@
+{
+  "schema": "kiwi-current-search-cost/1",
+  "date": "2026-10-01",
+  "scope": "Unchanged frozen WASM; sequential local diagnostic processes, not a paired performance comparison between policies.",
+  "arms": {
+    "accepted": {
+      "wasmSha256": "ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767",
+      "corpusSha256": "348c09730248410adb8b2e4dd96749afe809c21187bfd82399c6c9379be17261",
+      "node": "v24.15.0",
+      "budget": 200000,
+      "requests": 12,
+      "fullReportParityChecks": 36,
+      "mismatches": 0,
+      "searchSamples": 7520,
+      "sampledUs": 13798575,
+      "unprofiledMedianMs": 725.8155999999999,
+      "movegenInclusive": 0.4303154492402295,
+      "topSelf": [
+        {
+          "name": "<cold_clear_2::bot::freestyle::Freestyle as cold_clear_2::bot::Mode>::do_work::hc5ddf0da15c99abb",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 4296325,
+          "inclusiveUs": 13312480,
+          "share": 0.3113600498602211
+        },
+        {
+          "name": "cold_clear_2::movegen::find_moves_with_clutch::h352d6390d6dc5524",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 1994617,
+          "inclusiveUs": 5937740,
+          "share": 0.14455239037364365
+        },
+        {
+          "name": "alloc::collections::binary_heap::BinaryHeap<T,A>::pop::h3c7738b72d42460c",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 1761406,
+          "inclusiveUs": 1761406,
+          "share": 0.127651297325992
+        },
+        {
+          "name": "cold_clear_2::movegen::rotate_to::h5670772536f2111d",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 1447502,
+          "inclusiveUs": 1684681,
+          "share": 0.10490228157617724
+        },
+        {
+          "name": "<cold_clear_2::data::GameState as core::hash::Hash>::hash::ha6b6512a572d4705",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 1140198,
+          "inclusiveUs": 1140198,
+          "share": 0.08263157608666112
+        },
+        {
+          "name": "core::ptr::drop_in_place<core::option::Option<alloc::boxed::Box<cold_clear_2::dag::LayerCommon<cold_clear_2::bot::freestyle::Eval>>>>::h0f0ee890603a62c7",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 287883,
+          "inclusiveUs": 340881,
+          "share": 0.020863241312961665
+        },
+        {
+          "name": "cold_clear_2::dag::speculated::Layer<E>::create_node::h02e0e2bf167e9b42",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 283508,
+          "inclusiveUs": 616524,
+          "share": 0.02054617958738493
+        },
+        {
+          "name": "cold_clear_2::data::PieceLocation::drop_distance::h163590dc85a27af3",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 268215,
+          "inclusiveUs": 268215,
+          "share": 0.019437876737271785
+        },
+        {
+          "name": "cold_clear_2::srs_plus::kicks::h4ed401fb6da2e116",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 266088,
+          "inclusiveUs": 266088,
+          "share": 0.01928373038520282
+        },
+        {
+          "name": "__rustc[de2ca18b4c54d5b8]::__rdl_realloc",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 257235,
+          "inclusiveUs": 428133,
+          "share": 0.018642142395138627
+        },
+        {
+          "name": "dlmalloc::dlmalloc::Dlmalloc<A>::malloc::h8212cd1e75d2c8f3",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 232770,
+          "inclusiveUs": 246146,
+          "share": 0.016869133225713526
+        },
+        {
+          "name": "cold_clear_2::dag::known::Layer<E>::create_node::h8df34b7f655d2452",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030723e",
+          "selfUs": 209898,
+          "inclusiveUs": 673764,
+          "share": 0.015211570760024133
+        }
+      ],
+      "rawProfileSha256": "15cd4fbad1d2817ad4fc4acf3167b75245fcf19a635c95918350243e7a0b94b9"
+    },
+    "visible-t": {
+      "wasmSha256": "8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0",
+      "corpusSha256": "348c09730248410adb8b2e4dd96749afe809c21187bfd82399c6c9379be17261",
+      "node": "v24.15.0",
+      "budget": 200000,
+      "requests": 12,
+      "fullReportParityChecks": 36,
+      "mismatches": 0,
+      "searchSamples": 6736,
+      "sampledUs": 11145060,
+      "unprofiledMedianMs": 1041.799100000001,
+      "movegenInclusive": 0.40651086669789127,
+      "topSelf": [
+        {
+          "name": "<cold_clear_2::bot::freestyle::Freestyle as cold_clear_2::bot::Mode>::do_work::hc5ddf0da15c99abb",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 3692124,
+          "inclusiveUs": 10942522,
+          "share": 0.331278970234346
+        },
+        {
+          "name": "cold_clear_2::movegen::find_moves_with_clutch::h352d6390d6dc5524",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 1824000,
+          "inclusiveUs": 4530588,
+          "share": 0.1636599533784475
+        },
+        {
+          "name": "cold_clear_2::movegen::rotate_to::h5670772536f2111d",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 1144446,
+          "inclusiveUs": 1348003,
+          "share": 0.10268639199788965
+        },
+        {
+          "name": "<cold_clear_2::data::GameState as core::hash::Hash>::hash::ha6b6512a572d4705",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 1085446,
+          "inclusiveUs": 1085446,
+          "share": 0.09739256675154732
+        },
+        {
+          "name": "alloc::collections::binary_heap::BinaryHeap<T,A>::pop::h3c7738b72d42460c",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 946346,
+          "inclusiveUs": 946346,
+          "share": 0.08491170078940805
+        },
+        {
+          "name": "cold_clear_2::data::PieceLocation::drop_distance::h163590dc85a27af3",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 272152,
+          "inclusiveUs": 272152,
+          "share": 0.024419069973602655
+        },
+        {
+          "name": "dlmalloc::dlmalloc::Dlmalloc<A>::malloc::h8212cd1e75d2c8f3",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 224220,
+          "inclusiveUs": 242801,
+          "share": 0.020118330453133496
+        },
+        {
+          "name": "cold_clear_2::srs_plus::kicks::h4ed401fb6da2e116",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 212759,
+          "inclusiveUs": 212759,
+          "share": 0.01908998246756859
+        },
+        {
+          "name": "__rustc[de2ca18b4c54d5b8]::__rdl_realloc",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 163387,
+          "inclusiveUs": 334238,
+          "share": 0.014660037720748026
+        },
+        {
+          "name": "dlmalloc::dlmalloc::Dlmalloc<A>::free::hd42c863489fb2df2",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 155716,
+          "inclusiveUs": 189099,
+          "share": 0.013971750712871892
+        },
+        {
+          "name": "cold_clear_2::dag::speculated::Layer<E>::create_node::h02e0e2bf167e9b42",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 155206,
+          "inclusiveUs": 538221,
+          "share": 0.013925990528539102
+        },
+        {
+          "name": "cold_clear_2::data::GameState::advance::h8719c67da220919b",
+          "url": "wasm://wasm/cold_clear_2.wasm-0030743a",
+          "selfUs": 148598,
+          "inclusiveUs": 291527,
+          "share": 0.013333082100948761
+        }
+      ],
+      "rawProfileSha256": "4e58c20f2ea527a63b1737fc9b9c313532c8fc9d88d7ca529a9f79b794266470"
+    }
+  }
+}

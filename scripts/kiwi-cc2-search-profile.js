@@ -20,13 +20,13 @@ if(mode==='prepare'){
   }
  }
  await writeFile(corpus,JSON.stringify(inputs));console.log(`Saved ${inputs.length} detached PublicSnapshots`);
-}else if(['candidate','legacy','dense'].includes(mode)){
+}else if(['candidate','legacy','dense','accepted','visible-t'].includes(mode)){
  await mkdir(out,{recursive:true});
  const smoke=process.argv.includes('--smoke'),budget=smoke?2000:200000;
  const all=JSON.parse(await readFile(corpus)),inputs=smoke?all.slice(0,2):all;
  const pkg=resolve(mode==='legacy'?'vendor/kiwi-v1/pkg':`${artifact}/pkg`);
  const wasm=await readFile(`${pkg}/cold_clear_2_bg.wasm`);
- assert.equal(hash(wasm),({candidate:'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa',dense:'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba',legacy:'af7849aa18649ebeca5e0af411499f6dc16afcdbc35ea4e094b2abffce59fa95'})[mode]);
+ assert.equal(hash(wasm),({candidate:'892a6cbea43ae280bb09fc9d993a7e9d51307e39881aff9b92fb5c37177063fa',dense:'bd21800742a8d5abd54118cb51f458fb987d8f6c4f5e6cd940b12ae4deafa6ba',legacy:'af7849aa18649ebeca5e0af411499f6dc16afcdbc35ea4e094b2abffce59fa95',accepted:'ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767','visible-t':'8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0'})[mode]);
  if(mode!=='legacy')assert.equal(hash(await readFile(`${pkg}/cold_clear_2.js`)),'728881d30d20e6751b321fa4279fb63bd2aaace6161b485f3479f18967eca691');
  const kernel=await import(pathToFileURL(`${pkg}/cold_clear_2.js`).href);await kernel.default({module_or_path:wasm});
  const requests=inputs.map(input=>{const t=performance.now(),prepared=prepareKiwi(input.snapshot),geometryMs=performance.now()-t;
@@ -71,4 +71,4 @@ if(mode==='prepare'){
  await writeFile(`${out}/${mode}.json`,JSON.stringify(summary,null,2));
  await writeFile(`${out}/${mode}-reports.json`,JSON.stringify(expected));
  console.log(JSON.stringify({mode,requests:summary.requests,checks:summary.fullReportParityChecks,samples:summary.samples,top:summary.self.slice(0,10)}));
-}else throw Error('prepare | candidate | legacy | dense');
+}else throw Error('prepare | candidate | legacy | dense | accepted | visible-t');
