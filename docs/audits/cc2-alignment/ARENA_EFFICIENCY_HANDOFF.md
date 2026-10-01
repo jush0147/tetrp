@@ -1,5 +1,7 @@
 # Arena 效率插入工作（2026-09-30）
 
+2026-10-02 最新 gate：two-match integration run 36887925067 成功，單 runner 兩場共 20:09 pool wall time。3,257 reports / 10,383 events byte-identical 於 frozen reference，2,388 placements / 869 Holds，zero failures/fallback/parity mismatch。見 TWO_MATCH_INTEGRATION.md / RESULT JSON。可採 native + parallelDecisions + 2 isolated matches/runner。下一步固定 visible-T 200 場 batch manifest / sharding / aggregation，不再新增效能 pilot；200 場尚未配置或 dispatch，舊 48 場不發。
+
 2026-10-01 接續：two-match pool 已接入實際 arena，以兩個獨立 Node processes 各持有自己的 native seat processes／Engine／output。最小固定二案例 integration 見 TWO_MATCH_INTEGRATION.md；只各打一次，對前次 validated trace hashes，不重跑 serial/WASM。200 場尚未派送，generic 固定種子全批配置尚未完成。
 
 2026-10-01 最新結果：run 36863657491 CPU/throughput probe 通過。runner OS 回報 4 邏輯 CPU；1 worker 約 1.84 busy cores、2 worker 約 3.65；固定等量 workload 耗時減少 23.64%（1.31×吞吐），288 timed +18 warmup 完整 parity checks 通過。CPU time 卻增加約 51.5%，不能說省總搜尋工作。見 RUNNER_THROUGHPUT_EXPERIMENT.md / RESULT JSON。下一步 batch harness 可採每 runner 兩個隔離 match workers；不是已驗證完整雙場 arena 加速，不直接重算保證 ETA，不掃更多 workers，不 dispatch 200 場。
