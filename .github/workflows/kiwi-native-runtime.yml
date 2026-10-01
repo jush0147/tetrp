@@ -1,0 +1,66 @@
+name: Kiwi native versus WASM runtime
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-native-runtime.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-native-runtime-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-wasm-source
+      - name: Restore accepted source without rejected cache
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36387270053 --repo jush0147/tetrp --name cc2-landing-36387270053-1 --dir .cache/eval-artifact
+          gh run download 36702845823 --repo jush0147/tetrp --name kiwi-tslot-wasm-36702845823 --dir .cache/visible-t-artifact
+          git -C .cache/cc2-wasm-source apply --check "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          node scripts/kiwi-tslot-candidate-prepare.js install
+          node scripts/kiwi-native-runner-prepare.js
+          mkdir -p .cache/native-runtime-results
+          git -C .cache/cc2-wasm-source diff > .cache/native-runtime-results/source.patch
+          cp .cache/cc2-wasm-source/src/bin/snapshot_stdio.rs .cache/native-runtime-results/snapshot_stdio.rs
+      - name: Build two native release profiles and verify snapshot regressions
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          for policy in accepted visible-t; do
+            flags=""
+            if [ "$policy" = visible-t ]; then flags="--cfg snapshot_visible_t"; fi
+            RUSTFLAGS="$flags" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib snapshot::tests
+            RUSTFLAGS="$flags" cargo +1.90.0 build --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --bin snapshot_stdio
+            cp .cache/cc2-wasm-source/target/release/snapshot_stdio ".cache/native-runtime-results/snapshot-$policy"
+          done
+          rustc +1.90.0 --version > .cache/native-runtime-results/rust-version.txt
+      - name: Protocol tests, complete report parity and paired latency
+        run: |
+          node --test test/kiwi-native-client.test.js
+          node scripts/kiwi-native-runtime-bench.js bench
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-native-runtime-${{ github.run_id }}
+          path: .cache/native-runtime-results/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once
+        if: always()
+        env:
+          AUDIT_JOB_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-native-runtime-bench.js notify
