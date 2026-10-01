@@ -17,6 +17,7 @@ export function nativeClient(executable,args=[],timeoutMs=120000){
   if(result.ok)p.resolve(result.report);else p.reject(new Error(`native request rejected: ${result.error}`));
  });
  return {
+  get pid(){return child.pid;},
   request(text){if(dead)return Promise.reject(dead);if(closing)return Promise.reject(Error('client closed'));if(pending)return Promise.reject(Error('native request already pending'));
    if(/[\r\n]/.test(text))return Promise.reject(Error('request must be one JSON line'));
    return new Promise((resolve,reject)=>{const timer=setTimeout(()=>fail(Error('native request watchdog')),timeoutMs);pending={resolve,reject,timer};child.stdin.write(text+'\n');});},

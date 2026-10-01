@@ -1,5 +1,7 @@
 # Arena 效率插入工作（2026-09-30）
 
+2026-10-01 最新接續：使用者同意 runner CPU/throughput 短測試（RUNNER_THROUGHPUT_EXPERIMENT.md）。量 native + Node 實際 CPU time、OS affinity/cgroup quota；有 headroom 才比較一個 worker 兩份批次 vs 兩 worker 各一份，同樣 48 requests/trial。固定 public corpus、精確 report parity；不再打整場、不減樣本、不 dispatch 200 場。
+
 2026-10-01 最新結果：parallel run 36859147183 全過。3,257 reports / 10,383 events 與 serial 及前次 native run byte-identical；整場計算時間本次 serial 38:02 → parallel 24:38（兩例合計，省 35.26%）。native parallel 可供後續離線批次使用，generic 預設不改。見 PARALLEL_ARENA_EXPERIMENT.md / RESULT JSON。平均 12.31 分／場，200 場在假定 16 有效並行下理想 2h34，初步規劃 3–4h 但 seed 長尾未知；尚未 dispatch。正式批次不重打對照 runtime，回 visible-T 主線，不新增效能支線。
 
 2026-10-01 最新：使用者追問計算成本後，接續 bounded parallel native decision 實驗，見 PARALLEL_ARENA_EXPERIMENT.md。原串行不影響 virtual attack timing；新增 default-off parallelDecisions 只重疊各席搜尋/Hold reanalysis，join 後才推進雙邊 authority。完整 serial/parallel KO traces 比較待 CI；不再重跑 WASM，不改 evaluator 或 200k budget。
