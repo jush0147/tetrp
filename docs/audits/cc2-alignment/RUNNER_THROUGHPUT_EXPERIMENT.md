@@ -1,5 +1,7 @@
 # Runner CPU utilization and equal-work throughput
 
+已由 commit `ba63c4eb654ce0641e80ae60366b943587d03812` 啟動 [run 36863657491](https://github.com/jush0147/tetrp/actions/runs/36863657491)，建立時 queued，尚無結果。Node protocol/publication 共 7 tests 與 script syntax 通過；Linux CPU accounting、固定 report parity、吞吐量待 CI。單次派送，不持續輪詢。
+
 2026-10-01。使用者同意先確認 runner CPU 利用率。不是重新研究 evaluator 或減少 KO 樣本；200 場仍不派送。
 
 ## 固定短測試
