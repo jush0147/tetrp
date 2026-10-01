@@ -1,5 +1,7 @@
 # Arena 效率插入工作（2026-09-30）
 
+2026-10-01 最新結果：native runtime run 36849221714 成功，完整輸出 170 次比較零差異；accepted 完整 request 耗時減少 16.53%、visible-T 減少 16.48%，三輪穩定，包含 IPC。見 NATIVE_RUNTIME_EXPERIMENT.md 與 NATIVE_RUNTIME_RESULT_36849221714.json。通過 >=10% 工程門檻，下一步為離線 arena adapter integration + 連續 authority/Hold/placement parity + 整場計時；尚未接入或 dispatch arena。不是數倍加速，不直接啟動 200 場，不改參數順序。
+
 2026-10-01 最新授權：使用者要求繼續改善效率，已撤回下段「結案」。下一個單一實驗為同核心 native release vs 凍結 WASM，見 [NATIVE_RUNTIME_EXPERIMENT.md](NATIVE_RUNTIME_EXPERIMENT.md)。只新增常駐 stdio runner，比較完整 report parity 與包含 IPC 的 request 耗時；不重試快取、不改參數、不啟動 arena。瀏覽器仍用 WASM。
 
 2026-10-01 結案：run 36844153120 parity 全過但 cache 淘汰；accepted 耗時增加 5.85%、visible-T 增加 1.11%，命中率約 2.1–2.3%。結果與決定見 [MOVEGEN_CACHE_EXPERIMENT.md](MOVEGEN_CACHE_EXPERIMENT.md)，原始量測已保存。依事前門檻不掃容量、不 promotion。保留 root 枚舉優化；本輪效能插入工作結束。下一步回到 visible-T 較大固定樣本比較，落實 200 場提案的具體批次配置與成本，不誤發舊 48 場草案；尚未 dispatch 新 arena。下方內容為歷程。

@@ -1,5 +1,22 @@
 # Native release versus WASM — offline execution experiment
 
+## 結果：通過 microbenchmark gate，待 arena integration
+
+Run 36849221714 成功（job 4 分 25 秒），ntfy 成功。下載後核對兩份 native binary SHA-256、85 checks/profile、36 paired measurements/profile，以及收益計算。原始量測保存於 NATIVE_RUNTIME_RESULT_36849221714.json。
+
+| Profile | WASM 平均完整 request | Native 平均完整 request | 耗時減少 | 吞吐倍率 |
+|---|---:|---:|---:|---:|
+| Accepted | 888.43 ms | 741.54 ms | 16.53% | 1.198× |
+| Visible-T | 883.50 ms | 737.93 ms | 16.48% | 1.197× |
+
+Accepted 三輪耗時減少 16.49%、16.88%、16.23%；visible-T 為 16.46%、16.49%、16.48%。計時包含 native IPC，不含 process startup。Runner 回報 CPU AMD EPYC 7763，Node v24.21.0。
+
+兩個 profile 各 85 次完整比較，合計 170 次 request / warnings / report / action / certificate 零差異；含 fresh process restart。兩套 snapshot Rust tests 各 8 項通過，Node protocol 3 項通過。沒有浮點 tolerance，也沒有降低 200k 搜尋預算。這是固定 corpus 上的等價性，非所有未來 states 的證明。
+
+決定保留此離線 runtime 候選，下一步接進 arena adapter，使用同 seed / cadence / authority 對照連續執行的 placement、Hold、spin/cells/lock/clear 與輸出交易，先證明等價再量整場 wall time。不是馬上 promotion、也不直接跑 200 場。Browser/PWA 仍用 WASM；兩個對戰 policy 應採相同 native runtime，不能只替其中一方縮搜尋或換規則。
+
+這次約 1.20×，不是數倍改善；不得把先前不同 corpus／不同機器的 root 優化比例直接相乘，宣稱已有實測整場加速。參數順序 visible-T → H9-off → H1-off 不變。以下是實驗事前紀錄。
+
 已由 commit `1c8eebba342335e71abf737f9671318f6d7f10ea` 啟動 [run 36849221714](https://github.com/jush0147/tetrp/actions/runs/36849221714)。建立時 queued，尚無結果。另有普通 engine CI 隨 push 觸發，不是額外 arena。已通過本機 protocol / publication 共 7 tests；Rust compilation 和跨 runtime parity 尚待 CI，不持續輪詢。
 
 2026-10-01。使用者不同意因一次快取失敗就接受目前 arena 耗時，授權比較同一核心的 native release / WASM。前一輪「效率插入工作結束」已撤回，並不是回頭救快取。原參數順序 visible-T → H9-off → H1-off 不變，200 場與 48 場均不啟動。

@@ -1,0 +1,1187 @@
+{
+  "run": 36849221714,
+  "verdict": "pass-microbenchmark-gate-pending-arena-integration",
+  "sourceSummarySha256": "25c3388e70b61fc7679606c50681e093f40a423fd517b299c392ee8a0055d4f9",
+  "corpusSha256": "348c09730248410adb8b2e4dd96749afe809c21187bfd82399c6c9379be17261",
+  "node": "v24.21.0",
+  "cpu": "AMD EPYC 7763 64-Core Processor",
+  "policies": [
+    {
+      "policy": "accepted",
+      "wasmSha256": "ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767",
+      "nativeSha256": "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb",
+      "samples": 12,
+      "checks": 85,
+      "measurements": [
+        {
+          "id": "leg0/request138",
+          "pass": 0,
+          "wasm": {
+            "total": 904.4325789999966,
+            "prepare": 131.2366469999979,
+            "searchAndTransport": 771.1614300000001,
+            "normalizeAndCertificate": 2.0345019999986107
+          },
+          "native": {
+            "total": 742.8743510000022,
+            "prepare": 121.50410700000066,
+            "searchAndTransport": 617.4117450000012,
+            "normalizeAndCertificate": 3.9584990000003017
+          }
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 0,
+          "native": {
+            "total": 804.4121899999991,
+            "prepare": 127.01077900000018,
+            "searchAndTransport": 676.0293329999986,
+            "normalizeAndCertificate": 1.3720780000003288
+          },
+          "wasm": {
+            "total": 993.9632859999983,
+            "prepare": 121.27997200000027,
+            "searchAndTransport": 871.5653989999992,
+            "normalizeAndCertificate": 1.1179149999989022
+          }
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 0,
+          "wasm": {
+            "total": 856.7907290000003,
+            "prepare": 70.4434050000018,
+            "searchAndTransport": 780.2039449999975,
+            "normalizeAndCertificate": 6.143379000001005
+          },
+          "native": {
+            "total": 703.6973010000002,
+            "prepare": 76.29585399999996,
+            "searchAndTransport": 618.819277999999,
+            "normalizeAndCertificate": 8.582169000001159
+          }
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 0,
+          "native": {
+            "total": 771.1589840000015,
+            "prepare": 115.72010099999898,
+            "searchAndTransport": 652.6798660000022,
+            "normalizeAndCertificate": 2.7590170000003127
+          },
+          "wasm": {
+            "total": 900.3398720000005,
+            "prepare": 94.21488799999861,
+            "searchAndTransport": 803.7547750000012,
+            "normalizeAndCertificate": 2.3702090000006137
+          }
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 0,
+          "wasm": {
+            "total": 819.6484549999986,
+            "prepare": 61.91392300000007,
+            "searchAndTransport": 757.6661849999982,
+            "normalizeAndCertificate": 0.0683470000003581
+          },
+          "native": {
+            "total": 662.6613109999998,
+            "prepare": 61.208799,
+            "searchAndTransport": 601.3951450000022,
+            "normalizeAndCertificate": 0.057366999997611856
+          }
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 0,
+          "native": {
+            "total": 647.8920579999976,
+            "prepare": 129.21793599999728,
+            "searchAndTransport": 518.620342000002,
+            "normalizeAndCertificate": 0.05377999999836902
+          },
+          "wasm": {
+            "total": 772.4414500000021,
+            "prepare": 129.81298500000048,
+            "searchAndTransport": 642.564785999999,
+            "normalizeAndCertificate": 0.06367900000259397
+          }
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 0,
+          "wasm": {
+            "total": 836.1746840000014,
+            "prepare": 68.6353229999986,
+            "searchAndTransport": 767.4807020000007,
+            "normalizeAndCertificate": 0.058659000002080575
+          },
+          "native": {
+            "total": 701.1067729999995,
+            "prepare": 75.20198600000003,
+            "searchAndTransport": 625.797687000002,
+            "normalizeAndCertificate": 0.10709999999744468
+          }
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 0,
+          "native": {
+            "total": 822.4422840000043,
+            "prepare": 108.83122000000003,
+            "searchAndTransport": 706.4598110000006,
+            "normalizeAndCertificate": 7.151253000003635
+          },
+          "wasm": {
+            "total": 971.7919550000006,
+            "prepare": 99.4845989999958,
+            "searchAndTransport": 865.7322580000036,
+            "normalizeAndCertificate": 6.575098000001162
+          }
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 0,
+          "wasm": {
+            "total": 867.2364999999991,
+            "prepare": 136.78109199999744,
+            "searchAndTransport": 727.3047240000014,
+            "normalizeAndCertificate": 3.150684000000183
+          },
+          "native": {
+            "total": 730.3875110000008,
+            "prepare": 134.12870900000416,
+            "searchAndTransport": 590.7887839999967,
+            "normalizeAndCertificate": 5.470017999999982
+          }
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 0,
+          "native": {
+            "total": 698.3238220000057,
+            "prepare": 125.34174600000551,
+            "searchAndTransport": 570.0416540000006,
+            "normalizeAndCertificate": 2.9404219999996712
+          },
+          "wasm": {
+            "total": 824.4989329999953,
+            "prepare": 120.23367299999518,
+            "searchAndTransport": 701.7842240000027,
+            "normalizeAndCertificate": 2.4810359999974025
+          }
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 0,
+          "wasm": {
+            "total": 922.3931060000032,
+            "prepare": 107.75226200000179,
+            "searchAndTransport": 813.9218029999975,
+            "normalizeAndCertificate": 0.7190410000039265
+          },
+          "native": {
+            "total": 775.7631400000027,
+            "prepare": 109.08198200000334,
+            "searchAndTransport": 665.5263549999945,
+            "normalizeAndCertificate": 1.1548030000049039
+          }
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 0,
+          "native": {
+            "total": 889.2492019999991,
+            "prepare": 91.37067100000422,
+            "searchAndTransport": 797.8252519999951,
+            "normalizeAndCertificate": 0.05327899999974761
+          },
+          "wasm": {
+            "total": 1047.973420000002,
+            "prepare": 75.14337700000033,
+            "searchAndTransport": 972.7680069999988,
+            "normalizeAndCertificate": 0.06203600000299048
+          }
+        },
+        {
+          "id": "leg0/request138",
+          "pass": 1,
+          "native": {
+            "total": 738.2999849999978,
+            "prepare": 121.70523499999399,
+            "searchAndTransport": 613.0515620000006,
+            "normalizeAndCertificate": 3.5431880000032834
+          },
+          "wasm": {
+            "total": 895.838029999999,
+            "prepare": 126.31616400000348,
+            "searchAndTransport": 767.4671339999986,
+            "normalizeAndCertificate": 2.054731999996875
+          }
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 1,
+          "wasm": {
+            "total": 990.6513889999987,
+            "prepare": 125.86714899999788,
+            "searchAndTransport": 859.3993869999977,
+            "normalizeAndCertificate": 5.384853000003204
+          },
+          "native": {
+            "total": 791.4189140000017,
+            "prepare": 118.52828900000168,
+            "searchAndTransport": 670.6065149999995,
+            "normalizeAndCertificate": 2.28411000000051
+          }
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 1,
+          "native": {
+            "total": 705.7344410000005,
+            "prepare": 81.44630000000325,
+            "searchAndTransport": 615.9704509999938,
+            "normalizeAndCertificate": 8.317690000003495
+          },
+          "wasm": {
+            "total": 845.5302159999992,
+            "prepare": 68.21181300000171,
+            "searchAndTransport": 771.2666299999983,
+            "normalizeAndCertificate": 6.05177299999923
+          }
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 1,
+          "wasm": {
+            "total": 900.3676540000015,
+            "prepare": 102.46923199999583,
+            "searchAndTransport": 795.5102900000056,
+            "normalizeAndCertificate": 2.3881320000000414
+          },
+          "native": {
+            "total": 755.751350999999,
+            "prepare": 103.12210900000355,
+            "searchAndTransport": 649.8837329999951,
+            "normalizeAndCertificate": 2.745509000000311
+          }
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 1,
+          "native": {
+            "total": 661.8400859999965,
+            "prepare": 63.34692299999733,
+            "searchAndTransport": 598.4368790000008,
+            "normalizeAndCertificate": 0.05628399999841349
+          },
+          "wasm": {
+            "total": 810.760285999997,
+            "prepare": 61.64379999999801,
+            "searchAndTransport": 749.0514739999999,
+            "normalizeAndCertificate": 0.06501199999911478
+          }
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 1,
+          "wasm": {
+            "total": 756.3348199999964,
+            "prepare": 122.68580699999438,
+            "searchAndTransport": 633.5874980000008,
+            "normalizeAndCertificate": 0.06151500000123633
+          },
+          "native": {
+            "total": 639.1282189999984,
+            "prepare": 120.81975600000442,
+            "searchAndTransport": 518.253389999998,
+            "normalizeAndCertificate": 0.05507299999590032
+          }
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 1,
+          "native": {
+            "total": 682.641091999998,
+            "prepare": 69.89809999999852,
+            "searchAndTransport": 612.685685000004,
+            "normalizeAndCertificate": 0.057306999995489605
+          },
+          "wasm": {
+            "total": 831.9154440000057,
+            "prepare": 68.67252400000143,
+            "searchAndTransport": 763.1845109999995,
+            "normalizeAndCertificate": 0.05840900000475813
+          }
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 1,
+          "wasm": {
+            "total": 959.672556999998,
+            "prepare": 93.94419500000367,
+            "searchAndTransport": 855.5000999999975,
+            "normalizeAndCertificate": 10.228261999996903
+          },
+          "native": {
+            "total": 799.2370010000013,
+            "prepare": 95.03817300000082,
+            "searchAndTransport": 697.758299000001,
+            "normalizeAndCertificate": 6.440528999999515
+          }
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 1,
+          "native": {
+            "total": 714.9879849999998,
+            "prepare": 129.99225899999874,
+            "searchAndTransport": 582.0065719999984,
+            "normalizeAndCertificate": 2.9891540000026
+          },
+          "wasm": {
+            "total": 866.8154910000012,
+            "prepare": 136.2805870000011,
+            "searchAndTransport": 727.4855479999969,
+            "normalizeAndCertificate": 3.049356000003172
+          }
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 1,
+          "wasm": {
+            "total": 818.138386999999,
+            "prepare": 116.97934600000008,
+            "searchAndTransport": 698.8192579999959,
+            "normalizeAndCertificate": 2.339783000003081
+          },
+          "native": {
+            "total": 690.7215920000017,
+            "prepare": 118.04496400000062,
+            "searchAndTransport": 569.5956680000018,
+            "normalizeAndCertificate": 3.0809599999993225
+          }
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 1,
+          "native": {
+            "total": 794.4431540000005,
+            "prepare": 128.57517799999914,
+            "searchAndTransport": 664.9581850000031,
+            "normalizeAndCertificate": 0.9097909999982221
+          },
+          "wasm": {
+            "total": 913.8879769999985,
+            "prepare": 106.42970100000093,
+            "searchAndTransport": 806.7169199999989,
+            "normalizeAndCertificate": 0.7413559999986319
+          }
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 1,
+          "wasm": {
+            "total": 1037.7434300000023,
+            "prepare": 73.04265999999916,
+            "searchAndTransport": 964.6356890000025,
+            "normalizeAndCertificate": 0.06508100000064587
+          },
+          "native": {
+            "total": 859.0841500000024,
+            "prepare": 70.02623199999653,
+            "searchAndTransport": 789.002886000002,
+            "normalizeAndCertificate": 0.055032000003848225
+          }
+        },
+        {
+          "id": "leg0/request138",
+          "pass": 2,
+          "wasm": {
+            "total": 901.0731240000023,
+            "prepare": 132.3938430000053,
+            "searchAndTransport": 766.7438819999952,
+            "normalizeAndCertificate": 1.9353990000017802
+          },
+          "native": {
+            "total": 751.6833790000019,
+            "prepare": 123.05109500000253,
+            "searchAndTransport": 626.1950189999989,
+            "normalizeAndCertificate": 2.4372650000004796
+          }
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 2,
+          "native": {
+            "total": 809.9485519999944,
+            "prepare": 129.0174079999997,
+            "searchAndTransport": 679.613476999999,
+            "normalizeAndCertificate": 1.3176669999957085
+          },
+          "wasm": {
+            "total": 990.7126970000027,
+            "prepare": 121.5288040000014,
+            "searchAndTransport": 868.0396189999956,
+            "normalizeAndCertificate": 1.1442740000056801
+          }
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 2,
+          "wasm": {
+            "total": 852.9004859999986,
+            "prepare": 69.31290199999785,
+            "searchAndTransport": 777.9017999999996,
+            "normalizeAndCertificate": 5.685784000001149
+          },
+          "native": {
+            "total": 691.0182979999954,
+            "prepare": 62.34339999999793,
+            "searchAndTransport": 622.3534369999979,
+            "normalizeAndCertificate": 6.321460999999545
+          }
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 2,
+          "native": {
+            "total": 768.9214509999947,
+            "prepare": 113.00402200000099,
+            "searchAndTransport": 653.6950439999928,
+            "normalizeAndCertificate": 2.2223850000009406
+          },
+          "wasm": {
+            "total": 896.3062720000016,
+            "prepare": 92.63823399999819,
+            "searchAndTransport": 801.3848390000057,
+            "normalizeAndCertificate": 2.283198999997694
+          }
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 2,
+          "wasm": {
+            "total": 812.3147750000062,
+            "prepare": 60.22335600000224,
+            "searchAndTransport": 752.0368870000093,
+            "normalizeAndCertificate": 0.054531999994651414
+          },
+          "native": {
+            "total": 664.9132790000003,
+            "prepare": 61.460284000000684,
+            "searchAndTransport": 603.3963990000047,
+            "normalizeAndCertificate": 0.056595999994897284
+          }
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 2,
+          "native": {
+            "total": 653.7834690000018,
+            "prepare": 131.0870980000036,
+            "searchAndTransport": 522.6448550000059,
+            "normalizeAndCertificate": 0.05151599999226164
+          },
+          "wasm": {
+            "total": 762.1629340000072,
+            "prepare": 124.15809400001308,
+            "searchAndTransport": 637.9429639999871,
+            "normalizeAndCertificate": 0.06187600000703242
+          }
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 2,
+          "wasm": {
+            "total": 833.6963649999961,
+            "prepare": 67.53386199999659,
+            "searchAndTransport": 766.1049860000057,
+            "normalizeAndCertificate": 0.05751699999382254
+          },
+          "native": {
+            "total": 690.6450990000012,
+            "prepare": 72.41973199999484,
+            "searchAndTransport": 618.0990020000027,
+            "normalizeAndCertificate": 0.12636500000371598
+          }
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 2,
+          "native": {
+            "total": 814.1141809999972,
+            "prepare": 111.72096700000111,
+            "searchAndTransport": 695.8047249999945,
+            "normalizeAndCertificate": 6.588489000001573
+          },
+          "wasm": {
+            "total": 951.453497999988,
+            "prepare": 96.49646199999552,
+            "searchAndTransport": 848.7419479999953,
+            "normalizeAndCertificate": 6.215087999997195
+          }
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 2,
+          "wasm": {
+            "total": 860.1772650000057,
+            "prepare": 133.90032300000894,
+            "searchAndTransport": 723.2274259999976,
+            "normalizeAndCertificate": 3.04951599999913
+          },
+          "native": {
+            "total": 715.2670170000056,
+            "prepare": 128.38865800001076,
+            "searchAndTransport": 583.2851669999945,
+            "normalizeAndCertificate": 3.593192000000272
+          }
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 2,
+          "native": {
+            "total": 699.1959180000122,
+            "prepare": 132.3526920000004,
+            "searchAndTransport": 563.8842890000087,
+            "normalizeAndCertificate": 2.9589370000030613
+          },
+          "wasm": {
+            "total": 818.0403300000035,
+            "prepare": 116.78516500000842,
+            "searchAndTransport": 698.9853149999981,
+            "normalizeAndCertificate": 2.26984999999695
+          }
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 2,
+          "wasm": {
+            "total": 914.8194409999996,
+            "prepare": 107.35130399999616,
+            "searchAndTransport": 806.7268639999966,
+            "normalizeAndCertificate": 0.7412730000069132
+          },
+          "native": {
+            "total": 782.1276930000022,
+            "prepare": 111.7419019999943,
+            "searchAndTransport": 669.0201840000082,
+            "normalizeAndCertificate": 1.3656069999997271
+          }
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 2,
+          "native": {
+            "total": 870.5858140000055,
+            "prepare": 80.92292900000757,
+            "searchAndTransport": 789.6077119999973,
+            "normalizeAndCertificate": 0.05517300000065006
+          },
+          "wasm": {
+            "total": 1044.6535250000015,
+            "prepare": 74.41984200000297,
+            "searchAndTransport": 970.1784099999932,
+            "normalizeAndCertificate": 0.05527300000539981
+          }
+        }
+      ],
+      "reduction": 0.16534041892674334,
+      "speedup": 1.1980932378612827,
+      "meetsEngineeringGate": true
+    },
+    {
+      "policy": "visible-t",
+      "wasmSha256": "8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0",
+      "nativeSha256": "38d541f37b40f296c306053bee7521e755b33ed256a942f449ffcdbeb27db820",
+      "samples": 12,
+      "checks": 85,
+      "measurements": [
+        {
+          "id": "leg0/request138",
+          "pass": 0,
+          "wasm": {
+            "total": 898.874754000004,
+            "prepare": 136.84202000001096,
+            "searchAndTransport": 760.0515400000004,
+            "normalizeAndCertificate": 1.9811939999926835
+          },
+          "native": {
+            "total": 739.3902200000011,
+            "prepare": 122.86519799999951,
+            "searchAndTransport": 614.222477999996,
+            "normalizeAndCertificate": 2.3025440000055823
+          }
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 0,
+          "native": {
+            "total": 814.6489179999917,
+            "prepare": 126.76804899999115,
+            "searchAndTransport": 686.5422330000001,
+            "normalizeAndCertificate": 1.338636000000406
+          },
+          "wasm": {
+            "total": 989.7112510000006,
+            "prepare": 121.65404199999466,
+            "searchAndTransport": 866.954322000005,
+            "normalizeAndCertificate": 1.1028870000009192
+          }
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 0,
+          "wasm": {
+            "total": 859.8394240000052,
+            "prepare": 68.69590600000811,
+            "searchAndTransport": 785.1842609999876,
+            "normalizeAndCertificate": 5.959257000009529
+          },
+          "native": {
+            "total": 693.4197759999952,
+            "prepare": 64.90884699999879,
+            "searchAndTransport": 622.296663000001,
+            "normalizeAndCertificate": 6.214265999995405
+          }
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 0,
+          "native": {
+            "total": 755.1382819999999,
+            "prepare": 105.83202599998913,
+            "searchAndTransport": 646.5750439999974,
+            "normalizeAndCertificate": 2.731212000013329
+          },
+          "wasm": {
+            "total": 887.0771139999997,
+            "prepare": 92.53053700001328,
+            "searchAndTransport": 792.2683919999981,
+            "normalizeAndCertificate": 2.278184999988298
+          }
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 0,
+          "wasm": {
+            "total": 823.5259950000036,
+            "prepare": 64.37106099999801,
+            "searchAndTransport": 759.0982480000093,
+            "normalizeAndCertificate": 0.05668599999626167
+          },
+          "native": {
+            "total": 675.012441999992,
+            "prepare": 64.33200799999759,
+            "searchAndTransport": 610.6281860000017,
+            "normalizeAndCertificate": 0.052247999992687255
+          }
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 0,
+          "native": {
+            "total": 645.5167930000025,
+            "prepare": 126.24348499999905,
+            "searchAndTransport": 519.2167920000065,
+            "normalizeAndCertificate": 0.056515999996918254
+          },
+          "wasm": {
+            "total": 754.1743980000028,
+            "prepare": 125.95465499999409,
+            "searchAndTransport": 628.166373,
+            "normalizeAndCertificate": 0.05337000000872649
+          }
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 0,
+          "wasm": {
+            "total": 814.3735060000035,
+            "prepare": 68.9931179999985,
+            "searchAndTransport": 745.3260569999984,
+            "normalizeAndCertificate": 0.05433100000664126
+          },
+          "native": {
+            "total": 683.2473510000127,
+            "prepare": 74.72801800000889,
+            "searchAndTransport": 608.4681980000023,
+            "normalizeAndCertificate": 0.05113500000152271
+          }
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 0,
+          "native": {
+            "total": 802.4186420000042,
+            "prepare": 101.29011300001002,
+            "searchAndTransport": 694.2647529999958,
+            "normalizeAndCertificate": 6.8637759999983246
+          },
+          "wasm": {
+            "total": 958.2362619999913,
+            "prepare": 95.6798659999913,
+            "searchAndTransport": 856.2940519999975,
+            "normalizeAndCertificate": 6.262344000002486
+          }
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 0,
+          "wasm": {
+            "total": 853.2708770000027,
+            "prepare": 137.2757249999995,
+            "searchAndTransport": 712.8545730000042,
+            "normalizeAndCertificate": 3.1405789999989793
+          },
+          "native": {
+            "total": 717.3823980000016,
+            "prepare": 136.44349299999885,
+            "searchAndTransport": 577.814075000002,
+            "normalizeAndCertificate": 3.1248300000006566
+          }
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 0,
+          "native": {
+            "total": 682.7008550000028,
+            "prepare": 120.14246000000276,
+            "searchAndTransport": 560.2380259999918,
+            "normalizeAndCertificate": 2.3203690000082133
+          },
+          "wasm": {
+            "total": 815.080455000003,
+            "prepare": 117.65447700000368,
+            "searchAndTransport": 695.0657349999965,
+            "normalizeAndCertificate": 2.3602430000028107
+          }
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 0,
+          "wasm": {
+            "total": 903.1184450000001,
+            "prepare": 106.85052800000994,
+            "searchAndTransport": 796.2094680000009,
+            "normalizeAndCertificate": 0.05844899998919573
+          },
+          "native": {
+            "total": 776.9212819999957,
+            "prepare": 120.80233099999896,
+            "searchAndTransport": 656.0648800000054,
+            "normalizeAndCertificate": 0.05407099999138154
+          }
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 0,
+          "native": {
+            "total": 882.8362500000076,
+            "prepare": 96.36382800000138,
+            "searchAndTransport": 786.4248930000031,
+            "normalizeAndCertificate": 0.047529000003123656
+          },
+          "wasm": {
+            "total": 1059.2234529999987,
+            "prepare": 76.55663199999253,
+            "searchAndTransport": 982.5930530000041,
+            "normalizeAndCertificate": 0.07376800000201911
+          }
+        },
+        {
+          "id": "leg0/request138",
+          "pass": 1,
+          "native": {
+            "total": 747.849973999997,
+            "prepare": 124.84712700000091,
+            "searchAndTransport": 620.7369789999939,
+            "normalizeAndCertificate": 2.2658680000022287
+          },
+          "wasm": {
+            "total": 894.8001379999914,
+            "prepare": 132.36703699998907,
+            "searchAndTransport": 760.6224829999992,
+            "normalizeAndCertificate": 1.81061800000316
+          }
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 1,
+          "wasm": {
+            "total": 990.2936659999978,
+            "prepare": 119.69706599999336,
+            "searchAndTransport": 865.0767010000127,
+            "normalizeAndCertificate": 5.51989899999171
+          },
+          "native": {
+            "total": 826.6859970000078,
+            "prepare": 124.31295800000953,
+            "searchAndTransport": 701.2365389999904,
+            "normalizeAndCertificate": 1.1365000000077998
+          }
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 1,
+          "native": {
+            "total": 716.9269809999969,
+            "prepare": 77.96882300000289,
+            "searchAndTransport": 632.8407149999985,
+            "normalizeAndCertificate": 6.117442999995546
+          },
+          "wasm": {
+            "total": 852.5443399999931,
+            "prepare": 63.34960999999021,
+            "searchAndTransport": 779.8740010000038,
+            "normalizeAndCertificate": 9.320728999999119
+          }
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 1,
+          "wasm": {
+            "total": 884.6626019999967,
+            "prepare": 94.7938839999988,
+            "searchAndTransport": 787.5848470000055,
+            "normalizeAndCertificate": 2.2838709999923594
+          },
+          "native": {
+            "total": 741.634911000001,
+            "prepare": 93.92069499999343,
+            "searchAndTransport": 644.800470000002,
+            "normalizeAndCertificate": 2.9137460000056308
+          }
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 1,
+          "native": {
+            "total": 675.9384720000089,
+            "prepare": 71.32881700000144,
+            "searchAndTransport": 604.555343,
+            "normalizeAndCertificate": 0.05431200000748504
+          },
+          "wasm": {
+            "total": 817.8784329999908,
+            "prepare": 59.9896119999903,
+            "searchAndTransport": 757.8333580000035,
+            "normalizeAndCertificate": 0.055462999996962026
+          }
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 1,
+          "wasm": {
+            "total": 754.8460110000015,
+            "prepare": 128.63306999999622,
+            "searchAndTransport": 626.1566060000041,
+            "normalizeAndCertificate": 0.0563350000011269
+          },
+          "native": {
+            "total": 639.230024000004,
+            "prepare": 121.80497199999809,
+            "searchAndTransport": 517.3611630000087,
+            "normalizeAndCertificate": 0.06388899999728892
+          }
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 1,
+          "native": {
+            "total": 675.3656400000036,
+            "prepare": 76.34068500000285,
+            "searchAndTransport": 598.97408,
+            "normalizeAndCertificate": 0.05087500000081491
+          },
+          "wasm": {
+            "total": 817.3879880000022,
+            "prepare": 66.93717599999218,
+            "searchAndTransport": 750.3953679999977,
+            "normalizeAndCertificate": 0.05544400001235772
+          }
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 1,
+          "wasm": {
+            "total": 961.3811019999848,
+            "prepare": 95.81166599999415,
+            "searchAndTransport": 854.9758049999946,
+            "normalizeAndCertificate": 10.593630999996094
+          },
+          "native": {
+            "total": 793.8569549999957,
+            "prepare": 99.67739199998323,
+            "searchAndTransport": 687.6378760000225,
+            "normalizeAndCertificate": 6.541686999989906
+          }
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 1,
+          "native": {
+            "total": 720.7491830000072,
+            "prepare": 137.69962100000703,
+            "searchAndTransport": 579.7385139999969,
+            "normalizeAndCertificate": 3.311048000003211
+          },
+          "wasm": {
+            "total": 851.5568619999976,
+            "prepare": 127.97998400000506,
+            "searchAndTransport": 720.450955999986,
+            "normalizeAndCertificate": 3.1259220000065397
+          }
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 1,
+          "wasm": {
+            "total": 812.584073999984,
+            "prepare": 122.75114700000267,
+            "searchAndTransport": 687.5105939999921,
+            "normalizeAndCertificate": 2.3223329999891575
+          },
+          "native": {
+            "total": 685.2804720000131,
+            "prepare": 116.60402699999395,
+            "searchAndTransport": 565.9282470000035,
+            "normalizeAndCertificate": 2.748198000015691
+          }
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 1,
+          "native": {
+            "total": 778.4056509999791,
+            "prepare": 124.06596999999601,
+            "searchAndTransport": 654.2895779999963,
+            "normalizeAndCertificate": 0.05010299998684786
+          },
+          "wasm": {
+            "total": 905.1740409999911,
+            "prepare": 107.3774829999893,
+            "searchAndTransport": 797.731426000013,
+            "normalizeAndCertificate": 0.06513199998880737
+          }
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 1,
+          "wasm": {
+            "total": 1060.5014349999838,
+            "prepare": 77.81759900000179,
+            "searchAndTransport": 982.6272099999769,
+            "normalizeAndCertificate": 0.056626000005053356
+          },
+          "native": {
+            "total": 853.2951900000044,
+            "prepare": 72.79344100001617,
+            "searchAndTransport": 780.3984559999953,
+            "normalizeAndCertificate": 0.10329299999284558
+          }
+        },
+        {
+          "id": "leg0/request138",
+          "pass": 2,
+          "wasm": {
+            "total": 893.61508399999,
+            "prepare": 135.18387399998028,
+            "searchAndTransport": 756.4266680000001,
+            "normalizeAndCertificate": 2.0045420000096783
+          },
+          "native": {
+            "total": 736.1230980000109,
+            "prepare": 122.67023399999016,
+            "searchAndTransport": 611.1410679999972,
+            "normalizeAndCertificate": 2.3117960000236053
+          }
+        },
+        {
+          "id": "leg0/request346",
+          "pass": 2,
+          "native": {
+            "total": 803.6427170000097,
+            "prepare": 126.91229599999497,
+            "searchAndTransport": 675.1972300000198,
+            "normalizeAndCertificate": 1.5331909999949858
+          },
+          "wasm": {
+            "total": 986.8829740000074,
+            "prepare": 119.99437000000034,
+            "searchAndTransport": 865.8658050000085,
+            "normalizeAndCertificate": 1.0227989999984857
+          }
+        },
+        {
+          "id": "leg0/request553",
+          "pass": 2,
+          "wasm": {
+            "total": 862.5646019999986,
+            "prepare": 71.51988300000085,
+            "searchAndTransport": 785.2164500000072,
+            "normalizeAndCertificate": 5.8282689999905415
+          },
+          "native": {
+            "total": 697.6841460000142,
+            "prepare": 64.45952500001295,
+            "searchAndTransport": 627.0999880000018,
+            "normalizeAndCertificate": 6.124632999999449
+          }
+        },
+        {
+          "id": "leg4/request167",
+          "pass": 2,
+          "native": {
+            "total": 750.0532839999942,
+            "prepare": 108.43945000000531,
+            "searchAndTransport": 639.3819879999792,
+            "normalizeAndCertificate": 2.231846000009682
+          },
+          "wasm": {
+            "total": 885.292764999991,
+            "prepare": 94.13116099999752,
+            "searchAndTransport": 788.9270839999954,
+            "normalizeAndCertificate": 2.234519999998156
+          }
+        },
+        {
+          "id": "leg4/request419",
+          "pass": 2,
+          "wasm": {
+            "total": 806.2072439999902,
+            "prepare": 60.16459699999541,
+            "searchAndTransport": 745.9895580000011,
+            "normalizeAndCertificate": 0.05308899999363348
+          },
+          "native": {
+            "total": 672.3847160000005,
+            "prepare": 60.682342999993125,
+            "searchAndTransport": 611.6032279999927,
+            "normalizeAndCertificate": 0.09914500001468696
+          }
+        },
+        {
+          "id": "leg4/request670",
+          "pass": 2,
+          "native": {
+            "total": 648.6259439999994,
+            "prepare": 131.8697530000063,
+            "searchAndTransport": 516.704905999999,
+            "normalizeAndCertificate": 0.051284999994095415
+          },
+          "wasm": {
+            "total": 748.4171759999881,
+            "prepare": 122.9991549999977,
+            "searchAndTransport": 625.3620660000015,
+            "normalizeAndCertificate": 0.055954999988898635
+          }
+        },
+        {
+          "id": "leg12/request153",
+          "pass": 2,
+          "wasm": {
+            "total": 808.5079879999976,
+            "prepare": 67.48040100000799,
+            "searchAndTransport": 740.9740469999961,
+            "normalizeAndCertificate": 0.053539999993517995
+          },
+          "native": {
+            "total": 677.7197429999942,
+            "prepare": 74.69805199999246,
+            "searchAndTransport": 602.9689829999988,
+            "normalizeAndCertificate": 0.05270800000289455
+          }
+        },
+        {
+          "id": "leg12/request383",
+          "pass": 2,
+          "native": {
+            "total": 798.8221210000047,
+            "prepare": 99.53855200001271,
+            "searchAndTransport": 692.5373280000058,
+            "normalizeAndCertificate": 6.746240999986185
+          },
+          "wasm": {
+            "total": 949.1343539999798,
+            "prepare": 94.89103799997247,
+            "searchAndTransport": 848.0585530000099,
+            "normalizeAndCertificate": 6.184762999997474
+          }
+        },
+        {
+          "id": "leg12/request613",
+          "pass": 2,
+          "wasm": {
+            "total": 856.076012000005,
+            "prepare": 134.31883400000515,
+            "searchAndTransport": 718.6870070000004,
+            "normalizeAndCertificate": 3.070170999999391
+          },
+          "native": {
+            "total": 723.8409729999839,
+            "prepare": 132.46982899997965,
+            "searchAndTransport": 587.9392480000097,
+            "normalizeAndCertificate": 3.4318959999945946
+          }
+        },
+        {
+          "id": "leg20/request197",
+          "pass": 2,
+          "native": {
+            "total": 693.7655899999954,
+            "prepare": 125.79033200000413,
+            "searchAndTransport": 565.0284289999981,
+            "normalizeAndCertificate": 2.9468289999931585
+          },
+          "wasm": {
+            "total": 819.9899040000164,
+            "prepare": 119.12314899999183,
+            "searchAndTransport": 698.4319700000051,
+            "normalizeAndCertificate": 2.434785000019474
+          }
+        },
+        {
+          "id": "leg20/request493",
+          "pass": 2,
+          "wasm": {
+            "total": 912.2217530000198,
+            "prepare": 109.63258599999244,
+            "searchAndTransport": 802.5359980000067,
+            "normalizeAndCertificate": 0.05316900002071634
+          },
+          "native": {
+            "total": 768.2225489999983,
+            "prepare": 110.61014100001194,
+            "searchAndTransport": 657.5594289999863,
+            "normalizeAndCertificate": 0.05297900000005029
+          }
+        },
+        {
+          "id": "leg20/request788",
+          "pass": 2,
+          "native": {
+            "total": 870.6728360000125,
+            "prepare": 87.43078799999785,
+            "searchAndTransport": 783.1839100000216,
+            "normalizeAndCertificate": 0.05813799999305047
+          },
+          "wasm": {
+            "total": 1056.887625000003,
+            "prepare": 77.75226500001736,
+            "searchAndTransport": 979.0805079999845,
+            "normalizeAndCertificate": 0.05485200000111945
+          }
+        }
+      ],
+      "reduction": 0.16476507209854196,
+      "speedup": 1.1972679381506675,
+      "meetsEngineeringGate": true
+    }
+  ],
+  "scope": "Same 200k-node snapshot API; persistent native stdio transport included. Process startup excluded. Full reports exact, no score tolerance. Fixed corpus is not arena or browser evidence; no automatic migration."
+}

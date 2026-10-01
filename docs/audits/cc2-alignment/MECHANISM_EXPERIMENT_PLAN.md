@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-01 最新效率 gate：native vs WASM 的 170 次完整比較通過，兩個 profile 完整 request 均約省 16.5%。下一步先接離線 arena 並驗證連續 authority/Hold parity；尚未完成整場驗證，200 場仍未啟動。本表的參數先後不變。
+
 2026-10-01 最新：使用者要求不要因 cache 失敗就結束效率工作，已授權 native release vs WASM 等價性／效能實驗（NATIVE_RUNTIME_EXPERIMENT.md）。下段的「已結案」不再是現況。參數順序仍保留；200 場暫不啟動。
 
 2026-10-01：效率插入工作已結案。Root 枚舉優化保留；request-local movegen cache 在 run 36844153120 完整 parity 通過但變慢，依預定門檻淘汰。回到本文件的 visible-T 主線，下一步落實較大固定樣本的批次配置與成本；尚未啟動 200 場提案或 48 場草案，不跳 H9、不改權重。
