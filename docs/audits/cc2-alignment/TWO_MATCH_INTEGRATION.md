@@ -1,5 +1,7 @@
 # Two independent matches per runner
 
+已由 commit `bdc99238a6067c38c537be7b5e528a3fae223d0a` 啟動 [run 36887925067](https://github.com/jush0147/tetrp/actions/runs/36887925067)，建立時 queued，尚無結果。本機 pool / protocol / timing / authority / scoring / publication 共 26 tests 通過。只一個 runner 同跑兩個既有 KO cases，不持續輪詢；200 場未派送。
+
 2026-10-01。承接 throughput probe run 36863657491：4 邏輯 CPU runner 的固定 request workload 用 2 workers 比 1 worker 省 23.64% wall time，但不是完整 arena 證據。使用者要求繼續，因此把固定二 worker 接入實際 match integration。
 
 ## 最小實作
