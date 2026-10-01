@@ -1,5 +1,7 @@
 # Parallel native decision experiment
 
+已由 commit `dfeac6330513d4e31b25fb0bce7a821486db02d3` 啟動 [run 36859147183](https://github.com/jush0147/tetrp/actions/runs/36859147183)，建立時 queued，尚無結果。本機 parallel timing / authority / protocol / scoring / publication 共 24 tests 通過。CI 完整 KO parity 與速度尚待結果，不持續輪詢。
+
 2026-10-01。原串行決策不影響遊戲時鐘；它讓 seat 0、seat 1 的搜尋 wall time 相加。這次只把兩席的獨立決策與各自 Hold reanalysis 同時等待，保留 24-frame cadence、200k budget、兩邊同 seed、既有 authority transaction。
 
 `parallelDecisions` 預設 false，只適用 tl-placement-v1。雙方 snapshots 仍先一起擷取；每個 task 只能更新自己的 Hold 狀態／plan。Promise.all barrier 後才允許任何 beginFrame、placement commit、outbox 收集與下一 frame garbage delivery。Hold 原有檢查保證不變更 attack／board／frame；不跨席讀 state。非同步完成順序不影響 arena record 順序：decision/Hold events 暫存並按 seat 0 → seat 1 flush，其他 authority event loop 不改。
