@@ -1,5 +1,7 @@
 # Arena 效率插入工作（2026-09-30）
 
+2026-10-01 最新接續：已建立 native arena 隔離 integration runner，計畫見 NATIVE_ARENA_INTEGRATION.md。兩個座位案例各 native/WASM 重打相同 KO game，逐筆完整 report 與 authority event parity，再量整場耗時。不改原有含 48 場草案的 integration script、不啟動強度批次。
+
 2026-10-01 最新結果：native runtime run 36849221714 成功，完整輸出 170 次比較零差異；accepted 完整 request 耗時減少 16.53%、visible-T 減少 16.48%，三輪穩定，包含 IPC。見 NATIVE_RUNTIME_EXPERIMENT.md 與 NATIVE_RUNTIME_RESULT_36849221714.json。通過 >=10% 工程門檻，下一步為離線 arena adapter integration + 連續 authority/Hold/placement parity + 整場計時；尚未接入或 dispatch arena。不是數倍加速，不直接啟動 200 場，不改參數順序。
 
 2026-10-01 最新授權：使用者要求繼續改善效率，已撤回下段「結案」。下一個單一實驗為同核心 native release vs 凍結 WASM，見 [NATIVE_RUNTIME_EXPERIMENT.md](NATIVE_RUNTIME_EXPERIMENT.md)。只新增常駐 stdio runner，比較完整 report parity 與包含 IPC 的 request 耗時；不重試快取、不改參數、不啟動 arena。瀏覽器仍用 WASM。
