@@ -22,6 +22,8 @@ RAII guard 在 parse 前建立、離開 request 時清空，包含 parse error�
 
 ## 執行與結果
 
+已由 commit `e2873dd55c1dc712d8e6d39181846d166f069cef` 的 push 啟動 [run 36844153120](https://github.com/jush0147/tetrp/actions/runs/36844153120)。建立時確認 in_progress；尚無結果，不持續輪詢。另有既有 engine CI 隨 push 正常觸發，並非第二場實驗。
+
 workflow `kiwi-movegen-cache.yml`：單一 runner，上限 45 分鐘，固定有限 corpus；完成或失敗透過既有 ntfy topic 通知。artifact 保留 patch、六份 kernels、reports、逐 request 計時與統計。本次不自動 promotion、不排 arena、不持續監看。
 
 這個微基準只回答快取是否值得保留；不證明 arena 整體加速比例，也不代表 bot 強度改變。
