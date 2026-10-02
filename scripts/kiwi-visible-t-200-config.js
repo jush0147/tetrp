@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import {scoreKO} from './kiwi-cc2-series-score.js';
-import config from '../docs/audits/cc2-alignment/VISIBLE_T_200.json' with {type:'json'};
-export {config};
+import {readFileSync} from 'node:fs';
+export const manifestPath=process.env.KIWI_BATCH_MANIFEST??'docs/audits/cc2-alignment/VISIBLE_T_200.json';
+export const config=JSON.parse(readFileSync(manifestPath,'utf8'));
+export const batchName=`kiwi-${config.candidate}-200`;
 export function legSettings(leg,attempt=0){
  assert.ok(Number.isInteger(leg)&&leg>=0&&leg<config.legs);
  assert.ok(Number.isInteger(attempt)&&attempt>=0&&attempt<config.maxAttemptsPerLeg);
@@ -14,7 +16,7 @@ export function shardLegs(shard){
 export function auditAttempt(report,leg,attempt){
  const expected=legSettings(leg,attempt),r=report.runs?.parallel?.result,c=report.runs?.parallel?.counts;
  assert.equal(report.complete,true);assert.equal(report.batchValidated,true);assert.equal(report.leg,leg);assert.equal(report.seed,expected.seed);
- assert.equal(report.nodeBudget,config.nodeBudget);assert.equal(report.hashes.accepted.native,config.baselineNative);assert.equal(report.hashes['visible-t'].native,config.candidateNative);
+ assert.equal(report.nodeBudget,config.nodeBudget);assert.equal(report.hashes.accepted.native,config.baselineNative);assert.equal(report.hashes[config.candidate].native,config.candidateNative);
  assert.equal(r.executionModel,'tl-placement-v1');assert.equal(r.framesPerPiece,config.framesPerPiece);assert.equal(r.maxFrames,null);assert.equal(r.watchdogFrames,config.watchdogFrames);
  assert.deepEqual(r.seeds,[expected.seed,expected.seed]);assert.deepEqual(r.holeSeeds,[expected.seed+1,expected.seed+2]);
  assert.ok(r.transportStats.every(t=>t.fallbackRequests===0&&t.rejectedCandidates===0&&t.maxSelectedRank===0));

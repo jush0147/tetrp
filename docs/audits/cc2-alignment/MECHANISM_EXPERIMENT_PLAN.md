@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-02 接續授權：使用者已確認 H9-off（既有 −0.5 關為 0）意義及 correctness gate，指示開始。[H9-off 計畫](H9_OFF_200_PLAN.md)以單一 workflow 串候選 gate → 固定 200 KO；只有 gate 成功才派 shard。從 accepted 獨立建立，沒有 visible-T、H1 或其他權重變更。沿用既有 16 runners／2 matches 配置與 ntfy；不需使用者再接下一步。Run ID 確認後另存。
+
 2026-10-02 結果更新（覆蓋以下歷史進度）：[固定 200 場結果](VISIBLE_T_200_RESULT_36892959080.md)已完成。visible-T 97–103、配對近似 95% CI 41.53–55.47%，correctness 全通過；未證明改善，也不是證明等價或無用。不 promotion、不追加到贏。下一項為從 accepted baseline 獨立建立 H9-off，再 H1-off；本次未派送下一批。200 場實際 1h46m16s，沿用已驗證 runtime，不再插入效能 pilot。
 
 2026-10-02 最新：two-match 完整 arena gate run 36887925067 通過，兩場在單 runner 共 20:09，trace 完全等同 frozen reference。執行組合固定 native + parallelDecisions + 2 match workers/runner；下一步準備 visible-T 正式固定 200 場配置與配對判讀，不再新增效能 pilot。200 場未派送；參數順序不變。

@@ -23,6 +23,12 @@ const profiles={
  accepted:{pkg:'.cache/eval-artifact/cc2-wasm-results/pkg',wasm:'ff7c1591d96e1b5968d217e0a215c2a6797ab7a5a6dc0a1b4bac85cf181ad767',native:'386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb'},
  'visible-t':{pkg:'.cache/visible-t-artifact/pkg',wasm:'8f476d2dcfb34c3df30f9a6bce95dd98b8cf7dd88e00b493db2539a9edf1c7f0',native:'38d541f37b40f296c306053bee7521e755b33ed256a942f449ffcdbeb27db820'},
 };
+const candidatePolicy=batchLeg?batchConfig.candidate:'visible-t';
+if(batchLeg){
+ delete profiles['visible-t'];
+ profiles[candidatePolicy]={native:batchConfig.candidateNative};
+ assert.equal(profiles.accepted.native,batchConfig.baselineNative);
+}
 if(process.argv[2]==='notify'){
  const results=[];for(const i of [0,1])try{results.push(JSON.parse(await readFile(`.cache/native-arena-legs/${artifactPrefix}-leg-${i}/result.json`)));}catch{}
  const ok=process.env.ARENA_JOB_STATUS==='success'&&results.length===2&&results.every(r=>r.complete);
@@ -36,8 +42,7 @@ if(process.argv[2]==='notify'){
  await mkdir(root,{recursive:true});
  const summary={leg,seed:batch?.seed??2026093001,nodeBudget:NODE_BUDGET,framesPerPiece:24,complete:false,runs:{},candidate,control,strengthEvidence:batchLeg,hashes:profiles,...(batch?{batch}: {})};
  const save=()=>writeFile(`${root}/result.json`,JSON.stringify(summary,null,2));await save();
- const seatNames=leg%2===0?['visible-t','accepted']:['accepted','visible-t'];
- if(batchLeg){assert.equal(profiles.accepted.native,batchConfig.baselineNative);assert.equal(profiles['visible-t'].native,batchConfig.candidateNative);}
+ const seatNames=leg%2===0?[candidatePolicy,'accepted']:['accepted',candidatePolicy];
  try{
   for(const [name,p] of Object.entries(profiles)){
    if(!single){assert.equal(hash(await readFile(`${p.pkg}/cold_clear_2_bg.wasm`)),p.wasm);

@@ -76,6 +76,7 @@ test('#5 public tree excludes research directories and binary assets',()=>{
     'tools/cc2-transition-audit/air-prefix.rs',
     'tools/cc2-transition-audit/rotation-probe.rs','tools/cc2-transition-audit/src/bin/rotation.rs',
     'tools/cc2-eval-audit/eval_audit_runner.rs','tools/cc2-eval-audit/eval_observer.rs',
+    'tools/cc2-eval-audit/h9_off_tests.rs',
   ]);
   for(const path of tracked) {
     assert.ok(kiwiFiles.has(path)||cc2DiagnosticSources.has(path)||/\.(js|json|py|md|yml|yaml)$/.test(path)||publicReplayScripts.has(path)||publicViewerAssets.has(path)||['LICENSE','.gitignore','.gitattributes'].includes(path),`Unexpected public artifact ${path}`);
