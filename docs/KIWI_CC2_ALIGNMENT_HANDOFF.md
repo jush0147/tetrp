@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-02 最新：[H1鏡像對局診斷](audits/cc2-alignment/H1_MIRROR_DIAGNOSIS_37004950142.md)。run37004950142因16shards跑逾2h無完成而取消，已確認停止。抽查兩局約4400手、相同盤面／動作／攻擊、pending始終零；H1未被觸發。無強度結論，不直接重跑200場。不改同seed／同cadence；需先驗證共同且打法不同的對手能觸發H1，補進度證據後才另訂比較。新run未啟動。
+
 2026-10-02 接續授權：[H1-off gate → 200 KO](audits/cc2-alignment/H1_OFF_200_PLAN.md)開始準備／派送。唯一候選變更 pending_safety=1→0，保留 H9=-0.5；共用既有 runner，不改 authority 或 production。Gate 失敗不開對戰，成功自動接固定200場，ntfy一次通知。Run ID 見後續 dispatch 紀錄。
 
 2026-10-02 最新結果：[H9-off 200 場完成](audits/cc2-alignment/H9_OFF_200_RESULT_36996780368.md)，80–120、correctness 全通過，支持保留目前 H9=-0.5。無 production 改動、不續跑到贏；下一项獨立 H1-off，保持 H9 與其他設定不變，尚未派送。含 gate 約 1h18m，沿用現行 batch runtime。

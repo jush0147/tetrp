@@ -1,0 +1,112 @@
+{
+  "run": 37004950142,
+  "artifact": 11233125360,
+  "artifactBytes": 881965509,
+  "manualStop": "User reported >2h with zero completed shards. Cancel requested; no strength verdict.",
+  "evidence": [
+    {
+      "leg": 36,
+      "sample": "last 4 MiB of reports/events only, not full trace",
+      "reports": 190,
+      "exactPairedSnapshotsActionsAndReports": 95,
+      "allSampledPendingAndAreEmpty": true,
+      "receives": 72,
+      "allSampledReceivesFullyOffset": true,
+      "lastReport": 105384,
+      "anchors": [
+        {
+          "seat": 0,
+          "frame": 105384,
+          "pieces": 4391,
+          "totals": {
+            "generated": 24161,
+            "cancelled": 0,
+            "sent": 24161,
+            "tanked": 0,
+            "received": 0
+          },
+          "pending": [],
+          "holes": {
+            "rng": {
+              "seed": 2026141802
+            },
+            "lastColumn": null,
+            "changed": false
+          }
+        },
+        {
+          "seat": 1,
+          "frame": 105384,
+          "pieces": 4391,
+          "totals": {
+            "generated": 24161,
+            "cancelled": 0,
+            "sent": 24161,
+            "tanked": 0,
+            "received": 0
+          },
+          "pending": [],
+          "holes": {
+            "rng": {
+              "seed": 2026141803
+            },
+            "lastColumn": null,
+            "changed": false
+          }
+        }
+      ]
+    },
+    {
+      "leg": 37,
+      "sample": "last 4 MiB of reports/events only, not full trace",
+      "reports": 190,
+      "exactPairedSnapshotsActionsAndReports": 95,
+      "allSampledPendingAndAreEmpty": true,
+      "receives": 76,
+      "allSampledReceivesFullyOffset": true,
+      "lastReport": 105576,
+      "anchors": [
+        {
+          "seat": 0,
+          "frame": 105576,
+          "pieces": 4399,
+          "totals": {
+            "generated": 24232,
+            "cancelled": 0,
+            "sent": 24232,
+            "tanked": 0,
+            "received": 0
+          },
+          "pending": [],
+          "holes": {
+            "rng": {
+              "seed": 2026141802
+            },
+            "lastColumn": null,
+            "changed": false
+          }
+        },
+        {
+          "seat": 1,
+          "frame": 105576,
+          "pieces": 4399,
+          "totals": {
+            "generated": 24232,
+            "cancelled": 0,
+            "sent": 24232,
+            "tanked": 0,
+            "received": 0
+          },
+          "pending": [],
+          "holes": {
+            "rng": {
+              "seed": 2026141803
+            },
+            "lastColumn": null,
+            "changed": false
+          }
+        }
+      ]
+    }
+  ]
+}
