@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-02 結果更新（覆蓋以下歷史進度）：[固定 200 場結果](VISIBLE_T_200_RESULT_36892959080.md)已完成。visible-T 97–103、配對近似 95% CI 41.53–55.47%，correctness 全通過；未證明改善，也不是證明等價或無用。不 promotion、不追加到贏。下一項為從 accepted baseline 獨立建立 H9-off，再 H1-off；本次未派送下一批。200 場實際 1h46m16s，沿用已驗證 runtime，不再插入效能 pilot。
+
 2026-10-02 最新：two-match 完整 arena gate run 36887925067 通過，兩場在單 runner 共 20:09，trace 完全等同 frozen reference。執行組合固定 native + parallelDecisions + 2 match workers/runner；下一步準備 visible-T 正式固定 200 場配置與配對判讀，不再新增效能 pilot。200 場未派送；參數順序不變。
 
 2026-10-01 最新 throughput 結果：run 36863657491 等量 public-snapshot workload 的 2 workers/runner 比 1 worker 省 23.64% wall time，完整 parity 通過；可用於下一步固定 visible-T batch harness 設計，尚未量完整雙場 arena，也未啟動 200 場。停止 worker 數掃描；visible-T → H9-off → H1-off 順序保持。

@@ -69,6 +69,14 @@
 - https://docs.github.com/en/actions/reference/limits
 - https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features#actions
 
+## 2026-10-02 completed batch
+
+Run 36892959080 completed 200 valid KO games in 1h46m16s. Visible-T 97–103,
+zero technical/parity/fallback failures. See
+[verified result](VISIBLE_T_200_RESULT_36892959080.md). Efficiency work is
+closed for now; reuse this native parallel two-match runtime for H9-off next.
+No new experiment was dispatched during result review.
+
 ## 2026-10-02 overnight batch authorization
 
 User authorized running the prepared visible-T comparison overnight. The fixed

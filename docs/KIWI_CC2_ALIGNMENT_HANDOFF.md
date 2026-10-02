@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-02 最新：[visible-T 固定 200 場完成](audits/cc2-alignment/VISIBLE_T_200_RESULT_36892959080.md)，97–103、correctness 全通過，實際 1h46m16s。沒有改善證據，不 promotion、不追加樣本。下一項獨立 H9-off，再 H1-off；未啟動下一批。保留既有 accepted baseline 與已驗證批次 runtime；以下較早狀態均為歷史。
+
 更新：2026-09-26。**上下文切換後先讀本檔，再讀指定原始碼；不要重新要求使用者選方向。**
 
 續篇：已完成第一輪[搜尋規則耦合審查](audits/cc2-alignment/README.md)，含完整資料流、保留／替換範圍、三個已執行 source-expression witnesses，以及下一步真正 Rust differential harness。Production 未改，未開對戰；完整 Rust parity 尚未執行。以下「尚未完成審查」為建立交接時的歷史狀態，接續以續篇為準。

@@ -1,0 +1,56 @@
+{
+  "run": 36892959080,
+  "commit": "71f98f1a71c139e24d7fe1e522658dd61357e957",
+  "manifestHash": "a81fee8e062fc1d635fcb6d810cbf42c1353807c59ecef2cde1615e480845a98",
+  "verified": true,
+  "statistics": {
+    "score": [
+      97,
+      103
+    ],
+    "candidateWinRate": 0.485,
+    "blockCounts": {
+      "2-0": 23,
+      "1-1": 51,
+      "0-2": 26
+    },
+    "pairedApprox95CI": [
+      0.41527429626302675,
+      0.5547257037369733
+    ],
+    "exactTwoSidedSweepSignP": 0.7754496546815659,
+    "retryDivergedBlocks": 0,
+    "note": "100 base-seed clusters; t approximation for mean block score and exact sign test on non-tied blocks. Not 200 independent Bernoulli trials. No optional stopping or automatic promotion."
+  },
+  "totals": {
+    "attempts": 200,
+    "placements": 186064,
+    "holds": 70569,
+    "reanalyses": 70569,
+    "requests": 256633,
+    "mismatches": 0,
+    "fallback": 0,
+    "rejected": 0,
+    "technical": 0,
+    "simultaneousKO": 0,
+    "spins": {
+      "none": 158485,
+      "full": 15131,
+      "mini": 12448
+    },
+    "candidateWinsBySeat": [
+      51,
+      46
+    ]
+  },
+  "time": {
+    "createdAt": "2026-10-01T16:34:03Z",
+    "completedAt": "2026-10-01T18:20:19.000Z",
+    "workflowMinutes": 106.26666666666667,
+    "activeMinutes": 106.21666666666667,
+    "shards": 50,
+    "totalJobMinutes": 1480.633333333333,
+    "gameMeanMinutes": 13.189597429067419,
+    "gameMaxMinutes": 27.696193696350004
+  }
+}
