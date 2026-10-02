@@ -1,0 +1,91 @@
+name: Kiwi H1 versus Legacy short activation diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-h1-short.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-h1-short-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  short:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+      matrix:
+        leg: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Download previously gated H1 binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 37004950142 --repo jush0147/tetrp --name kiwi-h1-off-build --dir .cache/h1-build
+          chmod +x .cache/h1-build/snapshot-accepted .cache/h1-build/snapshot-h1-off
+      - name: 100 placements maximum; unscored horizon and same-snapshot comparisons
+        timeout-minutes: 15
+        env:
+          H1_SHORT_LEG: ${{ matrix.leg }}
+        run: node scripts/kiwi-h1-short.js run
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-h1-short-${{ matrix.leg }}
+          path: .cache/h1-short/
+          include-hidden-files: true
+          retention-days: 14
+  diagnostic:
+    if: always()
+    needs: short
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: kiwi-h1-short-*
+          path: .cache/h1-short-downloads
+      - name: Aggregate diagnostic only
+        env:
+          SHORT_STATUS: ${{ needs.short.result }}
+        run: node scripts/kiwi-h1-short.js aggregate
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-wasm-source
+      - name: Build offline H1 counter observer from accepted source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36387270053 --repo jush0147/tetrp --name cc2-landing-36387270053-1 --dir .cache/eval-artifact
+          git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          node scripts/kiwi-h1-activation.js install
+          rustup toolchain install 1.90.0 --profile minimal
+          RUSTFLAGS="--cfg h1_activation" cargo +1.90.0 build --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --bin snapshot_activation
+      - name: Confirm actual H1 node contributions without changing full reports
+        run: node scripts/kiwi-h1-activation.js audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-h1-short-result
+          path: .cache/h1-short/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once; never dispatch strength batch
+        if: always()
+        env:
+          DIAGNOSTIC_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-h1-short.js notify
