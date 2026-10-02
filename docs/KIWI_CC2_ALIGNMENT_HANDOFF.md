@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-02 最新結果：[H9-off 200 場完成](audits/cc2-alignment/H9_OFF_200_RESULT_36996780368.md)，80–120、correctness 全通過，支持保留目前 H9=-0.5。無 production 改動、不續跑到贏；下一项獨立 H1-off，保持 H9 與其他設定不變，尚未派送。含 gate 約 1h18m，沿用現行 batch runtime。
+
 2026-10-02 接續：使用者已授權開始 [H9-off gate → 200 KO](audits/cc2-alignment/H9_OFF_200_PLAN.md)。候選只把 accepted 的 H9 −0.5 改為 0。Actions gate 成功後自動接固定對戰，失敗則停止並 ntfy。不修改 production，不加 visible-T、不進 H1，不再做效能 pilot。Run ID 另存 dispatch 紀錄。
 
 2026-10-02 最新：[visible-T 固定 200 場完成](audits/cc2-alignment/VISIBLE_T_200_RESULT_36892959080.md)，97–103、correctness 全通過，實際 1h46m16s。沒有改善證據，不 promotion、不追加樣本。下一項獨立 H9-off，再 H1-off；未啟動下一批。保留既有 accepted baseline 與已驗證批次 runtime；以下較早狀態均為歷史。
