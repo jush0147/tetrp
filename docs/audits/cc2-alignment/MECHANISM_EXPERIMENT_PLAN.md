@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-02 最新：[H1 短診斷結果](H1_SHORT_RESULT_37023218685.md)已核對，4局均到100手無KO、不計分；800 placement／251 Hold parity零差異、零fallback／technical failure。Legacy打破鏡像並產生pending；同一frame672 witness證明H1實際改變I四消／J三消順序（兩份重複觀察，非兩個獨立state）。兩手後盤面相同但attack state不同。僅證明activation，沒有強度結論。下一步擬定on/off各對同一Legacy的固定seed／seat配對KO比較；未派送新run，不自動200場，保持accepted設定。
+
 接續已授權：[H1 vs Legacy 短診斷](H1_SHORT_PLAN.md)，4局、每局最多100手，不是強度批次。H1-on/off各自對vendored Legacy交換座位；同局同seed／24frames，逐snapshot反事實評分與落子比較，離線核對實際H1 node貢獻。非KO不計分，不自動開200場。Run ID另記。
 
 2026-10-02 H1 異常診斷：[run37004950142已中止](H1_MIRROR_DIAGNOSIS_37004950142.md)。抽查兩局4391/4399手仍鏡像，pending=0，H1根本未生效；不是可判強弱的結果。不得重跑同一空盤H1-on/off鏡像對照。下一步先補進度telemetry，驗證使用共同但打法不同的固定對手可觸發H1，再另訂固定配對樣本；未派送新run。不改同局同seed／24frames，也不更換勝負標準。

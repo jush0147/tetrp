@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-02 最新：[H1 短診斷結果](audits/cc2-alignment/H1_SHORT_RESULT_37023218685.md)已核對，4局均到100手無KO、不計分；800 placement／251 Hold parity零差異、零fallback／technical failure。Legacy打破鏡像並產生pending；同一frame672 witness證明H1實際改變I四消／J三消順序（兩份重複觀察，非兩個獨立state）。兩手後盤面相同但attack state不同。僅證明activation，沒有強度結論。下一步擬定on/off各對同一Legacy的固定seed／seat配對KO比較；未派送新run，不自動200場，保持accepted設定。
+
 接續授權：[H1 vs Legacy四局短診斷](audits/cc2-alignment/H1_SHORT_PLAN.md)。每局最多100手；H1-on/off各對同一vendored Legacy交換座位，同seed／同cadence，非KO不計分。逐snapshot雙版本比較，最多8份實際搜尋H1 observer取證。沒有自動200場；run ID另存。勿重跑前一個鏡像H1直接對打。
 
 2026-10-02 最新：[H1鏡像對局診斷](audits/cc2-alignment/H1_MIRROR_DIAGNOSIS_37004950142.md)。run37004950142因16shards跑逾2h無完成而取消，已確認停止。抽查兩局約4400手、相同盤面／動作／攻擊、pending始終零；H1未被觸發。無強度結論，不直接重跑200場。不改同seed／同cadence；需先驗證共同且打法不同的對手能觸發H1，補進度證據後才另訂比較。新run未啟動。

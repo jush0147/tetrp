@@ -1,0 +1,151 @@
+{
+  "run": 37023218685,
+  "complete": true,
+  "diagnosticOnly": true,
+  "placements": 800,
+  "holds": 251,
+  "technicalFailures": 0,
+  "parityMismatches": 0,
+  "fallback": 0,
+  "legs": [
+    {
+      "leg": 0,
+      "policy": "accepted",
+      "seat": 0,
+      "requests": 132,
+      "pendingSnapshots": 54,
+      "changedTop1": 1,
+      "changedCandidateScores": 28,
+      "divergentBoundaries": 99,
+      "wallMs": 203226.14502999999,
+      "reason": "frame-cap",
+      "winner": null
+    },
+    {
+      "leg": 1,
+      "policy": "accepted",
+      "seat": 1,
+      "requests": 135,
+      "pendingSnapshots": 31,
+      "changedTop1": 0,
+      "changedCandidateScores": 9,
+      "divergentBoundaries": 99,
+      "wallMs": 176383.93667300002,
+      "reason": "frame-cap",
+      "winner": null
+    },
+    {
+      "leg": 2,
+      "policy": "h1-off",
+      "seat": 0,
+      "requests": 131,
+      "pendingSnapshots": 53,
+      "changedTop1": 1,
+      "changedCandidateScores": 29,
+      "divergentBoundaries": 99,
+      "wallMs": 207786.484487,
+      "reason": "frame-cap",
+      "winner": null
+    },
+    {
+      "leg": 3,
+      "policy": "h1-off",
+      "seat": 1,
+      "requests": 135,
+      "pendingSnapshots": 31,
+      "changedTop1": 0,
+      "changedCandidateScores": 9,
+      "divergentBoundaries": 99,
+      "wallMs": 208284.392547,
+      "reason": "frame-cap",
+      "winner": null
+    }
+  ],
+  "activation": {
+    "observed": [
+      {
+        "id": "leg0/witness0",
+        "frame": 432,
+        "pending": 1,
+        "changedTop1": false,
+        "evaluations": 200000,
+        "max_delta": 0,
+        "min_delta": 0,
+        "nonzero": 0
+      },
+      {
+        "id": "leg0/witness1",
+        "frame": 672,
+        "pending": 12,
+        "changedTop1": true,
+        "evaluations": 200000,
+        "max_delta": 0,
+        "min_delta": -52.400001525878906,
+        "nonzero": 1464
+      },
+      {
+        "id": "leg1/witness0",
+        "frame": 432,
+        "pending": 1,
+        "changedTop1": false,
+        "evaluations": 200000,
+        "max_delta": 0,
+        "min_delta": 0,
+        "nonzero": 0
+      },
+      {
+        "id": "leg2/witness0",
+        "frame": 432,
+        "pending": 1,
+        "changedTop1": false,
+        "evaluations": 200000,
+        "max_delta": 0,
+        "min_delta": 0,
+        "nonzero": 0
+      },
+      {
+        "id": "leg2/witness1",
+        "frame": 672,
+        "pending": 12,
+        "changedTop1": true,
+        "evaluations": 200000,
+        "max_delta": 0,
+        "min_delta": -52.400001525878906,
+        "nonzero": 1464
+      },
+      {
+        "id": "leg3/witness0",
+        "frame": 432,
+        "pending": 1,
+        "changedTop1": false,
+        "evaluations": 200000,
+        "max_delta": 0,
+        "min_delta": 0,
+        "nonzero": 0
+      }
+    ],
+    "nonzeroWitnesses": 2,
+    "scope": "Actual evaluated-node H1 increments; terminal early returns excluded. Offline replay only, exact report parity required."
+  },
+  "distinctDisagreementWitnesses": 1,
+  "continuation": {
+    "frame": 672,
+    "on": [
+      "Hold I",
+      "I quad",
+      "Hold J",
+      "J triple"
+    ],
+    "off": [
+      "J triple",
+      "Hold I",
+      "I quad"
+    ],
+    "lockFrames": [
+      695,
+      719
+    ],
+    "sameBoardAt720": true
+  },
+  "promotion": false
+}
