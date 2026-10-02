@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-02 接續已授權：[H1 共同對手固定 KO 比較](H1_COMMON_PLAN.md)，100 seed blocks × on/off × 兩座位，共400局（每版對Legacy 200局）。只改H1，沿用已驗證artifact與同局同seed／24frames；無一般frame cap，simultaneous KO整組重打，technical failure整批不下強度結論。16 runners／每runner兩局；取消shadow search，ntfy完成／失敗一次通知。不自動promotion，run ID另記。30項targeted tests已通過。
+
 2026-10-02 最新：[H1 短診斷結果](H1_SHORT_RESULT_37023218685.md)已核對，4局均到100手無KO、不計分；800 placement／251 Hold parity零差異、零fallback／technical failure。Legacy打破鏡像並產生pending；同一frame672 witness證明H1實際改變I四消／J三消順序（兩份重複觀察，非兩個獨立state）。兩手後盤面相同但attack state不同。僅證明activation，沒有強度結論。下一步擬定on/off各對同一Legacy的固定seed／seat配對KO比較；未派送新run，不自動200場，保持accepted設定。
 
 接續已授權：[H1 vs Legacy 短診斷](H1_SHORT_PLAN.md)，4局、每局最多100手，不是強度批次。H1-on/off各自對vendored Legacy交換座位；同局同seed／24frames，逐snapshot反事實評分與落子比較，離線核對實際H1 node貢獻。非KO不計分，不自動開200場。Run ID另記。
