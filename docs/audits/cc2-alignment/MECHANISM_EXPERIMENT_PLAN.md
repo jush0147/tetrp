@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-03 接續第2項：[charged-bank residual gate→200KO](SURGE_RESIDUAL_PLAN.md)，固定0.5折價gross bank、公開next-lock multiplier，pending不扣因可cancel；不是精確sent。只改一個leaf假設，Boolean/H1/H9/wasted-T保持。20public gate含8charged，通過自動200新KO，失敗停止；沒有其他queue。
+
 2026-10-03 最新：[charged Surge診斷通過](SURGE_RESULT_37121512490.md)，8/8observer parity、每state都看到release與charged known-frontier。Residual bank數量無独立leaf估值是可測假設，尚非勝率缺陷證明；不能說看不到取消價值。下一步限定charged-bank residual、先固定單位與公開pending/multiplier語意，不直接啟用既有H3或改多項。尚未派arena。
 
 2026-10-03 第2項續：[Surge charged-state診斷](SURGE_DIAGNOSTIC_PLAN.md)，固定8public snapshots、captured root transaction審查完成，接accepted只讀search observer及full-report parity。尚無新bank候選，不開arena，不能用sampled selection witness冒充backed-up最佳line。

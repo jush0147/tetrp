@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 接續：[Surge residual單一候選](audits/cc2-alignment/SURGE_RESIDUAL_PLAN.md)。固定leaf=0.5×floor(charged bank base×public next-lock multiplier)，gross資產不扣pending、不預支opener；未充能/釋放/topout0，非已送量或兌現機率。Boolean+0.5等保持；不開progress。192 authority fixtures→Rust full-eval/release測試，12+8=20public gate，至少1 charged top1改變；成功自動接200新candidate KO／重用accepted200，不再等回報，失敗停止ntfy。單一假設不掃weight，run另記；production不改。
+
 2026-10-03 最新：[Surge診斷37121512490通過](audits/cc2-alignment/SURGE_RESULT_37121512490.md)。8/8完整accepted report parity，283place root本機重驗一致；1583659 evals含17791release／295220 charged known-frontier，每snapshot都有兩類。排除本樣本「不會Surge／到不了frontier」，支持尚未釋放bank缺獨立數量leaf的假設，未證明選錯或KO損失。原版也會sent0釋放取消5。下一步只定義charged-bank residual候選（單位、multiplier/pending、release歸零），不開progress、不改Boolean/clear、不重寫search；尚未啟用權重／派arena。仍第2項。
 
 2026-10-03 接續：[8 charged snapshots診斷](audits/cc2-alignment/SURGE_DIAGNOSTIC_PLAN.md)。固定最新run block0兩candidate seats，各4個charged公共局面；captured roots已authority驗證，發現release可sent0且取消incoming，也有保留／Hold。原trajectory是leaf-off，接續Actions用frozen accepted重新搜尋與只讀observer完整report parity，計release/held-bank及known-frontier，非最優continuation歸因。不加bonus、不開arena；run另記，ntfy後驗收。
