@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+最新進度：[B2B Boolean leaf-off正式200新KO](B2B_LEAF_COMMON_PLAN.md)獲使用者繼續授權；gate37105409459已通過且3/67 top1改變。沿用artifact，重用accepted200控制；只有這一候選。下方「未派arena」是前一階段紀錄；完整Surge residual仍未測完，不跳第3項。
+
 目前進度：[第2項審查與單一Boolean-off gate](B2B_INVENTORY_REVIEW.md)。只將has_back_to_back 0.5→0；先驗證真實search activation／authority，未派arena。Surge bank與charge沒有啟用，也沒有把整項未兌現價值標成已完成。
 
 使用者要求先把其他項目排好。此文件是後續工作的固定預設順序，不是一次授權全部 arena，也不是重要性排名。2026-10-03 起優先於舊文件「其他項目尚無排序」的描述。本次只記錄，未修改 bot 或派送對戰。

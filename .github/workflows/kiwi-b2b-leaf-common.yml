@@ -1,0 +1,134 @@
+name: Kiwi B2B leaf off reused-control 200 KO games
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-b2b-leaf-common.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-b2b-leaf-common-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Reuse compiled and Rust-tested artifacts; restore frozen controls
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 37105409459 --repo jush0147/tetrp --name kiwi-b2b-leaf-off-build --dir .cache/b2b-leaf-build
+          gh run download 37026070707 --repo jush0147/tetrp --name h1-common-result --dir .cache/wasted-control
+          chmod +x .cache/b2b-leaf-build/snapshot-accepted .cache/b2b-leaf-build/snapshot-b2b-leaf-off
+      - name: Verify pinned passed gate, binary identities and frozen control reuse
+        run: node scripts/kiwi-b2b-leaf-common.js verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-b2b-leaf-off-build
+          path: .cache/b2b-leaf-build/
+          include-hidden-files: true
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: wasted-control
+          path: .cache/wasted-control/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify if gate failed; no arena launch
+        if: failure()
+        run: node scripts/kiwi-b2b-leaf-common.js notify
+  block:
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: true
+      max-parallel: 16
+      matrix:
+        block: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: kiwi-b2b-leaf-off-build
+          path: .cache/b2b-leaf-build
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasted-control
+          path: .cache/wasted-control
+      - run: chmod +x .cache/b2b-leaf-build/snapshot-accepted .cache/b2b-leaf-build/snapshot-b2b-leaf-off
+      - name: Two candidate KO legs, reuse frozen accepted controls
+        timeout-minutes: 80
+        env:
+          B2B_LEAF_BLOCK: ${{ matrix.block }}
+        run: node scripts/kiwi-b2b-leaf-common.js block
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b2b-leaf-common-summary-${{ matrix.block }}
+          path: .cache/b2b-leaf-common/summaries/
+          include-hidden-files: true
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b2b-leaf-common-traces-${{ matrix.block }}
+          path: .cache/b2b-leaf-common/games/
+          include-hidden-files: true
+          compression-level: 1
+          retention-days: 3
+  aggregate:
+    if: always() && needs.gate.result == 'success'
+    needs: [gate, block]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: kiwi-b2b-leaf-off-build
+          path: .cache/b2b-leaf-build
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasted-control
+          path: .cache/wasted-control
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: b2b-leaf-common-summary-*
+          path: .cache/b2b-leaf-common-downloads
+      - name: Validate every game and compare paired KO win rates
+        env:
+          BLOCKS_STATUS: ${{ needs.block.result }}
+        run: node scripts/kiwi-b2b-leaf-common.js aggregate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: b2b-leaf-common-result
+          path: .cache/b2b-leaf-common/aggregate/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once on completion or failure
+        if: always()
+        env:
+          AGGREGATE_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-b2b-leaf-common.js notify
