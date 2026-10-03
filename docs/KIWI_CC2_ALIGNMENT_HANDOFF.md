@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 接續：[8 charged snapshots診斷](audits/cc2-alignment/SURGE_DIAGNOSTIC_PLAN.md)。固定最新run block0兩candidate seats，各4個charged公共局面；captured roots已authority驗證，發現release可sent0且取消incoming，也有保留／Hold。原trajectory是leaf-off，接續Actions用frozen accepted重新搜尋與只讀observer完整report parity，計release/held-bank及known-frontier，非最優continuation歸因。不加bonus、不開arena；run另記，ntfy後驗收。
+
 2026-10-03 最新：[B2B Boolean leaf-off200KO結果](audits/cc2-alignment/B2B_LEAF_RESULT_37114400655.md)驗收通過。run37114400655 candidate100–100，重用accepted104–96；差−2pp、配對近似95% CI −11.86～+7.86pp。179692placements／67674Holds零差異、零fallback/rejection/technical failure，無重打。維持has_back_to_back=0.5，不追加。耗時1h56m53s。仍在第2項：下一步真實charged snapshots之bank／release/search frontier取證，不能把Boolean結果當完整Surge估值結案；未派新批。
 
 2026-10-03 最新：[B2B leaf gate37105409459成功](audits/cc2-alignment/B2B_LEAF_GATE_DISPATCH.md)，67placements／19Holds、66評分與3top1改變，配置及artifact核驗通過。「No arena launched」是gate-only預定通知，非失敗。使用者繼續，接[固定200新KO](audits/cc2-alignment/B2B_LEAF_COMMON_PLAN.md)：candidate hash9011774f…fa52對同一Legacy，重用原accepted200控制；不重編或重跑search gate，16 runners×兩局、ntfy。僅Boolean+0.5→0，不改H3或第4項B2B clear；無其他queue，run另記。

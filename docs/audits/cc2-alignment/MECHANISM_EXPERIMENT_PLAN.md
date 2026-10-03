@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-03 第2項續：[Surge charged-state診斷](SURGE_DIAGNOSTIC_PLAN.md)，固定8public snapshots、captured root transaction審查完成，接accepted只讀search observer及full-report parity。尚無新bank候選，不開arena，不能用sampled selection witness冒充backed-up最佳line。
+
 2026-10-03 最新：[B2B leaf-off200KO完成](B2B_LEAF_RESULT_37114400655.md)，100–100對照accepted104–96，差−2pp／配對CI −11.86～+7.86pp。Correctness全通過，效益未定，保持+0.5。尚未測完整Surge residual，下一步仍第2項charged snapshots取證，不跳clear家族、不直接啟用H3；未派新批。
 
 2026-10-03 最新：[B2B leaf gate成功後正式200新KO計畫](B2B_LEAF_COMMON_PLAN.md)。run37105409459 gate67/67 placements、19 Holds、3/67 top1改變；沿用此binary、不重編。使用者已指示繼續，候選只關Boolean leaf；重用accepted同seed/seat控制，無其他候選queue。正式run另記dispatch，B2B／Surge整項尚未結案。

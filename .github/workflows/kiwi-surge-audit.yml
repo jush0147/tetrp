@@ -1,0 +1,57 @@
+name: Kiwi charged Surge decision diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-surge-audit.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-surge-audit-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-wasm-source
+      - name: Restore accepted source and add read-only observer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36387270053 --repo jush0147/tetrp --name cc2-landing-36387270053-1 --dir .cache/eval-artifact
+          gh run download 36849221714 --repo jush0147/tetrp --name kiwi-native-runtime-36849221714 --dir .cache/native-artifact
+          chmod +x .cache/native-artifact/snapshot-accepted
+          git -C .cache/cc2-wasm-source apply --check "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          node scripts/kiwi-surge-observer-prepare.js install
+          mkdir -p .cache/surge-audit
+          git -C .cache/cc2-wasm-source diff > .cache/surge-audit/source.patch
+      - name: Compile diagnostic against accepted search
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          RUSTFLAGS="--cfg surge_observer" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib snapshot::tests
+          RUSTFLAGS="--cfg surge_observer" cargo +1.90.0 build --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --bin snapshot_surge
+      - name: Full report parity, actual search inventory, authority root alternatives
+        run: node scripts/kiwi-surge-audit.js audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-surge-diagnostic
+          path: .cache/surge-audit/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify completion or failure
+        if: always()
+        env:
+          AUDIT_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-surge-audit.js notify
