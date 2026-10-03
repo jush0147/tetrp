@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 已授權開始：[wasted_t off，重用控制組](audits/cc2-alignment/WASTED_T_OFF_PLAN.md)。只改−1.5→0；重用run37026070707全部accepted 200局，candidate新跑同seed／seat 200局。先Rust配置／same-state／frozen report／真實activation／authority gate，成功才arena。H1=1、H9=-0.5；原順序其他項未派送。不再丟600局，例外simultaneous KO才整組含control换seed重打。ntfy一次；run ID另記。
+
 2026-10-03 排序更新：[後續固定順序](audits/cc2-alignment/EVALUATOR_NEXT_ORDER_2026-10-03.md)已依使用者要求記錄，優先於下方舊「其他項目尚無排序」。wasted_t → B2B／Surge未兌現價值（含B2B leaf） → clear三表家族 → B2B當次clear reward → Tetris井深 → combo shaping → PC override/bonus分開 → row transitions → base coveredness → base holes → base height隔離 → T-slot bonus/cutout分開。B2B／Surge已提升主線第2；依使用者指定，B2B當次消行第4、井深第5。先單項／家族機制，再有證據的interaction、缺項、最後權重。第1–6項後檢視成本與證據；不自動啟動全清單。本次僅寫計畫、未改bot或派送對戰。
 
 2026-10-03 最新：[H1 共同對手400局結果](audits/cc2-alignment/H1_COMMON_RESULT_37026070707.md)已完整驗收。100 blocks、400 KO、零technical failure／fallback／parity mismatch，無重打。H1-on對Legacy104–96；off107–93，off-minus-on +1.5pp、配對近似95% CI −7.79～+10.79pp，未證明改善或等價。保持H1=1／H9=-0.5，不採用off、不追加樣本。既定visible-T→H9-off→H1-off初輪完成；其他參數尚無排定次序，下一步先選定單一mechanism hypothesis，不自動派新批次。實際3h20m13s。
