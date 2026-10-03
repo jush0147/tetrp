@@ -1,6 +1,6 @@
 # 現有 CC2 evaluator：目前唯一的後續順序
 
-2026-10-03 排序更新：[後續固定順序](EVALUATOR_NEXT_ORDER_2026-10-03.md)已依使用者要求記錄，優先於下方舊「其他項目尚無排序」。wasted_t → clear三表家族 → combo shaping → B2B clear reward → B2B leaf → PC override/bonus分開 → well → row transitions → base coveredness → base holes → base height隔離 → T-slot bonus/cutout分開。先單項／家族機制，再有證據的interaction、缺項、最後權重。第1–6項後檢視成本與證據；不自動啟動全清單。本次僅寫計畫、未改bot或派送對戰。
+2026-10-03 排序更新：[後續固定順序](EVALUATOR_NEXT_ORDER_2026-10-03.md)已依使用者要求記錄，優先於下方舊「其他項目尚無排序」。wasted_t → B2B／Surge未兌現價值（含B2B leaf） → clear三表家族 → B2B當次clear reward → Tetris井深 → combo shaping → PC override/bonus分開 → row transitions → base coveredness → base holes → base height隔離 → T-slot bonus/cutout分開。B2B／Surge已提升主線第2；依使用者指定，B2B當次消行第4、井深第5。先單項／家族機制，再有證據的interaction、缺項、最後權重。第1–6項後檢視成本與證據；不自動啟動全清單。本次僅寫計畫、未改bot或派送對戰。
 
 > 2026-09-30 接續入口：[MECHANISM_EXPERIMENT_PLAN.md](MECHANISM_EXPERIMENT_PLAN.md) 頂部記錄目前參數順序與停點。下方是歷程，末段曾寫「3–5 後直接進 H9」已撤回：八局 pilot 不足淘汰 visible-T。主線仍是 visible-T → H9-off → H1-off；其他欄位有盤點但沒有完整實驗排序。另插入的 arena 效率工作見 [ARENA_EFFICIENCY_HANDOFF.md](ARENA_EFFICIENCY_HANDOFF.md)，不取代參數主線。
 

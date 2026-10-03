@@ -15,31 +15,31 @@
 | 順序 | 機制 | 首個隔離比較／問題 | 為何排在這裡 |
 |---|---|---|---|
 | 1 | wasted_t | -1.5→0，其他不變。固定保留 T 的偏好，是否增加 KO 勝率？確認 TSS、mini、普通消行、AC 的扣分與累積方式 | 單一且清楚的策略假設；不需先發明新 feature |
-| 2 | clear 類型 shaping | 只將 normal_clears、mini_spin_clears、spin_clears 三張表的額外 reward 一起關閉，保留精確 sent、B2B/combo/PC。問整個固定消行偏好是否有增量效益 | 直接影響攻守選擇；可與已有 authority transaction 對照 |
-| 3 | combo_attack | 只把舊離散 combo 額外 reward 關閉。精確 combo transaction 保持 | 檢驗舊 combo 偏好在精確 sent 之外的作用 |
+| 2 | B2B／Surge 未兌現價值（含 has_back_to_back） | 先審查 Boolean +0.5、零權重 charge/bank 與剩餘可見方塊的兌現關係；確認 horizon 外資產估值及已計入攻擊的重疊，再固定一個隔離假設。不得同時開啟多項 bonus | S2 核心機制：規則 transaction 已實作，不代表 leaf 已充分評價尚未兌現的資產；優先於傳統幾何項 |
+| 3 | clear 類型 shaping | 只將 normal_clears、mini_spin_clears、spin_clears 三張表的額外 reward 一起關閉，保留精確 sent、B2B/combo/PC。問整個固定消行偏好是否有增量效益 | 直接影響攻守選擇；可與已有 authority transaction 對照 |
 | 4 | back_to_back_clear | 只關閉此次 clear 的 B2B 額外 reward；不改 B2B 規則或 leaf | 將已實現攻擊的偏好與持有資產的價值拆開 |
-| 5 | has_back_to_back | leaf +0.5→0；維持第4項原 accepted 設定 | 問有限 horizon 下 Boolean B2B residual value 是否有效；不混成 Surge 改模 |
-| 6 | perfect_clear / override | 先只把 perfect_clear_override true→false，保留+15；其後另一個獨立比較只把+15→0、保留原override。不可同時改兩者 | PC 是獎勵與覆蓋控制兩件事；必須先分清其他 shaping 被遮蔽的情況 |
-| 7 | tetris_well_depth | +0.3→0；不改 T-slot cutout | 檢驗沒有可見 I／到達時機條件的井深資產估值 |
+| 5 | tetris_well_depth | +0.3→0；不改 T-slot cutout | 檢驗沒有可見 I／到達時機條件的井深資產估值 |
+| 6 | combo_attack | 只把舊離散 combo 額外 reward 關閉。精確 combo transaction 保持 | 檢驗舊 combo 偏好在精確 sent 之外的作用 |
+| 7 | perfect_clear / override | 先只把 perfect_clear_override true→false，保留+15；其後另一個獨立比較只把+15→0、保留原override。不可同時改兩者 | PC 是獎勵與覆蓋控制兩件事；必須先分清其他 shaping 被遮蔽的情況 |
 | 8 | row_transitions | -0.5→0；其他 board metrics 保持 | 單一幾何 proxy，適合先檢验其增量效益 |
 | 9 | base coveredness | h6_base_coveredness_scale 1→0；不改共享 cell_coveredness 或 cap6，故 H1 不變 | 隔離 base 覆蓋懲罰，避免一個改動同時修改 incoming safety |
 | 10 | base holes | h6_base_holes_scale 1→0；H1與H9都保持 | 測 holes 在覆蓋／cavity 等現有項之外的增量價值 |
 | 11 | base height family | 先隔離 base 專用開關，再分普通 height、upper-half、upper-quarter 三個獨立比較；共享係數在 H1 的用途保持 | 高度項有耦合，不能直接改共享係數後誤稱單項測試 |
 | 12 | T-slot 整體估值 | 先只移除直接 tslot bonus，保留 cutout；再另一個獨立候選關閉整個模板估值與 cutout，評估聯合機制 | cutout 同時改 holes、coverage、height、transitions、well，影響最廣；不能將 bonus=0 說成整個機制移除 |
 
-第2項是**一個機制家族的聯合消融**，不是單一數值參數。結果不能歸因某張表；若需要定位，家族內追加順序為 normal→mini→full，各獨立回到原 accepted，須先記錄新的具體實驗。第6、11、12項內子比較也逐個處理，不一次建多候選。結果若不明確，不任意換成一堆权重或追加到贏。
+第3項是**一個機制家族的聯合消融**，不是單一數值參數。結果不能歸因某張表；若需要定位，家族內追加順序為 normal→mini→full，各獨立回到原 accepted，須先記錄新的具體實驗。第2、7、11、12項內子比較也逐個處理，不一次建多候選。結果若不明確，不任意換成一堆权重或追加到贏。
 
-此順序依「假設清晰、對出手的直接影響、隔離成本」安排；不是聲稱前面更重要、後面更沒用。完成第1–6項後做一次證據整理，判斷第7–12項是否仍值得花同等成本；不因列了表就自動耗完所有場次。若新證據要求改順序，先在本文件記具體理由與變更，再執行；不得因一次追問臨時轉方向。
+2026-10-03 修訂原因：B2B／Surge 未兌現價值是 S2 核心評價問題，從後置缺項階段提升至第2項，原 has_back_to_back 併入審查；依使用者明確指定，B2B 當次消行獎勵列第4、Tetris井深列第5，其餘順延。每次實驗仍只改一個假設。此順序兼顧使用者優先次序與「假設清晰、對出手的直接影響、隔離成本」；不是聲稱前面更重要、後面更沒用。完成第1–6項後做一次證據整理，判斷第7–12項是否仍值得花同等成本；不因列了表就自動耗完所有場次。若新證據要求改順序，先在本文件記具體理由與變更，再執行；不得因一次追問臨時轉方向。
 
 ## 重疊、缺項與權重：另外三個階段
 
 **重疊／interaction**：單項off不差，不足以認定冗餘；單項off變差也不表示該項不可替代。只有兩項有具體 source/行為重疊證據、且確實需要解決時，才做預先固定的2×2比較。優先關係為clear shaping↔sent/cancel、B2B clear↔B2B leaf、base holes↔coveredness/H9。不把聯合消融當單項因果結論。
 
-**缺項假設預設順序**：① cancellation 的額外價值；② B2B charge／Surge 的未實現資產價值；③ 資產兌現時間與公開incoming時序；④ 未知tail／Hold的延續穩健性。這些是候選研究問題，不是已證實缺陷或可直接啟用的bonus。每項需先證明現有search、clear shaping、board transition尚未充分表達目標差異，避免重複獎勵。H1不顯著不等於證明cancel reward必須加。預設在上述既有機制整理之後才選一項，不同時擴張search與evaluator。
+**缺項假設預設順序**：① cancellation 的額外價值；② 一般資產兌現時間與公開incoming時序；③ 未知tail／Hold的延續穩健性。B2B charge／Surge 未兌現價值已提升主線第2項，不在此處重複排隊。這些是候選研究問題，不是已證實缺陷或可直接啟用的bonus。每項需先證明現有search、clear shaping、board transition尚未充分表達目標差異，避免重複獎勵。H1不顯著不等於證明cancel reward必須加。預設在上述既有機制整理之後才選一項，不同時擴張search與evaluator。
 
 **最後才調權重**：對保留且有證據的機制預先固定少量數值；使用未參與選擇的確認seeds，不以先前400局找出最有利權重後又當驗證。當前 useful_attack_reward=1 保持為既有sent權重／尺度參考，不預設未來永遠最佳，也不混入每次off比較。max_cell_covered_height=6 是計量上限，需獨立假設才改。
 
-softdrop維持0，因本arena不測物理按鍵成本；tetrio_s2與其inactive branch不因名字而啟用。H3 charge/bank及cancellation目前零值列入缺項階段，不能報成已驗證沒用。神經網路、Native重做、TBP、ARE支援與search budget變更均不在此排序內。
+softdrop維持0，因本arena不測物理按鍵成本；tetrio_s2與其inactive branch不因名字而啟用。H3 charge/bank目前零值列入主線第2項；cancellation零值保留於後續缺項階段，均不能報成已驗證沒用。神經網路、Native重做、TBP、ARE支援與search budget變更均不在此排序內。
 
 ## 每項共用執行契約
 
