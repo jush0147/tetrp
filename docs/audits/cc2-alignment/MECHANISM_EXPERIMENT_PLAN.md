@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-03 最新驗收：[Surge residual 200 KO結果](SURGE_RESIDUAL_RESULT_37124649645.md)101–99，重用accepted控制104–96；差−1.5pp，配對95% CI −10.90～+7.90pp。175918 placements／66389 Holds，零technical failure／fallback／rejection／parity mismatch，無重打。Gate有charged top1 activation。未證明改善，保持bank leaf=0與Boolean +0.5，不追加／掃權重。第2項初輪完成（效益未定，不代表Surge問題已解決）；下一步依固定順序第3項clear三表shaping家族，先語意與隔離檢查，從原accepted出發。未派新arena。以下待跑描述為歷史。
+
 2026-10-03 接續第2項：[charged-bank residual gate→200KO](SURGE_RESIDUAL_PLAN.md)，固定0.5折價gross bank、公開next-lock multiplier，pending不扣因可cancel；不是精確sent。只改一個leaf假設，Boolean/H1/H9/wasted-T保持。20public gate含8charged，通過自動200新KO，失敗停止；沒有其他queue。
 
 2026-10-03 最新：[charged Surge診斷通過](SURGE_RESULT_37121512490.md)，8/8observer parity、每state都看到release與charged known-frontier。Residual bank數量無独立leaf估值是可測假設，尚非勝率缺陷證明；不能說看不到取消價值。下一步限定charged-bank residual、先固定單位與公開pending/multiplier語意，不直接啟用既有H3或改多項。尚未派arena。

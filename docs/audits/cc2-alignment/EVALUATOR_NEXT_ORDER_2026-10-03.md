@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-03 最新驗收：[Surge residual 200 KO結果](SURGE_RESIDUAL_RESULT_37124649645.md)101–99，重用accepted控制104–96；差−1.5pp，配對95% CI −10.90～+7.90pp。175918 placements／66389 Holds，零technical failure／fallback／rejection／parity mismatch，無重打。Gate有charged top1 activation。未證明改善，保持bank leaf=0與Boolean +0.5，不追加／掃權重。第2項初輪完成（效益未定，不代表Surge問題已解決）；下一步依固定順序第3項clear三表shaping家族，先語意與隔離檢查，從原accepted出發。未派新arena。以下待跑描述為歷史。
+
 第2項接續：[Surge residual固定候選](SURGE_RESIDUAL_PLAN.md)，折價0.5的已充能gross generated-equivalent leaf、按公開next-lock multiplier。Gate通過自動200新KO，不新增progress或改Boolean。這是待驗假設，尚無強度結果，其餘順序不變。
 
 第2項最新：[Surge診斷結果](SURGE_RESULT_37121512490.md)已驗收；搜尋可release也能到charged frontier，未兌現bank無獨立數量leaf。下一步charged-bank residual單一候選的明確定義；沒有權重變更／arena，並未證明它是輸局原因。其餘排序保持。
