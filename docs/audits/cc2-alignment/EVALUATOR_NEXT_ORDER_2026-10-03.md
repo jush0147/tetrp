@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+目前進度：[第2項審查與單一Boolean-off gate](B2B_INVENTORY_REVIEW.md)。只將has_back_to_back 0.5→0；先驗證真實search activation／authority，未派arena。Surge bank與charge沒有啟用，也沒有把整項未兌現價值標成已完成。
+
 使用者要求先把其他項目排好。此文件是後續工作的固定預設順序，不是一次授權全部 arena，也不是重要性排名。2026-10-03 起優先於舊文件「其他項目尚無排序」的描述。本次只記錄，未修改 bot 或派送對戰。
 
 ## 已完成，不重新排隊

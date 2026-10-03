@@ -1,0 +1,65 @@
+name: Kiwi B2B leaf off correctness and activation
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-b2b-leaf-gate.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-b2b-leaf-gate-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-wasm-source
+      - name: Restore frozen accepted source and apply one coefficient change
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36387270053 --repo jush0147/tetrp --name cc2-landing-36387270053-1 --dir .cache/eval-artifact
+          gh run download 36849221714 --repo jush0147/tetrp --name kiwi-native-runtime-36849221714 --dir .cache/native-artifact
+          chmod +x .cache/native-artifact/snapshot-accepted
+          git -C .cache/cc2-wasm-source apply --check "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          node scripts/kiwi-b2b-leaf-off-prepare.js install
+          node scripts/kiwi-native-runner-prepare.js
+          git -C .cache/cc2-wasm-source diff > .cache/b2b-leaf-build/source.patch
+          cp .cache/cc2-wasm-source/src/bin/snapshot_stdio.rs .cache/b2b-leaf-build/snapshot_stdio.rs
+      - name: Build control and B2B-leaf-off, verify snapshot and same-state evaluator tests
+        run: |
+          rustup toolchain install 1.90.0 --profile minimal
+          for policy in control b2b-leaf-off; do
+            flags=""
+            output="accepted"
+            if [ "$policy" = b2b-leaf-off ]; then flags="--cfg b2b_leaf_off"; output="b2b-leaf-off"; fi
+            RUSTFLAGS="$flags" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib snapshot::tests
+            KIWI_CONFIG_OUTPUT="$GITHUB_WORKSPACE/.cache/b2b-leaf-build/$output-config.json" RUSTFLAGS="$flags" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib b2b_leaf_off_gate_tests
+            RUSTFLAGS="$flags" cargo +1.90.0 build --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --bin snapshot_stdio
+            cp .cache/cc2-wasm-source/target/release/snapshot_stdio ".cache/b2b-leaf-build/snapshot-$policy"
+          done
+      - name: Configuration identity, frozen control parity and candidate authority checks
+        run: node scripts/kiwi-b2b-leaf-off-gate.js gate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-b2b-leaf-off-build
+          path: .cache/b2b-leaf-build/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify gate result; no arena in this workflow
+        if: always()
+        run: node scripts/kiwi-b2b-leaf-off-gate.js notify

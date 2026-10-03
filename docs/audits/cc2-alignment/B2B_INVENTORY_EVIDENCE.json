@@ -1,0 +1,471 @@
+{
+  "schema": "b2b-inventory-audit/1",
+  "scope": "Actual authority transaction witnesses, source review and existing public-root distribution. No Rust execution or search-leaf attribution; synthetic transactions do not prove geometry reachability.",
+  "hashes": {
+    "freestyle": "9fe27a686c21515eb729af2ec73c4b99cd0ad6201b783fd35319a93c265f03d1",
+    "attack": "7664f84e13d797c7cb1620d09b55a40fb3ebe95b3cfdfab1809aa2593a4de3ac",
+    "config": "a7c4207c394f5bf21ed9ff2c75d1a6f707605c332e560fdae9d012fa7e0eb022"
+  },
+  "weights": {
+    "has_back_to_back": 0.5,
+    "h3_b2b_charge_value": 0,
+    "h3_surge_bank_value": 0
+  },
+  "rootHistogram": {
+    "0": 23,
+    "1": 13,
+    "2": 18,
+    "3": 7,
+    "4": 6
+  },
+  "sampleCount": 67,
+  "witnesses": [
+    {
+      "id": "below-threshold",
+      "input": {
+        "btb": 4,
+        "lines": 1,
+        "spin": "none",
+        "pending": 0,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {}
+      },
+      "result": {
+        "surge": [],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "after": {
+        "btb": 0,
+        "combo": 1,
+        "pending": 0,
+        "generated": 0,
+        "cancelled": 0,
+        "sent": 0,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 0,
+      "surgeSent": 0
+    },
+    {
+      "id": "first-charged",
+      "input": {
+        "btb": 5,
+        "lines": 1,
+        "spin": "none",
+        "pending": 0,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {}
+      },
+      "result": {
+        "surge": [
+          {
+            "generated": 1,
+            "cancelled": 0,
+            "sent": 1,
+            "unused_defense_budget": 0
+          }
+        ],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "after": {
+        "btb": 0,
+        "combo": 1,
+        "pending": 0,
+        "generated": 1,
+        "cancelled": 0,
+        "sent": 1,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 1,
+      "surgeSent": 1
+    },
+    {
+      "id": "banked-8",
+      "input": {
+        "btb": 8,
+        "lines": 1,
+        "spin": "none",
+        "pending": 0,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {}
+      },
+      "result": {
+        "surge": [
+          {
+            "generated": 1,
+            "cancelled": 0,
+            "sent": 1,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 1,
+            "cancelled": 0,
+            "sent": 1,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 2,
+            "cancelled": 0,
+            "sent": 2,
+            "unused_defense_budget": 0
+          }
+        ],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "after": {
+        "btb": 0,
+        "combo": 1,
+        "pending": 0,
+        "generated": 4,
+        "cancelled": 0,
+        "sent": 4,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 4,
+      "surgeSent": 4
+    },
+    {
+      "id": "banked-8-cancel",
+      "input": {
+        "btb": 8,
+        "lines": 1,
+        "spin": "none",
+        "pending": 4,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {}
+      },
+      "result": {
+        "surge": [
+          {
+            "generated": 1,
+            "cancelled": 1,
+            "sent": 0,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 1,
+            "cancelled": 1,
+            "sent": 0,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 2,
+            "cancelled": 2,
+            "sent": 0,
+            "unused_defense_budget": 0
+          }
+        ],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "after": {
+        "btb": 0,
+        "combo": 1,
+        "pending": 0,
+        "generated": 4,
+        "cancelled": 4,
+        "sent": 0,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 4,
+      "surgeSent": 0
+    },
+    {
+      "id": "banked-8-multiplier",
+      "input": {
+        "btb": 8,
+        "lines": 1,
+        "spin": "none",
+        "pending": 0,
+        "multiplier": 1.5,
+        "combo": 0,
+        "overrides": {}
+      },
+      "result": {
+        "surge": [
+          {
+            "generated": 2,
+            "cancelled": 0,
+            "sent": 2,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 2,
+            "cancelled": 0,
+            "sent": 2,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 2,
+            "cancelled": 0,
+            "sent": 2,
+            "unused_defense_budget": 0
+          }
+        ],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "after": {
+        "btb": 0,
+        "combo": 1,
+        "pending": 0,
+        "generated": 6,
+        "cancelled": 0,
+        "sent": 6,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 6,
+      "surgeSent": 6
+    },
+    {
+      "id": "banked-8-nonclear",
+      "input": {
+        "btb": 8,
+        "lines": 0,
+        "spin": "none",
+        "pending": 0,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {}
+      },
+      "result": {
+        "surge": [],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": false,
+        "b2bBonus": false
+      },
+      "after": {
+        "btb": 8,
+        "combo": 0,
+        "pending": 0,
+        "generated": 0,
+        "cancelled": 0,
+        "sent": 0,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 0,
+      "surgeSent": 0
+    },
+    {
+      "id": "banked-8-mini",
+      "input": {
+        "btb": 8,
+        "lines": 1,
+        "spin": "mini",
+        "pending": 0,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {}
+      },
+      "result": {
+        "surge": [],
+        "normal": {
+          "generated": 1,
+          "cancelled": 0,
+          "sent": 1,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": true
+      },
+      "after": {
+        "btb": 9,
+        "combo": 1,
+        "pending": 0,
+        "generated": 1,
+        "cancelled": 0,
+        "sent": 1,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 0,
+      "surgeSent": 0
+    },
+    {
+      "id": "banked-8-full-double",
+      "input": {
+        "btb": 8,
+        "lines": 2,
+        "spin": "full",
+        "pending": 0,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {}
+      },
+      "result": {
+        "surge": [],
+        "normal": {
+          "generated": 5,
+          "cancelled": 0,
+          "sent": 5,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": true
+      },
+      "after": {
+        "btb": 9,
+        "combo": 1,
+        "pending": 0,
+        "generated": 5,
+        "cancelled": 0,
+        "sent": 5,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 0,
+      "surgeSent": 0
+    },
+    {
+      "id": "charging-disabled",
+      "input": {
+        "btb": 8,
+        "lines": 1,
+        "spin": "none",
+        "pending": 0,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {
+          "b2bcharging": false
+        }
+      },
+      "result": {
+        "surge": [],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "after": {
+        "btb": 0,
+        "combo": 1,
+        "pending": 0,
+        "generated": 0,
+        "cancelled": 0,
+        "sent": 0,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 0,
+      "surgeSent": 0
+    },
+    {
+      "id": "custom-base3",
+      "input": {
+        "btb": 8,
+        "lines": 1,
+        "spin": "none",
+        "pending": 0,
+        "multiplier": 1,
+        "combo": 0,
+        "overrides": {
+          "b2bcharge_base": 3
+        }
+      },
+      "result": {
+        "surge": [
+          {
+            "generated": 2,
+            "cancelled": 0,
+            "sent": 2,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 2,
+            "cancelled": 0,
+            "sent": 2,
+            "unused_defense_budget": 0
+          },
+          {
+            "generated": 3,
+            "cancelled": 0,
+            "sent": 3,
+            "unused_defense_budget": 0
+          }
+        ],
+        "normal": {
+          "generated": 0,
+          "cancelled": 0,
+          "sent": 0,
+          "unused_defense_budget": 0
+        },
+        "all_clear": null,
+        "blocked": true,
+        "b2bBonus": false
+      },
+      "after": {
+        "btb": 0,
+        "combo": 1,
+        "pending": 0,
+        "generated": 7,
+        "cancelled": 0,
+        "sent": 7,
+        "tanked": 0,
+        "received": 0
+      },
+      "surgeGenerated": 7,
+      "surgeSent": 7
+    }
+  ]
+}

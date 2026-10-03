@@ -79,6 +79,7 @@ test('#5 public tree excludes research directories and binary assets',()=>{
     'tools/cc2-eval-audit/h9_off_tests.rs',
     'tools/cc2-eval-audit/h1_off_tests.rs',
     'tools/cc2-eval-audit/wasted_off_tests.rs',
+    'tools/cc2-eval-audit/b2b_leaf_off_tests.rs',
     'tools/cc2-eval-audit/h1_activation.rs',
   ]);
   for(const path of tracked) {
