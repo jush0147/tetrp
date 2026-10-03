@@ -1,3 +1,4 @@
+import {VARIANT,candidateConfig} from './kiwi-surge-variant.js';
 import assert from 'node:assert/strict';
 import {compareScores} from './kiwi-h1-short-metrics.js';
 import {readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
@@ -13,20 +14,20 @@ if(process.argv[2]==='notify'){
  const url=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
  let g;try{g=await read(`${root}/gate.json`);}catch{}
  const message='Surge residual build/correctness/activation gate incomplete. No arena launched.';
- const r=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:'Kiwi Surge residual gate result',message:message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});assert.ok(r.ok);assert.ok((await r.json()).id);
+ const r=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:'Kiwi Surge residual gate result',message:VARIANT.name+': '+message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});assert.ok(r.ok);assert.ok((await r.json()).id);
 }else if(process.argv[2]==='gate'){
  await mkdir(root,{recursive:true});const summary={complete:false,checks:[],holds:0,placements:0,baselineReports:0,explicitHoldModes:[],changedScores:0,changedTop1:0};
  const save=()=>writeFile(`${root}/gate.json`,JSON.stringify(summary,null,2));await save();
  const clients=[];
  try{
-  const plan={candidate:'surge-residual',baselineNative:'386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb'};
+  const plan={variant:VARIANT,candidate:'surge-residual',baselineNative:'386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb'};
   const activation=await read('docs/audits/cc2-alignment/SURGE_PUBLIC_INPUTS.json');
   summary.activationSourceRun=activation.run;
   const original=(await read('docs/audits/cc2-alignment/ACTIVE_PARAMETERS_2026-09-28.json')).config;
   const accepted=await read(`${root}/accepted-config.json`),candidate=await read(`${root}/surge-residual-config.json`);
   assert.deepEqual(accepted,original,'Rebuilt control configuration drift');
-  const expected=structuredClone(accepted);assert.equal(expected.freestyle_weights.h3_surge_bank_value,0);expected.freestyle_weights.h3_surge_bank_value=0.5;
-  assert.deepEqual(candidate,expected,'More than one coefficient changed');assert.equal(candidate.freestyle_weights.h9_cavity_excavation,-0.5,'H9 must stay enabled');summary.checks.push('exact config diff: Surge residual only');
+  const expected=candidateConfig(accepted);
+  assert.deepEqual(candidate,expected,'Configuration differs from fixed variant');assert.equal(candidate.freestyle_weights.h9_cavity_excavation,-0.5,'H9 must stay enabled');summary.checks.push('exact config diff: '+VARIANT.name);
   assert.equal(sha(await readFile('.cache/native-artifact/snapshot-accepted')),plan.baselineNative);
   const frozen=nativeClient(resolve('.cache/native-artifact/snapshot-accepted'));
   const rebuilt=nativeClient(resolve(root,'snapshot-control'));

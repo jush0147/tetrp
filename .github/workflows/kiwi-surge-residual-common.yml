@@ -1,9 +1,16 @@
 name: Kiwi Surge residual gate and 200 KO games
+run-name: 'Kiwi Surge ${{ inputs.variant }} — 200 KO'
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/kiwi-ft7-actions]
-    paths: [.github/workflows/kiwi-surge-residual-common.yml]
+    inputs:
+      variant:
+        description: Fixed Boolean and Surge bank weights
+        required: true
+        type: choice
+        default: residual
+        options: [residual, boolean-off, both-one]
+env:
+  SURGE_VARIANT: ${{ inputs.variant || 'residual' }}
 permissions:
   contents: read
   actions: read

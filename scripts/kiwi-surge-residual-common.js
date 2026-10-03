@@ -1,3 +1,4 @@
+import {VARIANT,candidateConfig} from './kiwi-surge-variant.js';
 import assert from 'node:assert/strict';
 import {verifyReuse,CONTROL} from './kiwi-wasted-reuse.js';
 import {readFile,writeFile,mkdir,unlink} from 'node:fs/promises';
@@ -18,13 +19,13 @@ const json=(p,v)=>writeFile(p,JSON.stringify(v,null,2)),hash=b=>createHash('sha2
 const planHash=hash(JSON.stringify(PLAN));
 async function identities(){
  const manifest=await read('.cache/surge-residual-build/manifest.json'),gate=await read('.cache/surge-residual-build/gate.json');
- assert.equal(gate.complete,true);assert.deepEqual(manifest,gate.manifest);assert.equal(manifest.candidate,'surge-residual');
+ assert.equal(gate.complete,true);assert.deepEqual(manifest,gate.manifest);assert.equal(manifest.candidate,'surge-residual');assert.deepEqual(manifest.variant,VARIANT);
  assert.equal(manifest.baselineNative,PLAN.native.accepted);assert.match(manifest.candidateNative,/^[a-f0-9]{64}$/);
  const on=await read('.cache/surge-residual-build/accepted-config.json'),off=await read('.cache/surge-residual-build/surge-residual-config.json');
  assert.equal(on.freestyle_weights.pending_safety,1);assert.equal(on.freestyle_weights.h9_cavity_excavation,-0.5);
  assert.deepEqual(on,(await read('docs/audits/cc2-alignment/ACTIVE_PARAMETERS_2026-09-28.json')).config);
  assert.equal(manifest.nativeRun,Number(process.env.GITHUB_RUN_ID));assert.equal(gate.sampleCount,20);assert.equal(gate.placements,20);assert.equal(gate.baselineReports,20);assert.ok(gate.chargedChangedTop1>0);
- const expected=structuredClone(on);expected.freestyle_weights.h3_surge_bank_value=0.5;assert.deepEqual(off,expected);
+ const expected=candidateConfig(on);assert.deepEqual(off,expected);
  for(const p of ['accepted','surge-residual'])assert.equal(hash(await readFile(`.cache/surge-residual-build/snapshot-${p}`)),p==='accepted'?PLAN.native.accepted:manifest.candidateNative);
  const legacy=await read('vendor/kiwi-v1/artifact-lock.json');
  assert.equal(legacy.productVersion,'kiwi-v1-snapshot-v3.2');assert.equal(legacy.defaultNodeBudget,PLAN.nodeBudget);
@@ -120,8 +121,8 @@ if(process.argv[2]==='game'){
  let r;try{r=await read(`${root}/aggregate/result.json`);}catch{}
  const ok=process.env.AGGREGATE_STATUS==='success'&&r?.complete;
  const url=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
- const text=ok?`Reused accepted vs Legacy ${r.statistics.acceptedScore.join('-')}; Surge residual off vs Legacy ${r.statistics.candidateScore.join('-')}. Candidate-minus-accepted ${(r.statistics.candidateMinusAccepted*100).toFixed(1)}pp; paired approx 95% CI ${r.statistics.pairedApprox95CI.map(x=>(x*100).toFixed(1)).join(' to ')}pp. Correctness passed; no automatic promotion.`:'Surge residual reused-control batch incomplete or failed correctness. No strength verdict; no automatic retry.';
+ const text=ok?`Reused accepted vs Legacy ${r.statistics.acceptedScore.join('-')}; Surge ${VARIANT.name} vs Legacy ${r.statistics.candidateScore.join('-')}. Candidate-minus-accepted ${(r.statistics.candidateMinusAccepted*100).toFixed(1)}pp; paired approx 95% CI ${r.statistics.pairedApprox95CI.map(x=>(x*100).toFixed(1)).join(' to ')}pp. Correctness passed; no automatic promotion.`:'Surge residual reused-control batch incomplete or failed correctness. No strength verdict; no automatic retry.';
  if(process.env.GITHUB_STEP_SUMMARY)await writeFile(process.env.GITHUB_STEP_SUMMARY,text+'\n'+url+'\n');
- const response=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:ok?'Surge residual reused-control results ready':'Surge residual reused-control needs review',message:text+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});
+ const response=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:ok?'Surge residual reused-control results ready':'Surge residual reused-control needs review',message:VARIANT.name+': '+text+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});
  assert.ok(response.ok);assert.ok((await response.json()).id);
 }else throw Error('game | block | aggregate | notify');

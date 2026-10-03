@@ -1,3 +1,4 @@
+import {VARIANT} from './kiwi-surge-variant.js';
 import assert from 'node:assert/strict';
 import {auditGame as auditOriginal} from './kiwi-h1-common-plan.js';
 import {CONTROL} from './kiwi-wasted-reuse.js';
@@ -5,6 +6,7 @@ import {scoreKO} from './kiwi-cc2-series-score.js';
 export const PLAN={schema:'surge-residual-reused-control/1',hypothesis:'0.5 * floor(bankBaseUnits * nextLockMultiplier); gross leaf asset; no pending deduction',control:CONTROL,blocks:100,legsPerBlock:4,seedBase:2026160001,seedStride:100,retryStride:4,maxAttempts:25,
  framesPerPiece:24,nodeBudget:200000,watchdogFrames:360000,buildRun:null,
  native:{accepted:'386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb','surge-residual':null}};
+if(VARIANT.name!=='residual'){PLAN.variant=VARIANT;PLAN.hypothesis=`Boolean ${VARIANT.boolean}; ${VARIANT.bank} * floor(bankBaseUnits * nextLockMultiplier); gross leaf asset`; }
 export function settings(block,leg,attempt=0){
  assert.ok(Number.isInteger(block)&&block>=0&&block<PLAN.blocks);
  assert.ok(Number.isInteger(leg)&&leg>=0&&leg<4);

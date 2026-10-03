@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 使用者授權補測：[Boolean×Surge交互作用及(1,1)](audits/cc2-alignment/SURGE_INTERACTION_PLAN.md)。先(0,0.5)200新KO補第四格，再queue(1,1)200新KO；各自gate／固定控制／ntfy。第3項暫停，不擴大weight sweep。run ID另記dispatch。
+
 2026-10-03 最新驗收：[Surge residual 200 KO結果](audits/cc2-alignment/SURGE_RESIDUAL_RESULT_37124649645.md)101–99，重用accepted控制104–96；差−1.5pp，配對95% CI −10.90～+7.90pp。175918 placements／66389 Holds，零technical failure／fallback／rejection／parity mismatch，無重打。Gate有charged top1 activation。未證明改善，保持bank leaf=0與Boolean +0.5，不追加／掃權重。第2項初輪完成（效益未定，不代表Surge問題已解決）；下一步依固定順序第3項clear三表shaping家族，先語意與隔離檢查，從原accepted出發。未派新arena。以下待跑描述為歷史。
 
 2026-10-03 修正：[Surge residual run37124362998配置覆寫](audits/cc2-alignment/SURGE_RESIDUAL_FAILURE_37124362998.md)。插入0.5後被原初始化歸0，Rust配置斷言擋下，無arena。已改review方法內唯一bank初始化、補regression/actual-source檢查，12tests過；不改formula/權重/門檻。新SHA重派同gate→200KO，run另記。

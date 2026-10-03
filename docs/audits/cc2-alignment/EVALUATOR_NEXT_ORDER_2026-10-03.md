@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-03 使用者授權補測：[Boolean×Surge交互作用及(1,1)](SURGE_INTERACTION_PLAN.md)。先(0,0.5)200新KO補第四格，再queue(1,1)200新KO；各自gate／固定控制／ntfy。第3項暫停，不擴大weight sweep。run ID另記dispatch。
+
 2026-10-03 最新驗收：[Surge residual 200 KO結果](SURGE_RESIDUAL_RESULT_37124649645.md)101–99，重用accepted控制104–96；差−1.5pp，配對95% CI −10.90～+7.90pp。175918 placements／66389 Holds，零technical failure／fallback／rejection／parity mismatch，無重打。Gate有charged top1 activation。未證明改善，保持bank leaf=0與Boolean +0.5，不追加／掃權重。第2項初輪完成（效益未定，不代表Surge問題已解決）；下一步依固定順序第3項clear三表shaping家族，先語意與隔離檢查，從原accepted出發。未派新arena。以下待跑描述為歷史。
 
 第2項接續：[Surge residual固定候選](SURGE_RESIDUAL_PLAN.md)，折價0.5的已充能gross generated-equivalent leaf、按公開next-lock multiplier。Gate通過自動200新KO，不新增progress或改Boolean。這是待驗假設，尚無強度結果，其餘順序不變。
