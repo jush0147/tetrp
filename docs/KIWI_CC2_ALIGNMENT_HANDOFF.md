@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 排序更新：[後續固定順序](audits/cc2-alignment/EVALUATOR_NEXT_ORDER_2026-10-03.md)已依使用者要求記錄，優先於下方舊「其他項目尚無排序」。wasted_t → clear三表家族 → combo shaping → B2B clear reward → B2B leaf → PC override/bonus分開 → well → row transitions → base coveredness → base holes → base height隔離 → T-slot bonus/cutout分開。先單項／家族機制，再有證據的interaction、缺項、最後權重。第1–6項後檢視成本與證據；不自動啟動全清單。本次僅寫計畫、未改bot或派送對戰。
+
 2026-10-03 最新：[H1 共同對手400局結果](audits/cc2-alignment/H1_COMMON_RESULT_37026070707.md)已完整驗收。100 blocks、400 KO、零technical failure／fallback／parity mismatch，無重打。H1-on對Legacy104–96；off107–93，off-minus-on +1.5pp、配對近似95% CI −7.79～+10.79pp，未證明改善或等價。保持H1=1／H9=-0.5，不採用off、不追加樣本。既定visible-T→H9-off→H1-off初輪完成；其他參數尚無排定次序，下一步先選定單一mechanism hypothesis，不自動派新批次。實際3h20m13s。
 
 2026-10-02 接續已授權：[H1 共同對手固定 KO 比較](audits/cc2-alignment/H1_COMMON_PLAN.md)，100 seed blocks × on/off × 兩座位，共400局（每版對Legacy 200局）。只改H1，沿用已驗證artifact與同局同seed／24frames；無一般frame cap，simultaneous KO整組重打，technical failure整批不下強度結論。16 runners／每runner兩局；取消shadow search，ntfy完成／失敗一次通知。不自動promotion，run ID另記。30項targeted tests已通過。

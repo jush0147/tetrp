@@ -1,0 +1,52 @@
+# 後續 evaluator 機制順序
+
+使用者要求先把其他項目排好。此文件是後續工作的固定預設順序，不是一次授權全部 arena，也不是重要性排名。2026-10-03 起優先於舊文件「其他項目尚無排序」的描述。本次只記錄，未修改 bot 或派送對戰。
+
+## 已完成，不重新排隊
+
+- visible-T 資源候選：200局97–103，未證明改善，不採用。這不等於測過整個 T-slot 機制是否有用。
+- H9-off：對 accepted 80–120，支持保留目前 H9=-0.5，不代表最佳權重。
+- H1-off：各對同一 Legacy 200局，on104–96、off107–93，配對差+1.5pp、CI跨零。保持H1=1，效益未定；不得說已證明無用。
+
+## 固定順序與單項問題
+
+每項先利用已有語意資料，只補尚缺的 source/真實snapshot證據，再建立隔離候選。表內的 off 是機制檢驗，不是先決定刪除。
+
+| 順序 | 機制 | 首個隔離比較／問題 | 為何排在這裡 |
+|---|---|---|---|
+| 1 | wasted_t | -1.5→0，其他不變。固定保留 T 的偏好，是否增加 KO 勝率？確認 TSS、mini、普通消行、AC 的扣分與累積方式 | 單一且清楚的策略假設；不需先發明新 feature |
+| 2 | clear 類型 shaping | 只將 normal_clears、mini_spin_clears、spin_clears 三張表的額外 reward 一起關閉，保留精確 sent、B2B/combo/PC。問整個固定消行偏好是否有增量效益 | 直接影響攻守選擇；可與已有 authority transaction 對照 |
+| 3 | combo_attack | 只把舊離散 combo 額外 reward 關閉。精確 combo transaction 保持 | 檢驗舊 combo 偏好在精確 sent 之外的作用 |
+| 4 | back_to_back_clear | 只關閉此次 clear 的 B2B 額外 reward；不改 B2B 規則或 leaf | 將已實現攻擊的偏好與持有資產的價值拆開 |
+| 5 | has_back_to_back | leaf +0.5→0；維持第4項原 accepted 設定 | 問有限 horizon 下 Boolean B2B residual value 是否有效；不混成 Surge 改模 |
+| 6 | perfect_clear / override | 先只把 perfect_clear_override true→false，保留+15；其後另一個獨立比較只把+15→0、保留原override。不可同時改兩者 | PC 是獎勵與覆蓋控制兩件事；必須先分清其他 shaping 被遮蔽的情況 |
+| 7 | tetris_well_depth | +0.3→0；不改 T-slot cutout | 檢驗沒有可見 I／到達時機條件的井深資產估值 |
+| 8 | row_transitions | -0.5→0；其他 board metrics 保持 | 單一幾何 proxy，適合先檢验其增量效益 |
+| 9 | base coveredness | h6_base_coveredness_scale 1→0；不改共享 cell_coveredness 或 cap6，故 H1 不變 | 隔離 base 覆蓋懲罰，避免一個改動同時修改 incoming safety |
+| 10 | base holes | h6_base_holes_scale 1→0；H1與H9都保持 | 測 holes 在覆蓋／cavity 等現有項之外的增量價值 |
+| 11 | base height family | 先隔離 base 專用開關，再分普通 height、upper-half、upper-quarter 三個獨立比較；共享係數在 H1 的用途保持 | 高度項有耦合，不能直接改共享係數後誤稱單項測試 |
+| 12 | T-slot 整體估值 | 先只移除直接 tslot bonus，保留 cutout；再另一個獨立候選關閉整個模板估值與 cutout，評估聯合機制 | cutout 同時改 holes、coverage、height、transitions、well，影響最廣；不能將 bonus=0 說成整個機制移除 |
+
+第2項是**一個機制家族的聯合消融**，不是單一數值參數。結果不能歸因某張表；若需要定位，家族內追加順序為 normal→mini→full，各獨立回到原 accepted，須先記錄新的具體實驗。第6、11、12項內子比較也逐個處理，不一次建多候選。結果若不明確，不任意換成一堆权重或追加到贏。
+
+此順序依「假設清晰、對出手的直接影響、隔離成本」安排；不是聲稱前面更重要、後面更沒用。完成第1–6項後做一次證據整理，判斷第7–12項是否仍值得花同等成本；不因列了表就自動耗完所有場次。若新證據要求改順序，先在本文件記具體理由與變更，再執行；不得因一次追問臨時轉方向。
+
+## 重疊、缺項與權重：另外三個階段
+
+**重疊／interaction**：單項off不差，不足以認定冗餘；單項off變差也不表示該項不可替代。只有兩項有具體 source/行為重疊證據、且確實需要解決時，才做預先固定的2×2比較。優先關係為clear shaping↔sent/cancel、B2B clear↔B2B leaf、base holes↔coveredness/H9。不把聯合消融當單項因果結論。
+
+**缺項假設預設順序**：① cancellation 的額外價值；② B2B charge／Surge 的未實現資產價值；③ 資產兌現時間與公開incoming時序；④ 未知tail／Hold的延續穩健性。這些是候選研究問題，不是已證實缺陷或可直接啟用的bonus。每項需先證明現有search、clear shaping、board transition尚未充分表達目標差異，避免重複獎勵。H1不顯著不等於證明cancel reward必須加。預設在上述既有機制整理之後才選一項，不同時擴張search與evaluator。
+
+**最後才調權重**：對保留且有證據的機制預先固定少量數值；使用未參與選擇的確認seeds，不以先前400局找出最有利權重後又當驗證。當前 useful_attack_reward=1 保持為既有sent權重／尺度參考，不預設未來永遠最佳，也不混入每次off比較。max_cell_covered_height=6 是計量上限，需獨立假設才改。
+
+softdrop維持0，因本arena不測物理按鍵成本；tetrio_s2與其inactive branch不因名字而啟用。H3 charge/bank及cancellation目前零值列入缺項階段，不能報成已驗證沒用。神經網路、Native重做、TBP、ARE支援與search budget變更均不在此排序內。
+
+## 每項共用執行契約
+
+- 各候選從凍結accepted獨立建立，不疊上尚未確認的off。將來採用新baseline時必須另記版本與比較邊界。
+- 先source隔離/配置diff、實際搜尋activation與authority parity；既有已通過的證據不重跑成漫長pilot。不要求每項開發新observer平台。
+- 在決定強度批次前固定對手、seeds、樣本、主判讀量與資源限額。參數是否在該matchup生效要先確認；不重演H1鏡像。
+- 不把每項都預先定為400局，也不以少數短局選強弱。現有共同Legacy配對harness可沿用；對其他對手的泛化另需證據。
+- 同局同piece seed、交換seat、24frames、snapshot-only、Tetrp authority、top1/Hold/spin/cells/lock/clear parity、零fallback。KO唯一強度criterion。
+- 無一般frame cap裁勝；watchdog/技術失敗不計輸贏；完成/失敗ntfy、不持續盯跑。不自動續批或promotion。
+- 標記四種結論：有改善證據／有退步證據／不確定／實驗無效。未顯著不等於無用，不以外觀或APP替代KO。
