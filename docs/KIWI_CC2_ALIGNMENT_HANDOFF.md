@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 最新：[B2B Boolean leaf-off200KO結果](audits/cc2-alignment/B2B_LEAF_RESULT_37114400655.md)驗收通過。run37114400655 candidate100–100，重用accepted104–96；差−2pp、配對近似95% CI −11.86～+7.86pp。179692placements／67674Holds零差異、零fallback/rejection/technical failure，無重打。維持has_back_to_back=0.5，不追加。耗時1h56m53s。仍在第2項：下一步真實charged snapshots之bank／release/search frontier取證，不能把Boolean結果當完整Surge估值結案；未派新批。
+
 2026-10-03 最新：[B2B leaf gate37105409459成功](audits/cc2-alignment/B2B_LEAF_GATE_DISPATCH.md)，67placements／19Holds、66評分與3top1改變，配置及artifact核驗通過。「No arena launched」是gate-only預定通知，非失敗。使用者繼續，接[固定200新KO](audits/cc2-alignment/B2B_LEAF_COMMON_PLAN.md)：candidate hash9011774f…fa52對同一Legacy，重用原accepted200控制；不重編或重跑search gate，16 runners×兩局、ntfy。僅Boolean+0.5→0，不改H3或第4項B2B clear；無其他queue，run另記。
 
 2026-10-03 接續第2項：[B2B／Surge inventory review](audits/cc2-alignment/B2B_INVENTORY_REVIEW.md)已完成source與10個authority witnesses。第一個隔離候選只關has_back_to_back +0.5→0，不改back_to_back_clear或啟用H3。已確認現有H3 bank未乘multiplier／pending、progress為proxy；不能直接稱精確資產。沿用67public snapshots（root raw0–4，無charged root），本機6 checks通過；一次Actions gate編譯Rust/full report/top1/Hold/placement檢查，ntfy，無自動arena。B2B／Surge整項尚未結案；run另記dispatch。

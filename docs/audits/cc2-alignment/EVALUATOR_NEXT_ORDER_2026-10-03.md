@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+最新驗收：[第2項Boolean leaf-off結果](B2B_LEAF_RESULT_37114400655.md)100–100，accepted104–96；配對差−2pp、CI跨零，correctness通過。保持+0.5，無追加。第2項尚未完成：下一步charged public states核對bank與可達release／搜尋邊界，不能將Boolean ablation外推為Surge資產估值已足夠。未派新arena。
+
 最新進度：[B2B Boolean leaf-off正式200新KO](B2B_LEAF_COMMON_PLAN.md)獲使用者繼續授權；gate37105409459已通過且3/67 top1改變。沿用artifact，重用accepted200控制；只有這一候選。下方「未派arena」是前一階段紀錄；完整Surge residual仍未測完，不跳第3項。
 
 目前進度：[第2項審查與單一Boolean-off gate](B2B_INVENTORY_REVIEW.md)。只將has_back_to_back 0.5→0；先驗證真實search activation／authority，未派arena。Surge bank與charge沒有啟用，也沒有把整項未兌現價值標成已完成。

@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-03 最新：[B2B leaf-off200KO完成](B2B_LEAF_RESULT_37114400655.md)，100–100對照accepted104–96，差−2pp／配對CI −11.86～+7.86pp。Correctness全通過，效益未定，保持+0.5。尚未測完整Surge residual，下一步仍第2項charged snapshots取證，不跳clear家族、不直接啟用H3；未派新批。
+
 2026-10-03 最新：[B2B leaf gate成功後正式200新KO計畫](B2B_LEAF_COMMON_PLAN.md)。run37105409459 gate67/67 placements、19 Holds、3/67 top1改變；沿用此binary、不重編。使用者已指示繼續，候選只關Boolean leaf；重用accepted同seed/seat控制，無其他候選queue。正式run另記dispatch，B2B／Surge整項尚未結案。
 
 2026-10-03 第2項開始：[B2B／Surge review與Boolean-off gate](B2B_INVENTORY_REVIEW.md)。source／authority審查完成，僅has_back_to_back 0.5→0做第一個隔離檢驗；H3仍0、B2B當次clear留第4項。67snapshot gate尚待Actions，不自動接200局，ntfy。不將Boolean結果外推成整個Surge residual已測完。
