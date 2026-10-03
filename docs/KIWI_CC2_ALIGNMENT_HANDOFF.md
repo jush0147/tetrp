@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 最新：[wasted-T gate停在activation](audits/cc2-alignment/WASTED_T_GATE_37096877026.md)。run37096877026的Rust／配置／12份baseline report／12placement及Hold檢查通過；10/12評分改變、0/12 top1改變，未開arena。使用者指示繼續：固定新增55個T可用公開局面，一次限定延伸，共67；沿用已編譯artifact、雜湊鎖定，不移除top1 gate、不改權重。成功才接原授權200新局，否則停；不開其他候選。
+
 2026-10-03 已授權開始：[wasted_t off，重用控制組](audits/cc2-alignment/WASTED_T_OFF_PLAN.md)。只改−1.5→0；重用run37026070707全部accepted 200局，candidate新跑同seed／seat 200局。先Rust配置／same-state／frozen report／真實activation／authority gate，成功才arena。H1=1、H9=-0.5；原順序其他項未派送。不再丟600局，例外simultaneous KO才整組含control换seed重打。ntfy一次；run ID另記。
 
 2026-10-03 排序更新：[後續固定順序](audits/cc2-alignment/EVALUATOR_NEXT_ORDER_2026-10-03.md)已依使用者要求記錄，優先於下方舊「其他項目尚無排序」。wasted_t → B2B／Surge未兌現價值（含B2B leaf） → clear三表家族 → B2B當次clear reward → Tetris井深 → combo shaping → PC override/bonus分開 → row transitions → base coveredness → base holes → base height隔離 → T-slot bonus/cutout分開。B2B／Surge已提升主線第2；依使用者指定，B2B當次消行第4、井深第5。先單項／家族機制，再有證據的interaction、缺項、最後權重。第1–6項後檢視成本與證據；不自動啟動全清單。本次僅寫計畫、未改bot或派送對戰。

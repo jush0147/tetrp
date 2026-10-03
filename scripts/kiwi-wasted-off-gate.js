@@ -12,13 +12,18 @@ const root='.cache/wasted-build',read=async p=>JSON.parse(await readFile(p,'utf8
 const sha=b=>createHash('sha256').update(b).digest('hex');
 if(process.argv[2]==='notify-failure'){
  const url=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
- const r=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:'Kiwi wasted-T-off gate failed',message:'Candidate correctness/build gate failed. The 200-game batch did not start.\n'+url,click:url}),signal:AbortSignal.timeout(15000)});assert.ok(r.ok);assert.ok((await r.json()).id);
+ let g;try{g=await read(`${root}/gate.json`);}catch{}
+ const message=g?.error?.message?.startsWith('No real top-1')?'Correctness checks completed, but no top-1 change in the fixed activation sample. No arena launched.':'Candidate build/correctness/activation gate incomplete. No arena launched.';
+ const r=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:'Kiwi wasted-T-off gate needs review',message:message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});assert.ok(r.ok);assert.ok((await r.json()).id);
 }else if(process.argv[2]==='gate'){
  await mkdir(root,{recursive:true});const summary={complete:false,checks:[],holds:0,placements:0,baselineReports:0,explicitHoldModes:[],changedScores:0,changedTop1:0};
  const save=()=>writeFile(`${root}/gate.json`,JSON.stringify(summary,null,2));await save();
  const clients=[];
  try{
   const plan={candidate:'wasted-off',baselineNative:'386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb'};
+  const activation=await read('docs/audits/cc2-alignment/WASTED_T_ACTIVATION_INPUTS.json');
+  for(const [file,digest] of Object.entries(activation.buildHashes))assert.equal(sha(await readFile(`${root}/${file}`)),digest,`Previously compiled artifact drift: ${file}`);
+  summary.reusedBuildRun=activation.buildRun;summary.activationSourceRun=activation.sourceRun;
   await verifyReuse();
   const original=(await read('docs/audits/cc2-alignment/ACTIVE_PARAMETERS_2026-09-28.json')).config;
   const accepted=await read(`${root}/accepted-config.json`),candidate=await read(`${root}/wasted-off-config.json`);
@@ -29,7 +34,9 @@ if(process.argv[2]==='notify-failure'){
   const frozen=nativeClient(resolve('.cache/native-artifact/snapshot-accepted'));
   const rebuilt=nativeClient(resolve(root,'snapshot-control'));
   const changed=nativeClient(resolve(root,'snapshot-wasted-off'));clients.push(frozen,rebuilt,changed);
-  const samples=await read('docs/audits/cc2-alignment/perf-snapshots.json');
+  const samples=[...await read('docs/audits/cc2-alignment/perf-snapshots.json'),...activation.samples];
+  for(const sample of activation.samples)assert.equal(sha(JSON.stringify(sample.snapshot)),sample.snapshotHash);
+  summary.sampleCount=samples.length;
   function restore(v){
    const e=new PlacementArenaEngine({rules:v.rules}),s=e.state;
    s.board=structuredClone(v.board);s.piece=structuredClone(v.current);s.hold=structuredClone(v.hold);
