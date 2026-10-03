@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 最新：[Surge診斷37121512490通過](audits/cc2-alignment/SURGE_RESULT_37121512490.md)。8/8完整accepted report parity，283place root本機重驗一致；1583659 evals含17791release／295220 charged known-frontier，每snapshot都有兩類。排除本樣本「不會Surge／到不了frontier」，支持尚未釋放bank缺獨立數量leaf的假設，未證明選錯或KO損失。原版也會sent0釋放取消5。下一步只定義charged-bank residual候選（單位、multiplier/pending、release歸零），不開progress、不改Boolean/clear、不重寫search；尚未啟用權重／派arena。仍第2項。
+
 2026-10-03 接續：[8 charged snapshots診斷](audits/cc2-alignment/SURGE_DIAGNOSTIC_PLAN.md)。固定最新run block0兩candidate seats，各4個charged公共局面；captured roots已authority驗證，發現release可sent0且取消incoming，也有保留／Hold。原trajectory是leaf-off，接續Actions用frozen accepted重新搜尋與只讀observer完整report parity，計release/held-bank及known-frontier，非最優continuation歸因。不加bonus、不開arena；run另記，ntfy後驗收。
 
 2026-10-03 最新：[B2B Boolean leaf-off200KO結果](audits/cc2-alignment/B2B_LEAF_RESULT_37114400655.md)驗收通過。run37114400655 candidate100–100，重用accepted104–96；差−2pp、配對近似95% CI −11.86～+7.86pp。179692placements／67674Holds零差異、零fallback/rejection/technical failure，無重打。維持has_back_to_back=0.5，不追加。耗時1h56m53s。仍在第2項：下一步真實charged snapshots之bank／release/search frontier取證，不能把Boolean結果當完整Surge估值結案；未派新批。

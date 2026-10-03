@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-03 最新：[charged Surge診斷通過](SURGE_RESULT_37121512490.md)，8/8observer parity、每state都看到release與charged known-frontier。Residual bank數量無独立leaf估值是可測假設，尚非勝率缺陷證明；不能說看不到取消價值。下一步限定charged-bank residual、先固定單位與公開pending/multiplier語意，不直接啟用既有H3或改多項。尚未派arena。
+
 2026-10-03 第2項續：[Surge charged-state診斷](SURGE_DIAGNOSTIC_PLAN.md)，固定8public snapshots、captured root transaction審查完成，接accepted只讀search observer及full-report parity。尚無新bank候選，不開arena，不能用sampled selection witness冒充backed-up最佳line。
 
 2026-10-03 最新：[B2B leaf-off200KO完成](B2B_LEAF_RESULT_37114400655.md)，100–100對照accepted104–96，差−2pp／配對CI −11.86～+7.86pp。Correctness全通過，效益未定，保持+0.5。尚未測完整Surge residual，下一步仍第2項charged snapshots取證，不跳clear家族、不直接啟用H3；未派新批。
