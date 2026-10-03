@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-03 最新：[wasted-T 200 KO結果](audits/cc2-alignment/WASTED_T_RESULT_37098444257.md)。run37098444257全部102 jobs成功；67份gate中65評分／7 top1改變。200新candidate局99–101，重用accepted同seed/seat控制200局104–96；差−2.5pp、配對近似95% CI −13.09～+8.09pp。167854 placements／63389 Holds，零technical failure／fallback／rejection／parity mismatch，無重打。效益未定，保持wasted_t=-1.5、H1=1、H9=-0.5，不promotion或追加。wall1h46m04s。下一項固定為B2B／Surge未兌現價值；未派送新批次或建立自動queue。以下gate未通過等描述為歷史。
+
 2026-10-03 最新：[wasted-T gate停在activation](audits/cc2-alignment/WASTED_T_GATE_37096877026.md)。run37096877026的Rust／配置／12份baseline report／12placement及Hold檢查通過；10/12評分改變、0/12 top1改變，未開arena。使用者指示繼續：固定新增55個T可用公開局面，一次限定延伸，共67；沿用已編譯artifact、雜湊鎖定，不移除top1 gate、不改權重。成功才接原授權200新局，否則停；不開其他候選。
 
 2026-10-03 已授權開始：[wasted_t off，重用控制組](audits/cc2-alignment/WASTED_T_OFF_PLAN.md)。只改−1.5→0；重用run37026070707全部accepted 200局，candidate新跑同seed／seat 200局。先Rust配置／same-state／frozen report／真實activation／authority gate，成功才arena。H1=1、H9=-0.5；原順序其他項未派送。不再丟600局，例外simultaneous KO才整組含control换seed重打。ntfy一次；run ID另記。

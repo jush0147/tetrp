@@ -4,6 +4,8 @@
 
 ## 已完成，不重新排隊
 
+- wasted_t-off：[200新KO結果](WASTED_T_RESULT_37098444257.md)99–101，重用accepted控制104–96；差−2.5pp、配對近似95% CI −13.09～+8.09pp。Correctness通過且有top1 activation，效益未定；保持−1.5，不追加。下一個待處理項為下表第2項B2B／Surge未兌現價值。
+
 - visible-T 資源候選：200局97–103，未證明改善，不採用。這不等於測過整個 T-slot 機制是否有用。
 - H9-off：對 accepted 80–120，支持保留目前 H9=-0.5，不代表最佳權重。
 - H1-off：各對同一 Legacy 200局，on104–96、off107–93，配對差+1.5pp、CI跨零。保持H1=1，效益未定；不得說已證明無用。
@@ -14,7 +16,7 @@
 
 | 順序 | 機制 | 首個隔離比較／問題 | 為何排在這裡 |
 |---|---|---|---|
-| 1 | wasted_t | -1.5→0，其他不變。固定保留 T 的偏好，是否增加 KO 勝率？確認 TSS、mini、普通消行、AC 的扣分與累積方式 | 單一且清楚的策略假設；不需先發明新 feature |
+| 1（已完成初輪） | wasted_t | -1.5→0，其他不變；off99–101，accepted104–96，配對差CI跨零，效益未定，保持−1.5 | 不重新排隊或追加到顯著；不是最佳權重證據 |
 | 2 | B2B／Surge 未兌現價值（含 has_back_to_back） | 先審查 Boolean +0.5、零權重 charge/bank 與剩餘可見方塊的兌現關係；確認 horizon 外資產估值及已計入攻擊的重疊，再固定一個隔離假設。不得同時開啟多項 bonus | S2 核心機制：規則 transaction 已實作，不代表 leaf 已充分評價尚未兌現的資產；優先於傳統幾何項 |
 | 3 | clear 類型 shaping | 只將 normal_clears、mini_spin_clears、spin_clears 三張表的額外 reward 一起關閉，保留精確 sent、B2B/combo/PC。問整個固定消行偏好是否有增量效益 | 直接影響攻守選擇；可與已有 authority transaction 對照 |
 | 4 | back_to_back_clear | 只關閉此次 clear 的 B2B 額外 reward；不改 B2B 規則或 leaf | 將已實現攻擊的偏好與持有資產的價值拆開 |

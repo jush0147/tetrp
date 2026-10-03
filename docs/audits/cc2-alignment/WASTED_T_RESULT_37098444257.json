@@ -1,0 +1,758 @@
+{
+  "run": 37098444257,
+  "correctness": true,
+  "newGames": {
+    "games": 200,
+    "placements": 167854,
+    "holds": 63389,
+    "reanalyses": 63389,
+    "terminalHolds": 0,
+    "requests": 231243,
+    "pendingSnapshots": 62720
+  },
+  "reusedControlGames": 200,
+  "candidateSeatWins": [
+    49,
+    50
+  ],
+  "gate": {
+    "placements": 67,
+    "holds": 16,
+    "baselineReports": 67,
+    "changedScores": 65,
+    "changedTop1": 7
+  },
+  "statistics": {
+    "acceptedScore": [
+      104,
+      96
+    ],
+    "candidateScore": [
+      99,
+      101
+    ],
+    "candidateMinusAccepted": -0.025,
+    "pairedApprox95CI": [
+      -0.13086498739222316,
+      0.08086498739222314
+    ],
+    "blocks": [
+      {
+        "block": 0,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 1,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 0,
+        "difference": 0
+      },
+      {
+        "block": 2,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 2,
+        "difference": 0
+      },
+      {
+        "block": 3,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 2,
+        "difference": 0
+      },
+      {
+        "block": 4,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 5,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 6,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 7,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 8,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 9,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 2,
+        "difference": 1
+      },
+      {
+        "block": 10,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 2,
+        "difference": 1
+      },
+      {
+        "block": 11,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 12,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 13,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 14,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 15,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 16,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 17,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 2,
+        "difference": 0
+      },
+      {
+        "block": 18,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 19,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 2,
+        "difference": 1
+      },
+      {
+        "block": 20,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 21,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 22,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 23,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 2,
+        "difference": 1
+      },
+      {
+        "block": 24,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 25,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 26,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 27,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 28,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 29,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 30,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 0,
+        "difference": 0
+      },
+      {
+        "block": 31,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 32,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 0,
+        "difference": 0
+      },
+      {
+        "block": 33,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 2,
+        "difference": 1
+      },
+      {
+        "block": 34,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 35,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 36,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 2,
+        "difference": 1
+      },
+      {
+        "block": 37,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 2,
+        "difference": 0
+      },
+      {
+        "block": 38,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 39,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 40,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 2,
+        "difference": 0
+      },
+      {
+        "block": 41,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 42,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 43,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 44,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 0,
+        "difference": 0
+      },
+      {
+        "block": 45,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 46,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 47,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 48,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 49,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 50,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 51,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 52,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 53,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 54,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 55,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 56,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 57,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 58,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 59,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 60,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 2,
+        "difference": 0
+      },
+      {
+        "block": 61,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 62,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 63,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 64,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 65,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 66,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 67,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 68,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 69,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 70,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 71,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 72,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 73,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 0,
+        "difference": 0
+      },
+      {
+        "block": 74,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 75,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 76,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 0,
+        "difference": 0
+      },
+      {
+        "block": 77,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 78,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 79,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 80,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 81,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 2,
+        "difference": 0
+      },
+      {
+        "block": 82,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 83,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 84,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 85,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 86,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 87,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 88,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 89,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 90,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 1,
+        "difference": 0.5
+      },
+      {
+        "block": 91,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 92,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      },
+      {
+        "block": 93,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 1,
+        "difference": -0.5
+      },
+      {
+        "block": 94,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 0,
+        "difference": -0.5
+      },
+      {
+        "block": 95,
+        "attempt": 0,
+        "onWins": 2,
+        "offWins": 0,
+        "difference": -1
+      },
+      {
+        "block": 96,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 97,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 1,
+        "difference": 0
+      },
+      {
+        "block": 98,
+        "attempt": 0,
+        "onWins": 0,
+        "offWins": 2,
+        "difference": 1
+      },
+      {
+        "block": 99,
+        "attempt": 0,
+        "onWins": 1,
+        "offWins": 2,
+        "difference": 0.5
+      }
+    ],
+    "retriedBlocks": 0,
+    "note": "Follow-up comparison with previously observed frozen control; not independent confirmation. Difference in KO win rate against frozen Legacy. 100 seed clusters, two seats per policy. Paired t approximation; no automatic promotion, no optional extension. Whole-block simultaneous-KO retries target decisive blocks."
+  },
+  "differenceDistribution": {
+    "0": 35,
+    "1": 7,
+    "0.5": 24,
+    "-1": 9,
+    "-0.5": 25
+  },
+  "technicalFailures": 0,
+  "parityMismatches": 0,
+  "fallback": 0,
+  "rejections": 0,
+  "simultaneousKO": 0,
+  "wallSeconds": 6364,
+  "runnerHours": 24.77888888888889
+}
