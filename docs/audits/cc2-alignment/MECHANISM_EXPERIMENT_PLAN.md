@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-03 最新：[H1 共同對手400局結果](H1_COMMON_RESULT_37026070707.md)已完整驗收。100 blocks、400 KO、零technical failure／fallback／parity mismatch，無重打。H1-on對Legacy104–96；off107–93，off-minus-on +1.5pp、配對近似95% CI −7.79～+10.79pp，未證明改善或等價。保持H1=1／H9=-0.5，不採用off、不追加樣本。既定visible-T→H9-off→H1-off初輪完成；其他參數尚無排定次序，下一步先選定單一mechanism hypothesis，不自動派新批次。實際3h20m13s。
+
 2026-10-02 接續已授權：[H1 共同對手固定 KO 比較](H1_COMMON_PLAN.md)，100 seed blocks × on/off × 兩座位，共400局（每版對Legacy 200局）。只改H1，沿用已驗證artifact與同局同seed／24frames；無一般frame cap，simultaneous KO整組重打，technical failure整批不下強度結論。16 runners／每runner兩局；取消shadow search，ntfy完成／失敗一次通知。不自動promotion，run ID另記。30項targeted tests已通過。
 
 2026-10-02 最新：[H1 短診斷結果](H1_SHORT_RESULT_37023218685.md)已核對，4局均到100手無KO、不計分；800 placement／251 Hold parity零差異、零fallback／technical failure。Legacy打破鏡像並產生pending；同一frame672 witness證明H1實際改變I四消／J三消順序（兩份重複觀察，非兩個獨立state）。兩手後盤面相同但attack state不同。僅證明activation，沒有強度結論。下一步擬定on/off各對同一Legacy的固定seed／seat配對KO比較；未派送新run，不自動200場，保持accepted設定。
@@ -49,9 +51,9 @@
 
 | 順序 | 唯一改動 | 要回答的問題 | 現況與必要前置 |
 |---|---|---|---|
-| 1 | T-slot 額度換成 remaining known T + reserve T | 不預支未知 T 的完整 policy 是否更強？ | pilot run 36707273929 correctness 通過，KO 3–5；不 promotion、不以小樣本淘汰。較大固定樣本比較待效率插入工作完成；先不進 H9 |
-| 2 | accepted profile 僅 H9 weight=0 | 洞穴連通性懲罰是否提供其他現有 features／search 之外的 KO 收益？ | 語意已清楚，不是 holes/coveredness 的同一 scalar；尚未建立獨立候選，不換成新 downstack feature |
-| 3 | accepted profile 僅 H1 weight=0 | incoming 條件化盤面懲罰是否改善 KO 勝率？ | shared coefficients、cap16、低乾淨盤面零值已確認；不另加 cancel bonus，不改 cap/timing |
+| 1 | T-slot 額度換成 remaining known T + reserve T | 不預支未知 T 的完整 policy 是否更強？ | 已完成固定200局97–103，未證明改善；不採用、不追加 |
+| 2 | accepted profile 僅 H9 weight=0 | 洞穴連通性懲罰是否提供其他現有 features／search 之外的 KO 收益？ | 已完成獨立off對accepted 200局80–120；支持保留H9=-0.5，未證明最佳權重 |
+| 3 | accepted profile 僅 H1 weight=0 | incoming 條件化盤面懲罰是否改善 KO 勝率？ | 直接on/off鏡像無效，改共同Legacy對手；各200局，off-minus-on +1.5pp、CI跨零；保持H1=1，未證明有用或無用 |
 
 順序反映候選準備程度與已有證據，不代表已知道 feature 重要性排名。每次只前進一項；單項優劣與多項交互作用是不同問題，單項勝出也不自動累積成新 champion。
 
