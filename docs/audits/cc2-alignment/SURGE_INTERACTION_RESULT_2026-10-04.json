@@ -1,0 +1,2474 @@
+{
+  "date": "2026-10-04",
+  "booleanOff": {
+    "run": 37133089622,
+    "commit": "08d762d389a082f856a92bce1bbf50b2cc760538",
+    "resultSHA256": "bf05bb5d8354e926a84f9ace34c3e29b94d7b2ba919353ad6d4ad213b354bcc0",
+    "planHash": "4af852df13a29532857c1dce2e92030faf1c0ea1e8c4a6ce6c0ed97100c30ee9",
+    "manifest": {
+      "variant": {
+        "name": "boolean-off",
+        "boolean": 0,
+        "bank": 0.5
+      },
+      "candidate": "surge-residual",
+      "baselineNative": "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb",
+      "candidateNative": "0ad2fd709c1d54f67c1c6485c40aa737f5f2d65c23ea0a1563f871549daba070",
+      "nativeRun": 37133089622
+    },
+    "complete": true,
+    "counts": {
+      "games": 200,
+      "requests": 233330,
+      "placements": 169302,
+      "holds": 64028,
+      "reanalyses": 64028,
+      "terminalHolds": 0,
+      "pendingSnapshots": 62940
+    },
+    "candidateSeatWins": [
+      52,
+      56
+    ],
+    "gate": {
+      "placements": 20,
+      "holds": 8,
+      "baselineReports": 20,
+      "changedScores": 20,
+      "changedTop1": 2,
+      "chargedChangedTop1": 1
+    },
+    "statistics": {
+      "acceptedScore": [
+        104,
+        96
+      ],
+      "candidateScore": [
+        108,
+        92
+      ],
+      "candidateMinusAccepted": 0.02,
+      "pairedApprox95CI": [
+        -0.08159595442514207,
+        0.12159595442514208
+      ],
+      "blocks": [
+        {
+          "block": 0,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 1,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 2,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 3,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 4,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 5,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 6,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 7,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 8,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 9,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 10,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 11,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 12,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 13,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 14,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 15,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 16,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 17,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 0,
+          "difference": -1
+        },
+        {
+          "block": 18,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 19,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 20,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 21,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 22,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 23,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 24,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 25,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 26,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 27,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 28,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 29,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 30,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 31,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 32,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 33,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 34,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 35,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 36,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 37,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 38,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 39,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 40,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 41,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 42,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 43,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 44,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 45,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 46,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 47,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 48,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 49,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 50,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 0,
+          "difference": -1
+        },
+        {
+          "block": 51,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 52,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 0,
+          "difference": -1
+        },
+        {
+          "block": 53,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 54,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 55,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 56,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 57,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 58,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 59,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 60,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 0,
+          "difference": -1
+        },
+        {
+          "block": 61,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 62,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 63,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 64,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 65,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 66,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 67,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 0,
+          "difference": -1
+        },
+        {
+          "block": 68,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 69,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 70,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 71,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 72,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 73,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 74,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 75,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 76,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 77,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 78,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 79,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 80,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 81,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 82,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 83,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 84,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 85,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 86,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 87,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 88,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 89,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 90,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 91,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 92,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 93,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 94,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 95,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 96,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 97,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 98,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 99,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        }
+      ],
+      "retriedBlocks": 0,
+      "note": "Follow-up comparison with previously observed frozen control; not independent confirmation. Difference in KO win rate against frozen Legacy. 100 seed clusters, two seats per policy. Paired t approximation; no automatic promotion, no optional extension. Whole-block simultaneous-KO retries target decisive blocks."
+    },
+    "startedAt": "2026-10-03T15:23:51.000Z",
+    "completedAt": "2026-10-03T17:19:17.000Z",
+    "wallSeconds": 6926,
+    "runnerHours": 25.724722222222226,
+    "audit": "Recomputed all game summary checks, identities, exact reused controls, configuration and binary hashes; did not re-simulate all raw traces."
+  },
+  "bothOne": {
+    "run": 37133115397,
+    "commit": "08d762d389a082f856a92bce1bbf50b2cc760538",
+    "resultSHA256": "712b92856a62ec980c84760536d6780fcdfbc46ed700454a850cafa8bc3b2b41",
+    "planHash": "7944d9bd6b91868a0a9c3e40e74839ca739e91435b5acb6b409f444ba8b05a1a",
+    "manifest": {
+      "variant": {
+        "name": "both-one",
+        "boolean": 1,
+        "bank": 1
+      },
+      "candidate": "surge-residual",
+      "baselineNative": "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb",
+      "candidateNative": "1a77d28a81cb169402948743ec1aec85613dd87ba27480a2065a4c9822b6f47b",
+      "nativeRun": 37133115397
+    },
+    "complete": true,
+    "counts": {
+      "games": 200,
+      "requests": 230361,
+      "placements": 166962,
+      "holds": 63399,
+      "reanalyses": 63399,
+      "terminalHolds": 0,
+      "pendingSnapshots": 62185
+    },
+    "candidateSeatWins": [
+      59,
+      49
+    ],
+    "gate": {
+      "placements": 20,
+      "holds": 7,
+      "baselineReports": 20,
+      "changedScores": 20,
+      "changedTop1": 3,
+      "chargedChangedTop1": 1
+    },
+    "statistics": {
+      "acceptedScore": [
+        104,
+        96
+      ],
+      "candidateScore": [
+        108,
+        92
+      ],
+      "candidateMinusAccepted": 0.02,
+      "pairedApprox95CI": [
+        -0.07019384162273315,
+        0.11019384162273316
+      ],
+      "blocks": [
+        {
+          "block": 0,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 1,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 2,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 3,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 0,
+          "difference": -1
+        },
+        {
+          "block": 4,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 5,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 6,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 7,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 8,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 9,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 10,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 11,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 12,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 13,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 14,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 15,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 16,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 17,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 18,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 19,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 20,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 21,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 22,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 23,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 24,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 25,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 26,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 27,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 28,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 29,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 30,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 31,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 32,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 33,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 34,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 35,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 36,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 37,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 0,
+          "difference": -1
+        },
+        {
+          "block": 38,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 39,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 40,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 41,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 42,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 43,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 44,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 45,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 46,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 47,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 48,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 49,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 50,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 51,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 52,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 53,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 54,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 55,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 56,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 57,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 58,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 59,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 60,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 61,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 62,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 63,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 64,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 65,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 66,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 67,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 68,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 69,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 2,
+          "difference": 0
+        },
+        {
+          "block": 70,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 71,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 72,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 73,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 74,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 75,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 76,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 77,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 78,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 79,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 80,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 81,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 82,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 1,
+          "difference": 0.5
+        },
+        {
+          "block": 83,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 0,
+          "difference": -1
+        },
+        {
+          "block": 84,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 85,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 86,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 87,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 88,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 89,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 90,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 0,
+          "difference": 0
+        },
+        {
+          "block": 91,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 2,
+          "difference": 0.5
+        },
+        {
+          "block": 92,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 93,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 94,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 0,
+          "difference": -0.5
+        },
+        {
+          "block": 95,
+          "attempt": 0,
+          "onWins": 2,
+          "offWins": 1,
+          "difference": -0.5
+        },
+        {
+          "block": 96,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 97,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        },
+        {
+          "block": 98,
+          "attempt": 0,
+          "onWins": 0,
+          "offWins": 2,
+          "difference": 1
+        },
+        {
+          "block": 99,
+          "attempt": 0,
+          "onWins": 1,
+          "offWins": 1,
+          "difference": 0
+        }
+      ],
+      "retriedBlocks": 0,
+      "note": "Follow-up comparison with previously observed frozen control; not independent confirmation. Difference in KO win rate against frozen Legacy. 100 seed clusters, two seats per policy. Paired t approximation; no automatic promotion, no optional extension. Whole-block simultaneous-KO retries target decisive blocks."
+    },
+    "startedAt": "2026-10-03T17:19:20.000Z",
+    "completedAt": "2026-10-03T19:03:31.000Z",
+    "wallSeconds": 6251,
+    "runnerHours": 24.918888888888883,
+    "audit": "Recomputed all game summary checks, identities, exact reused controls, configuration and binary hashes; did not re-simulate all raw traces."
+  },
+  "analysis": {
+    "interactionDefinition": "[(0,0.5)-(0.5,0.5)]-[(0,0)-(0.5,0)]",
+    "interaction": {
+      "clusters": 100,
+      "estimate": 0.055,
+      "approx95CI": [
+        -0.06783316868538786,
+        0.17783316868538787
+      ]
+    },
+    "removeBooleanWithBank": {
+      "clusters": 100,
+      "estimate": 0.035,
+      "approx95CI": [
+        -0.05879728013975766,
+        0.12879728013975766
+      ]
+    },
+    "removeBooleanWithoutBank": {
+      "clusters": 100,
+      "estimate": -0.02,
+      "approx95CI": [
+        -0.11861711581319502,
+        0.07861711581319501
+      ]
+    },
+    "bothOneMinusHalfHalf": {
+      "clusters": 100,
+      "estimate": 0.035,
+      "approx95CI": [
+        -0.057731488468240194,
+        0.1277314884682402
+      ]
+    },
+    "bothOneMinusFourth": {
+      "clusters": 100,
+      "estimate": 0,
+      "approx95CI": [
+        -0.09458348885316276,
+        0.09458348885316276
+      ]
+    },
+    "blocks": [
+      {
+        "block": 0,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 1,
+        "accepted": 0,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 2,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0
+      },
+      {
+        "block": 3,
+        "accepted": 1,
+        "booleanOff": 0,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 1.5
+      },
+      {
+        "block": 4,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 5,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 6,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 0.5
+      },
+      {
+        "block": 7,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 8,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": -0.5
+      },
+      {
+        "block": 9,
+        "accepted": 0,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": -0.5
+      },
+      {
+        "block": 10,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 0,
+        "bothOne": 1,
+        "interaction": -0.5
+      },
+      {
+        "block": 11,
+        "accepted": 1,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 12,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 1
+      },
+      {
+        "block": 13,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": -1
+      },
+      {
+        "block": 14,
+        "accepted": 0,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 15,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 16,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 17,
+        "accepted": 1,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 1,
+        "interaction": -0.5
+      },
+      {
+        "block": 18,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 19,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 0
+      },
+      {
+        "block": 20,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 1,
+        "interaction": 0
+      },
+      {
+        "block": 21,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 22,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 23,
+        "accepted": 0,
+        "booleanOff": 1,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -1.5
+      },
+      {
+        "block": 24,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 0
+      },
+      {
+        "block": 25,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 26,
+        "accepted": 1,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 27,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 1,
+        "interaction": 1
+      },
+      {
+        "block": 28,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0,
+        "fourth": 1,
+        "bothOne": 0,
+        "interaction": 0.5
+      },
+      {
+        "block": 29,
+        "accepted": 1,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 30,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 1,
+        "bothOne": 0,
+        "interaction": 0.5
+      },
+      {
+        "block": 31,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 32,
+        "accepted": 0,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -1
+      },
+      {
+        "block": 33,
+        "accepted": 0,
+        "booleanOff": 1,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 34,
+        "accepted": 0,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 0
+      },
+      {
+        "block": 35,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 1
+      },
+      {
+        "block": 36,
+        "accepted": 0,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -1
+      },
+      {
+        "block": 37,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 0
+      },
+      {
+        "block": 38,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 39,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 40,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 1
+      },
+      {
+        "block": 41,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": -0.5
+      },
+      {
+        "block": 42,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 1,
+        "interaction": 1
+      },
+      {
+        "block": 43,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 1,
+        "fourth": 0,
+        "bothOne": 1,
+        "interaction": -1.5
+      },
+      {
+        "block": 44,
+        "accepted": 0,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 45,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 46,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 0
+      },
+      {
+        "block": 47,
+        "accepted": 0,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 48,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 49,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 50,
+        "accepted": 1,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 51,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": -0.5
+      },
+      {
+        "block": 52,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 53,
+        "accepted": 1,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0
+      },
+      {
+        "block": 54,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 55,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0
+      },
+      {
+        "block": 56,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 57,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 58,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 59,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 60,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 61,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 62,
+        "accepted": 1,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 63,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 64,
+        "accepted": 1,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0
+      },
+      {
+        "block": 65,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 66,
+        "accepted": 0,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 67,
+        "accepted": 1,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 68,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 1
+      },
+      {
+        "block": 69,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 1,
+        "bothOne": 1,
+        "interaction": 1.5
+      },
+      {
+        "block": 70,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 0,
+        "interaction": -0.5
+      },
+      {
+        "block": 71,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 0
+      },
+      {
+        "block": 72,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": -1
+      },
+      {
+        "block": 73,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 1,
+        "bothOne": 0,
+        "interaction": -0.5
+      },
+      {
+        "block": 74,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 75,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 76,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": -0.5
+      },
+      {
+        "block": 77,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 78,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": -0.5
+      },
+      {
+        "block": 79,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": -1
+      },
+      {
+        "block": 80,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0
+      },
+      {
+        "block": 81,
+        "accepted": 1,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 1
+      },
+      {
+        "block": 82,
+        "accepted": 0,
+        "booleanOff": 0,
+        "residual": 0,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": 0
+      },
+      {
+        "block": 83,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": 0.5
+      },
+      {
+        "block": 84,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0,
+        "fourth": 0,
+        "bothOne": 0,
+        "interaction": 0
+      },
+      {
+        "block": 85,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 86,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 87,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0,
+        "fourth": 0,
+        "bothOne": 0,
+        "interaction": -0.5
+      },
+      {
+        "block": 88,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0,
+        "interaction": 0
+      },
+      {
+        "block": 89,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 0.5,
+        "bothOne": 1,
+        "interaction": 0
+      },
+      {
+        "block": 90,
+        "accepted": 0,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0,
+        "interaction": -0.5
+      },
+      {
+        "block": 91,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 1,
+        "interaction": -0.5
+      },
+      {
+        "block": 92,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 1,
+        "fourth": 0,
+        "bothOne": 0.5,
+        "interaction": -1.5
+      },
+      {
+        "block": 93,
+        "accepted": 1,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 0.5,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 94,
+        "accepted": 0.5,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 0,
+        "bothOne": 0,
+        "interaction": -1
+      },
+      {
+        "block": 95,
+        "accepted": 1,
+        "booleanOff": 1,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 96,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 1
+      },
+      {
+        "block": 97,
+        "accepted": 0.5,
+        "booleanOff": 0.5,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      },
+      {
+        "block": 98,
+        "accepted": 0,
+        "booleanOff": 0,
+        "residual": 0.5,
+        "fourth": 1,
+        "bothOne": 1,
+        "interaction": 0.5
+      },
+      {
+        "block": 99,
+        "accepted": 0.5,
+        "booleanOff": 0,
+        "residual": 1,
+        "fourth": 1,
+        "bothOne": 0.5,
+        "interaction": 0.5
+      }
+    ]
+  }
+}

@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-04 最新驗收：[Boolean×Surge兩批與交互作用結果](SURGE_INTERACTION_RESULT_2026-10-04.md)。run37133089622 (0,0.5)與37133115397 (1,1)均108–92；accepted104–96，差皆+2pp但各CI跨零。原2×2 interaction +5.5pp、CI−6.78～+17.78pp，未證實。兩批correctness全部通過，合計400新KO、336264 placements／127427 Holds，零failure／fallback／rejection／mismatch／重打。保持accepted，不promotion、不追加樣本／掃權重。第2項已授權補測完成，下一步恢復既定第3項clear三表家族語意與隔離審查；未派新arena。
+
 2026-10-03 使用者授權補測：[Boolean×Surge交互作用及(1,1)](SURGE_INTERACTION_PLAN.md)。先(0,0.5)200新KO補第四格，再queue(1,1)200新KO；各自gate／固定控制／ntfy。第3項暫停，不擴大weight sweep。run ID另記dispatch。
 
 2026-10-03 最新驗收：[Surge residual 200 KO結果](SURGE_RESIDUAL_RESULT_37124649645.md)101–99，重用accepted控制104–96；差−1.5pp，配對95% CI −10.90～+7.90pp。175918 placements／66389 Holds，零technical failure／fallback／rejection／parity mismatch，無重打。Gate有charged top1 activation。未證明改善，保持bank leaf=0與Boolean +0.5，不追加／掃權重。第2項初輪完成（效益未定，不代表Surge問題已解決）；下一步依固定順序第3項clear三表shaping家族，先語意與隔離檢查，從原accepted出發。未派新arena。以下待跑描述為歷史。
