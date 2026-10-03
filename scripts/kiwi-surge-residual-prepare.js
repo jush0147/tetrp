@@ -3,8 +3,13 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 export function transformConfig(source){
  assert.ok(!source.includes('cfg!(surge_residual)'),'Already installed');
- const anchor='        config.freestyle_weights.pending_safety = 1.0;';assert.equal(source.split(anchor).length,2);
- return source.replace(anchor,anchor+'\n        if cfg!(surge_residual) { config.freestyle_weights.h3_surge_bank_value = 0.5; }');
+ const method='    pub fn review_h9_h12() -> Self {';assert.equal(source.split(method).length,2);
+ const start=source.indexOf(method),end=source.indexOf('\n    }',start);assert.ok(end>start);
+ const block=source.slice(start,end),anchor='        config.freestyle_weights.h3_surge_bank_value = 0.0;';
+ assert.equal(block.split(anchor).length,2,'Expected single bank initialization in review profile');
+ assert.equal((block.match(/h3_surge_bank_value\s*=/g)??[]).length,1,'Additional bank assignment would override candidate');
+ const replacement='        config.freestyle_weights.h3_surge_bank_value = if cfg!(surge_residual) { 0.5 } else { 0.0 };';
+ return source.slice(0,start)+block.replace(anchor,replacement)+source.slice(end);
 }
 export function transformEval(source){
  assert.ok(!source.includes('cfg!(surge_residual)'),'Already installed');

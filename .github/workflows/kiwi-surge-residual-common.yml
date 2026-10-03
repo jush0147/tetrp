@@ -26,7 +26,9 @@ jobs:
           repository: jush0147/cold-clear-2
           ref: 2e243242b674d57491f99b445f75e35fc48a0e26
           path: .cache/cc2-wasm-source
-      - name: Restore frozen accepted source and apply one coefficient change
+      - name: Check profile override regression before compiling
+        run: node --test test/kiwi-surge-residual.test.js test/kiwi-surge-residual-common.test.js
+      - name: Restore frozen accepted source and replace final bank initialization
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
