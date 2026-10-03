@@ -46,8 +46,14 @@ test('CI uses variation of paired differences, not independent game variance',()
 });
 
 test('wasted-T transform only appends conditional coefficient override, rejects ambiguous source',()=>{
- const src='fn test() {\n        config.freestyle_weights.softdrop = 0.0;\n}';
+ const src='fn test() {\n        config.freestyle_weights.pending_safety = 1.0;\n}';
  const changed=transform(src);
  assert.equal(changed.replace('\n        if cfg!(wasted_off) { config.freestyle_weights.wasted_t = 0.0; }',''),src);
  assert.throws(()=>transform('missing'));assert.throws(()=>transform(src+src));
+});
+
+test('profile override ignores repeated softdrop assignments in other profiles',()=>{
+ const src='        config.freestyle_weights.softdrop = 0.0;\n        config.freestyle_weights.pending_safety = 1.0;\n        config.freestyle_weights.softdrop = 0.0;';
+ const result=transform(src);assert.equal(result.split('if cfg!(wasted_off)').length,2);
+ assert.equal(result.split('config.freestyle_weights.softdrop = 0.0;').length,3);
 });

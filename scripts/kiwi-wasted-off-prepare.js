@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 export function transform(source){
- const before='        config.freestyle_weights.softdrop = 0.0;';
+ const before='        config.freestyle_weights.pending_safety = 1.0;';
  const after=before+'\n        if cfg!(wasted_off) { config.freestyle_weights.wasted_t = 0.0; }';
  assert.equal(source.split(before).length,2,'Expected exactly one accepted profile anchor');
  return source.replace(before,after);
