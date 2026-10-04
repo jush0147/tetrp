@@ -9,6 +9,7 @@ export const PLAN={schema:'surge-residual-reused-control/1',hypothesis:'0.5 * fl
 if(VARIANT.name!=='residual'){PLAN.variant=VARIANT;PLAN.hypothesis=`Boolean ${VARIANT.boolean}; ${VARIANT.bank} * floor(bankBaseUnits * nextLockMultiplier); gross leaf asset`; }
 if(VARIANT.clearOff)PLAN.hypothesis='Only normal_clears, mini_spin_clears and spin_clears tables off; authority and other rewards unchanged';
 if(VARIANT.btbClear!==undefined)PLAN.hypothesis=`Only back_to_back_clear 1 -> ${VARIANT.btbClear}; all other accepted parameters unchanged`;
+if(VARIANT.wellDepth!==undefined)PLAN.hypothesis=`Only tetris_well_depth 0.3 -> ${VARIANT.wellDepth}; all other accepted parameters unchanged`;
 export function settings(block,leg,attempt=0){
  assert.ok(Number.isInteger(block)&&block>=0&&block<PLAN.blocks);
  assert.ok(Number.isInteger(leg)&&leg>=0&&leg<4);

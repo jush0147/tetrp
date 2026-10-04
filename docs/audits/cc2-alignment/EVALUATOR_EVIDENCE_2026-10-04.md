@@ -1,5 +1,7 @@
 # 本輪 evaluator 證據總表與停止點
 
+2026-10-04 井深正式授權啟動：[井深0／0.6最後兩批計畫](WELL_DEPTH_PLAN.md)。先well-off，再queue well-double，各自gate成功後200新KO、重用accepted控制；其他參數保持原accepted。18本機checks／整合source核對通過，Rust及public gate待Actions。完成即停止本輪盤點，不接第6–12項，不自動promotion或確認批；run另記dispatch。下方「離線／未啟動」為先前狀態。
+
 2026-10-04。本表整理已提交的驗收紀錄，B2B兩批已完成驗收並更新於本表；沒有新增測試任務。最新決定優先於舊排序：**驗收B2B clear 0／2，再測井深0／0.6，至此停止這輪參數盤點**。combo及後續清單暫停，不自動排隊。之後轉入選定強化方向與新seed確認；不是把各次最高分參數拼在一起。
 
 accepted仍是frozen aligned CC2 `review_h9_h12`，沒有因以下探索結果變更production。Legacy是Tetrp vendored Kiwi snapshot-v3.2，非stock CC2。

@@ -27,3 +27,14 @@ test('well 0.6 changes only the well coefficient and expands matching Rust expec
  for(const bad of [-1,0.3,1,NaN,'0.6']){assert.throws(()=>wellCandidateConfig(original,bad));assert.throws(()=>transformWellConfig(body,bad));assert.throws(()=>renderWellTests(tests,bad));}
  assert.throws(()=>renderWellTests('missing placeholder',0.6));
 });
+
+test('arena well variants map exactly to isolated candidate configurations',async()=>{
+ const {variant,candidateConfig}=await import('../scripts/kiwi-surge-variant.js');
+ const {transformConfig}=await import('../scripts/kiwi-surge-residual-prepare.js');
+ const original=JSON.parse(readFileSync('docs/audits/cc2-alignment/ACTIVE_PARAMETERS_2026-09-28.json')).config;
+ const source='    pub fn review_h9_h12() -> Self {\n        config.freestyle_weights.h3_surge_bank_value = 0.0;\n        config\n    }';
+ for(const [name,weight] of [['well-off',0],['well-double',0.6]]){
+  assert.deepEqual(candidateConfig(original,variant(name)),wellCandidateConfig(original,weight));
+  assert.equal(transformConfig(source,variant(name)),transformWellConfig(source,weight));
+ }
+});

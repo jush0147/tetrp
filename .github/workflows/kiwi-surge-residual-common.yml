@@ -8,7 +8,7 @@ on:
         required: true
         type: choice
         default: residual
-        options: [residual, boolean-off, both-one, clear-off, btb-clear-off, btb-clear-double]
+        options: [residual, boolean-off, both-one, clear-off, btb-clear-off, btb-clear-double, well-off, well-double]
 env:
   SURGE_VARIANT: ${{ inputs.variant || 'residual' }}
 permissions:
@@ -34,7 +34,7 @@ jobs:
           ref: 2e243242b674d57491f99b445f75e35fc48a0e26
           path: .cache/cc2-wasm-source
       - name: Check profile override regression before compiling
-        run: node --test test/kiwi-surge-residual.test.js test/kiwi-surge-residual-common.test.js
+        run: node --test test/kiwi-surge-residual.test.js test/kiwi-surge-residual-common.test.js test/kiwi-well-depth.test.js
       - name: Restore frozen accepted source and install fixed candidate
         env:
           GH_TOKEN: ${{ github.token }}
@@ -46,19 +46,22 @@ jobs:
           git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
           gh run download 37026070707 --repo jush0147/tetrp --name h1-common-result --dir .cache/wasted-control
           node scripts/kiwi-surge-residual-prepare.js install
-          if [[ "$SURGE_VARIANT" != clear-off && "$SURGE_VARIANT" != btb-clear-* ]]; then node scripts/kiwi-surge-residual-fixtures.js; fi
+          if [[ "$SURGE_VARIANT" != clear-off && "$SURGE_VARIANT" != btb-clear-* && "$SURGE_VARIANT" != well-* ]]; then node scripts/kiwi-surge-residual-fixtures.js; fi
           node scripts/kiwi-native-runner-prepare.js
           git -C .cache/cc2-wasm-source diff > .cache/surge-residual-build/source.patch
           cp .cache/cc2-wasm-source/src/bin/snapshot_stdio.rs .cache/surge-residual-build/snapshot_stdio.rs
       - name: Build control and candidate, verify snapshot and same-state evaluator tests
         run: |
           rustup toolchain install 1.90.0 --profile minimal
+          gate_filter=surge_residual_gate_tests
+          if [[ "$SURGE_VARIANT" == well-* ]]; then gate_filter=well_depth_gate_tests; fi
           for policy in control surge-residual; do
             flags=""
             output="accepted"
             if [ "$policy" = surge-residual ]; then flags="--cfg surge_residual"; output="surge-residual"; fi
+            if [[ "$policy" = surge-residual && "$SURGE_VARIANT" == well-* ]]; then flags="--cfg well_depth_candidate"; fi
             RUSTFLAGS="$flags" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib snapshot::tests
-            SURGE_FIXTURES="$GITHUB_WORKSPACE/.cache/surge-residual-build/authority-fixtures.json" KIWI_CONFIG_OUTPUT="$GITHUB_WORKSPACE/.cache/surge-residual-build/$output-config.json" RUSTFLAGS="$flags" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib surge_residual_gate_tests
+            SURGE_FIXTURES="$GITHUB_WORKSPACE/.cache/surge-residual-build/authority-fixtures.json" KIWI_CONFIG_OUTPUT="$GITHUB_WORKSPACE/.cache/surge-residual-build/$output-config.json" RUSTFLAGS="$flags" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib "$gate_filter"
             RUSTFLAGS="$flags" cargo +1.90.0 build --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --bin snapshot_stdio
             cp .cache/cc2-wasm-source/target/release/snapshot_stdio ".cache/surge-residual-build/snapshot-$policy"
           done

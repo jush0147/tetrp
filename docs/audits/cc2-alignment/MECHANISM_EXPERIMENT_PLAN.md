@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-04 井深正式授權啟動：[井深0／0.6最後兩批計畫](WELL_DEPTH_PLAN.md)。先well-off，再queue well-double，各自gate成功後200新KO、重用accepted控制；其他參數保持原accepted。18本機checks／整合source核對通過，Rust及public gate待Actions。完成即停止本輪盤點，不接第6–12項，不自動promotion或確認批；run另記dispatch。下方「離線／未啟動」為先前狀態。
+
 2026-10-04 最新驗收：[B2B clear0／2結果](B2B_CLEAR_RESULT_2026-10-04.md)。0版100–100，2版95–105，accepted104–96；差−2pp／−4.5pp，CI均跨零，維持1。400新KO、332022 placements／124479 Holds，zero failure／fallback／rejection／mismatch；唯一terminal Hold原始事件確認正常topout。第4項完成，只剩井深0／0.6（控制.3），之後停止本輪盤點，不接第6–12項。本次未dispatch井深，未改production。
 
 2026-10-04 最新範圍決定（優先於下方舊清單）：[本輪證據總表與停止點](EVALUATOR_EVIDENCE_2026-10-04.md)。先驗收B2B clear0／2，再測井深0／0.6、控制0.3；**測完井深停止本輪盤點，暫停第6–12項**。後續選單一強化方向用新seeds確認，不拼各次最高分。本次0／0.6離線候選及Rust模板已備，JS6checks與真實accepted source安裝核對通過；Rust未跑。未push、未新增Actions／對戰，未查詢B2B即時結果。

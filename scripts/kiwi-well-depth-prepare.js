@@ -1,5 +1,7 @@
-// Prepared offline only; no workflow dispatch or production asset changes.
+// Isolated source preparation; this module never dispatches workflows.
 import assert from 'node:assert/strict';
+import {pathToFileURL} from 'node:url';
+import {resolve} from 'node:path';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 function validateWeight(weight){assert.ok(weight===0||weight===0.6,'Only fixed well candidates 0 and 0.6 are authorized');}
@@ -23,7 +25,7 @@ export function wellCandidateConfig(original,weight=0){
  const result=structuredClone(original);assert.equal(result.freestyle_weights.tetris_well_depth,0.3);
  result.freestyle_weights.tetris_well_depth=weight;return result;
 }
-if(process.argv[2]==='install'){
+if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href&&process.argv[2]==='install'){
  const root=process.argv[3];assert.ok(root,'Explicit isolated source directory required');
  const weight=Number(process.argv[4]??0);validateWeight(weight);
  const candidate=weight===0?'well-depth-off':'well-depth-double';

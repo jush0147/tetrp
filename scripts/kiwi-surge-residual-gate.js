@@ -82,10 +82,10 @@ if(process.argv[2]==='notify'){
    validatePlacement(next,c.action);summary.explicitHoldModes.push(mode);
   }
   assert.ok(summary.changedScores>0,'No real search score activation');
-  assert.ok(((VARIANT.clearOff||VARIANT.btbClear!==undefined)?summary.changedTop1:summary.chargedChangedTop1)>0,'No required top-1 activation; do not dispatch arena');
+  assert.ok(((VARIANT.clearOff||VARIANT.btbClear!==undefined||VARIANT.wellDepth!==undefined)?summary.changedTop1:summary.chargedChangedTop1)>0,'No required top-1 activation; do not dispatch arena');
   await copyFile('.cache/native-artifact/snapshot-accepted',`${root}/snapshot-accepted`);
   const manifest={...plan,candidateNative:sha(await readFile(`${root}/snapshot-surge-residual`)),nativeRun:Number(process.env.GITHUB_RUN_ID)};
   await writeFile(`${root}/manifest.json`,JSON.stringify(manifest,null,2)+'\n');
-  summary.manifest=manifest;summary.checks.push('frozen accepted report parity','candidate top-1 authority lock parity','Hold and reanalysis',(VARIANT.clearOff||VARIANT.btbClear!==undefined)?'Rust same-state clear-only Reward delta':'Rust same-state leaf-only delta');summary.complete=true;await save();
+  summary.manifest=manifest;summary.checks.push('frozen accepted report parity','candidate top-1 authority lock parity','Hold and reanalysis',VARIANT.wellDepth!==undefined?'Rust same-state well-only leaf delta':(VARIANT.clearOff||VARIANT.btbClear!==undefined)?'Rust same-state clear-only Reward delta':'Rust same-state leaf-only delta');summary.complete=true;await save();
  }catch(e){summary.error={message:e.message,stack:e.stack,details:e.details};await save();throw e;}finally{for(const c of clients)await c.close();}
 }else throw Error('gate | notify');

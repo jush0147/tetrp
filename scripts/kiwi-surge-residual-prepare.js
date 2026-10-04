@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {transformWellConfig,renderWellTests} from './kiwi-well-depth-prepare.js';
 import {VARIANT} from './kiwi-surge-variant.js';
 export function transformConfig(source,v=VARIANT){
+ if(v.wellDepth!==undefined)return transformWellConfig(source,v.wellDepth);
  assert.ok(!source.includes('cfg!(surge_residual)'),'Already installed');
  const method='    pub fn review_h9_h12() -> Self {';assert.equal(source.split(method).length,2);
  const start=source.indexOf(method),end=source.indexOf('\n    }',start);assert.ok(end>start);
@@ -38,9 +40,9 @@ ${anchor}
 if(process.argv[2]==='install'){
  const root=process.argv[3]??'.cache/cc2-wasm-source',out='.cache/surge-residual-build';await mkdir(out,{recursive:true});
  const config=await readFile(`${root}/src/bot.rs`,'utf8'),evalSource=await readFile(`${root}/src/bot/freestyle.rs`,'utf8');
- const afterConfig=transformConfig(config),afterEval=(VARIANT.clearOff||VARIANT.btbClear!==undefined)?evalSource:transformEval(evalSource);
+ const afterConfig=transformConfig(config),afterEval=(VARIANT.clearOff||VARIANT.btbClear!==undefined||VARIANT.wellDepth!==undefined)?evalSource:transformEval(evalSource);
  await writeFile(`${root}/src/bot.rs`,afterConfig);
- await writeFile(`${root}/src/bot/freestyle.rs`,afterEval+'\n'+(await readFile(VARIANT.btbClear!==undefined?'tools/cc2-eval-audit/btb_clear_tests.rs':VARIANT.clearOff?'tools/cc2-eval-audit/clear_off_tests.rs':'tools/cc2-eval-audit/surge_residual_tests.rs','utf8')).replaceAll('CANDIDATE_BTB_CLEAR',(VARIANT.btbClear??1).toFixed(1)).replaceAll('CANDIDATE_BANK',VARIANT.bank.toFixed(1)).replaceAll('CANDIDATE_BOOLEAN',VARIANT.boolean.toFixed(1)));
+ await writeFile(`${root}/src/bot/freestyle.rs`,afterEval+'\n'+(VARIANT.wellDepth!==undefined?renderWellTests(await readFile('tools/cc2-eval-audit/well_depth_tests.rs','utf8'),VARIANT.wellDepth):(await readFile(VARIANT.btbClear!==undefined?'tools/cc2-eval-audit/btb_clear_tests.rs':VARIANT.clearOff?'tools/cc2-eval-audit/clear_off_tests.rs':'tools/cc2-eval-audit/surge_residual_tests.rs','utf8')).replaceAll('CANDIDATE_BTB_CLEAR',(VARIANT.btbClear??1).toFixed(1)).replaceAll('CANDIDATE_BANK',VARIANT.bank.toFixed(1)).replaceAll('CANDIDATE_BOOLEAN',VARIANT.boolean.toFixed(1))));
  const sha=x=>createHash('sha256').update(x).digest('hex');
- await writeFile(`${out}/source-delta.json`,JSON.stringify({variant:VARIANT,hypothesis:VARIANT.btbClear!==undefined?'Only back_to_back_clear changed; evaluator implementation unchanged':VARIANT.clearOff?'Only normal, mini and full spin clear reward tables off; evaluator implementation unchanged':'bank weight * floor(charged bank base units * public next-lock multiplier), leaf only; pending not deducted',before:{config:sha(config),evaluator:sha(evalSource)},after:{config:sha(afterConfig),evaluator:sha(afterEval)}},null,2));
+ await writeFile(`${out}/source-delta.json`,JSON.stringify({variant:VARIANT,hypothesis:VARIANT.wellDepth!==undefined?'Only tetris_well_depth changed; evaluator implementation unchanged':VARIANT.btbClear!==undefined?'Only back_to_back_clear changed; evaluator implementation unchanged':VARIANT.clearOff?'Only normal, mini and full spin clear reward tables off; evaluator implementation unchanged':'bank weight * floor(charged bank base units * public next-lock multiplier), leaf only; pending not deducted',before:{config:sha(config),evaluator:sha(evalSource)},after:{config:sha(afterConfig),evaluator:sha(afterEval)}},null,2));
 }
