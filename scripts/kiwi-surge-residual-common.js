@@ -24,7 +24,7 @@ async function identities(){
  const on=await read('.cache/surge-residual-build/accepted-config.json'),off=await read('.cache/surge-residual-build/surge-residual-config.json');
  assert.equal(on.freestyle_weights.pending_safety,1);assert.equal(on.freestyle_weights.h9_cavity_excavation,-0.5);
  assert.deepEqual(on,(await read('docs/audits/cc2-alignment/ACTIVE_PARAMETERS_2026-09-28.json')).config);
- assert.equal(manifest.nativeRun,Number(process.env.GITHUB_RUN_ID));assert.equal(gate.sampleCount,20);assert.equal(gate.placements,20);assert.equal(gate.baselineReports,20);assert.ok((VARIANT.clearOff?gate.changedTop1:gate.chargedChangedTop1)>0);
+ assert.equal(manifest.nativeRun,Number(process.env.GITHUB_RUN_ID));assert.equal(gate.sampleCount,20);assert.equal(gate.placements,20);assert.equal(gate.baselineReports,20);assert.ok(((VARIANT.clearOff||VARIANT.btbClear!==undefined)?gate.changedTop1:gate.chargedChangedTop1)>0);
  const expected=candidateConfig(on);assert.deepEqual(off,expected);
  for(const p of ['accepted','surge-residual'])assert.equal(hash(await readFile(`.cache/surge-residual-build/snapshot-${p}`)),p==='accepted'?PLAN.native.accepted:manifest.candidateNative);
  const legacy=await read('vendor/kiwi-v1/artifact-lock.json');

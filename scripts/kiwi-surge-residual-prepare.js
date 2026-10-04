@@ -9,6 +9,11 @@ export function transformConfig(source,v=VARIANT){
  const block=source.slice(start,end),anchor='        config.freestyle_weights.h3_surge_bank_value = 0.0;';
  assert.equal(block.split(anchor).length,2,'Expected single bank initialization in review profile');
  assert.equal((block.match(/h3_surge_bank_value\s*=/g)??[]).length,1,'Additional bank assignment would override candidate');
+ if(v.btbClear!==undefined){
+  assert.ok(!block.includes('back_to_back_clear'),'Unexpected B2B clear override');
+  const extra='\n        if cfg!(surge_residual) { config.freestyle_weights.back_to_back_clear = '+v.btbClear.toFixed(1)+'; }';
+  return source.slice(0,start)+block.replace(anchor,anchor+extra)+source.slice(end);
+ }
  if(v.clearOff){
   for(const key of ['normal_clears','mini_spin_clears','spin_clears'])assert.ok(!block.includes(key),'Unexpected clear table override');
   const extra='\n        if cfg!(surge_residual) {\n            config.freestyle_weights.normal_clears = [0.0; 5];\n            config.freestyle_weights.mini_spin_clears = [0.0; 3];\n            config.freestyle_weights.spin_clears = [0.0; 4];\n        }';
@@ -33,9 +38,9 @@ ${anchor}
 if(process.argv[2]==='install'){
  const root=process.argv[3]??'.cache/cc2-wasm-source',out='.cache/surge-residual-build';await mkdir(out,{recursive:true});
  const config=await readFile(`${root}/src/bot.rs`,'utf8'),evalSource=await readFile(`${root}/src/bot/freestyle.rs`,'utf8');
- const afterConfig=transformConfig(config),afterEval=VARIANT.clearOff?evalSource:transformEval(evalSource);
+ const afterConfig=transformConfig(config),afterEval=(VARIANT.clearOff||VARIANT.btbClear!==undefined)?evalSource:transformEval(evalSource);
  await writeFile(`${root}/src/bot.rs`,afterConfig);
- await writeFile(`${root}/src/bot/freestyle.rs`,afterEval+'\n'+(await readFile(VARIANT.clearOff?'tools/cc2-eval-audit/clear_off_tests.rs':'tools/cc2-eval-audit/surge_residual_tests.rs','utf8')).replaceAll('CANDIDATE_BANK',VARIANT.bank.toFixed(1)).replaceAll('CANDIDATE_BOOLEAN',VARIANT.boolean.toFixed(1)));
+ await writeFile(`${root}/src/bot/freestyle.rs`,afterEval+'\n'+(await readFile(VARIANT.btbClear!==undefined?'tools/cc2-eval-audit/btb_clear_tests.rs':VARIANT.clearOff?'tools/cc2-eval-audit/clear_off_tests.rs':'tools/cc2-eval-audit/surge_residual_tests.rs','utf8')).replaceAll('CANDIDATE_BTB_CLEAR',(VARIANT.btbClear??1).toFixed(1)).replaceAll('CANDIDATE_BANK',VARIANT.bank.toFixed(1)).replaceAll('CANDIDATE_BOOLEAN',VARIANT.boolean.toFixed(1)));
  const sha=x=>createHash('sha256').update(x).digest('hex');
- await writeFile(`${out}/source-delta.json`,JSON.stringify({variant:VARIANT,hypothesis:VARIANT.clearOff?'Only normal, mini and full spin clear reward tables off; evaluator implementation unchanged':'bank weight * floor(charged bank base units * public next-lock multiplier), leaf only; pending not deducted',before:{config:sha(config),evaluator:sha(evalSource)},after:{config:sha(afterConfig),evaluator:sha(afterEval)}},null,2));
+ await writeFile(`${out}/source-delta.json`,JSON.stringify({variant:VARIANT,hypothesis:VARIANT.btbClear!==undefined?'Only back_to_back_clear changed; evaluator implementation unchanged':VARIANT.clearOff?'Only normal, mini and full spin clear reward tables off; evaluator implementation unchanged':'bank weight * floor(charged bank base units * public next-lock multiplier), leaf only; pending not deducted',before:{config:sha(config),evaluator:sha(evalSource)},after:{config:sha(afterConfig),evaluator:sha(afterEval)}},null,2));
 }

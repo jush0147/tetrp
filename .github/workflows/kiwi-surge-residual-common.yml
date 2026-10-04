@@ -8,7 +8,7 @@ on:
         required: true
         type: choice
         default: residual
-        options: [residual, boolean-off, both-one, clear-off]
+        options: [residual, boolean-off, both-one, clear-off, btb-clear-off, btb-clear-double]
 env:
   SURGE_VARIANT: ${{ inputs.variant || 'residual' }}
 permissions:
@@ -46,7 +46,7 @@ jobs:
           git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
           gh run download 37026070707 --repo jush0147/tetrp --name h1-common-result --dir .cache/wasted-control
           node scripts/kiwi-surge-residual-prepare.js install
-          if [ "$SURGE_VARIANT" != clear-off ]; then node scripts/kiwi-surge-residual-fixtures.js; fi
+          if [[ "$SURGE_VARIANT" != clear-off && "$SURGE_VARIANT" != btb-clear-* ]]; then node scripts/kiwi-surge-residual-fixtures.js; fi
           node scripts/kiwi-native-runner-prepare.js
           git -C .cache/cc2-wasm-source diff > .cache/surge-residual-build/source.patch
           cp .cache/cc2-wasm-source/src/bin/snapshot_stdio.rs .cache/surge-residual-build/snapshot_stdio.rs

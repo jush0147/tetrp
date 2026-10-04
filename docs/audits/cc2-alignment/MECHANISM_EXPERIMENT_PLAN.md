@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-04 第4項授權開始：[B2B當次clear 1→0／2](B2B_CLEAR_PLAN.md)。先btb-clear-off，再queue btb-clear-double，各自gate成功後200新KO、重用accepted控制。只改back_to_back_clear，保留三表原值／Boolean=.5／bank=0，非Surge候選。ntfy，無第5項queue，不自動promotion或擴權重。run另記dispatch。
+
 2026-10-04 最新驗收：[第3項clear三表off结果](CLEAR_SHAPING_RESULT_37173465050.md)。200新KO為112–88，重用accepted104–96，差+4pp、配對95% CI−5.94～+13.94pp。Correctness全部通過，195062 placements／76137 Holds，零failure／fallback／rejection／mismatch／重打；gate3/20 top1 activation。效益未定，保持accepted，不promotion或追加到顯著。第3項初輪完成，下一項第4 back_to_back_clear 1→0語意與隔離審查；第5仍Tetris井深。本次未派新arena。
 
 2026-10-04 第3項開始：[clear三表聯合消融](CLEAR_SHAPING_PLAN.md)。使用者繼續授權；normal／mini／full表全零，其餘accepted保持。已核對PC override、fallback、精確sent並存語意。Evaluator函式不改、不帶Surge候選；720 Rust數值組合＋20public gate通過才200新KO，重用控制，ntfy；只此候選，無第4项queue。run另記dispatch。

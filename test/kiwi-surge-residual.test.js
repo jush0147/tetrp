@@ -51,3 +51,16 @@ test('clear-off zeros exactly three tables; no Boolean or bank candidate inherit
  for(const [k,n] of [['normal_clears',5],['mini_spin_clears',3],['spin_clears',4]])assert.ok(patched.includes(k+' = [0.0; '+n+'];'));
  assert.throws(()=>transformVariant(source.replace('        config\n','        config.freestyle_weights.normal_clears = [0.0;5];\n        config\n'),variant('clear-off')));
 });
+
+test('B2B clear 0 and 2 isolate one coefficient and preserve the original three tables',()=>{
+ const original=JSON.parse(readFileSync('docs/audits/cc2-alignment/ACTIVE_PARAMETERS_2026-09-28.json')).config;
+ const source='    pub fn review_h9_h12() -> Self {\n        config.freestyle_weights.h3_surge_bank_value = 0.0;\n        config\n    }';
+ for(const [name,value] of [['btb-clear-off',0],['btb-clear-double',2]]){
+  const v=variant(name),expected=structuredClone(original);expected.freestyle_weights.back_to_back_clear=value;
+  assert.deepEqual(candidateConfig(original,v),expected);
+  const patched=transformVariant(source,v);assert.ok(patched.includes('if cfg!(surge_residual) { config.freestyle_weights.back_to_back_clear = '+value.toFixed(1)+'; }'));
+  assert.ok(!patched.includes('normal_clears'));assert.ok(!patched.includes('has_back_to_back ='));
+  assert.throws(()=>transformVariant(patched,v));
+  assert.throws(()=>transformVariant(source.replace('        config\n','        config.freestyle_weights.back_to_back_clear = 1.0;\n        config\n'),v));
+ }
+});

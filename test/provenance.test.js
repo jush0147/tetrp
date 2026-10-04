@@ -83,6 +83,7 @@ test('#5 public tree excludes research directories and binary assets',()=>{
     'tools/cc2-eval-audit/surge_observer.rs',
     'tools/cc2-eval-audit/surge_residual_tests.rs',
       'tools/cc2-eval-audit/clear_off_tests.rs',
+      'tools/cc2-eval-audit/btb_clear_tests.rs',
     'tools/cc2-eval-audit/h1_activation.rs',
   ]);
   for(const path of tracked) {
