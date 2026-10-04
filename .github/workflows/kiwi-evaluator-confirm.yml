@@ -1,0 +1,137 @@
+name: Kiwi evaluator direct confirmation
+run-name: 'Kiwi confirm ${{ inputs.variant }} vs accepted — 200 KO'
+on:
+  # Register this branch workflow without running a gate or arena on push.
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-evaluator-confirm.yml]
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: Fixed evaluator candidate
+        required: true
+        type: choice
+        default: well-double
+        options: [well-double, clear-off]
+env:
+  SURGE_VARIANT: ${{ inputs.variant || 'well-double' }}
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-evaluator-confirm-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  gate:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test direct score, identity and retry contract
+        run: node --test test/kiwi-evaluator-confirm.test.js test/kiwi-native-client.test.js test/kiwi-match-pool.test.js
+      - name: Download exact previously validated candidate binary
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          source_run=$(node --input-type=module -e "import {PLAN} from './scripts/kiwi-evaluator-confirm-plan.js'; console.log(PLAN.source.run)")
+          gh run download "$source_run" --repo jush0147/tetrp --name kiwi-surge-residual-build --dir .cache/surge-residual-build
+          chmod +x .cache/surge-residual-build/snapshot-accepted .cache/surge-residual-build/snapshot-control .cache/surge-residual-build/snapshot-surge-residual
+          node scripts/kiwi-evaluator-confirm-identity.js prepare
+          chmod +x .cache/native-artifact/snapshot-accepted
+      - name: Repeat public snapshot authority gate and two-native smoke
+        run: |
+          node scripts/kiwi-surge-residual-gate.js gate
+          node scripts/kiwi-evaluator-confirm-smoke.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-evaluator-confirm-build
+          path: .cache/surge-residual-build/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify gate failure; arena not launched
+        if: failure()
+        run: node scripts/kiwi-evaluator-confirm.js notify
+  block:
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: true
+      max-parallel: 16
+      matrix:
+        block: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: kiwi-evaluator-confirm-build
+          path: .cache/surge-residual-build
+      - run: chmod +x .cache/surge-residual-build/snapshot-accepted .cache/surge-residual-build/snapshot-surge-residual
+      - name: Two direct candidate-versus-accepted KO legs
+        timeout-minutes: 80
+        env:
+          SURGE_RESIDUAL_BLOCK: ${{ matrix.block }}
+        run: node scripts/kiwi-evaluator-confirm.js block
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluator-confirm-summary-${{ matrix.block }}
+          path: .cache/evaluator-confirm/summaries/
+          include-hidden-files: true
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluator-confirm-traces-${{ matrix.block }}
+          path: .cache/evaluator-confirm/games/
+          include-hidden-files: true
+          compression-level: 1
+          retention-days: 3
+  aggregate:
+    if: always() && needs.gate.result == 'success'
+    needs: [gate, block]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: kiwi-evaluator-confirm-build
+          path: .cache/surge-residual-build
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: evaluator-confirm-summary-*
+          path: .cache/evaluator-confirm-downloads
+      - name: Validate every game and apply preregistered two-candidate criterion
+        env:
+          BLOCKS_STATUS: ${{ needs.block.result }}
+        run: node scripts/kiwi-evaluator-confirm.js aggregate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluator-confirm-result
+          path: .cache/evaluator-confirm/aggregate/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once on completion or failure
+        if: always()
+        env:
+          AGGREGATE_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-evaluator-confirm.js notify
