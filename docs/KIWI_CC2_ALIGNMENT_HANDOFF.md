@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-04 最新驗收：[B2B clear0／2結果](audits/cc2-alignment/B2B_CLEAR_RESULT_2026-10-04.md)。0版100–100，2版95–105，accepted104–96；差−2pp／−4.5pp，CI均跨零，維持1。400新KO、332022 placements／124479 Holds，zero failure／fallback／rejection／mismatch；唯一terminal Hold原始事件確認正常topout。第4項完成，只剩井深0／0.6（控制.3），之後停止本輪盤點，不接第6–12項。本次未dispatch井深，未改production。
+
 2026-10-04 最新範圍決定（優先於下方舊清單）：[本輪證據總表與停止點](audits/cc2-alignment/EVALUATOR_EVIDENCE_2026-10-04.md)。先驗收B2B clear0／2，再測井深0／0.6、控制0.3；**測完井深停止本輪盤點，暫停第6–12項**。後續選單一強化方向用新seeds確認，不拼各次最高分。本次0／0.6離線候選及Rust模板已備，JS6checks與真實accepted source安裝核對通過；Rust未跑。未push、未新增Actions／對戰，未查詢B2B即時結果。
 
 2026-10-04 等待第4項期間：[第5項井深離線審查與候選](audits/cc2-alignment/WELL_DEPTH_REVIEW.md)已準備。0.3×最低欄頂端起、其餘9欄皆滿的連續列數，計於T-slot cutout後；無直接I/Hold兌現条件。只備0.3→0的獨立prepare與Rust邊界測試；JS5 checks／真實source安裝通過，Rust待跑。依使用者限制未push、未新增Actions或對戰；第4項兩批保持原計畫。

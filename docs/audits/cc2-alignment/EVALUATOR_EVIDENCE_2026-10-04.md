@@ -1,6 +1,6 @@
 # 本輪 evaluator 證據總表與停止點
 
-2026-10-04。本表整理已提交的驗收紀錄，沒有重新查詢正在等待的Actions，也沒有新增測試任務。最新決定優先於舊排序：**驗收B2B clear 0／2，再測井深0／0.6，至此停止這輪參數盤點**。combo及後續清單暫停，不自動排隊。之後轉入選定強化方向與新seed確認；不是把各次最高分參數拼在一起。
+2026-10-04。本表整理已提交的驗收紀錄，B2B兩批已完成驗收並更新於本表；沒有新增測試任務。最新決定優先於舊排序：**驗收B2B clear 0／2，再測井深0／0.6，至此停止這輪參數盤點**。combo及後續清單暫停，不自動排隊。之後轉入選定強化方向與新seed確認；不是把各次最高分參數拼在一起。
 
 accepted仍是frozen aligned CC2 `review_h9_h12`，沒有因以下探索結果變更production。Legacy是Tetrp vendored Kiwi snapshot-v3.2，非stock CC2。
 
@@ -27,6 +27,13 @@ accepted控制104–96（52%），100共同seed blocks×兩座位。H1批同時�
 | [Boolean=1，Surge bank=1](SURGE_INTERACTION_RESULT_2026-10-04.md) | 108–92 | +2；−7.02～+11.02 | 聯合數值探索，不能分別歸因兩參數。 |
 | [normal／mini／full三表聯合off](CLEAR_SHAPING_RESULT_37173465050.md) | 112–88 | +4；−5.94～+13.94 | 正向點估計，尚未確認；不能分別歸因三張表。 |
 
+第4項補充：
+
+| 候選 | KO勝–負 | 差／配對近似95% CI（pp） | 現階段判斷 |
+|---|---|---|---|
+| [B2B clear 1→0](B2B_CLEAR_RESULT_2026-10-04.md) | 100–100 | −2；−12.16～+8.16 | 未證明改善，維持1。 |
+| [B2B clear 1→2](B2B_CLEAR_RESULT_2026-10-04.md) | 95–105 | −4.5；−14.18～+5.18 | 未證明改善或傷害；不是1最佳的證明。 |
+
 以上正式結果的既有correctness驗收皆通過：固定同局piece seed／換邊／24frames／200k nodes／snapshot-only／Tetrp placement authority，KO-only，zero failure/fallback/parity mismatch。它們不是24frames內真實鍵盤transport的證明。總表重用既有驗收，不聲稱本次重播所有raw traces。
 
 原2×2 Boolean×bank interaction為+5.5pp、CI−6.78～+17.78pp，尚未證實有或沒有交互作用。點估計最高的clear-off也不能直接當champion：多次探索、同一批seeds與寬CI會產生選擇偏差。
@@ -41,7 +48,7 @@ accepted控制104–96（52%），100共同seed blocks×兩座位。H1批同時�
 | B2B Boolean | post-state固定+.5 | 不是bank數量或可兌現時間。 |
 | Surge residual | 已充能gross bank×公開next-lock倍率取整再加權；可能與保留B2B偏好互動 | 不保證可達釋放、不等於實際sent、不證明是整體輸局原因。 |
 | clear三表 | 在實際sent之外的固定clear類別edge分；PC override可遮蔽 | 家族結果不是單獨mini/TSD的因果結論。 |
-| B2B clear | 此次normal_bonus交易旗標的edge加分；另有Boolean leaf與實際攻擊 | 0／2尚未驗收，沒有強度結論。 |
+| B2B clear | 此次normal_bonus交易旗標的edge加分；另有Boolean leaf與實際攻擊 | 0／2已驗收，均未證明改善；保持1，不代表最佳。 |
 | 井深 | cutout後最低欄起、其他9欄皆滿的連續列×0.3；與T-slot／height／transitions互動 | 未看I的proxy不等於一定有害，也不是合法I兌現證書。 |
 
 [charged-state診斷](SURGE_RESULT_37121512490.md)證明樣本中搜尋有release及charged frontier，而bank沒有獨立數量leaf；那是機制線索，不是KO改善證據。H1短局activation及各種gate亦不列入strength樣本；早期transport錯誤FT7與未完成／失敗gate不算。
@@ -50,7 +57,7 @@ accepted控制104–96（52%），100共同seed blocks×兩座位。H1批同時�
 
 | 項目 | 固定比較 | 最新已確認狀態 |
 |---|---|---|
-| 第4 B2B clear | 原1；候選0／2 | 已派run37187886430／37187910625，待驗收；本次未查即時狀態。 |
+| 第4 B2B clear | 原1；候選0／2 | run37187886430／37187910625已驗收，100–100／95–105；correctness通過，維持1。 |
 | 第5井深 | 原0.3；候選0／0.6 | 兩版離線prepare與測試已備好，未dispatch。Rust及real snapshot gate未完成。 |
 | combo、PC、row transitions、coverage、holes、height、T-slot後續消融 | 舊表第6–12項 | **本輪暫停，不自動啟動。** |
 
