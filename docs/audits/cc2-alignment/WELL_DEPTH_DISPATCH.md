@@ -1,5 +1,7 @@
 # 本輪最後兩批：井深0／0.6
 
+2026-10-04 最終驗收：[井深0.6結果與收尾](WELL_DOUBLE_RESULT_37200443114.md)。0.6版112–88，accepted104–96，差+4pp、配對95% CI −5.837～+13.837pp；0版101–99。最後400新KO均zero failure／fallback／rejection／mismatch，兩gate成功。未證明改善，維持0.3。**本輪參數盤點已完成並停止，不接舊清單、不新增run、不promotion。** 替代evaluator仍屬討論，尚未啟動。下方pending/gate進行中敘述為歷史狀態。
+
 2026-10-04 最新驗收：[井深0結果](WELL_OFF_RESULT_37200417596.md)：101–99，accepted104–96，差−1.5pp，配對95% CI −11.614～+8.614pp。200新KO、171974 placements／64856 Holds，zero failure／fallback／rejection／mismatch；維持0.3。井深0.6 run 37200443114 查詢時正在gate，尚未完成；等該批後才結束本輪，不新增任務。
 
 2026-10-04，source `c9feb5a5148b9fe6cd685bc73ebbc5bd0f207f28`。

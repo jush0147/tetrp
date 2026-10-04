@@ -1,5 +1,7 @@
 # 井深0／0.6：本輪最後兩個候選
 
+2026-10-04 最終驗收：[井深0.6結果與收尾](WELL_DOUBLE_RESULT_37200443114.md)。0.6版112–88，accepted104–96，差+4pp、配對95% CI −5.837～+13.837pp；0版101–99。最後400新KO均zero failure／fallback／rejection／mismatch，兩gate成功。未證明改善，維持0.3。**本輪參數盤點已完成並停止，不接舊清單、不新增run、不promotion。** 替代evaluator仍屬討論，尚未啟動。下方pending/gate進行中敘述為歷史狀態。
+
 2026-10-04使用者授權開始。先well-off=0，再queue well-double=0.6，以原accepted=0.3作控制。兩版只改tetris_well_depth，其餘回到原accepted：B2B clear=1、Boolean=.5、bank=0、三表原值、H1=1、H9=−.5。不是疊加任何先前最高分候選。
 
 語意見[井深審查](WELL_DEPTH_REVIEW.md)。數的是T-slot cutout後最低欄頂端起、其餘9欄皆滿的連續列；不是承諾能用I兌現。候選只改係數，evaluator本體與gameplay不修改。
