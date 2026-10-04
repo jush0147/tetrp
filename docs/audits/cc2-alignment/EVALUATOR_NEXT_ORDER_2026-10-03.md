@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-04 最新範圍決定（優先於下方舊清單）：[本輪證據總表與停止點](EVALUATOR_EVIDENCE_2026-10-04.md)。先驗收B2B clear0／2，再測井深0／0.6、控制0.3；**測完井深停止本輪盤點，暫停第6–12項**。後續選單一強化方向用新seeds確認，不拼各次最高分。本次0／0.6離線候選及Rust模板已備，JS6checks與真實accepted source安裝核對通過；Rust未跑。未push、未新增Actions／對戰，未查詢B2B即時結果。
+
 2026-10-04 等待第4項期間：[第5項井深離線審查與候選](WELL_DEPTH_REVIEW.md)已準備。0.3×最低欄頂端起、其餘9欄皆滿的連續列數，計於T-slot cutout後；無直接I/Hold兌現条件。只備0.3→0的獨立prepare與Rust邊界測試；JS5 checks／真實source安裝通過，Rust待跑。依使用者限制未push、未新增Actions或對戰；第4項兩批保持原計畫。
 
 2026-10-04 第4項授權開始：[B2B當次clear 1→0／2](B2B_CLEAR_PLAN.md)。先btb-clear-off，再queue btb-clear-double，各自gate成功後200新KO、重用accepted控制。只改back_to_back_clear，保留三表原值／Boolean=.5／bank=0，非Surge候選。ntfy，無第5項queue，不自動promotion或擴權重。run另記dispatch。

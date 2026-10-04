@@ -1,5 +1,7 @@
 # 第5項：Tetris井深審查與離線候選
 
+2026-10-04 更新：使用者已同意本輪測至井深即停止盤點；0與0.6兩版均已離線準備，原accepted為0.3。CLI為`node scripts/kiwi-well-depth-prepare.js install <isolated-source> <0|0.6>`，分別寫入.cache/well-depth-off-build或.cache/well-depth-double-build的manifest資料；编譯時candidate需`--cfg well_depth_candidate`，control不帶cfg。沒有workflow整合或dispatch，Rust尚待驗證。
+
 2026-10-04，使用者授權等待B2B兩批期間先準備，不新增Actions對戰。此文件不是promotion或dispatch授權；B2B clear=0／2兩批照原計畫，沒有查詢或更動它們。
 
 ## 原實作實際量什麼
@@ -37,13 +39,13 @@ T的影響則是間接的：cutout次數由state.bag是否有T、reserve是否T�
 
 ## 已準備的最小候選與測試
 
-只將review profile `tetris_well_depth=0.3→0`，全部其他參數保持原accepted（包含三表原值、B2B clear=1、Boolean=.5、bank=0）。不疊加目前實驗。獨立離線prepare `scripts/kiwi-well-depth-prepare.js`，明確要求isolated source目錄；cfg `well_depth_off`只控制此係數，evaluator函式本體byte-identical，仅附加測試模組。
+兩個獨立候選只將review profile `tetris_well_depth=0.3→0`或`0.3→0.6`，全部其他參數保持原accepted（包含三表原值、B2B clear=1、Boolean=.5、bank=0）。不疊加目前實驗。獨立離線prepare `scripts/kiwi-well-depth-prepare.js`，明確要求isolated source目錄；cfg `well_depth_candidate`只控制此係數，evaluator函式本體byte-identical，仅附加測試模組。
 
-Rust `well_depth_gate_tests`已備好：手算平井depth0/1/3/4/8、左/中/右井、有/無I、Hold I/O、被打斷連續列、墊底、雙空欄、roof，以及T-slot cutout前後的具體見證。每個state比較on/off完整evaluator，edge Reward不變，leaf delta只能是−0.3×深度；terminal delta=0。
+Rust `well_depth_gate_tests`已備好：手算平井depth0/1/3/4/8、左/中/右井、有/無I、Hold I/O、被打斷連續列、墊底、雙空欄、roof，以及T-slot cutout前後的具體見證。每個state比較on/off完整evaluator，edge Reward不變，leaf delta只能是(candidateWeight−0.3)×深度；terminal delta=0。
 
 Cutout見證（cols底部bit編碼）：`[1,0,5,3,3,3,3,3,3,3]`，不允許cutout時well depth=1。模板填South T於(1,1)會移除底2行，成`[0,0,1,0,0,0,0,0,0,0]`，well depth=0。測試檢查實際模板輸出、消行數與post-board，不把這個模板假想填法當合法路徑證書。
 
-本機JS配置隔離／scope防誤改及provenance 5項通過；實際accepted source安裝也核對evaluator本體未變。Rust本機不可執行，這些Rust測試尚未編譯通過，不冒稱correctness已完成。
+本機JS兩候選配置隔離／scope防誤改／模板展開及provenance 6項通過；實際accepted source安裝也核對evaluator本體未變。Rust本機不可執行，這些Rust測試尚未編譯通過，不冒稱correctness已完成。
 
 ## 尚未做
 

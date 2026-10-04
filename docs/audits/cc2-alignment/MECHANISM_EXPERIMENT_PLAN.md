@@ -1,5 +1,7 @@
 # 從語意盤點轉入最小機制比較
 
+2026-10-04 最新範圍決定（優先於下方舊清單）：[本輪證據總表與停止點](EVALUATOR_EVIDENCE_2026-10-04.md)。先驗收B2B clear0／2，再測井深0／0.6、控制0.3；**測完井深停止本輪盤點，暫停第6–12項**。後續選單一強化方向用新seeds確認，不拼各次最高分。本次0／0.6離線候選及Rust模板已備，JS6checks與真實accepted source安裝核對通過；Rust未跑。未push、未新增Actions／對戰，未查詢B2B即時結果。
+
 2026-10-04 第4項授權開始：[B2B當次clear 1→0／2](B2B_CLEAR_PLAN.md)。先btb-clear-off，再queue btb-clear-double，各自gate成功後200新KO、重用accepted控制。只改back_to_back_clear，保留三表原值／Boolean=.5／bank=0，非Surge候選。ntfy，無第5項queue，不自動promotion或擴權重。run另記dispatch。
 
 2026-10-04 最新驗收：[第3項clear三表off结果](CLEAR_SHAPING_RESULT_37173465050.md)。200新KO為112–88，重用accepted104–96，差+4pp、配對95% CI−5.94～+13.94pp。Correctness全部通過，195062 placements／76137 Holds，零failure／fallback／rejection／mismatch／重打；gate3/20 top1 activation。效益未定，保持accepted，不promotion或追加到顯著。第3項初輪完成，下一項第4 back_to_back_clear 1→0語意與隔離審查；第5仍Tetris井深。本次未派新arena。
