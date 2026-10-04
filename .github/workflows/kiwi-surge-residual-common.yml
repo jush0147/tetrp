@@ -1,14 +1,14 @@
 name: Kiwi Surge residual gate and 200 KO games
-run-name: 'Kiwi Surge ${{ inputs.variant }} — 200 KO'
+run-name: 'Kiwi evaluator ${{ inputs.variant }} — 200 KO'
 on:
   workflow_dispatch:
     inputs:
       variant:
-        description: Fixed Boolean and Surge bank weights
+        description: Fixed evaluator candidate
         required: true
         type: choice
         default: residual
-        options: [residual, boolean-off, both-one]
+        options: [residual, boolean-off, both-one, clear-off]
 env:
   SURGE_VARIANT: ${{ inputs.variant || 'residual' }}
 permissions:
@@ -35,7 +35,7 @@ jobs:
           path: .cache/cc2-wasm-source
       - name: Check profile override regression before compiling
         run: node --test test/kiwi-surge-residual.test.js test/kiwi-surge-residual-common.test.js
-      - name: Restore frozen accepted source and replace final bank initialization
+      - name: Restore frozen accepted source and install fixed candidate
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -46,11 +46,11 @@ jobs:
           git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
           gh run download 37026070707 --repo jush0147/tetrp --name h1-common-result --dir .cache/wasted-control
           node scripts/kiwi-surge-residual-prepare.js install
-          node scripts/kiwi-surge-residual-fixtures.js
+          if [ "$SURGE_VARIANT" != clear-off ]; then node scripts/kiwi-surge-residual-fixtures.js; fi
           node scripts/kiwi-native-runner-prepare.js
           git -C .cache/cc2-wasm-source diff > .cache/surge-residual-build/source.patch
           cp .cache/cc2-wasm-source/src/bin/snapshot_stdio.rs .cache/surge-residual-build/snapshot_stdio.rs
-      - name: Build control and Surge residual, verify snapshot and same-state evaluator tests
+      - name: Build control and candidate, verify snapshot and same-state evaluator tests
         run: |
           rustup toolchain install 1.90.0 --profile minimal
           for policy in control surge-residual; do

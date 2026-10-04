@@ -7,6 +7,7 @@ export const PLAN={schema:'surge-residual-reused-control/1',hypothesis:'0.5 * fl
  framesPerPiece:24,nodeBudget:200000,watchdogFrames:360000,buildRun:null,
  native:{accepted:'386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb','surge-residual':null}};
 if(VARIANT.name!=='residual'){PLAN.variant=VARIANT;PLAN.hypothesis=`Boolean ${VARIANT.boolean}; ${VARIANT.bank} * floor(bankBaseUnits * nextLockMultiplier); gross leaf asset`; }
+if(VARIANT.clearOff)PLAN.hypothesis='Only normal_clears, mini_spin_clears and spin_clears tables off; authority and other rewards unchanged';
 export function settings(block,leg,attempt=0){
  assert.ok(Number.isInteger(block)&&block>=0&&block<PLAN.blocks);
  assert.ok(Number.isInteger(leg)&&leg>=0&&leg<4);

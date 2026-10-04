@@ -13,8 +13,8 @@ const sha=b=>createHash('sha256').update(b).digest('hex');
 if(process.argv[2]==='notify'){
  const url=`https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
  let g;try{g=await read(`${root}/gate.json`);}catch{}
- const message='Surge residual build/correctness/activation gate incomplete. No arena launched.';
- const r=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:'Kiwi Surge residual gate result',message:VARIANT.name+': '+message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});assert.ok(r.ok);assert.ok((await r.json()).id);
+ const message='Evaluator build/correctness/activation gate incomplete. No arena launched.';
+ const r=await fetch('https://ntfy.sh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic:'just_a_kiwi_for_tetrp',title:'Kiwi evaluator gate result',message:VARIANT.name+': '+message+'\n'+url,click:url}),signal:AbortSignal.timeout(15000)});assert.ok(r.ok);assert.ok((await r.json()).id);
 }else if(process.argv[2]==='gate'){
  await mkdir(root,{recursive:true});const summary={complete:false,checks:[],holds:0,placements:0,baselineReports:0,explicitHoldModes:[],changedScores:0,changedTop1:0};
  const save=()=>writeFile(`${root}/gate.json`,JSON.stringify(summary,null,2));await save();
@@ -82,10 +82,10 @@ if(process.argv[2]==='notify'){
    validatePlacement(next,c.action);summary.explicitHoldModes.push(mode);
   }
   assert.ok(summary.changedScores>0,'No real search score activation');
-  assert.ok(summary.chargedChangedTop1>0,'No charged top-1 activation; do not dispatch arena');
+  assert.ok((VARIANT.clearOff?summary.changedTop1:summary.chargedChangedTop1)>0,'No required top-1 activation; do not dispatch arena');
   await copyFile('.cache/native-artifact/snapshot-accepted',`${root}/snapshot-accepted`);
   const manifest={...plan,candidateNative:sha(await readFile(`${root}/snapshot-surge-residual`)),nativeRun:Number(process.env.GITHUB_RUN_ID)};
   await writeFile(`${root}/manifest.json`,JSON.stringify(manifest,null,2)+'\n');
-  summary.manifest=manifest;summary.checks.push('frozen accepted report parity','candidate top-1 authority lock parity','Hold and reanalysis','Rust same-state leaf-only delta');summary.complete=true;await save();
+  summary.manifest=manifest;summary.checks.push('frozen accepted report parity','candidate top-1 authority lock parity','Hold and reanalysis',VARIANT.clearOff?'Rust same-state clear-only Reward delta':'Rust same-state leaf-only delta');summary.complete=true;await save();
  }catch(e){summary.error={message:e.message,stack:e.stack,details:e.details};await save();throw e;}finally{for(const c of clients)await c.close();}
 }else throw Error('gate | notify');

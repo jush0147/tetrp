@@ -40,3 +40,14 @@ test('fixed variants isolate both coefficients in the real accepted profile',()=
  }
  assert.throws(()=>variant('typo'));assert.equal(original.freestyle_weights.has_back_to_back,0.5);
 });
+
+test('clear-off zeros exactly three tables; no Boolean or bank candidate inherited',()=>{
+ const original=JSON.parse(readFileSync('docs/audits/cc2-alignment/ACTIVE_PARAMETERS_2026-09-28.json')).config;
+ const expected=structuredClone(original);for(const k of ['normal_clears','mini_spin_clears','spin_clears'])expected.freestyle_weights[k].fill(0);
+ assert.deepEqual(candidateConfig(original,variant('clear-off')),expected);
+ const source='    pub fn review_h9_h12() -> Self {\n        config.freestyle_weights.h3_surge_bank_value = 0.0;\n        config\n    }';
+ const patched=transformVariant(source,variant('clear-off'));
+ assert.ok(patched.includes('h3_surge_bank_value = 0.0;'));assert.ok(!patched.includes('has_back_to_back ='));
+ for(const [k,n] of [['normal_clears',5],['mini_spin_clears',3],['spin_clears',4]])assert.ok(patched.includes(k+' = [0.0; '+n+'];'));
+ assert.throws(()=>transformVariant(source.replace('        config\n','        config.freestyle_weights.normal_clears = [0.0;5];\n        config\n'),variant('clear-off')));
+});
