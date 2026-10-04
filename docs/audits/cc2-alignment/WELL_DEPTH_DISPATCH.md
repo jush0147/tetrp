@@ -1,5 +1,7 @@
 # 本輪最後兩批：井深0／0.6
 
+2026-10-04 最新驗收：[井深0結果](WELL_OFF_RESULT_37200417596.md)：101–99，accepted104–96，差−1.5pp，配對95% CI −11.614～+8.614pp。200新KO、171974 placements／64856 Holds，zero failure／fallback／rejection／mismatch；維持0.3。井深0.6 run 37200443114 查詢時正在gate，尚未完成；等該批後才結束本輪，不新增任務。
+
 2026-10-04，source `c9feb5a5148b9fe6cd685bc73ebbc5bd0f207f28`。
 
 1. [37200417596](https://github.com/jush0147/tetrp/actions/runs/37200417596)：variant=well-off，tetris_well_depth=0。確認run／gate in_progress後才送第二批。
