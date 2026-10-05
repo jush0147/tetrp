@@ -1,5 +1,7 @@
 # 一層未知tail：實驗實作與離線preflight
 
+**2026-10-05 已停止。** 使用者明確要求不要朝增加分析時間成本的方向做。取消 bounded-v3／admission 修補與後續 tail gate，不開 arena。以下皆為歷史實驗記錄；沒有修改 accepted 或 production。後續方案須遵守現有分析時間不退步的限制，不能只檢查 node cap。
+
 ## 2026-10-05 bounded-v2（優先於下方 v1 描述）
 
 使用者授權繼續修正 run 37291859932 的預算／publication 問題。仍僅一個離線 job，無 arena、無 production 改動、無參數調整。

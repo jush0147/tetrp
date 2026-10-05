@@ -1,5 +1,9 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-05 [既存分數拆解完成](audits/cc2-alignment/EXISTING_SCORE_AUDIT_2026-10-05.md)：4真實snapshot／729局部samples，reports與最新frozen accepted完整一致；輸出完整ranking及12stage witnesses。沒有足夠新證據選定修改，不重啟舊參數實驗。row transitions共同−64不能當攻擊被壓過；首選prefix確實有sent7。既有取樣缺完整best-chain attribution，不能宣稱已解釋root分差。若繼續只提debug-only搜尋完成後讀現成top2 backprop鏈，未實作／未派送；線上不加成本、tail停止，無arena。
+
+2026-10-05 最新使用者限制（覆蓋下方下一步）：現有分析已太慢，不走增加時間成本的方向。**停止 tail-value 路線，不再實作 admission 修補、不派 v3 或 arena。** 保留實驗作歷史，accepted／production 不變。後續只考慮現有搜尋內的低成本估值替換、既有計算重用或減少浪費；不能用相同 node budget 宣稱相同耗時。候選須以同環境配對 wall-time（含中位數與尾端延遲）確認不退步，再以 KO 勝率判斷強度。不以犧牲 cadence／資訊公平／authority correctness 換速度。本次僅更新紀錄，無新測試任務。
+
 2026-10-05 [bounded-v2 已驗收](audits/cc2-alignment/TAIL_VALUE_PREFLIGHT_RESULT_37309709343.md)：run 37309709343 success；40 locks／14 Holds 本機重播一致，completed==published，probe 19.71%。shadow 0/20、candidate 2/20 首選變化；不是強度證據。成本不合格：candidate 中位17.13s、accepted .657s，約26倍；大量 admission reject 的動作枚舉不受 transition quota 控制。下一步只修 admission 停止條件與計數，不調weights／不開arena。本回合未派新run。
 
 2026-10-05 [bounded-v2 已 dispatch](audits/cc2-alignment/TAIL_VALUE_BOUNDED_V2_DISPATCH.md)：run 37309709343，source 3c61cdb，單一離線 job 已啟動，尚無結果；ntfy 後等驗收，不監看、不開 arena。

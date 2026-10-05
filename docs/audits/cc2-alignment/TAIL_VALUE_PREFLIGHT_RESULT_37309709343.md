@@ -41,6 +41,8 @@ candidate 有 1,431,972 calls，只有 2,987 completed，1,428,985 admission rej
 
 ## 最小下一步
 
+**後續已取消：** 使用者在驗收後要求不走增加時間成本的方向；停止 tail-value 路線。下段只保留當時提出的修補方案，並非待執行任務。
+
 維持單層 tail／既有 R0、V0／200k／20%／shadow，不調參數、不開 arena。先讓每 allocation 在第一次完整 probe 放不下時關閉後續 probing，避免反覆昂貴 admission；加上 attempted-enumerations、zero-budget skip、disabled skip 與 first-rejection counters，驗證預算尾端不再重複枚舉。這會改變哪些 leaf 能接受 probe，必須重新量 top-1 和 published，不能承諾語意完全不變。
 
 下一版通過成本檢查後，仍須補 hypothetical transition authority 與 browser gate，才能討論 arena。此回合只驗收／記錄，未修改實驗程式、未 dispatch 新 run。

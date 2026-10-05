@@ -1,5 +1,9 @@
 # 後續 evaluator 機制順序
 
+2026-10-05 [4個既有state分數拆解](EXISTING_SCORE_AUDIT_2026-10-05.md)已完成可核對部分，729 samples／accepted report一致。selectedModification=null：沒新證據支持改weights或重跑已關閉假設。完整root最佳鏈分解缺資料，後續提議僅debug-only讀現成top2 backprop鏈（未實作／未dispatch）；不得增加線上搜尋、重啟tail或自動派arena。
+
+2026-10-05 最新決定：使用者拒絕增加分析時間成本。停止 tail-value，取消下方 admission 修補的下一步；不派新 run。accepted 不變。後續限定現有搜尋內低成本替換／重用／減少浪費，以實測 wall-time 不退步為前提，強度仍只看 KO 勝率；相同 node budget 不等於相同成本。尚未選定新的 evaluator 假設，不自動重啟舊參數清單或尾端模擬。
+
 2026-10-05 [bounded-v2 結果](TAIL_VALUE_PREFLIGHT_RESULT_37309709343.md)：publication／quota／40 root commits、14 Holds 通過；shadow 0/20、candidate 2/20 改變首選。wall cost 約26倍不合格。下一步限制失敗 admission 重試，保持 tail 假設／weights／budget，不開arena；完整probe authority/browser gate仍待。未新增run。
 
 2026-10-05 授權繼續修 [tail-value bounded-v2](TAIL_VALUE_PREFLIGHT_PLAN.md)：20% per-allocation probe cap、完整成本預查、siblings reserve、shadow 對照。只一個離線 gate，無 arena，無 accepted 參數變更。此為目前下一步；下方 v1 是歷史狀態，run 另記 dispatch。
