@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-05 [final score trace 已派送](audits/cc2-alignment/FINAL_SCORE_TRACE_DISPATCH.md)：run37315205579、source4994e5f，單一離線job已啟動，尚無結果；ntfy、不監看、無arena或production變更。
+
 2026-10-05 使用者授權繼續：[最終score trace](audits/cc2-alignment/FINAL_SCORE_TRACE_PLAN.md)已準備。只在離線隔離build讀搜尋完成的DAG、重建top2各scenario路徑，含Hold全局平均歸因；不新增search nodes、不改正式bot或weights。7本機checks通過，Rust/精確report與backprop gate交單job Actions；ntfy，無arena。run另記dispatch。
 
 2026-10-05 [既存分數拆解完成](audits/cc2-alignment/EXISTING_SCORE_AUDIT_2026-10-05.md)：4真實snapshot／729局部samples，reports與最新frozen accepted完整一致；輸出完整ranking及12stage witnesses。沒有足夠新證據選定修改，不重啟舊參數實驗。row transitions共同−64不能當攻擊被壓過；首選prefix確實有sent7。既有取樣缺完整best-chain attribution，不能宣稱已解釋root分差。若繼續只提debug-only搜尋完成後讀現成top2 backprop鏈，未實作／未派送；線上不加成本、tail停止，無arena。
