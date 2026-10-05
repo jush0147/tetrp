@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-05 [shortcut結果](FRONTIER_SHORTCUT_RESULT_37332904019.md)：完整report96次一致、Rust8tests過，但只快0.54%、有一輪較慢，未過5%工程gate；不採用，不開browser／arena。這條性能小實驗結束，沒有新weight依據，原accepted保持，tail仍停止，無新dispatch。
+
 2026-10-05 [有限frontier shortcut](FRONTIER_SHORTCUT_PLAN.md)：使用者授權一個策略等價效能候選；原抽樣後提前跳過必定Failed前的advance，不改weights/budget。12snapshot完整report與三輪latency gate，無arena。原參數順序不因這項工程實驗重排，tail保持停止。
 
 2026-10-05 [work allocation結果](SEARCH_WORK_ALLOCATION_RESULT_37330860246.md)：82.21% attempts為frontier失敗，但800k nodes全部使用、無stall停止；不是node预算损失。最佳链浅不等于root整体没搜深。无新evaluator修改；后续仅提减少无可展开分支遍历的固定预算工程方案，先验证策略语义与wall成本，尚未实施／dispatch。

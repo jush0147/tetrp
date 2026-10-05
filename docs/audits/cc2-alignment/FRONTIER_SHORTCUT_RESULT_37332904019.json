@@ -1,0 +1,242 @@
+{
+  "run": 37332904019,
+  "summary": {
+    "parity": "passed",
+    "checks": 96,
+    "samples": 12,
+    "passes": [
+      0.010967802194072451,
+      -0.003300252596133868,
+      0.008466188636811589
+    ],
+    "reduction": 0.005386722849603731,
+    "engineeringGate": "not met",
+    "nodeBudget": 200000,
+    "corpusSha256": "348c09730248410adb8b2e4dd96749afe809c21187bfd82399c6c9379be17261",
+    "cpu": "Intel(R) Xeon(R) 6973P-C",
+    "node": "v24.21.0",
+    "sourceSha": "242b8bd2fb95cf7d96664f5356100bd788238752",
+    "scope": "Linux persistent executable request latency including prepare/stdio, excluding cold start. Not browser latency or strength evidence. No automatic promotion."
+  },
+  "measurements": [
+    {
+      "id": "leg0/request138",
+      "pass": 0,
+      "accepted": 517.3929199999984,
+      "candidate": 514.4246759999987
+    },
+    {
+      "id": "leg0/request346",
+      "pass": 0,
+      "candidate": 569.4305010000026,
+      "accepted": 566.0439920000026
+    },
+    {
+      "id": "leg0/request553",
+      "pass": 0,
+      "accepted": 516.6644469999992,
+      "candidate": 476.94526399999813
+    },
+    {
+      "id": "leg4/request167",
+      "pass": 0,
+      "candidate": 540.289925000001,
+      "accepted": 559.9994320000005
+    },
+    {
+      "id": "leg4/request419",
+      "pass": 0,
+      "accepted": 457.7075250000016,
+      "candidate": 449.72392200000104
+    },
+    {
+      "id": "leg4/request670",
+      "pass": 0,
+      "candidate": 460.24923800000033,
+      "accepted": 461.0992529999967
+    },
+    {
+      "id": "leg12/request153",
+      "pass": 0,
+      "accepted": 476.4506619999993,
+      "candidate": 478.14514599999893
+    },
+    {
+      "id": "leg12/request383",
+      "pass": 0,
+      "candidate": 530.6205489999993,
+      "accepted": 529.0158049999991
+    },
+    {
+      "id": "leg12/request613",
+      "pass": 0,
+      "accepted": 504.63143899999704,
+      "candidate": 505.1942960000015
+    },
+    {
+      "id": "leg20/request197",
+      "pass": 0,
+      "candidate": 481.72769400000107,
+      "accepted": 489.4293829999988
+    },
+    {
+      "id": "leg20/request493",
+      "pass": 0,
+      "accepted": 533.7055340000006,
+      "candidate": 568.5827809999973
+    },
+    {
+      "id": "leg20/request788",
+      "pass": 0,
+      "candidate": 597.1897590000008,
+      "accepted": 628.8331220000036
+    },
+    {
+      "id": "leg0/request138",
+      "pass": 1,
+      "candidate": 605.7417789999963,
+      "accepted": 539.3816099999967
+    },
+    {
+      "id": "leg0/request346",
+      "pass": 1,
+      "accepted": 560.3601780000026,
+      "candidate": 552.9832440000027
+    },
+    {
+      "id": "leg0/request553",
+      "pass": 1,
+      "candidate": 473.8689599999998,
+      "accepted": 462.763635000003
+    },
+    {
+      "id": "leg4/request167",
+      "pass": 1,
+      "accepted": 549.6654209999979,
+      "candidate": 552.2515070000009
+    },
+    {
+      "id": "leg4/request419",
+      "pass": 1,
+      "candidate": 455.0410849999971,
+      "accepted": 461.0727760000009
+    },
+    {
+      "id": "leg4/request670",
+      "pass": 1,
+      "accepted": 491.86449100000027,
+      "candidate": 459.8084480000034
+    },
+    {
+      "id": "leg12/request153",
+      "pass": 1,
+      "candidate": 474.60461199999554,
+      "accepted": 484.7363980000009
+    },
+    {
+      "id": "leg12/request383",
+      "pass": 1,
+      "accepted": 536.4785439999978,
+      "candidate": 582.9551329999958
+    },
+    {
+      "id": "leg12/request613",
+      "pass": 1,
+      "candidate": 547.1008880000009,
+      "accepted": 511.72690599999623
+    },
+    {
+      "id": "leg20/request197",
+      "pass": 1,
+      "accepted": 490.6677519999939,
+      "candidate": 493.2761559999999
+    },
+    {
+      "id": "leg20/request493",
+      "pass": 1,
+      "candidate": 533.4762700000065,
+      "accepted": 572.7008399999977
+    },
+    {
+      "id": "leg20/request788",
+      "pass": 1,
+      "accepted": 616.2385060000015,
+      "candidate": 567.2668289999929
+    },
+    {
+      "id": "leg0/request138",
+      "pass": 2,
+      "accepted": 523.103986999995,
+      "candidate": 524.9580560000031
+    },
+    {
+      "id": "leg0/request346",
+      "pass": 2,
+      "candidate": 608.8461549999993,
+      "accepted": 561.6209139999992
+    },
+    {
+      "id": "leg0/request553",
+      "pass": 2,
+      "accepted": 473.1228229999979,
+      "candidate": 456.6544999999969
+    },
+    {
+      "id": "leg4/request167",
+      "pass": 2,
+      "candidate": 595.8893360000002,
+      "accepted": 627.3210469999976
+    },
+    {
+      "id": "leg4/request419",
+      "pass": 2,
+      "accepted": 520.2329679999966,
+      "candidate": 452.3295320000034
+    },
+    {
+      "id": "leg4/request670",
+      "pass": 2,
+      "candidate": 458.2665119999947,
+      "accepted": 465.5176829999982
+    },
+    {
+      "id": "leg12/request153",
+      "pass": 2,
+      "accepted": 519.4341429999986,
+      "candidate": 481.8645770000003
+    },
+    {
+      "id": "leg12/request383",
+      "pass": 2,
+      "candidate": 531.1549090000044,
+      "accepted": 533.619283
+    },
+    {
+      "id": "leg12/request613",
+      "pass": 2,
+      "accepted": 528.836009000006,
+      "candidate": 540.8716730000015
+    },
+    {
+      "id": "leg20/request197",
+      "pass": 2,
+      "candidate": 501.0352999999959,
+      "accepted": 491.6231620000035
+    },
+    {
+      "id": "leg20/request493",
+      "pass": 2,
+      "accepted": 577.3541919999989,
+      "candidate": 612.5264539999989
+    },
+    {
+      "id": "leg20/request788",
+      "pass": 2,
+      "candidate": 579.4563599999965,
+      "accepted": 576.2339989999964
+    }
+  ],
+  "acceptedTotalMs": 18916.650780999975,
+  "candidateTotalMs": 18814.752025999987,
+  "decision": "reject candidate: predefined engineering gate not met; no production change or arena"
+}
