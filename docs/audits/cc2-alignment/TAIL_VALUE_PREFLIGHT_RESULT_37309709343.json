@@ -1,0 +1,244 @@
+{
+  "run": 37309709343,
+  "source": "3c61cdb25f12d914c9998cff30671e1b8b37f484",
+  "auditSHA256": "892f395d0f7fb6441c5645808c7348ea04a397afc70016cd84c8f7a18ddae030",
+  "hashes": [
+    "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb",
+    "95bfdcc9162277302695b34377c6cd8dd1d2937fdc8b4dfa7e591501a9af541d",
+    "e1d195b6f8ff7a478343b6c31dd00ae1b134ffd2d1d9594117824efab8ce5f38",
+    "8190beaee87c6386f804836c02adb74085accc67227d91dc25a19bcb4d20a42a"
+  ],
+  "localReplay": {
+    "locks": 40,
+    "holds": 14
+  },
+  "stats": {
+    "accepted": {
+      "medianMs": 657.1705380000058,
+      "nodes": 3983659,
+      "calls": 0,
+      "completed": 0,
+      "published": 0,
+      "incomplete": 0,
+      "transitions": 0
+    },
+    "candidate": {
+      "medianMs": 17127.519671499962,
+      "nodes": 4000000,
+      "calls": 1431972,
+      "completed": 2987,
+      "published": 2987,
+      "incomplete": 1428985,
+      "transitions": 788402
+    },
+    "shadow": {
+      "medianMs": 16776.70903649996,
+      "nodes": 4000000,
+      "calls": 1432767,
+      "completed": 2966,
+      "published": 2966,
+      "incomplete": 1429801,
+      "transitions": 788406
+    },
+    "control": {
+      "medianMs": 665.8943185000026
+    }
+  },
+  "changedTop1": 2,
+  "shadowChangedTop1": 0,
+  "candidateVsShadow": 2,
+  "changed": [
+    {
+      "id": "leg20/request493",
+      "accepted": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "T",
+            "orientation": "south",
+            "x": 3,
+            "y": 5
+          },
+          "spin": "none"
+        }
+      },
+      "candidate": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "shadow": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "T",
+            "orientation": "south",
+            "x": 3,
+            "y": 5
+          },
+          "spin": "none"
+        }
+      },
+      "probe": {
+        "allocations": [
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1965
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1886
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1858
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1977
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1989
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1862
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1858
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1853
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1977
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1795
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1862
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1869
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1887
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1930
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1867
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1952
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1876
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1991
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1943
+          },
+          {
+            "budget": 10000,
+            "quota": 2000,
+            "spent": 1951
+          }
+        ],
+        "calls": 50644,
+        "completed": 141,
+        "incomplete": 50503,
+        "published": 141,
+        "scope": "Published counts completed parent expansions, not unique TT states or selected continuations. Shadow submits old Eval. Incomplete means admission rejected before transitions; movegen overhead is wall time only.",
+        "transitions": 38148,
+        "version": 2
+      }
+    },
+    {
+      "id": "leg20/request788",
+      "accepted": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "candidate": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "L",
+            "orientation": "east",
+            "x": 4,
+            "y": 11
+          },
+          "spin": "none"
+        }
+      },
+      "shadow": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "probe": {
+        "allocations": [
+          {
+            "budget": 100000,
+            "quota": 20000,
+            "spent": 19904
+          },
+          {
+            "budget": 100000,
+            "quota": 20000,
+            "spent": 19803
+          }
+        ],
+        "calls": 70174,
+        "completed": 158,
+        "incomplete": 70016,
+        "published": 158,
+        "scope": "Published counts completed parent expansions, not unique TT states or selected continuations. Shadow submits old Eval. Incomplete means admission rejected before transitions; movegen overhead is wall time only.",
+        "transitions": 39707,
+        "version": 2
+      }
+    }
+  ]
+}

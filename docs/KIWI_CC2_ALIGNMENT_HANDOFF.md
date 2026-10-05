@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-05 [bounded-v2 已驗收](audits/cc2-alignment/TAIL_VALUE_PREFLIGHT_RESULT_37309709343.md)：run 37309709343 success；40 locks／14 Holds 本機重播一致，completed==published，probe 19.71%。shadow 0/20、candidate 2/20 首選變化；不是強度證據。成本不合格：candidate 中位17.13s、accepted .657s，約26倍；大量 admission reject 的動作枚舉不受 transition quota 控制。下一步只修 admission 停止條件與計數，不調weights／不開arena。本回合未派新run。
+
 2026-10-05 [bounded-v2 已 dispatch](audits/cc2-alignment/TAIL_VALUE_BOUNDED_V2_DISPATCH.md)：run 37309709343，source 3c61cdb，單一離線 job 已啟動，尚無結果；ntfy 後等驗收，不監看、不開 arena。
 
 2026-10-05 使用者授權繼續：準備 [tail-value bounded-v2](audits/cc2-alignment/TAIL_VALUE_PREFLIGHT_PLAN.md)，每 allocation 20% probe cap、完整成本預查、保留 siblings budget，新增照算但不用新值的 shadow。仍只 20 public snapshots 離線 gate／ntfy，無 arena。accepted evaluator／production 不變；完整逐 probe authority 與 browser gate 待後續，run 另記 dispatch。
