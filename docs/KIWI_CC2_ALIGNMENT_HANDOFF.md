@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-05 [finite frontier shortcut候選](audits/cc2-alignment/FRONTIER_SHORTCUT_PLAN.md)：僅省已抽到finite frontier之前的最後一次無用advance，保留原RNG/200k預算/評分。12固定public snapshots、三輪交錯、完整report exact parity；預設至少5%總時間下降且三輪皆快。Linux初篩，不是browser／棋力證據，無arena／production改動。run另記dispatch。
+
 2026-10-05 [work allocation驗收](audits/cc2-alignment/SEARCH_WORK_ALLOCATION_RESULT_37330860246.md)：run37330860246 success，本機全量report／646path／25allocation accounting過。102198 attempts中84014 frontier空轉（82.21%），但每份allocation用完nodes、無stall停止，不能說空轉吃掉node budget或導致淺鏈。Hold scenario3/4 root計費690/461；scenario8拿4302且有depth6工作、最佳鏈仍5。無新weight依據；後續僅提減少已無可展開路徑重複遍歷，需查RNG/策略等價與wall成本，未實作／未派新run，不加預算或tail。
 
 2026-10-05 [work allocation已派送](audits/cc2-alignment/SEARCH_WORK_ALLOCATION_DISPATCH.md)：run37330860246、source037695e，in_progress，尚無結果。只有離線4snapshot，ntfy，不監看、不自動arena。

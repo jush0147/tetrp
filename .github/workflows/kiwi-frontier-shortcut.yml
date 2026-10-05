@@ -1,0 +1,59 @@
+name: Kiwi finite frontier shortcut benchmark
+on:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-frontier-shortcut.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-frontier-shortcut-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  benchmark:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/checkout@v4
+        with:
+          repository: jush0147/cold-clear-2
+          ref: 2e243242b674d57491f99b445f75e35fc48a0e26
+          path: .cache/cc2-wasm-source
+      - name: Restore accepted and build control
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --test test/kiwi-frontier-shortcut.test.js
+          gh run download 36387270053 --repo jush0147/tetrp -n cc2-landing-36387270053-1 -D .cache/eval-artifact
+          git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
+          node scripts/kiwi-native-runner-prepare.js
+          rustup toolchain install 1.90.0 --profile minimal
+          cargo +1.90.0 build --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --bin snapshot_stdio
+          mkdir -p .cache/frontier-shortcut-results
+          cp .cache/cc2-wasm-source/target/release/snapshot_stdio .cache/frontier-shortcut-results/snapshot-accepted
+      - name: Build isolated shortcut and check identical reports
+        run: |
+          node scripts/kiwi-frontier-shortcut-prepare.js
+          git -C .cache/cc2-wasm-source diff > .cache/frontier-shortcut-results/candidate.patch
+          cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib snapshot::tests
+          cargo +1.90.0 build --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --bin snapshot_stdio
+          cp .cache/cc2-wasm-source/target/release/snapshot_stdio .cache/frontier-shortcut-results/snapshot-candidate
+          node scripts/kiwi-frontier-shortcut-bench.js bench
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-frontier-shortcut
+          path: .cache/frontier-shortcut-results/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once, no arena
+        if: always()
+        env:
+          AUDIT_JOB_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-frontier-shortcut-bench.js notify

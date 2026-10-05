@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-05 [有限frontier shortcut](FRONTIER_SHORTCUT_PLAN.md)：使用者授權一個策略等價效能候選；原抽樣後提前跳過必定Failed前的advance，不改weights/budget。12snapshot完整report與三輪latency gate，無arena。原參數順序不因這項工程實驗重排，tail保持停止。
+
 2026-10-05 [work allocation結果](SEARCH_WORK_ALLOCATION_RESULT_37330860246.md)：82.21% attempts為frontier失敗，但800k nodes全部使用、無stall停止；不是node预算损失。最佳链浅不等于root整体没搜深。无新evaluator修改；后续仅提减少无可展开分支遍历的固定预算工程方案，先验证策略语义与wall成本，尚未实施／dispatch。
 
 2026-10-05 目前進行[work allocation離線診斷](SEARCH_WORK_ALLOCATION_PLAN.md)：量現有200k分配／空轉與停止原因，保留final score gate；不改搜尋或weights，無arena。使用者已授權，本機9checks過、Rust待遠端；run另記dispatch。
