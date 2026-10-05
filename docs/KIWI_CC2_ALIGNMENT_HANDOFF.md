@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-05 [work allocation驗收](audits/cc2-alignment/SEARCH_WORK_ALLOCATION_RESULT_37330860246.md)：run37330860246 success，本機全量report／646path／25allocation accounting過。102198 attempts中84014 frontier空轉（82.21%），但每份allocation用完nodes、無stall停止，不能說空轉吃掉node budget或導致淺鏈。Hold scenario3/4 root計費690/461；scenario8拿4302且有depth6工作、最佳鏈仍5。無新weight依據；後續僅提減少已無可展開路徑重複遍歷，需查RNG/策略等價與wall成本，未實作／未派新run，不加預算或tail。
+
 2026-10-05 [work allocation已派送](audits/cc2-alignment/SEARCH_WORK_ALLOCATION_DISPATCH.md)：run37330860246、source037695e，in_progress，尚無結果。只有離線4snapshot，ntfy，不監看、不自動arena。
 
 2026-10-05 [固定預算工作分配診斷](audits/cc2-alignment/SEARCH_WORK_ALLOCATION_PLAN.md)：使用者授權繼續。加入離線cfg計數（selected root/depth/rank、有效nodes、frontier失敗／其他失敗／cancel、stall停止），原4snapshot與完整report/final-score gate。9本機tests通過，Rust待Actions。沒有改策略／weights／正式線上成本，不派arena；run另記dispatch。

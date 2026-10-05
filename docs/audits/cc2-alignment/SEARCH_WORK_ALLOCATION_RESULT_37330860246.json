@@ -1,0 +1,694 @@
+{
+  "run": 37330860246,
+  "source": "037695eaf5905266e013e5bcc731d5fcd17f3e14",
+  "hashes": {
+    "observed": "3b5733ff0138a01111b5ae4afa664c8dec7e3b7e7b272ff3d804b015c4949484",
+    "native-reference": "cb445fc67792ef27aaee4b38552c321c404f7dc63203aeb77ebb2f00dee5ac7f",
+    "wasm-reference": "d7e925ff1285ac5f4783cb498590c39f4e1c181a44055498eaced8faff1883ce",
+    "score-trace-summary": "c5c4fb3047f023e0dc0efb224372d590fdcfc503c544d5179a6314668f01b3dc"
+  },
+  "localChecksPassed": true,
+  "total": {
+    "nodes": 800000,
+    "selections": 102198,
+    "frontierAttempts": 84014,
+    "cancelledNodes": 398,
+    "paths": 646,
+    "allocations": 25,
+    "frontierFraction": 0.8220708820133467
+  },
+  "rows": [
+    {
+      "id": "leg0/request346",
+      "nodes": 200000,
+      "selections": 58967,
+      "frontierFraction": 0.9403225532925196,
+      "reasons": {
+        "expanded": {
+          "attempts": 3518,
+          "nodes": 199986
+        },
+        "finite_frontier": {
+          "attempts": 55448,
+          "nodes": 0
+        },
+        "partial_cancel": {
+          "attempts": 1,
+          "nodes": 14
+        }
+      },
+      "allocations": [
+        {
+          "branch": "place",
+          "budget": 200000,
+          "budgetExhausted": true,
+          "expansions": 3518,
+          "finalStall": 0,
+          "maxStall": 182,
+          "nodes": 200000,
+          "scenario": 0,
+          "selections": 58967,
+          "stop": "partial_budget"
+        }
+      ],
+      "holdWork": []
+    },
+    {
+      "id": "leg4/request419",
+      "nodes": 200000,
+      "selections": 11317,
+      "frontierFraction": 0.6532649995581868,
+      "reasons": {
+        "expanded": {
+          "attempts": 3922,
+          "nodes": 199912
+        },
+        "finite_frontier": {
+          "attempts": 7393,
+          "nodes": 0
+        },
+        "partial_cancel": {
+          "attempts": 2,
+          "nodes": 88
+        }
+      },
+      "allocations": [
+        {
+          "branch": "place",
+          "budget": 100000,
+          "budgetExhausted": true,
+          "expansions": 2012,
+          "finalStall": 0,
+          "maxStall": 26,
+          "nodes": 100000,
+          "scenario": 0,
+          "selections": 5839,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 100000,
+          "budgetExhausted": true,
+          "expansions": 1910,
+          "finalStall": 0,
+          "maxStall": 28,
+          "nodes": 100000,
+          "scenario": 0,
+          "selections": 5478,
+          "stop": "partial_budget"
+        }
+      ],
+      "holdWork": [
+        {
+          "scenario": 0,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "S",
+              "x": 3,
+              "y": 12
+            },
+            "spin": "none"
+          },
+          "nodes": 32324,
+          "attempts": 2734,
+          "depthNodes": {
+            "2": 51,
+            "3": 410,
+            "4": 2805,
+            "5": 11344,
+            "6": 17714,
+            "7": 0
+          },
+          "finalBestDepth": 6
+        }
+      ]
+    },
+    {
+      "id": "leg12/request383",
+      "nodes": 200000,
+      "selections": 25032,
+      "frontierFraction": 0.7936241610738255,
+      "reasons": {
+        "expanded": {
+          "attempts": 5164,
+          "nodes": 199962
+        },
+        "finite_frontier": {
+          "attempts": 19866,
+          "nodes": 0
+        },
+        "partial_cancel": {
+          "attempts": 2,
+          "nodes": 38
+        }
+      },
+      "allocations": [
+        {
+          "branch": "place",
+          "budget": 100000,
+          "budgetExhausted": true,
+          "expansions": 2685,
+          "finalStall": 0,
+          "maxStall": 48,
+          "nodes": 100000,
+          "scenario": 0,
+          "selections": 12903,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 100000,
+          "budgetExhausted": true,
+          "expansions": 2479,
+          "finalStall": 0,
+          "maxStall": 49,
+          "nodes": 100000,
+          "scenario": 0,
+          "selections": 12129,
+          "stop": "partial_budget"
+        }
+      ],
+      "holdWork": [
+        {
+          "scenario": 0,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "I",
+              "x": 0,
+              "y": 8
+            },
+            "spin": "none"
+          },
+          "nodes": 31253,
+          "attempts": 5968,
+          "depthNodes": {
+            "2": 68,
+            "3": 604,
+            "4": 2782,
+            "5": 6382,
+            "6": 21417,
+            "7": 0
+          },
+          "finalBestDepth": 6
+        }
+      ]
+    },
+    {
+      "id": "leg20/request493",
+      "nodes": 200000,
+      "selections": 6882,
+      "frontierFraction": 0.1899157221737867,
+      "reasons": {
+        "expanded": {
+          "attempts": 5555,
+          "nodes": 199742
+        },
+        "finite_frontier": {
+          "attempts": 1307,
+          "nodes": 0
+        },
+        "partial_cancel": {
+          "attempts": 20,
+          "nodes": 258
+        }
+      },
+      "allocations": [
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 297,
+          "finalStall": 0,
+          "maxStall": 4,
+          "nodes": 10000,
+          "scenario": 0,
+          "selections": 378,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 295,
+          "finalStall": 0,
+          "maxStall": 3,
+          "nodes": 10000,
+          "scenario": 1,
+          "selections": 333,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 297,
+          "finalStall": 0,
+          "maxStall": 5,
+          "nodes": 10000,
+          "scenario": 2,
+          "selections": 374,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 293,
+          "finalStall": 0,
+          "maxStall": 9,
+          "nodes": 10000,
+          "scenario": 3,
+          "selections": 421,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 296,
+          "finalStall": 0,
+          "maxStall": 3,
+          "nodes": 10000,
+          "scenario": 4,
+          "selections": 346,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 289,
+          "finalStall": 0,
+          "maxStall": 6,
+          "nodes": 10000,
+          "scenario": 5,
+          "selections": 347,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 295,
+          "finalStall": 0,
+          "maxStall": 6,
+          "nodes": 10000,
+          "scenario": 6,
+          "selections": 376,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 291,
+          "finalStall": 0,
+          "maxStall": 4,
+          "nodes": 10000,
+          "scenario": 7,
+          "selections": 345,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 292,
+          "finalStall": 0,
+          "maxStall": 4,
+          "nodes": 10000,
+          "scenario": 8,
+          "selections": 360,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "place",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 294,
+          "finalStall": 0,
+          "maxStall": 5,
+          "nodes": 10000,
+          "scenario": 9,
+          "selections": 396,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 260,
+          "finalStall": 0,
+          "maxStall": 3,
+          "nodes": 10000,
+          "scenario": 0,
+          "selections": 338,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 272,
+          "finalStall": 0,
+          "maxStall": 3,
+          "nodes": 10000,
+          "scenario": 1,
+          "selections": 315,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 271,
+          "finalStall": 0,
+          "maxStall": 4,
+          "nodes": 10000,
+          "scenario": 2,
+          "selections": 334,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 260,
+          "finalStall": 0,
+          "maxStall": 3,
+          "nodes": 10000,
+          "scenario": 3,
+          "selections": 321,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 264,
+          "finalStall": 0,
+          "maxStall": 3,
+          "nodes": 10000,
+          "scenario": 4,
+          "selections": 312,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 256,
+          "finalStall": 0,
+          "maxStall": 5,
+          "nodes": 10000,
+          "scenario": 5,
+          "selections": 296,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 252,
+          "finalStall": 0,
+          "maxStall": 3,
+          "nodes": 10000,
+          "scenario": 6,
+          "selections": 304,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 261,
+          "finalStall": 0,
+          "maxStall": 3,
+          "nodes": 10000,
+          "scenario": 7,
+          "selections": 332,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 262,
+          "finalStall": 0,
+          "maxStall": 4,
+          "nodes": 10000,
+          "scenario": 8,
+          "selections": 314,
+          "stop": "partial_budget"
+        },
+        {
+          "branch": "post_hold",
+          "budget": 10000,
+          "budgetExhausted": true,
+          "expansions": 258,
+          "finalStall": 0,
+          "maxStall": 4,
+          "nodes": 10000,
+          "scenario": 9,
+          "selections": 340,
+          "stop": "partial_budget"
+        }
+      ],
+      "holdWork": [
+        {
+          "scenario": 0,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 1148,
+          "attempts": 29,
+          "depthNodes": {
+            "2": 51,
+            "3": 290,
+            "4": 617,
+            "5": 104,
+            "6": 86
+          },
+          "finalBestDepth": 6
+        },
+        {
+          "scenario": 1,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 2573,
+          "attempts": 85,
+          "depthNodes": {
+            "2": 51,
+            "3": 342,
+            "4": 854,
+            "5": 598,
+            "6": 728,
+            "7": 0
+          },
+          "finalBestDepth": 6
+        },
+        {
+          "scenario": 2,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 1925,
+          "attempts": 67,
+          "depthNodes": {
+            "2": 51,
+            "3": 223,
+            "4": 564,
+            "5": 539,
+            "6": 548,
+            "7": 0
+          },
+          "finalBestDepth": 6
+        },
+        {
+          "scenario": 3,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 690,
+          "attempts": 17,
+          "depthNodes": {
+            "2": 51,
+            "3": 276,
+            "4": 259,
+            "5": 104
+          },
+          "finalBestDepth": 4
+        },
+        {
+          "scenario": 4,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 461,
+          "attempts": 11,
+          "depthNodes": {
+            "2": 51,
+            "3": 136,
+            "4": 222,
+            "5": 52
+          },
+          "finalBestDepth": 3
+        },
+        {
+          "scenario": 5,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 4037,
+          "attempts": 125,
+          "depthNodes": {
+            "2": 51,
+            "3": 308,
+            "4": 788,
+            "5": 1118,
+            "6": 1772,
+            "7": 0
+          },
+          "finalBestDepth": 6
+        },
+        {
+          "scenario": 6,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 4146,
+          "attempts": 135,
+          "depthNodes": {
+            "2": 51,
+            "3": 308,
+            "4": 907,
+            "5": 1253,
+            "6": 1627,
+            "7": 0
+          },
+          "finalBestDepth": 6
+        },
+        {
+          "scenario": 7,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 2713,
+          "attempts": 78,
+          "depthNodes": {
+            "2": 51,
+            "3": 274,
+            "4": 704,
+            "5": 694,
+            "6": 990,
+            "7": 0
+          },
+          "finalBestDepth": 6
+        },
+        {
+          "scenario": 8,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 4302,
+          "attempts": 134,
+          "depthNodes": {
+            "2": 51,
+            "3": 223,
+            "4": 840,
+            "5": 1220,
+            "6": 1968,
+            "7": 0
+          },
+          "finalBestDepth": 5
+        },
+        {
+          "scenario": 9,
+          "target": {
+            "location": {
+              "orientation": "east",
+              "type": "Z",
+              "x": 3,
+              "y": 5
+            },
+            "spin": "none"
+          },
+          "nodes": 4188,
+          "attempts": 165,
+          "depthNodes": {
+            "2": 51,
+            "3": 291,
+            "4": 909,
+            "5": 1043,
+            "6": 1894,
+            "7": 0
+          },
+          "finalBestDepth": 6
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Attempt fraction is not time fraction",
+    "All allocated nodes consumed; frontier retries did not reduce node budget",
+    "Selected-route attribution does not imply exclusive ownership of DAG states",
+    "No new policy or KO evidence"
+  ]
+}

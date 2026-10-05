@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-05 [work allocation結果](SEARCH_WORK_ALLOCATION_RESULT_37330860246.md)：82.21% attempts為frontier失敗，但800k nodes全部使用、無stall停止；不是node预算损失。最佳链浅不等于root整体没搜深。无新evaluator修改；后续仅提减少无可展开分支遍历的固定预算工程方案，先验证策略语义与wall成本，尚未实施／dispatch。
+
 2026-10-05 目前進行[work allocation離線診斷](SEARCH_WORK_ALLOCATION_PLAN.md)：量現有200k分配／空轉與停止原因，保留final score gate；不改搜尋或weights，無arena。使用者已授權，本機9checks過、Rust待遠端；run另記dispatch。
 
 2026-10-05 [final trace結果](FINAL_SCORE_TRACE_RESULT_37315205579.md)：646paths／4reports一致，精確分解已完成，無已證實回傳bug或新weight依據。近分case有不同深度的末端比較（Hold3/4/5 vs Place6）；若續作先查同預算selection分配，不加算力、不重啟tail／舊參數掃描。現無新run、無production變更。
