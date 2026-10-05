@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-05 授權繼續修 [tail-value bounded-v2](TAIL_VALUE_PREFLIGHT_PLAN.md)：20% per-allocation probe cap、完整成本預查、siblings reserve、shadow 對照。只一個離線 gate，無 arena，無 accepted 參數變更。此為目前下一步；下方 v1 是歷史狀態，run 另記 dispatch。
+
 2026-10-05 [tail-value preflight已驗收](TAIL_VALUE_PREFLIGHT_RESULT_37291859932.md)：Rust/public root gate成功，20certificate/lock與9Hold，本機另重播20authority commits。probe吃94.07% nodes，12461完成但僅8613隨parent提交；4/20 top1變化中2個published=0，不能歸因新value。此版不開arena；先解決budget/publication與歸因，完整逐probe/browser gate仍未完成。不增加預算／tail深度／不切其他方向；本次沒有新run。
 
 2026-10-05 使用者授權試做：[tail-value離線preflight](TAIL_VALUE_PREFLIGHT_PLAN.md)。隔離Rust候選已準備，7種等權單手backup，所有probe計入200k，parent不完整則整批取消，另記completed/published避免假activation。只一個Actions編譯與20public snapshots job，無arena／無production改動；Rust本機不可用，pending遠端驗證。完整逐probe authority與browser gate尚未完成。run另記dispatch。

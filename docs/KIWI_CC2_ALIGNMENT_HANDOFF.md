@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-05 使用者授權繼續：準備 [tail-value bounded-v2](audits/cc2-alignment/TAIL_VALUE_PREFLIGHT_PLAN.md)，每 allocation 20% probe cap、完整成本預查、保留 siblings budget，新增照算但不用新值的 shadow。仍只 20 public snapshots 離線 gate／ntfy，無 arena。accepted evaluator／production 不變；完整逐 probe authority 與 browser gate 待後續，run 另記 dispatch。
+
 2026-10-05 [tail-value preflight已驗收](audits/cc2-alignment/TAIL_VALUE_PREFLIGHT_RESULT_37291859932.md)：Rust/public root gate成功，20certificate/lock與9Hold，本機另重播20authority commits。probe吃94.07% nodes，12461完成但僅8613隨parent提交；4/20 top1變化中2個published=0，不能歸因新value。此版不開arena；先解決budget/publication與歸因，完整逐probe/browser gate仍未完成。不增加預算／tail深度／不切其他方向；本次沒有新run。
 
 2026-10-05 使用者授權試做：[tail-value離線preflight](audits/cc2-alignment/TAIL_VALUE_PREFLIGHT_PLAN.md)。隔離Rust候選已準備，7種等權單手backup，所有probe計入200k，parent不完整則整批取消，另記completed/published避免假activation。只一個Actions編譯與20public snapshots job，無arena／無production改動；Rust本機不可用，pending遠端驗證。完整逐probe authority與browser gate尚未完成。run另記dispatch。

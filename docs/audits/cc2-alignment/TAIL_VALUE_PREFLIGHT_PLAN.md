@@ -1,5 +1,21 @@
 # 一層未知tail：實驗實作與離線preflight
 
+## 2026-10-05 bounded-v2（優先於下方 v1 描述）
+
+使用者授權繼續修正 run 37291859932 的預算／publication 問題。仍僅一個離線 job，無 arena、無 production 改動、無參數調整。
+
+- 每個 Place／Hold／garbage scenario allocation 各自最多 20% 用於 tail transitions，總 request 仍 200k。20% 是工程保護上限，未宣稱最佳。
+- 先枚舉七種 piece 的合法動作，算出完整 probe transition cost；整組放不下就不做 transition、保留 V0。movegen 仍有 wall cost，不算零成本。
+- admission 同時保留當前 parent 剩餘 known-piece siblings 的普通 transition 預算。完整 probe 必須隨完整 parent 提交；gate 要求 completed == published。
+- 新增 shadow：相同 admission／quota／probe 工作，但提交舊 Eval。candidate 提交新 Eval。兩者分數不同後，搜尋路徑與實際成本仍可能分歧，不能稱完全相同搜尋軌跡。
+- 比較 accepted→shadow、accepted→candidate、shadow→candidate；frozen accepted 與 rebuilt control 的完整 report 仍須一致。
+- 固定 20 PublicSnapshots，candidate 與 shadow 都驗證 authority top-1；若 Hold 則實際 Hold 後重新分析並驗 placement。保存兩者完整 reports、post-Hold snapshot、proof、actual、timings、per-allocation budget/quota/spent。
+- 三個 binary 都跑 Rust snapshot tests／tail tests。gate 要求每 allocation spent ≤ floor(budget/5)、總 transitions ≤ 40k、所有 work 仍在 200k 內、completed == published。
+
+本機 JS／真實 accepted source 錨點檢查完成；本機無 Rust，編譯與執行 gate 交 Actions。hypothetical probe 的完整逐 transaction authority parity、browser cost 仍未完成。成功也不自動開 arena，ntfy 後等使用者回來驗收。
+
+## v1 歷史記錄
+
 2026-10-05 使用者「好，試試看」授權。依EVALUATOR_REDESIGN_REVIEW_2026-10-05.md，先小型實驗，不開arena。production、accepted參數與Engine皆不改。
 
 ## 實作範圍

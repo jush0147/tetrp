@@ -36,12 +36,13 @@ jobs:
           git -C .cache/cc2-wasm-source apply "$GITHUB_WORKSPACE/.cache/eval-artifact/cc2-wasm-results/landing-final.patch"
           node scripts/kiwi-tail-value-prepare.js install
           git -C .cache/cc2-wasm-source diff > .cache/tail-value-build/source.patch
-      - name: Rust semantic tests and two binaries
+      - name: Rust semantic tests and three binaries
         run: |
           rustup toolchain install 1.90.0 --profile minimal
-          for mode in control candidate; do
+          for mode in control shadow candidate; do
             flags=""
             if [ "$mode" = candidate ]; then flags="--cfg tail_value_candidate"; fi
+            if [ "$mode" = shadow ]; then flags="--cfg tail_value_shadow"; fi
             RUSTFLAGS="$flags" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib snapshot::tests
             RUSTFLAGS="$flags" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib tail_value_tests
             RUSTFLAGS="$flags" cargo +1.90.0 build --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --bin snapshot_tail
