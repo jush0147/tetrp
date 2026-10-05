@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+**此頁原參數順序現為歷史，不自動續做。2026-10-05目前依據：[低成本剩餘資源估值主線](RESIDUAL_VALUE_DIRECTION_2026-10-05.md)。先做具體替代evaluator設計，不增加搜尋／分析時間，再單一候選，最後KO驗證。tail與效能支線已關閉，newly-sent 1→2撤回；不重啟調參。使用者本次只要求記錄，未派任何新實驗。**
+
 2026-10-05 [shortcut結果](FRONTIER_SHORTCUT_RESULT_37332904019.md)：完整report96次一致、Rust8tests過，但只快0.54%、有一輪較慢，未過5%工程gate；不採用，不開browser／arena。這條性能小實驗結束，沒有新weight依據，原accepted保持，tail仍停止，無新dispatch。
 
 2026-10-05 [有限frontier shortcut](FRONTIER_SHORTCUT_PLAN.md)：使用者授權一個策略等價效能候選；原抽樣後提前跳過必定Failed前的advance，不改weights/budget。12snapshot完整report與三輪latency gate，無arena。原參數順序不因這項工程實驗重排，tail保持停止。

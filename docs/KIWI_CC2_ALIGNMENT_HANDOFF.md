@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+**目前唯一主線（2026-10-05，使用者確認）：[低成本剩餘資源估值](audits/cc2-alignment/RESIDUAL_VALUE_DIRECTION_2026-10-05.md)。後續先參考此文件；優先於下方歷史下一步。保留CC2搜尋與Tetrp authority，不增加額外搜尋，先交付明確替代leaf公式與成本／去重設計，再單一候選，最後KO驗證。禁止默默轉向tail、效能支線、搜尋重寫或舊權重掃描；newly-sent 1→2提議已撤回。具體新設計尚未完成。本次僅紀錄，無程式修改／新run。**
+
 2026-10-05 [frontier shortcut驗收：不採用](audits/cc2-alignment/FRONTIER_SHORTCUT_RESULT_37332904019.md)。run37332904019成功完成，8 Rust tests／96完整report parity過；36組timing重算總下降僅0.5387%，三輪+1.0968%／−0.3300%／+0.8466%，未過固定5%且三輪皆快門檻。保持accepted，不追加browser／arena，不重跑到顯著；小型shortcut支線關閉，無新run。82.21% attempts不能推成耗時或棋力損失。
 
 2026-10-05 [finite frontier shortcut候選](audits/cc2-alignment/FRONTIER_SHORTCUT_PLAN.md)：僅省已抽到finite frontier之前的最後一次無用advance，保留原RNG/200k預算/評分。12固定public snapshots、三輪交錯、完整report exact parity；預設至少5%總時間下降且三輪皆快。Linux初篩，不是browser／棋力證據，無arena／production改動。run另記dispatch。
