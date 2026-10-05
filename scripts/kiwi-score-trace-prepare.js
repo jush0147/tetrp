@@ -3,6 +3,22 @@ import {readFile,writeFile,copyFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {instrument} from './kiwi-eval-observer-prepare.js';
 export function insert(source,anchor,code){assert.equal(source.split(anchor).length,2,anchor);return source.replace(anchor,code+anchor);}
+export function workCounters(source,kind){
+ assert.ok(!source.includes('WORK_COUNTER_BEGIN'),'work counters already installed');
+ let s=source;
+ const put=(anchor,code)=>s=insert(s,anchor,`\n// WORK_COUNTER_BEGIN\n#[cfg(eval_observer)]\n${code}\n// WORK_COUNTER_END\n`);
+ if(kind==='analysis'){
+  put('        let mut stats = Statistics::default();','{ crate::eval_observer::allocation_begin(allocation); }');
+  put('                    let step = bot.do_work_limited(allocation - stats.nodes);','{ crate::eval_observer::attempt_begin(); }');
+  put('                    stats.accumulate(step);','{ crate::eval_observer::attempt_end(step.nodes,step.expansions,step.budget_exhausted,stalled); }');
+  put('        nodes += stats.nodes;','{ crate::eval_observer::allocation_end(root_legal_placements.is_some(),scenario,stats.nodes,stats.selections,stats.expansions,stats.budget_exhausted,stalled); }');
+ }else if(kind==='dag')put('            match layer.kind.select(', '{ crate::eval_observer::visit(layers.len(),layer.kind.piece().is_some()); }');
+ else if(kind==='known')put('        SelectResult::Advance(self.piece, children[i].mv)','{ crate::eval_observer::root_choice(children[i].mv,i); }');
+ else if(kind==='freestyle')put('            let (state, next) = node.state();','{ crate::eval_observer::selected(); }');
+ else throw Error('unknown counter source');
+ assert.equal(s.replace(/\n\/\/ WORK_COUNTER_BEGIN\n[\s\S]*?\/\/ WORK_COUNTER_END\n/g,''),source);
+ return s;
+}
 export function instrumentFreestyle(source){
  let s=instrument(source);
  // During search, retain original arithmetic but collect no vectors/logs.
@@ -35,8 +51,9 @@ if(process.argv[2]==='install-score'){
  const root=process.argv[3]??'.cache/cc2-wasm-source';
  const p=`${root}/src/bot/freestyle.rs`,s=await readFile(p,'utf8');
  assert.equal(createHash('sha256').update(s).digest('hex'),'9fe27a686c21515eb729af2ec73c4b99cd0ad6201b783fd35319a93c265f03d1');
- await writeFile(p,instrumentFreestyle(s));
- const dag=`${root}/src/dag.rs`;await writeFile(dag,(await readFile(dag,'utf8'))+'\n'+await readFile('tools/cc2-eval-audit/score_paths.rs','utf8'));
+ await writeFile(p,workCounters(instrumentFreestyle(s),'freestyle'));
+ const dag=`${root}/src/dag.rs`;await writeFile(dag,workCounters(await readFile(dag,'utf8'),'dag')+'\n'+await readFile('tools/cc2-eval-audit/score_paths.rs','utf8'));
+ const known=`${root}/src/dag/known.rs`;await writeFile(known,workCounters(await readFile(known,'utf8'),'known'));
  const bot=`${root}/src/bot.rs`;await writeFile(bot,(await readFile(bot,'utf8'))+`
 #[cfg(eval_observer)]
 impl Bot { pub fn score_paths(&self)->serde_json::Value {match &self.mode {ModeEnum::Freestyle(m)=>m.score_paths(&self.options)}} }
@@ -44,6 +61,6 @@ impl Bot { pub fn score_paths(&self)->serde_json::Value {match &self.mode {ModeE
  const analysis=`${root}/src/analysis.rs`;let a=await readFile(analysis,'utf8');
  a=insert(a,'        for (placement, score) in bot.ranked_suggestions() {','        #[cfg(eval_observer)]\n        crate::eval_observer::scenario(root_legal_placements.is_some(),scenario,bot.score_paths());\n');
  a=insert(a,'    Ok(Report {','    #[cfg(eval_observer)]\n    crate::eval_observer::branch(root_legal_placements.is_some(),serde_json::to_value(&candidates).unwrap());\n');
- await writeFile(analysis,a);
+ await writeFile(analysis,workCounters(a,'analysis'));
  await copyFile('tools/cc2-eval-audit/score_observer.rs',`${root}/src/eval_observer.rs`);
 }

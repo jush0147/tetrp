@@ -1,4 +1,4 @@
-name: Kiwi offline final score trace
+name: Kiwi offline score and work trace
 on:
   push:
     branches: [codex/kiwi-ft7-actions]
@@ -38,7 +38,7 @@ jobs:
         run: |
           rustup toolchain install 1.90.0 --profile minimal
           EVAL_AUDIT_INPUT="$GITHUB_WORKSPACE/docs/audits/cc2-alignment/eval-public-inputs.json" EVAL_AUDIT_OUTPUT="$GITHUB_WORKSPACE/.cache/cc2-eval-results/native-reference.json" cargo +1.90.0 test --locked --release --manifest-path .cache/cc2-wasm-source/Cargo.toml --lib eval_audit_runner -- --test-threads=1
-      - name: Read completed DAGs and validate full score reconstruction
+      - name: Validate unchanged reports, final scores and work allocation
         run: |
           node scripts/kiwi-score-trace-prepare.js install-score
           git -C .cache/cc2-wasm-source diff > .cache/cc2-eval-results/score-trace.patch

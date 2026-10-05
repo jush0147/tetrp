@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-05 目前進行[work allocation離線診斷](SEARCH_WORK_ALLOCATION_PLAN.md)：量現有200k分配／空轉與停止原因，保留final score gate；不改搜尋或weights，無arena。使用者已授權，本機9checks過、Rust待遠端；run另記dispatch。
+
 2026-10-05 [final trace結果](FINAL_SCORE_TRACE_RESULT_37315205579.md)：646paths／4reports一致，精確分解已完成，無已證實回傳bug或新weight依據。近分case有不同深度的末端比較（Hold3/4/5 vs Place6）；若續作先查同預算selection分配，不加算力、不重啟tail／舊參數掃描。現無新run、無production變更。
 
 2026-10-05 目前工作：[final score trace](FINAL_SCORE_TRACE_PLAN.md)，使用者已授權；離線唯讀完成DAG，精確重建top2分數。正式bot沒有新成本，tail仍停止，無新權重或arena。實作已備、Rust gate待Actions；run另記dispatch。
