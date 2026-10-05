@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-05 使用者授權繼續：[最終score trace](audits/cc2-alignment/FINAL_SCORE_TRACE_PLAN.md)已準備。只在離線隔離build讀搜尋完成的DAG、重建top2各scenario路徑，含Hold全局平均歸因；不新增search nodes、不改正式bot或weights。7本機checks通過，Rust/精確report與backprop gate交單job Actions；ntfy，無arena。run另記dispatch。
+
 2026-10-05 [既存分數拆解完成](audits/cc2-alignment/EXISTING_SCORE_AUDIT_2026-10-05.md)：4真實snapshot／729局部samples，reports與最新frozen accepted完整一致；輸出完整ranking及12stage witnesses。沒有足夠新證據選定修改，不重啟舊參數實驗。row transitions共同−64不能當攻擊被壓過；首選prefix確實有sent7。既有取樣缺完整best-chain attribution，不能宣稱已解釋root分差。若繼續只提debug-only搜尋完成後讀現成top2 backprop鏈，未實作／未派送；線上不加成本、tail停止，無arena。
 
 2026-10-05 最新使用者限制（覆蓋下方下一步）：現有分析已太慢，不走增加時間成本的方向。**停止 tail-value 路線，不再實作 admission 修補、不派 v3 或 arena。** 保留實驗作歷史，accepted／production 不變。後續只考慮現有搜尋內的低成本估值替換、既有計算重用或減少浪費；不能用相同 node budget 宣稱相同耗時。候選須以同環境配對 wall-time（含中位數與尾端延遲）確認不退步，再以 KO 勝率判斷強度。不以犧牲 cadence／資訊公平／authority correctness 換速度。本次僅更新紀錄，無新測試任務。
