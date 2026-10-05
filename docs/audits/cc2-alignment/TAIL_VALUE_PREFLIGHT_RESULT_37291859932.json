@@ -1,0 +1,723 @@
+{
+  "run": 37291859932,
+  "commit": "3a5ed32cb460f046f1ebaf23a421750972318ee3",
+  "auditSHA256": "227f973d5526be0799cc40b665ffd9fc8c8e46890b202e2ea8aafe9851be3899",
+  "hashes": [
+    "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb",
+    "b51b8ad5ec569306a2352bc888a523614f58df2394c9f364fd1cd07a583633a2",
+    "18fb12e87a4ef02db3aa50ae5a92987bc1c86f47df0bcd37fee99c100dacdfab"
+  ],
+  "correctness": {
+    "rootPlacements": 20,
+    "holds": 9,
+    "baselineReports": 20,
+    "localCertificateAndCommitReplay": 20
+  },
+  "changedTop1": 4,
+  "counts": {
+    "calls": 12603,
+    "completed": 12461,
+    "published": 8613,
+    "incomplete": 142,
+    "transitions": 3762943
+  },
+  "probeBudgetFraction": 0.94073575,
+  "publishedFraction": 0.6911965331835326,
+  "medianMs": {
+    "accepted": 648.1056899999999,
+    "rebuiltControl": 663.3000515000012,
+    "candidate": 500.7887019999989
+  },
+  "rows": [
+    {
+      "id": "leg0/request138",
+      "changed": true,
+      "acceptedMs": 625.034672,
+      "controlMs": 639.8282549999999,
+      "candidateMs": 441.12002699999994,
+      "probe": {
+        "calls": 507,
+        "completed": 505,
+        "incomplete": 2,
+        "published": 410,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 196168
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "S",
+            "orientation": "east",
+            "x": 0,
+            "y": 3
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "leg0/request346",
+      "changed": false,
+      "acceptedMs": 661.8857079999998,
+      "controlMs": 682.0815310000007,
+      "candidateMs": 446.7034620000004,
+      "probe": {
+        "calls": 536,
+        "completed": 535,
+        "incomplete": 1,
+        "published": 503,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 196907
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 2,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 2,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "leg0/request553",
+      "changed": false,
+      "acceptedMs": 599.4965590000002,
+      "controlMs": 623.9253060000001,
+      "candidateMs": 503.8494639999999,
+      "probe": {
+        "calls": 616,
+        "completed": 614,
+        "incomplete": 2,
+        "published": 571,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 194914
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "L",
+            "orientation": "west",
+            "x": 9,
+            "y": 8
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "L",
+            "orientation": "west",
+            "x": 9,
+            "y": 8
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "leg4/request167",
+      "changed": true,
+      "acceptedMs": 642.5068280000005,
+      "controlMs": 651.9477290000013,
+      "candidateMs": 546.7206450000012,
+      "probe": {
+        "calls": 676,
+        "completed": 656,
+        "incomplete": 20,
+        "published": 0,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 174768
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "L",
+            "orientation": "west",
+            "x": 7,
+            "y": 7
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "L",
+            "orientation": "west",
+            "x": 5,
+            "y": 6
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "leg4/request419",
+      "changed": false,
+      "acceptedMs": 593.6966319999992,
+      "controlMs": 603.5829269999995,
+      "candidateMs": 507.3205170000001,
+      "probe": {
+        "calls": 623,
+        "completed": 622,
+        "incomplete": 1,
+        "published": 599,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 192483
+      },
+      "actionBefore": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "leg4/request670",
+      "changed": false,
+      "acceptedMs": 512.8448120000012,
+      "controlMs": 530.7911289999993,
+      "candidateMs": 498.80187599999954,
+      "probe": {
+        "calls": 496,
+        "completed": 476,
+        "incomplete": 20,
+        "published": 0,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 164942
+      },
+      "actionBefore": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "leg12/request153",
+      "changed": false,
+      "acceptedMs": 610.0698870000015,
+      "controlMs": 628.2866799999993,
+      "candidateMs": 590.496175000002,
+      "probe": {
+        "calls": 666,
+        "completed": 646,
+        "incomplete": 20,
+        "published": 0,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 181553
+      },
+      "actionBefore": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "leg12/request383",
+      "changed": false,
+      "acceptedMs": 680.319277999999,
+      "controlMs": 692.8728940000001,
+      "candidateMs": 489.13969200000065,
+      "probe": {
+        "calls": 655,
+        "completed": 653,
+        "incomplete": 2,
+        "published": 591,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 194842
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "T",
+            "orientation": "west",
+            "x": 9,
+            "y": 5
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "T",
+            "orientation": "west",
+            "x": 9,
+            "y": 5
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "leg12/request613",
+      "changed": false,
+      "acceptedMs": 568.083039000001,
+      "controlMs": 592.510975000001,
+      "candidateMs": 457.2334259999989,
+      "probe": {
+        "calls": 560,
+        "completed": 558,
+        "incomplete": 2,
+        "published": 483,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 193974
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 0,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 0,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "leg20/request197",
+      "changed": false,
+      "acceptedMs": 557.6615679999995,
+      "controlMs": 575.179376,
+      "candidateMs": 502.7755279999983,
+      "probe": {
+        "calls": 620,
+        "completed": 610,
+        "incomplete": 10,
+        "published": 477,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 186959
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "Z",
+            "orientation": "north",
+            "x": 8,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "Z",
+            "orientation": "north",
+            "x": 8,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "leg20/request493",
+      "changed": true,
+      "acceptedMs": 653.7045519999992,
+      "controlMs": 674.6523740000011,
+      "candidateMs": 567.9350949999971,
+      "probe": {
+        "calls": 643,
+        "completed": 623,
+        "incomplete": 20,
+        "published": 0,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 174677
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "T",
+            "orientation": "south",
+            "x": 3,
+            "y": 5
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "leg20/request788",
+      "changed": false,
+      "acceptedMs": 781.2566200000001,
+      "controlMs": 771.4013720000003,
+      "candidateMs": 568.8264170000002,
+      "probe": {
+        "calls": 785,
+        "completed": 783,
+        "incomplete": 2,
+        "published": 780,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 192146
+      },
+      "actionBefore": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "b0-l2-charged0",
+      "changed": false,
+      "acceptedMs": 810.5426399999997,
+      "controlMs": 832.4909990000015,
+      "candidateMs": 480.3948999999993,
+      "probe": {
+        "calls": 640,
+        "completed": 638,
+        "incomplete": 2,
+        "published": 570,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 196704
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "O",
+            "orientation": "north",
+            "x": 4,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "O",
+            "orientation": "north",
+            "x": 4,
+            "y": 2
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "b0-l2-charged22",
+      "changed": false,
+      "acceptedMs": 689.490636999999,
+      "controlMs": 709.4408610000028,
+      "candidateMs": 568.3219790000003,
+      "probe": {
+        "calls": 778,
+        "completed": 776,
+        "incomplete": 2,
+        "published": 757,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 192971
+      },
+      "actionBefore": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "b0-l2-charged45",
+      "changed": false,
+      "acceptedMs": 558.6458429999984,
+      "controlMs": 561.3048819999967,
+      "candidateMs": 463.6862570000012,
+      "probe": {
+        "calls": 528,
+        "completed": 518,
+        "incomplete": 10,
+        "published": 43,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 189967
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 0,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "I",
+            "orientation": "west",
+            "x": 0,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "b0-l2-charged68",
+      "changed": false,
+      "acceptedMs": 1089.7834550000043,
+      "controlMs": 1113.1425560000062,
+      "candidateMs": 497.19972000000416,
+      "probe": {
+        "calls": 680,
+        "completed": 679,
+        "incomplete": 1,
+        "published": 667,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 197539
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "O",
+            "orientation": "north",
+            "x": 4,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "O",
+            "orientation": "north",
+            "x": 4,
+            "y": 0
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "b0-l3-charged0",
+      "changed": false,
+      "acceptedMs": 681.2405240000007,
+      "controlMs": 692.7722359999971,
+      "candidateMs": 475.2770879999953,
+      "probe": {
+        "calls": 561,
+        "completed": 559,
+        "incomplete": 2,
+        "published": 446,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 196643
+      },
+      "actionBefore": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "b0-l3-charged10",
+      "changed": false,
+      "acceptedMs": 720.2880060000025,
+      "controlMs": 741.9391229999965,
+      "candidateMs": 546.9041369999977,
+      "probe": {
+        "calls": 758,
+        "completed": 756,
+        "incomplete": 2,
+        "published": 739,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 192629
+      },
+      "actionBefore": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      },
+      "actionAfter": {
+        "kind": "hold",
+        "mode": "occupied",
+        "same_piece": false,
+        "requires_reanalysis": true
+      }
+    },
+    {
+      "id": "b0-l3-charged20",
+      "changed": false,
+      "acceptedMs": 581.3331810000018,
+      "controlMs": 606.3844000000026,
+      "candidateMs": 573.9917559999958,
+      "probe": {
+        "calls": 620,
+        "completed": 600,
+        "incomplete": 20,
+        "published": 338,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 156623
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "T",
+            "orientation": "north",
+            "x": 4,
+            "y": 5
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "T",
+            "orientation": "north",
+            "x": 4,
+            "y": 5
+          },
+          "spin": "none"
+        }
+      }
+    },
+    {
+      "id": "b0-l3-charged31",
+      "changed": true,
+      "acceptedMs": 798.8647760000022,
+      "controlMs": 815.3845100000035,
+      "candidateMs": 479.7778180000023,
+      "probe": {
+        "calls": 655,
+        "completed": 654,
+        "incomplete": 1,
+        "published": 639,
+        "scope": "Completed probes may be discarded with an incomplete parent expansion; published counts only completed parent expansions, not unique TT states or selected best continuations.",
+        "transitions": 195534
+      },
+      "actionBefore": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "O",
+            "orientation": "north",
+            "x": 3,
+            "y": 1
+          },
+          "spin": "none"
+        }
+      },
+      "actionAfter": {
+        "kind": "place",
+        "placement": {
+          "location": {
+            "type": "O",
+            "orientation": "north",
+            "x": 7,
+            "y": 3
+          },
+          "spin": "none"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "20 fixed snapshots; no KO result",
+    "native single-pass timings, not browser or speed benchmark",
+    "full hypothetical probe transaction parity remains unverified",
+    "published is not unique TT states or root best-line usage"
+  ]
+}

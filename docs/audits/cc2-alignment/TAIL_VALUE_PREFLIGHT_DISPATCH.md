@@ -1,5 +1,7 @@
 # Tail value preflight：已啟動
 
+2026-10-05 [tail-value preflight已驗收](TAIL_VALUE_PREFLIGHT_RESULT_37291859932.md)：Rust/public root gate成功，20certificate/lock與9Hold，本機另重播20authority commits。probe吃94.07% nodes，12461完成但僅8613隨parent提交；4/20 top1變化中2個published=0，不能歸因新value。此版不開arena；先解決budget/publication與歸因，完整逐probe/browser gate仍未完成。不增加預算／tail深度／不切其他方向；本次沒有新run。
+
 2026-10-05，[run37291859932](https://github.com/jush0147/tetrp/actions/runs/37291859932)。source短SHA `3a5ed32`。
 
 只有單一40min offline job：compile control/candidate、Rust snapshot／tail tests、20固定PublicSnapshot、原accepted report parity、200k accounting、候選root authority parity與成本統計。無arena jobs，沒有改正式bot；不是Native v0。
