@@ -1,5 +1,7 @@
 # 兩批 CC2-based 直接確認：已派送
 
+2026-10-05 [兩批新seed直接確認已驗收](EVALUATOR_CONFIRMATION_RESULT_2026-10-05.md)：well0.6對accepted96–104（48%，CI40.418–55.582%，p=.6940）；clear-off108–92（54%，CI47.435–60.565%，p=.2912），均未達預註冊改善判準。400正常KO、367070 placements／140479 Holds，zero failure／fallback／rejection／mismatch；唯一terminal Hold已查raw正常KO。維持原accepted，不追加／不promotion／無第三批。使用者已決定不加組合與井深1/1.5，僅原兩批；現均結束。
+
 2026-10-05 Asia/Taipei（UTC 2026-10-04）。source `67ab40a2ce43706ec916ca764115eade3862afa9`。
 
 1. [37215234239](https://github.com/jush0147/tetrp/actions/runs/37215234239)：well-double，井深0.6直接對accepted0.3。確認gate in_progress、JS契約tests成功後送第二批。

@@ -1,0 +1,566 @@
+{
+  "run": 37215267052,
+  "variant": "clear-off",
+  "commit": "67ab40a2ce43706ec916ca764115eade3862afa9",
+  "planHash": "1ebf589657285827c111b858c1354c62cc747a19e237ae0eb1fc5c96d5a5e85b",
+  "resultSHA256": "ffe42b4a1e026615c3dfc7afc286964191059e72c873180981af5fe3603d2481",
+  "manifest": {
+    "variant": {
+      "name": "clear-off",
+      "boolean": 0.5,
+      "bank": 0,
+      "clearOff": true
+    },
+    "candidate": "surge-residual",
+    "baselineNative": "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb",
+    "candidateNative": "a80397591038c6cf19202e81cd0327ea5fd0293804c0fd3f885a4e9a35860257",
+    "nativeRun": 37215267052
+  },
+  "counts": {
+    "games": 200,
+    "requests": 278960,
+    "placements": 200992,
+    "holds": 77968,
+    "reanalyses": 77968,
+    "terminalHolds": 0,
+    "pendingSnapshots": 80838
+  },
+  "terminalGames": [],
+  "seatWins": [
+    51,
+    57
+  ],
+  "gate": {
+    "placements": 20,
+    "holds": 7,
+    "baselineReports": 20,
+    "changedTop1": 3
+  },
+  "statistics": {
+    "score": [
+      108,
+      92
+    ],
+    "candidateWinRate": 0.54,
+    "pairedApprox95CI": [
+      0.4743493981810379,
+      0.6056506018189622
+    ],
+    "blockCounts": {
+      "2-0": 26,
+      "1-1": 56,
+      "0-2": 18
+    },
+    "exactTwoSidedSweepSignP": 0.2912152365458951,
+    "meetsPreregisteredCriterion": false,
+    "retriedBlocks": 0,
+    "blocks": [
+      {
+        "block": 0,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 1,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 2,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 3,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 4,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 5,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 6,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 7,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 8,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 9,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 10,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 11,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 12,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 13,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 14,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 15,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 16,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 17,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 18,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 19,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 20,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 21,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 22,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 23,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 24,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 25,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 26,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 27,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 28,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 29,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 30,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 31,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 32,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 33,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 34,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 35,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 36,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 37,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 38,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 39,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 40,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 41,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 42,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 43,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 44,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 45,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 46,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 47,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 48,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 49,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 50,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 51,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 52,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 53,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 54,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 55,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 56,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 57,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 58,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 59,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 60,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 61,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 62,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 63,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 64,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 65,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 66,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 67,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 68,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 69,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 70,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 71,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 72,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 73,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 74,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 75,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 76,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 77,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 78,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 79,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 80,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 81,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 82,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 83,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 84,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 85,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 86,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 87,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 88,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 89,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 90,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 91,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 92,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 93,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 94,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 95,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 96,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 97,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 98,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 99,
+        "attempt": 0,
+        "wins": 0
+      }
+    ],
+    "note": "100 fresh seed pairs; direct versus accepted, not Legacy. Bonferroni family of two using exact sweep sign test; approximate cluster CI also reported. No automatic promotion or optional extension. Whole-pair sim-KO retries target decisive pairs."
+  },
+  "startedAt": "2026-10-04T17:36:47.000Z",
+  "completedAt": "2026-10-04T19:29:13.000Z",
+  "wallSeconds": 6746,
+  "runnerHours": 26.957222222222214,
+  "audit": "All summaries/statistics, identities, binary hashes, config, original and repeated gate, and smoke verified; not all raw traces re-simulated."
+}

@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-05 [兩批新seed直接確認已驗收](EVALUATOR_CONFIRMATION_RESULT_2026-10-05.md)：well0.6對accepted96–104（48%，CI40.418–55.582%，p=.6940）；clear-off108–92（54%，CI47.435–60.565%，p=.2912），均未達預註冊改善判準。400正常KO、367070 placements／140479 Holds，zero failure／fallback／rejection／mismatch；唯一terminal Hold已查raw正常KO。維持原accepted，不追加／不promotion／無第三批。使用者已決定不加組合與井深1/1.5，僅原兩批；現均結束。
+
 2026-10-04 新授權：[两候選新seed直接確認](EVALUATOR_CONFIRMATION_PLAN_2026-10-04.md)。先井深0.6，再清行三表off，各200 KO直接對aligned accepted；全是CC2-based，非Native v0。共兩個固定假設、exact p≤.025與paired95% lower>50%，不混搭／不追加／不自動promotion。舊盤點已停止；這是獨立確認。完成ntfy，明晚驗收；run另記dispatch。
 
 2026-10-04 最終驗收：[井深0.6結果與收尾](WELL_DOUBLE_RESULT_37200443114.md)。0.6版112–88，accepted104–96，差+4pp、配對95% CI −5.837～+13.837pp；0版101–99。最後400新KO均zero failure／fallback／rejection／mismatch，兩gate成功。未證明改善，維持0.3。**本輪參數盤點已完成並停止，不接舊清單、不新增run、不promotion。** 替代evaluator仍屬討論，尚未啟動。下方pending/gate進行中敘述為歷史狀態。

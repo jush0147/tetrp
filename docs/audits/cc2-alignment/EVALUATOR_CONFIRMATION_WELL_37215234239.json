@@ -1,0 +1,1285 @@
+{
+  "run": 37215234239,
+  "variant": "well-double",
+  "commit": "67ab40a2ce43706ec916ca764115eade3862afa9",
+  "planHash": "43a793666dce2b261499111f8ed0ad1dfc70a9afd212a08c7d2857d5613c5ea0",
+  "resultSHA256": "1b1191a290c6fff3590f7978de24e9ad1c04f966fd8498dda252b55a47317846",
+  "manifest": {
+    "variant": {
+      "name": "well-double",
+      "boolean": 0.5,
+      "bank": 0,
+      "wellDepth": 0.6
+    },
+    "candidate": "surge-residual",
+    "baselineNative": "386e53fcb607015d30dab78401e37f4f2ec1c315044a27b736561a0428788feb",
+    "candidateNative": "956e0573bff5e8668455adfa0fd642f9aeb0b06a9bb6e51a8ed7ead8f5ad8e82",
+    "nativeRun": 37215234239
+  },
+  "counts": {
+    "games": 200,
+    "requests": 228590,
+    "placements": 166078,
+    "holds": 62511,
+    "reanalyses": 62510,
+    "terminalHolds": 1,
+    "pendingSnapshots": 61486
+  },
+  "terminalGames": [
+    {
+      "block": 42,
+      "attempt": 0,
+      "leg": 0,
+      "counts": {
+        "requests": [
+          808,
+          812
+        ],
+        "placements": [
+          597,
+          597
+        ],
+        "holds": [
+          210,
+          215
+        ],
+        "reanalyses": [
+          210,
+          214
+        ],
+        "terminalHolds": [
+          0,
+          1
+        ]
+      },
+      "ko": [
+        false,
+        true
+      ]
+    }
+  ],
+  "seatWins": [
+    53,
+    43
+  ],
+  "gate": {
+    "placements": 20,
+    "holds": 7,
+    "baselineReports": 20,
+    "changedTop1": 3
+  },
+  "statistics": {
+    "score": [
+      96,
+      104
+    ],
+    "candidateWinRate": 0.48,
+    "pairedApprox95CI": [
+      0.4041757336356165,
+      0.5558242663643835
+    ],
+    "blockCounts": {
+      "2-0": 27,
+      "1-1": 42,
+      "0-2": 31
+    },
+    "exactTwoSidedSweepSignP": 0.6940040940761318,
+    "meetsPreregisteredCriterion": false,
+    "retriedBlocks": 0,
+    "blocks": [
+      {
+        "block": 0,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 1,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 2,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 3,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 4,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 5,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 6,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 7,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 8,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 9,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 10,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 11,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 12,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 13,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 14,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 15,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 16,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 17,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 18,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 19,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 20,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 21,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 22,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 23,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 24,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 25,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 26,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 27,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 28,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 29,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 30,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 31,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 32,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 33,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 34,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 35,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 36,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 37,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 38,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 39,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 40,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 41,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 42,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 43,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 44,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 45,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 46,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 47,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 48,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 49,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 50,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 51,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 52,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 53,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 54,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 55,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 56,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 57,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 58,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 59,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 60,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 61,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 62,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 63,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 64,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 65,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 66,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 67,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 68,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 69,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 70,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 71,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 72,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 73,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 74,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 75,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 76,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 77,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 78,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 79,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 80,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 81,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 82,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 83,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 84,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 85,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 86,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 87,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 88,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 89,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 90,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 91,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 92,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 93,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 94,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 95,
+        "attempt": 0,
+        "wins": 1
+      },
+      {
+        "block": 96,
+        "attempt": 0,
+        "wins": 2
+      },
+      {
+        "block": 97,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 98,
+        "attempt": 0,
+        "wins": 0
+      },
+      {
+        "block": 99,
+        "attempt": 0,
+        "wins": 2
+      }
+    ],
+    "note": "100 fresh seed pairs; direct versus accepted, not Legacy. Bonferroni family of two using exact sweep sign test; approximate cluster CI also reported. No automatic promotion or optional extension. Whole-pair sim-KO retries target decisive pairs."
+  },
+  "startedAt": "2026-10-04T16:01:49.000Z",
+  "completedAt": "2026-10-04T17:36:45.000Z",
+  "wallSeconds": 5696,
+  "runnerHours": 23.342222222222222,
+  "audit": "All summaries/statistics, identities, binary hashes, config, original and repeated gate, and smoke verified; not all raw traces re-simulated.",
+  "terminalHoldAudit": {
+    "traceSHA256": "443dd467dc4efcd4090b73792b544ebf2efcc1299d8a9b326d149a3b04949717",
+    "block": 42,
+    "leg": 0,
+    "decision": {
+      "type": "decision",
+      "seat": 1,
+      "frame": 14328,
+      "snapshot": {
+        "board": {
+          "width": 10,
+          "height": 20,
+          "buffer": 20,
+          "rows": [
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "i",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "i",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "i",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            [
+              "i",
+              null,
+              null,
+              null,
+              null,
+              "s",
+              null,
+              null,
+              "l",
+              "l"
+            ],
+            [
+              "l",
+              "l",
+              "l",
+              null,
+              null,
+              "s",
+              "s",
+              null,
+              null,
+              "l"
+            ],
+            [
+              "l",
+              "t",
+              null,
+              null,
+              null,
+              null,
+              "s",
+              "j",
+              "j",
+              "l"
+            ],
+            [
+              "t",
+              "t",
+              "t",
+              "z",
+              null,
+              "z",
+              "i",
+              "j",
+              "o",
+              "o"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              null,
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              null,
+              "gb",
+              "gb"
+            ],
+            [
+              null,
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb"
+            ],
+            [
+              null,
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb",
+              "gb"
+            ]
+          ],
+          "lastWasAttack": true
+        },
+        "current": {
+          "type": "t",
+          "x": 4,
+          "y": 17.96,
+          "hy": 18,
+          "r": 0,
+          "kick": 0,
+          "rotated": false,
+          "spin": "none",
+          "wall": false,
+          "sleeping": false,
+          "locking": 0,
+          "resets": 0,
+          "rotationResets": 0,
+          "totalRotations": 0,
+          "safelock": 0,
+          "keys": 0,
+          "softDropped": false,
+          "forceLock": false
+        },
+        "hold": {
+          "piece": "o",
+          "locked": false
+        },
+        "next": [
+          "s",
+          "j",
+          "z",
+          "o",
+          "z"
+        ],
+        "rules": {
+          "receivemultiplier": 1,
+          "cancelmultiplier": 1,
+          "garbagephase_frames": 0,
+          "garbagequeue": false,
+          "garbageentry": "instant",
+          "garbageabsolutecap": 0,
+          "garbageattackcap": 0,
+          "garbagetargetbonus": "none",
+          "messiness_change": 1,
+          "messiness_inner": 0,
+          "b2bcharge_at": 4,
+          "b2bcharge_base": 0,
+          "lockresets": 15,
+          "gravitymay20g": true,
+          "bagtype": "7-bag",
+          "spinbonuses": "all-mini+",
+          "allow180": true,
+          "kickset": "SRS+",
+          "nextcount": 5,
+          "are": 0,
+          "lineclear_are": 0,
+          "g": 0.02,
+          "gincrease": 0.0035,
+          "gmargin_frames": 7200,
+          "garbagemultiplier": 1,
+          "garbageblocking": "combo blocking",
+          "garbagemargin_frames": 10800,
+          "garbageincrease_per_second": 0.008,
+          "locktime_frames": 30,
+          "garbagespeed_frames": 20,
+          "garbagecap": 8,
+          "garbagecapincrease_per_second": 0,
+          "garbagecapmax": 40,
+          "b2bchaining": false,
+          "combotable": "multiplier",
+          "clutch": true,
+          "passthrough": "zero",
+          "nolockout": true,
+          "boardwidth": 10,
+          "boardheight": 20,
+          "allclears": true,
+          "openerphase_pieces": 14,
+          "b2bcharging": true,
+          "allclear_garbage": 5,
+          "allclear_b2b": 1,
+          "roundmode": "down",
+          "garbagespecialbonus": true,
+          "buffer": 20,
+          "mode": "tl",
+          "hold": true,
+          "infinite_hold": false,
+          "garbageare": 0,
+          "garbagearebump": 0,
+          "objective_type": null
+        },
+        "frame": 14328,
+        "subframe": 0,
+        "playing": true,
+        "piecesPlaced": 597,
+        "attack": {
+          "combo": 0,
+          "btb": 0,
+          "cumulativeSent": 555,
+          "multiplier": 1.4702666666666149,
+          "are": [],
+          "pending": [
+            {
+              "amt": 15,
+              "active": false,
+              "hardened": false,
+              "shielded": false,
+              "status": "spawn",
+              "activeFrame": 14348
+            }
+          ]
+        },
+        "garbageLockedUntil": 14207
+      },
+      "selected": {
+        "action": {
+          "kind": "hold",
+          "mode": "occupied",
+          "samePiece": false,
+          "requiresReanalysis": true
+        },
+        "move": null,
+        "candidateIndex": 0,
+        "candidateCount": 7,
+        "policyIntent": {
+          "kind": "hold",
+          "mode": "occupied",
+          "same_piece": false,
+          "requires_reanalysis": true
+        }
+      },
+      "validated": null
+    },
+    "holdParity": {
+      "type": "parity",
+      "kind": "hold",
+      "seat": 1,
+      "frame": 14328,
+      "intent": {
+        "action": {
+          "kind": "hold",
+          "mode": "occupied",
+          "samePiece": false,
+          "requiresReanalysis": true
+        },
+        "move": null,
+        "candidateIndex": 0,
+        "candidateCount": 7,
+        "policyIntent": {
+          "kind": "hold",
+          "mode": "occupied",
+          "same_piece": false,
+          "requires_reanalysis": true
+        }
+      },
+      "actual": {
+        "current": {
+          "type": "o",
+          "x": 4,
+          "y": 17.96,
+          "hy": 18,
+          "r": 0,
+          "kick": 0,
+          "rotated": false,
+          "spin": "none",
+          "wall": false,
+          "sleeping": false,
+          "locking": 0,
+          "resets": 0,
+          "rotationResets": 0,
+          "totalRotations": 0,
+          "safelock": 0,
+          "keys": 0,
+          "softDropped": false,
+          "forceLock": false
+        },
+        "hold": {
+          "piece": "t",
+          "locked": true
+        },
+        "next": [
+          "s",
+          "j",
+          "z",
+          "o",
+          "z"
+        ],
+        "frame": 14328,
+        "playing": false,
+        "reason": "garbagesmash"
+      }
+    },
+    "noSubsequentSeatDecision": true
+  }
+}
