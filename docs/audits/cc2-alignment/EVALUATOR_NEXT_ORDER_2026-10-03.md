@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-05 使用者授權試做：[tail-value離線preflight](TAIL_VALUE_PREFLIGHT_PLAN.md)。隔離Rust候選已準備，7種等權單手backup，所有probe計入200k，parent不完整則整批取消，另記completed/published避免假activation。只一個Actions編譯與20public snapshots job，無arena／無production改動；Rust本機不可用，pending遠端驗證。完整逐probe authority與browser gate尚未完成。run另記dispatch。
+
 2026-10-05 [替代evaluator設計審查](EVALUATOR_REDESIGN_REVIEW_2026-10-05.md)完成，僅文件，未改bot／未開Actions。實作已計算cancel與後續交易，不能說完全沒有動態防禦；已backprop的延續也不能再加分。提出只在known frontier做7種等權未知piece的一層合法transition/value backup，明確承認是stochastic tail估值而非純feature重寫。保留accepted R0/V0作控制與probe終值、probe計入同200k預算；需另處理protocol標記、Hold/spawn與成本gate。尚未實作／驗證強度，沒有自動queue。
 
 2026-10-05 [兩批新seed直接確認已驗收](EVALUATOR_CONFIRMATION_RESULT_2026-10-05.md)：well0.6對accepted96–104（48%，CI40.418–55.582%，p=.6940）；clear-off108–92（54%，CI47.435–60.565%，p=.2912），均未達預註冊改善判準。400正常KO、367070 placements／140479 Holds，zero failure／fallback／rejection／mismatch；唯一terminal Hold已查raw正常KO。維持原accepted，不追加／不promotion／無第三批。使用者已決定不加組合與井深1/1.5，僅原兩批；現均結束。
