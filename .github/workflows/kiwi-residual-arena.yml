@@ -1,0 +1,126 @@
+name: Kiwi residual value fixed 200 KO
+run-name: 'Deferred asset v1 vs accepted — 200 KO'
+on:
+  # Register this branch workflow without running a gate or arena on push.
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-residual-arena.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-residual-arena-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  gate:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test direct score, identity and retry contract
+        run: node --test test/kiwi-residual-arena.test.js test/kiwi-native-client.test.js test/kiwi-match-pool.test.js
+      - name: Download exact previously validated candidate binary
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 37444591656 --repo jush0147/tetrp --name kiwi-residual-value --dir .cache/residual-arena-build
+          gh run download 36849221714 --repo jush0147/tetrp --name kiwi-native-runtime-36849221714 --dir .cache/native-artifact
+          node scripts/kiwi-residual-arena-identity.js prepare
+          chmod +x .cache/residual-arena-build/snapshot-accepted .cache/residual-arena-build/snapshot-on
+      - name: Verify two-seat orchestration without scoring
+        run: |
+          node scripts/kiwi-residual-arena-smoke.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-residual-arena-build
+          path: .cache/residual-arena-build/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify gate failure; arena not launched
+        if: failure()
+        run: node scripts/kiwi-residual-arena.js notify
+  block:
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: true
+      max-parallel: 16
+      matrix:
+        block: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: kiwi-residual-arena-build
+          path: .cache/residual-arena-build
+      - run: chmod +x .cache/residual-arena-build/snapshot-accepted .cache/residual-arena-build/snapshot-on
+      - name: Two direct candidate-versus-accepted KO legs
+        timeout-minutes: 80
+        env:
+          RESIDUAL_ARENA_BLOCK: ${{ matrix.block }}
+        run: node scripts/kiwi-residual-arena.js block
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: residual-arena-summary-${{ matrix.block }}
+          path: .cache/residual-arena/summaries/
+          include-hidden-files: true
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: residual-arena-traces-${{ matrix.block }}
+          path: .cache/residual-arena/games/
+          include-hidden-files: true
+          compression-level: 1
+          retention-days: 3
+  aggregate:
+    if: always() && needs.gate.result == 'success'
+    needs: [gate, block]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: kiwi-residual-arena-build
+          path: .cache/residual-arena-build
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: residual-arena-summary-*
+          path: .cache/residual-arena-downloads
+      - name: Validate every game and apply preregistered single-candidate criterion
+        env:
+          BLOCKS_STATUS: ${{ needs.block.result }}
+        run: node scripts/kiwi-residual-arena.js aggregate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: residual-arena-result
+          path: .cache/residual-arena/aggregate/
+          include-hidden-files: true
+          retention-days: 30
+      - name: Notify once on completion or failure
+        if: always()
+        env:
+          AGGREGATE_STATUS: ${{ job.status }}
+        run: node scripts/kiwi-residual-arena.js notify

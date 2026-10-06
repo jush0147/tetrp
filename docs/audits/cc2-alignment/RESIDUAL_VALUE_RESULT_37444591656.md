@@ -1,5 +1,7 @@
 # 剩餘資源估值候選：成本門檻未過，停止此候選
 
+**後續明確授權（2026-10-06）：使用者接受這個凍結候選約3%耗時增加，允許[一次200 KO驗證](RESIDUAL_VALUE_KO_PLAN_2026-10-06.md)。原成本未過結論保持；下文停止決定為授權前狀態，不再代表當前執行狀態。**
+
 2026-10-06 驗收 [run37444591656](https://github.com/jush0147/tetrp/actions/runs/37444591656)，source`bfdbd87806fbc2dc79b1a8a5de606a903d7fc710`。Job success，4分42秒，通知step成功；這表示實驗完成，不代表候選通過。一般CI白名單修正後run37445002303也success。
 
 ## 正確性與activation

@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-06 使用者明確接受此候選約3%成本例外：[固定200 KO比較](audits/cc2-alignment/RESIDUAL_VALUE_KO_PLAN_2026-10-06.md)。覆蓋「不開arena」決定但不改寫cost fail。凍結run37444591656 snapshot-on直接對aligned accepted，100新seed×seat swap、24frames／200k／KO-only、零fallback，單候選p<=.05及paired CI門檻。重用二進位不調公式，不做加速，不自動promotion／追加；Linux身份與兩seat smoke過才開批次。完成ntfy、不盯跑，run另記。
+
 2026-10-06 [residual value結果：停止此候選](audits/cc2-alignment/RESIDUAL_VALUE_RESULT_37444591656.md)。run37444591656完成，CI修正37445002303 success。13語意/snapshot tests與trace過；40完整reports、本機480witness／20locks／8Holds重播一致，2/20首選變化。60pair總+1.57%、中位+3.04%、p95+1.34%，三輪皆慢，未過預定成本gate。依計畫不做browser／arena、不修效能救候選、不改weights。強度未測；主線方向未被證偽，但目前無第二候選或新任務。
 
 2026-10-06 [一般CI白名單漏登記修正](audits/cc2-alignment/RESIDUAL_VALUE_CI_FIX_37444558431.md)：使用者Run failed指近期Phase1 run37444558431（518/519過），漏登記新增residual_value.rs。只補精確source路徑，不改候選、不重新dispatch。查詢時實驗37444591656仍在執行，Rust semantic step過，尚無最終結果。
