@@ -1,5 +1,7 @@
 # 剩餘資源估值：單一候選離線實作
 
+**已結束：見[run37444591656結果](RESIDUAL_VALUE_RESULT_37444591656.md)。Correctness／activation過，cost gate未過，停止候選；下文為原預註冊計畫，不代表待派任務。**
+
 2026-10-06，使用者授權「繼續」。實作[第一版設計](RESIDUAL_VALUE_DESIGN_2026-10-06.md)，沒有更改公式或增加arena。accepted、production不變，source僅在Actions隔離checkout套用。
 
 ## 實作邊界

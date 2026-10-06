@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-06 [residual value結果：停止此候選](audits/cc2-alignment/RESIDUAL_VALUE_RESULT_37444591656.md)。run37444591656完成，CI修正37445002303 success。13語意/snapshot tests與trace過；40完整reports、本機480witness／20locks／8Holds重播一致，2/20首選變化。60pair總+1.57%、中位+3.04%、p95+1.34%，三輪皆慢，未過預定成本gate。依計畫不做browser／arena、不修效能救候選、不改weights。強度未測；主線方向未被證偽，但目前無第二候選或新任務。
+
 2026-10-06 [一般CI白名單漏登記修正](audits/cc2-alignment/RESIDUAL_VALUE_CI_FIX_37444558431.md)：使用者Run failed指近期Phase1 run37444558431（518/519過），漏登記新增residual_value.rs。只補精確source路徑，不改候選、不重新dispatch。查詢時實驗37444591656仍在執行，Rust semantic step過，尚無最終結果。
 
 2026-10-06 [residual value preflight已派送](audits/cc2-alignment/RESIDUAL_VALUE_PREFLIGHT_DISPATCH.md)：run37444591656，sourcebfdbd87，in_progress。只離線correctness／activation／cost，無arena／production變更。ntfy後等使用者驗收；不盯跑、不自動續批。

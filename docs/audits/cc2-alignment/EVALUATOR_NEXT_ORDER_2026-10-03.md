@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-06 [第一個剩餘資源候選驗收](RESIDUAL_VALUE_RESULT_37444591656.md)：有限correctness與activation過，成本總+1.57%、中位+3.04%、p95+1.34%未過。停止此候選，無browser／arena／新weight／加速支線；accepted保持。大方向仍以RESIDUAL_VALUE_DIRECTION為準，目前没有第二候選，不自動恢復本頁舊參數順序。
+
 2026-10-06 設計進度：[第一版具體公式](RESIDUAL_VALUE_DESIGN_2026-10-06.md)。只有低成本剩餘資源估值主線下的局部cutout資產替換；先真實board再對潛在改善折減，不是舊參數掃描。未實作、未派送；成本與機制假設尚待驗證，無自動arena。
 
 **此頁原參數順序現為歷史，不自動續做。2026-10-05目前依據：[低成本剩餘資源估值主線](RESIDUAL_VALUE_DIRECTION_2026-10-05.md)。先做具體替代evaluator設計，不增加搜尋／分析時間，再單一候選，最後KO驗證。tail與效能支線已關閉，newly-sent 1→2撤回；不重啟調參。使用者本次只要求記錄，未派任何新實驗。**
