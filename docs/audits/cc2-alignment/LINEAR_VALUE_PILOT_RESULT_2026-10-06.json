@@ -1,0 +1,1943 @@
+{
+  "schema": "kiwi-linear-offline-pilot/1",
+  "sourceRun": 37452163955,
+  "purpose": "Feasibility and exploratory grouped prediction only; no deployable evaluator or strength claim.",
+  "localReportFileCount": 63,
+  "localReportPaths": [
+    ".cache\\b2b-surge-traces\\block0\\block-0\\attempt-0\\leg-3\\reports.jsonl.gz",
+    ".cache\\b2b-surge-traces\\block0\\block-0\\attempt-0\\leg-2\\reports.jsonl.gz",
+    ".cache\\btb-clear-double-terminal\\block-2\\attempt-0\\leg-3\\reports.jsonl.gz",
+    ".cache\\btb-clear-double-terminal\\block-2\\attempt-0\\leg-2\\reports.jsonl.gz",
+    ".cache\\wasted-activation-source\\leg1\\leg-1-reports.jsonl",
+    ".cache\\two-match-run-36887925067\\leg-1\\parallel-reports.jsonl",
+    ".cache\\two-match-run-36887925067\\leg-0\\parallel-reports.jsonl",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-9\\block-9\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-9\\block-9\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-8\\block-8\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-8\\block-8\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\confirm-well-terminal\\block-42\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\confirm-well-terminal\\block-42\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-7\\block-7\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-7\\block-7\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-6\\block-6\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-6\\block-6\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\h1-stall\\tails\\leg-37_attempt-0_parallel-reports.jsonl",
+    ".cache\\h1-stall\\tails\\leg-36_attempt-0_parallel-reports.jsonl",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-5\\block-5\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-5\\block-5\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-12\\block-12\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\h1-short-traces\\kiwi-h1-short-2\\leg-2-reports.jsonl",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-12\\block-12\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\h1-short-traces\\kiwi-h1-short-0\\leg-0-reports.jsonl",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-4\\block-4\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-4\\block-4\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-11\\block-11\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-11\\block-11\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-3\\block-3\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-3\\block-3\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-10\\block-10\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-2\\block-2\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-10\\block-10\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-2\\block-2\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-19\\block-19\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-1\\block-1\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\residual-arena-37452163955\\trace90\\block-90\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-19\\block-19\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\residual-arena-37452163955\\trace90\\block-90\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-18\\block-18\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-18\\block-18\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-1\\block-1\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-0\\block-0\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-0\\block-0\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-14\\block-14\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-14\\block-14\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-17\\block-17\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-13\\block-13\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-17\\block-17\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-13\\block-13\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\native-arena-run-36851791560\\kiwi-native-arena-leg-1\\wasm-reports.jsonl",
+    ".cache\\native-arena-run-36851791560\\kiwi-native-arena-leg-1\\native-reports.jsonl",
+    ".cache\\parallel-arena-run-36859147183\\kiwi-parallel-arena-leg-1\\serial-reports.jsonl",
+    ".cache\\parallel-arena-run-36859147183\\kiwi-parallel-arena-leg-1\\parallel-reports.jsonl",
+    ".cache\\native-arena-run-36851791560\\kiwi-native-arena-leg-0\\wasm-reports.jsonl",
+    ".cache\\native-arena-run-36851791560\\kiwi-native-arena-leg-0\\native-reports.jsonl",
+    ".cache\\parallel-arena-run-36859147183\\kiwi-parallel-arena-leg-0\\serial-reports.jsonl",
+    ".cache\\parallel-arena-run-36859147183\\kiwi-parallel-arena-leg-0\\parallel-reports.jsonl",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-15\\block-15\\attempt-0\\leg-1\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-15\\block-15\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-16\\block-16\\attempt-0\\leg-0\\reports.jsonl.gz",
+    ".cache\\linear-value-pilot\\traces\\residual-arena-traces-16\\block-16\\attempt-0\\leg-1\\reports.jsonl.gz"
+  ],
+  "games": [
+    {
+      "game": "37452163955/0/0",
+      "seed": 2026210001,
+      "block": 0,
+      "winner": 0,
+      "requests": [
+        941,
+        938
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-0/block-0/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "314f9b89b97d61d029a7af1df020196969fd2a26045fdff5f9327a8182fefa95",
+      "compressedBytes": 3885665
+    },
+    {
+      "game": "37452163955/0/1",
+      "seed": 2026210001,
+      "block": 0,
+      "winner": 1,
+      "requests": [
+        214,
+        224
+      ],
+      "sampled": [
+        21,
+        21
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-0/block-0/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3acd17777f86c5d89e98b7341a87842f82552b4b10fd65fbd7c849bfe9c7d451",
+      "compressedBytes": 909373
+    },
+    {
+      "game": "37452163955/1/0",
+      "seed": 2026210101,
+      "block": 1,
+      "winner": 0,
+      "requests": [
+        388,
+        378
+      ],
+      "sampled": [
+        35,
+        35
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-1/block-1/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "fd3cf9316b7c272edf3c817dbe1a5fc041e59f16f98483c799e54c94dd735e03",
+      "compressedBytes": 1578543
+    },
+    {
+      "game": "37452163955/1/1",
+      "seed": 2026210101,
+      "block": 1,
+      "winner": 1,
+      "requests": [
+        741,
+        748
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-1/block-1/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "609fbb698c0e705f4eadd6fd6b20aec198816f97a499c7776597df8b1d83ad94",
+      "compressedBytes": 3070724
+    },
+    {
+      "game": "37452163955/2/0",
+      "seed": 2026210201,
+      "block": 2,
+      "winner": 0,
+      "requests": [
+        895,
+        867
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-2/block-2/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "193476a984cc14d9962eb8223f9d347b7cba166880b60c33e9d92e74d2dbeec3",
+      "compressedBytes": 3628621
+    },
+    {
+      "game": "37452163955/2/1",
+      "seed": 2026210201,
+      "block": 2,
+      "winner": 0,
+      "requests": [
+        884,
+        931
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-2/block-2/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "58aef90a268a317de1fc5cfe29b16ca9070598acf6be2b83db60375be7e9bc97",
+      "compressedBytes": 3739013
+    },
+    {
+      "game": "37452163955/3/0",
+      "seed": 2026210301,
+      "block": 3,
+      "winner": 0,
+      "requests": [
+        810,
+        838
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-3/block-3/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "25ee90627725f364eece9aa936b2cdd7894e58721ccc467d9c2f81b199a6ac7a",
+      "compressedBytes": 3410397
+    },
+    {
+      "game": "37452163955/3/1",
+      "seed": 2026210301,
+      "block": 3,
+      "winner": 0,
+      "requests": [
+        848,
+        854
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-3/block-3/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "745003c832fb43579b54bd894099ce5673cae9dc5a755f9fad3bfc3b1e90b1ba",
+      "compressedBytes": 3503957
+    },
+    {
+      "game": "37452163955/4/0",
+      "seed": 2026210401,
+      "block": 4,
+      "winner": 0,
+      "requests": [
+        838,
+        841
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-4/block-4/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "dcaaa34b2e71e396514fd401482ba40db63bbac5d5f1a1047dcd251bfced217f",
+      "compressedBytes": 3483380
+    },
+    {
+      "game": "37452163955/4/1",
+      "seed": 2026210401,
+      "block": 4,
+      "winner": 0,
+      "requests": [
+        226,
+        213
+      ],
+      "sampled": [
+        21,
+        21
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-4/block-4/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "55d78018ed3beb8bc457caa0eb721d3e92dd04c2e668e6634d7f948fc374bb99",
+      "compressedBytes": 896770
+    },
+    {
+      "game": "37452163955/5/0",
+      "seed": 2026210501,
+      "block": 5,
+      "winner": 1,
+      "requests": [
+        935,
+        933
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-5/block-5/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a271d828314987b45a86d49c17c8b84b329e399754a67df82d85fdf2c1c4bfb8",
+      "compressedBytes": 3858369
+    },
+    {
+      "game": "37452163955/5/1",
+      "seed": 2026210501,
+      "block": 5,
+      "winner": 0,
+      "requests": [
+        789,
+        788
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-5/block-5/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "94592d988ab6b786f3bb7f11b9d8cec308e100f1f846f2ab5c5fd1030d2da9bc",
+      "compressedBytes": 3267831
+    },
+    {
+      "game": "37452163955/6/0",
+      "seed": 2026210601,
+      "block": 6,
+      "winner": 0,
+      "requests": [
+        722,
+        696
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-6/block-6/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "76ea625c84b11473db61e1740d38dd16fa67f86bfc031c18c70b7b20637436c5",
+      "compressedBytes": 2922242
+    },
+    {
+      "game": "37452163955/6/1",
+      "seed": 2026210601,
+      "block": 6,
+      "winner": 0,
+      "requests": [
+        365,
+        369
+      ],
+      "sampled": [
+        34,
+        34
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-6/block-6/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "6566f3e774d3747defd65587479be401c877c654e5d8a20e3853b444c2d40691",
+      "compressedBytes": 1508229
+    },
+    {
+      "game": "37452163955/7/0",
+      "seed": 2026210701,
+      "block": 7,
+      "winner": 1,
+      "requests": [
+        337,
+        339
+      ],
+      "sampled": [
+        31,
+        31
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-7/block-7/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "cbb33448f499d5e288ea39bfea4d9133d7a5e03a1ef85d10eebe8b0a572d216f",
+      "compressedBytes": 1393807
+    },
+    {
+      "game": "37452163955/7/1",
+      "seed": 2026210701,
+      "block": 7,
+      "winner": 0,
+      "requests": [
+        862,
+        875
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-7/block-7/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "ff4cb3703e65da98ec32af7963aeb105c098bde28f36a3c0eb487e2d359ac589",
+      "compressedBytes": 3589600
+    },
+    {
+      "game": "37452163955/8/0",
+      "seed": 2026210801,
+      "block": 8,
+      "winner": 1,
+      "requests": [
+        917,
+        946
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-8/block-8/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4a95cf7aa50987fcdbc83419e4b46fff119a14fb55449cb01dee8b2c904dcfba",
+      "compressedBytes": 3851107
+    },
+    {
+      "game": "37452163955/8/1",
+      "seed": 2026210801,
+      "block": 8,
+      "winner": 1,
+      "requests": [
+        142,
+        140
+      ],
+      "sampled": [
+        13,
+        13
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-8/block-8/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e3cf1fe126b10dcdce0c616a39785fd4d29453eddefde635ed878b96574a1441",
+      "compressedBytes": 572359
+    },
+    {
+      "game": "37452163955/9/0",
+      "seed": 2026210901,
+      "block": 9,
+      "winner": 1,
+      "requests": [
+        823,
+        819
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-9/block-9/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f5643e3041dd45c21629904f1f445709a4082c21da8331c527f250a8d5f06e6a",
+      "compressedBytes": 3401078
+    },
+    {
+      "game": "37452163955/9/1",
+      "seed": 2026210901,
+      "block": 9,
+      "winner": 0,
+      "requests": [
+        394,
+        401
+      ],
+      "sampled": [
+        36,
+        36
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-9/block-9/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1e43534e87a6d697da29d62dc68486883c0796bdc9f84be3b83305f5c27d299d",
+      "compressedBytes": 1655760
+    },
+    {
+      "game": "37452163955/10/0",
+      "seed": 2026211001,
+      "block": 10,
+      "winner": 0,
+      "requests": [
+        239,
+        242
+      ],
+      "sampled": [
+        23,
+        23
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-10/block-10/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "59cc674ecd19590e24f1e71cd43819851111dac3f284d4f51b84928d78e39ca2",
+      "compressedBytes": 982933
+    },
+    {
+      "game": "37452163955/10/1",
+      "seed": 2026211001,
+      "block": 10,
+      "winner": 1,
+      "requests": [
+        108,
+        102
+      ],
+      "sampled": [
+        10,
+        10
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-10/block-10/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "53704c0b2de885d0dbee6a9ad3432b757d5a7eaa0cb33f0e6801a5a9e771e128",
+      "compressedBytes": 416857
+    },
+    {
+      "game": "37452163955/11/0",
+      "seed": 2026211101,
+      "block": 11,
+      "winner": 0,
+      "requests": [
+        504,
+        515
+      ],
+      "sampled": [
+        47,
+        47
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-11/block-11/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0e9ae34d11f5656697be913e5ed3fb6c6d5745df6942641ae5f3a0f7876ef39f",
+      "compressedBytes": 2106688
+    },
+    {
+      "game": "37452163955/11/1",
+      "seed": 2026211101,
+      "block": 11,
+      "winner": 1,
+      "requests": [
+        692,
+        698
+      ],
+      "sampled": [
+        63,
+        63
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-11/block-11/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3f1849428acf84ab1741d1fbe99633b77092a355b6892656e1dda0c91ace1010",
+      "compressedBytes": 2874976
+    },
+    {
+      "game": "37452163955/12/0",
+      "seed": 2026211201,
+      "block": 12,
+      "winner": 0,
+      "requests": [
+        776,
+        796
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-12/block-12/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "ad8172e64839b0d32de34b9261a4ee927f7e197dc4d4732fdb07acc68ca0ca1b",
+      "compressedBytes": 3250525
+    },
+    {
+      "game": "37452163955/12/1",
+      "seed": 2026211201,
+      "block": 12,
+      "winner": 0,
+      "requests": [
+        42,
+        39
+      ],
+      "sampled": [
+        4,
+        4
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-12/block-12/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "b22e4fb02008cc39904ff4592e17171826fc8db004520e25b41246f3d13c6446",
+      "compressedBytes": 163552
+    },
+    {
+      "game": "37452163955/13/0",
+      "seed": 2026211301,
+      "block": 13,
+      "winner": 1,
+      "requests": [
+        860,
+        848
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-13/block-13/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d6b98dd5499102ea38238c9953c7a78caa81213a1ee569347e483a45a65337df",
+      "compressedBytes": 3510452
+    },
+    {
+      "game": "37452163955/13/1",
+      "seed": 2026211301,
+      "block": 13,
+      "winner": 0,
+      "requests": [
+        885,
+        906
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-13/block-13/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1b6b4e9a6b61d24dafcec27c0fc82d889ceddfa1346b98e998c8c22e2856bcb6",
+      "compressedBytes": 3708764
+    },
+    {
+      "game": "37452163955/14/0",
+      "seed": 2026211401,
+      "block": 14,
+      "winner": 1,
+      "requests": [
+        960,
+        975
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-14/block-14/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "c0f4ec08009ed86516fcc46ddda8d6acb73c463112e17a271fa3d37fce854da8",
+      "compressedBytes": 3989373
+    },
+    {
+      "game": "37452163955/14/1",
+      "seed": 2026211401,
+      "block": 14,
+      "winner": 1,
+      "requests": [
+        771,
+        780
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-14/block-14/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4c46ff4a8a63345b96d2d4e8d3eb0de65488d1697e883c371762f90eebebc724",
+      "compressedBytes": 3200664
+    },
+    {
+      "game": "37452163955/15/0",
+      "seed": 2026211501,
+      "block": 15,
+      "winner": 1,
+      "requests": [
+        886,
+        896
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-15/block-15/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "77c49a0a93538f1ceaebc808c43f08a6d22be98ef1c2b9b8bf941a239f3b14ef",
+      "compressedBytes": 3688628
+    },
+    {
+      "game": "37452163955/15/1",
+      "seed": 2026211501,
+      "block": 15,
+      "winner": 1,
+      "requests": [
+        825,
+        809
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-15/block-15/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0c0f5f780cdba62b452f8800710f3e8577fd9f6c3b572332f4bbb5e3fece5a02",
+      "compressedBytes": 3372725
+    },
+    {
+      "game": "37452163955/16/0",
+      "seed": 2026211601,
+      "block": 16,
+      "winner": 0,
+      "requests": [
+        901,
+        890
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-16/block-16/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d61c3985c23e37040812e3d7244c82415c2c11c9277aa7984826fb292b0f2f02",
+      "compressedBytes": 3695917
+    },
+    {
+      "game": "37452163955/16/1",
+      "seed": 2026211601,
+      "block": 16,
+      "winner": 0,
+      "requests": [
+        468,
+        467
+      ],
+      "sampled": [
+        43,
+        43
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-16/block-16/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f787514e93c1b38145a4a3402df87ea5131ae1278f1b8df8a3909c8c28ae4d2c",
+      "compressedBytes": 1926159
+    },
+    {
+      "game": "37452163955/17/0",
+      "seed": 2026211701,
+      "block": 17,
+      "winner": 0,
+      "requests": [
+        756,
+        752
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-17/block-17/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e967a74952f4cdd33ae44ad1606cf3a1b66ab9644bd387d30e8d5258165e69f6",
+      "compressedBytes": 3108132
+    },
+    {
+      "game": "37452163955/17/1",
+      "seed": 2026211701,
+      "block": 17,
+      "winner": 1,
+      "requests": [
+        440,
+        436
+      ],
+      "sampled": [
+        39,
+        39
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-17/block-17/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "fac7bd6626af73d3ff4c3979483ceb55077e0ebdd0a8e7660f73b17e7d69684e",
+      "compressedBytes": 1800180
+    },
+    {
+      "game": "37452163955/18/0",
+      "seed": 2026211801,
+      "block": 18,
+      "winner": 1,
+      "requests": [
+        95,
+        95
+      ],
+      "sampled": [
+        9,
+        9
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-18/block-18/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4f6fbdf75d808075fe09e182f09db85af1d2605a8704030f15def7ed8106d9c3",
+      "compressedBytes": 393966
+    },
+    {
+      "game": "37452163955/18/1",
+      "seed": 2026211801,
+      "block": 18,
+      "winner": 1,
+      "requests": [
+        263,
+        276
+      ],
+      "sampled": [
+        26,
+        26
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-18/block-18/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f406c058f922fb7fab5ad1b561540388abeeb2b82978daa7158b5e5a01486aea",
+      "compressedBytes": 1105005
+    },
+    {
+      "game": "37452163955/19/0",
+      "seed": 2026211901,
+      "block": 19,
+      "winner": 0,
+      "requests": [
+        433,
+        450
+      ],
+      "sampled": [
+        41,
+        41
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-19/block-19/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d7d08664f6f81c01d73b07b3e003868f1df6754974a1f8a30ccdda208a15c7ad",
+      "compressedBytes": 1825108
+    },
+    {
+      "game": "37452163955/19/1",
+      "seed": 2026211901,
+      "block": 19,
+      "winner": 1,
+      "requests": [
+        591,
+        614
+      ],
+      "sampled": [
+        55,
+        55
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-19/block-19/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0b884aa9689c57e67a134c803dd0d77d16c09e71d53e3789106a21a4b0ebe39f",
+      "compressedBytes": 2486177
+    }
+  ],
+  "features": [
+    "max_height",
+    "mean_height",
+    "holes",
+    "covered_cells",
+    "roughness",
+    "above_10",
+    "above_15",
+    "combo",
+    "btb",
+    "btb_charged",
+    "pending",
+    "active_pending",
+    "are",
+    "multiplier",
+    "hold_available",
+    "current_t",
+    "current_i",
+    "hold_t",
+    "hold_i",
+    "next_t_count",
+    "next_i_count",
+    "visible_t_distance"
+  ],
+  "sampleRows": 3918,
+  "seedGroups": 20,
+  "featureMatrixBytesFloat64": 689568,
+  "dataSeconds": 15.126383299939334,
+  "trainingSeconds": 0.37190929893404245,
+  "totalSeconds": 15.545833400450647,
+  "numpy": "2.3.5",
+  "python": "3.12.14",
+  "gradientCheckMaxError": 2.0120127786071862e-10,
+  "regularization": 0.01,
+  "folds": [
+    {
+      "fold": 0,
+      "trainBlocks": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18,
+        19
+      ],
+      "testBlocks": [
+        0,
+        5,
+        10,
+        15
+      ],
+      "models": {
+        "simple": {
+          "mean": [
+            8.180131117968923,
+            3.6615094832165545,
+            1.0094543224429715
+          ],
+          "scale": [
+            4.312771449107278,
+            3.8048595962492566,
+            2.206424503433081
+          ],
+          "beta": [
+            -0.00018611969988535838,
+            -0.007985479890076865,
+            -0.09704358622000038,
+            -0.06288128834192726
+          ],
+          "iterations": 84,
+          "loss": 0.691134334224979,
+          "maxAbsGradient": 9.176877428958546e-8,
+          "seconds": 0.011256499215960503,
+          "heldOut": {
+            "rows": 748,
+            "logLoss": 0.6864441169592495,
+            "brier": 0.24668091488457944
+          }
+        },
+        "full": {
+          "mean": [
+            8.180131117968923,
+            6.268171075554211,
+            3.6615094832165545,
+            5.396416919578394,
+            10.778988860663745,
+            1.012628334942365,
+            0.16841766564321936,
+            0.6671569526752831,
+            1.9399994242019285,
+            0.12370599480385007,
+            1.0094543224429715,
+            0.312137916914074,
+            0,
+            1.0058175998263883,
+            1,
+            0.14584419070413596,
+            0.12388221362812762,
+            0.22771942768346903,
+            0.1615717566901956,
+            0.6554072106908306,
+            0.7209974981763769,
+            2.244590528043328
+          ],
+          "scale": [
+            4.312771449107278,
+            4.074650645505172,
+            3.8048595962492566,
+            7.598747931769466,
+            5.289013476562265,
+            2.150034327142412,
+            0.8347711751598216,
+            1.192616311835747,
+            2.1169001729845793,
+            0.32924583771619637,
+            2.206424503433081,
+            1.314940322577333,
+            1,
+            0.026052137725353298,
+            1,
+            0.35294994367755833,
+            0.3294471289520104,
+            0.4193605727044238,
+            0.3680575011193765,
+            0.5735041017515597,
+            0.5585071836685704,
+            2.2653353704979318
+          ],
+          "beta": [
+            -0.0019321208848160788,
+            -0.05761892725183704,
+            0.020620152493812424,
+            0.036204753885846264,
+            -0.1842721983801397,
+            0.055949159849413774,
+            0.07078951887527216,
+            -0.07463304000950122,
+            0.004503784271246311,
+            0.04474118065550974,
+            0.006263890470422097,
+            -0.0818568730711031,
+            0.030492876101836486,
+            0,
+            -0.0011738487258107326,
+            0,
+            0.01299513648790063,
+            0.0037192495357923653,
+            -0.009938613093836897,
+            0.03707701201224066,
+            0.0020760335988084574,
+            0.006610703115542198,
+            0.027599265597676847
+          ],
+          "iterations": 500,
+          "loss": 0.6877238088193256,
+          "maxAbsGradient": 0.0000024190844860374474,
+          "seconds": 0.06362359970808029,
+          "heldOut": {
+            "rows": 748,
+            "logLoss": 0.680555995290814,
+            "brier": 0.24388329473723308
+          }
+        }
+      }
+    },
+    {
+      "fold": 1,
+      "trainBlocks": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        17,
+        18,
+        19
+      ],
+      "testBlocks": [
+        1,
+        6,
+        11,
+        16
+      ],
+      "models": {
+        "simple": {
+          "mean": [
+            8.056495486804193,
+            3.5729754006411047,
+            1.0601324768456175
+          ],
+          "scale": [
+            4.417931042581601,
+            3.8360985922289452,
+            2.243614394881735
+          ],
+          "beta": [
+            -0.0004749819510144227,
+            -0.0605656660142698,
+            -0.10096407404508934,
+            -0.07320157434124094
+          ],
+          "iterations": 80,
+          "loss": 0.6891652761709882,
+          "maxAbsGradient": 9.873680447834883e-8,
+          "seconds": 0.008628200739622116,
+          "heldOut": {
+            "rows": 828,
+            "logLoss": 0.6940283427907248,
+            "brier": 0.2504333880518734
+          }
+        },
+        "full": {
+          "mean": [
+            8.056495486804193,
+            6.162576370616627,
+            3.5729754006411047,
+            5.245671245003596,
+            10.71403824248993,
+            1.0236671504377892,
+            0.18443424318377283,
+            0.6818056094959668,
+            1.9280454004839076,
+            0.12400242899837649,
+            1.0601324768456175,
+            0.3124074726516911,
+            0,
+            1.0062257161458326,
+            1,
+            0.14458684340365707,
+            0.1232462580713828,
+            0.2381623455532831,
+            0.1573740209929539,
+            0.6379757933607708,
+            0.7315292169010201,
+            2.2859262880317015
+          ],
+          "scale": [
+            4.417931042581601,
+            4.172566137383243,
+            3.8360985922289452,
+            7.420050857924747,
+            5.298718692358678,
+            2.2118462629269344,
+            0.8810151351347761,
+            1.195535118366677,
+            2.0993897668147827,
+            0.32958432396107534,
+            2.243614394881735,
+            1.2905809529259342,
+            1,
+            0.026987388035622097,
+            1,
+            0.3516837899565794,
+            0.32871966467308417,
+            0.425958968345358,
+            0.3641530427024649,
+            0.5864148919520131,
+            0.5542772822437978,
+            2.304498685822283
+          ],
+          "beta": [
+            -0.004603299277328033,
+            -0.033044391777135626,
+            -0.03511586644690865,
+            0.011988766751908375,
+            -0.21247433513942204,
+            0.004867167947327633,
+            0.153238486889493,
+            -0.15055524120289643,
+            0.019150684754669058,
+            0.1188156585867986,
+            -0.05765491433491429,
+            -0.08825354716950734,
+            0.030903361189919036,
+            0,
+            -0.001927380434732109,
+            0,
+            0.021451499714171658,
+            0.016641254756654674,
+            0.005693690254666653,
+            0.06449075238330165,
+            0.007484720861901451,
+            0.01631087718952402,
+            0.0069171086270396285
+          ],
+          "iterations": 500,
+          "loss": 0.6838501567094182,
+          "maxAbsGradient": 2.2010633793796133e-7,
+          "seconds": 0.062451399862766266,
+          "heldOut": {
+            "rows": 828,
+            "logLoss": 0.6939451591197618,
+            "brier": 0.25021841109025195
+          }
+        }
+      }
+    },
+    {
+      "fold": 2,
+      "trainBlocks": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16,
+        18,
+        19
+      ],
+      "testBlocks": [
+        2,
+        7,
+        12,
+        17
+      ],
+      "models": {
+        "simple": {
+          "mean": [
+            8.15129086391507,
+            3.6501621120851366,
+            1.0591524055450392
+          ],
+          "scale": [
+            4.392501134655167,
+            3.8730197730468126,
+            2.2505828857670775
+          ],
+          "beta": [
+            -0.00021275272073636547,
+            -0.06480644371913488,
+            -0.07206282411035145,
+            -0.03277010791948808
+          ],
+          "iterations": 66,
+          "loss": 0.6907373839459066,
+          "maxAbsGradient": 9.928076608641933e-8,
+          "seconds": 0.007286999374628067,
+          "heldOut": {
+            "rows": 788,
+            "logLoss": 0.6885025351940921,
+            "brier": 0.2476950002979169
+          }
+        },
+        "full": {
+          "mean": [
+            8.15129086391507,
+            6.251419550990082,
+            3.6501621120851366,
+            5.37485832770477,
+            10.74153126170517,
+            1.048073620581114,
+            0.19608541004106816,
+            0.6797192864305297,
+            1.9921793677316928,
+            0.13195525854268253,
+            1.0591524055450392,
+            0.30884823371548636,
+            0,
+            1.005817599826388,
+            1,
+            0.1522137619018431,
+            0.1114618928078627,
+            0.2292403060397507,
+            0.16997986905687873,
+            0.6512122042505523,
+            0.7322642652360909,
+            2.245486311125953
+          ],
+          "scale": [
+            4.392501134655167,
+            4.166584196591535,
+            3.8730197730468126,
+            7.58458542688424,
+            5.205753735840538,
+            2.253912482297976,
+            0.9116287340400945,
+            1.1880169755421741,
+            2.1560397893192658,
+            0.3384421195501771,
+            2.2505828857670775,
+            1.2579059904333565,
+            1,
+            0.026052137725353294,
+            1,
+            0.35922796743785435,
+            0.3147032558769471,
+            0.4203441305960535,
+            0.3756151130775825,
+            0.590214521761247,
+            0.560556978718045,
+            2.283692750379245
+          ],
+          "beta": [
+            -0.0037304646047661796,
+            0.011112821592102055,
+            -0.12254540826391692,
+            0.07739020172750606,
+            -0.14812582558452442,
+            0.040618375242526164,
+            0.10140703692198584,
+            -0.1653997664717051,
+            0.04070650648284701,
+            0.09620828814431792,
+            -0.03855081271182076,
+            -0.0642029040186939,
+            0.05565795353714265,
+            0,
+            -0.001379290169221859,
+            0,
+            0.007400768655435349,
+            0.019484570967630194,
+            -0.03513768671815439,
+            0.05794166290611881,
+            -0.00432308475703086,
+            0.021696793984602204,
+            0.013294497112263451
+          ],
+          "iterations": 500,
+          "loss": 0.6854584574612994,
+          "maxAbsGradient": 0.000004672863736763589,
+          "seconds": 0.06330090016126633,
+          "heldOut": {
+            "rows": 788,
+            "logLoss": 0.6891737817342904,
+            "brier": 0.2482454150167916
+          }
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "trainBlocks": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        14,
+        15,
+        16,
+        17,
+        19
+      ],
+      "testBlocks": [
+        3,
+        8,
+        13,
+        18
+      ],
+      "models": {
+        "simple": {
+          "mean": [
+            8.179331629677927,
+            3.690266265289403,
+            1.0502860688687226
+          ],
+          "scale": [
+            4.401782241996581,
+            3.8281135648234996,
+            2.2454538795853125
+          ],
+          "beta": [
+            -0.0002380317115439061,
+            -0.019258295854575343,
+            -0.09985489907665665,
+            -0.06078206141797852
+          ],
+          "iterations": 86,
+          "loss": 0.6907674574853835,
+          "maxAbsGradient": 9.396111519724935e-8,
+          "seconds": 0.01186550036072731,
+          "heldOut": {
+            "rows": 736,
+            "logLoss": 0.6875374686410513,
+            "brier": 0.24721450752706262
+          }
+        },
+        "full": {
+          "mean": [
+            8.179331629677927,
+            6.27607685886548,
+            3.690266265289403,
+            5.361659050258704,
+            10.657975798770927,
+            1.058024286269872,
+            0.18896804106791543,
+            0.6770342107395316,
+            1.933271472626406,
+            0.12332370612332769,
+            1.0502860688687226,
+            0.32088671571679606,
+            0,
+            1.005817599826388,
+            1,
+            0.14522839176123106,
+            0.13541432960997185,
+            0.23261055058155522,
+            0.15916336910857432,
+            0.6470451875614842,
+            0.716846316948939,
+            2.2397266251983616
+          ],
+          "scale": [
+            4.401782241996581,
+            4.157298613560104,
+            3.8281135648234996,
+            7.227236608857945,
+            5.2152111038289,
+            2.2352946328784618,
+            0.8733383757343423,
+            1.2017823621946384,
+            2.1181203557922825,
+            0.3288084086992527,
+            2.2454538795853125,
+            1.2848447709639517,
+            1,
+            0.026052137725353298,
+            1,
+            0.3523309608701419,
+            0.3421655870280554,
+            0.42249601458439934,
+            0.3658283628186612,
+            0.5641032513810119,
+            0.5666896696647981,
+            2.268197384836602
+          ],
+          "beta": [
+            -0.002357473501730805,
+            -0.024241868544952933,
+            -0.0024185534962539884,
+            -0.03539133633485796,
+            -0.15572898706245727,
+            0.00009528032804512559,
+            0.18219264604621976,
+            -0.17504686340391165,
+            0.06187829734247974,
+            0.05653968560372792,
+            -0.03150754849154108,
+            -0.056764020450975776,
+            -0.02481091342492549,
+            0,
+            -0.00011236034296246286,
+            0,
+            0.011957021829172795,
+            0.0118111444351552,
+            -0.0005846057675787542,
+            0.06729894757306684,
+            0.0016666371322599152,
+            0.014777725389480318,
+            -0.004882576303368816
+          ],
+          "iterations": 500,
+          "loss": 0.686451471791962,
+          "maxAbsGradient": 8.261345102289323e-7,
+          "seconds": 0.07198099978268147,
+          "heldOut": {
+            "rows": 736,
+            "logLoss": 0.6846019099265346,
+            "brier": 0.24620939681263074
+          }
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "trainBlocks": [
+        0,
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        18
+      ],
+      "testBlocks": [
+        4,
+        9,
+        14,
+        19
+      ],
+      "models": {
+        "simple": {
+          "mean": [
+            8.113377033059267,
+            3.653541289775842,
+            1.0564405829691208
+          ],
+          "scale": [
+            4.426637857701644,
+            3.8502803856097594,
+            2.24553609433761
+          ],
+          "beta": [
+            -0.0008499238171719019,
+            -0.02799807588873521,
+            -0.13728461228491248,
+            -0.11631735257228308
+          ],
+          "iterations": 90,
+          "loss": 0.687711555761194,
+          "maxAbsGradient": 9.304924209765052e-8,
+          "seconds": 0.009881099686026573,
+          "heldOut": {
+            "rows": 818,
+            "logLoss": 0.7014598894338777,
+            "brier": 0.254122083967085
+          }
+        },
+        "full": {
+          "mean": [
+            8.113377033059267,
+            6.2154354076940646,
+            3.653541289775842,
+            5.375990060198756,
+            10.666827965748809,
+            1.0437468885321086,
+            0.18898209546816455,
+            0.6907637991082682,
+            1.9504993467223726,
+            0.1284785097430227,
+            1.0564405829691208,
+            0.3170436339118716,
+            0,
+            1.0061452690972215,
+            1,
+            0.14102715812021083,
+            0.12051921086100403,
+            0.24225117236132526,
+            0.15933769776518195,
+            0.6322408084421279,
+            0.7256805292940125,
+            2.275767226492393
+          ],
+          "scale": [
+            4.426637857701644,
+            4.180632271653799,
+            3.8502803856097594,
+            7.609026241043008,
+            5.243065124103044,
+            2.2294833437531825,
+            0.9044249230878564,
+            1.219398834076506,
+            2.1505671055922373,
+            0.3346218496709901,
+            2.24553609433761,
+            1.3148609383414527,
+            1,
+            0.026742598532816193,
+            1,
+            0.34804956370141865,
+            0.32556770520806405,
+            0.42844549460916115,
+            0.36599070457605,
+            0.5715001770067755,
+            0.5644860850378113,
+            2.311438363440268
+          ],
+          "beta": [
+            -0.0058031957382316405,
+            -0.11282912486459058,
+            0.04047478158777057,
+            -0.001994083063280967,
+            -0.17237729595165407,
+            0.06490853583385499,
+            0.1569410796192545,
+            -0.19543032545684197,
+            0.08598822915448398,
+            0.1286999526761264,
+            -0.051422238788984,
+            -0.13685175330579633,
+            0.022914486707074452,
+            0,
+            0.003466278553696693,
+            0,
+            0.008342204936887278,
+            0.005982213435081434,
+            -0.01014047300502957,
+            0.02746629383392318,
+            -0.002398841715850945,
+            0.009870121024675564,
+            -0.0006713968445687003
+          ],
+          "iterations": 500,
+          "loss": 0.6816561032977227,
+          "maxAbsGradient": 0.000005642482687857929,
+          "seconds": 0.061634100042283535,
+          "heldOut": {
+            "rows": 818,
+            "logLoss": 0.7056100331612599,
+            "brier": 0.25589410402600254
+          }
+        }
+      }
+    }
+  ],
+  "blockMetrics": [
+    {
+      "block": 0,
+      "metrics": {
+        "constant": {
+          "rows": 170,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 170,
+          "logLoss": 0.6799895948591979,
+          "brier": 0.2434684926340574
+        },
+        "full": {
+          "rows": 170,
+          "logLoss": 0.6740544328715682,
+          "brier": 0.24058271811476456
+        }
+      }
+    },
+    {
+      "block": 1,
+      "metrics": {
+        "constant": {
+          "rows": 198,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 198,
+          "logLoss": 0.7013493963604395,
+          "brier": 0.2540958971058819
+        },
+        "full": {
+          "rows": 198,
+          "logLoss": 0.6945084041085852,
+          "brier": 0.2508179890904687
+        }
+      }
+    },
+    {
+      "block": 2,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6926650323449889,
+          "brier": 0.24977648092214297
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.6886875874098752,
+          "brier": 0.2479247175476482
+        }
+      }
+    },
+    {
+      "block": 3,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6912368801011013,
+          "brier": 0.24905627862729365
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.6962822048493902,
+          "brier": 0.2516713040688502
+        }
+      }
+    },
+    {
+      "block": 4,
+      "metrics": {
+        "constant": {
+          "rows": 170,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 170,
+          "logLoss": 0.6830438587455179,
+          "brier": 0.24517431478302434
+        },
+        "full": {
+          "rows": 170,
+          "logLoss": 0.6758251749988401,
+          "brier": 0.242140500584212
+        }
+      }
+    },
+    {
+      "block": 5,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6943923805890678,
+          "brier": 0.2506144169183806
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.6882352672003875,
+          "brier": 0.2475036961088487
+        }
+      }
+    },
+    {
+      "block": 6,
+      "metrics": {
+        "constant": {
+          "rows": 196,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 196,
+          "logLoss": 0.6839949622521261,
+          "brier": 0.2454757617698624
+        },
+        "full": {
+          "rows": 196,
+          "logLoss": 0.678534154827765,
+          "brier": 0.2432725773836072
+        }
+      }
+    },
+    {
+      "block": 7,
+      "metrics": {
+        "constant": {
+          "rows": 190,
+          "logLoss": 0.6931471805599452,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 190,
+          "logLoss": 0.686963613583526,
+          "brier": 0.24692959572450612
+        },
+        "full": {
+          "rows": 190,
+          "logLoss": 0.6750768252170081,
+          "brier": 0.24146883726809165
+        }
+      }
+    },
+    {
+      "block": 8,
+      "metrics": {
+        "constant": {
+          "rows": 154,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 154,
+          "logLoss": 0.6866326368080649,
+          "brier": 0.24673224019561382
+        },
+        "full": {
+          "rows": 154,
+          "logLoss": 0.6903157174419148,
+          "brier": 0.24853864398419162
+        }
+      }
+    },
+    {
+      "block": 9,
+      "metrics": {
+        "constant": {
+          "rows": 200,
+          "logLoss": 0.6931471805599452,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 200,
+          "logLoss": 0.6945307968731422,
+          "brier": 0.25069077984619337
+        },
+        "full": {
+          "rows": 200,
+          "logLoss": 0.6953710677466831,
+          "brier": 0.2510597239208031
+        }
+      }
+    },
+    {
+      "block": 10,
+      "metrics": {
+        "constant": {
+          "rows": 66,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 66,
+          "logLoss": 0.6750418708903665,
+          "brier": 0.24105027951686217
+        },
+        "full": {
+          "rows": 66,
+          "logLoss": 0.6595374687416901,
+          "brier": 0.2338486154813347
+        }
+      }
+    },
+    {
+      "block": 11,
+      "metrics": {
+        "constant": {
+          "rows": 220,
+          "logLoss": 0.6931471805599455,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 220,
+          "logLoss": 0.6858751191566668,
+          "brier": 0.24632936260046773
+        },
+        "full": {
+          "rows": 220,
+          "logLoss": 0.7018570405312485,
+          "brier": 0.2528960761807204
+        }
+      }
+    },
+    {
+      "block": 12,
+      "metrics": {
+        "constant": {
+          "rows": 136,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 136,
+          "logLoss": 0.6874260332286508,
+          "brier": 0.24714588226586037
+        },
+        "full": {
+          "rows": 136,
+          "logLoss": 0.7008481121551238,
+          "brier": 0.25382550897747247
+        }
+      }
+    },
+    {
+      "block": 13,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6863442922219787,
+          "brier": 0.24660942114865722
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.6851049615125451,
+          "brier": 0.24600663790921123
+        }
+      }
+    },
+    {
+      "block": 14,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.7126651267705301,
+          "brier": 0.25952295760934774
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.7259467875688996,
+          "brier": 0.2645133276439624
+        }
+      }
+    },
+    {
+      "block": 15,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6963526214983657,
+          "brier": 0.2515904704690176
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.7003968123496103,
+          "brier": 0.25359814924398444
+        }
+      }
+    },
+    {
+      "block": 16,
+      "metrics": {
+        "constant": {
+          "rows": 214,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25000000000000006
+        },
+        "simple": {
+          "rows": 214,
+          "logLoss": 0.704893893393667,
+          "brier": 0.2558325307312814
+        },
+        "full": {
+          "rows": 214,
+          "logLoss": 0.7008810370114481,
+          "brier": 0.2538870017062115
+        }
+      }
+    },
+    {
+      "block": 17,
+      "metrics": {
+        "constant": {
+          "rows": 206,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25000000000000006
+        },
+        "simple": {
+          "rows": 206,
+          "logLoss": 0.6869554616192028,
+          "brier": 0.24692804227915827
+        },
+        "full": {
+          "rows": 206,
+          "logLoss": 0.6920826021551552,
+          "brier": 0.24976259627395417
+        }
+      }
+    },
+    {
+      "block": 18,
+      "metrics": {
+        "constant": {
+          "rows": 70,
+          "logLoss": 0.6931471805599456,
+          "brier": 0.2500000000000001
+        },
+        "simple": {
+          "rows": 70,
+          "logLoss": 0.6859360654330603,
+          "brier": 0.24646009013668568
+        },
+        "full": {
+          "rows": 70,
+          "logLoss": 0.6667047559022881,
+          "brier": 0.2386210012882698
+        }
+      }
+    },
+    {
+      "block": 19,
+      "metrics": {
+        "constant": {
+          "rows": 192,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 192,
+          "logLoss": 0.7155997753463205,
+          "brier": 0.26110028362977467
+        },
+        "full": {
+          "rows": 192,
+          "logLoss": 0.725297102330617,
+          "brier": 0.2658628639550328
+        }
+      }
+    }
+  ],
+  "outOfFold": {
+    "constant": {
+      "rows": 3918,
+      "logLoss": 0.6931471805599452,
+      "brier": 0.25
+    },
+    "simple": {
+      "rows": 3918,
+      "logLoss": 0.6915944706037991,
+      "brier": 0.24922917894570348
+    },
+    "full": {
+      "rows": 3918,
+      "logLoss": 0.6907773758465321,
+      "brier": 0.24889012433658195
+    }
+  },
+  "earlyOutOfFold": {
+    "constant": {
+      "rows": 554,
+      "logLoss": 0.6931471805599456,
+      "brier": 0.2500000000000001
+    },
+    "simple": {
+      "rows": 554,
+      "logLoss": 0.6951137445926944,
+      "brier": 0.25099510220725835
+    },
+    "full": {
+      "rows": 554,
+      "logLoss": 0.6956446748463458,
+      "brier": 0.2513470011437666
+    }
+  },
+  "limitations": [
+    "Only 20 independent paired seed groups and one bot matchup.",
+    "CV is exploratory, not independent final candidate validation.",
+    "Root snapshots differ from internal search leaves.",
+    "Linear effects and partial piece-supply summaries omit interactions and geometry.",
+    "Same-game labels correlate; no snapshot-level significance claims.",
+    "Win logit cannot be directly added to existing attack rewards."
+  ],
+  "hardware": {
+    "cpu": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+    "logicalProcessors": 8,
+    "totalGiB": 15.804008483886719
+  },
+  "sourceHashes": {
+    "scripts/kiwi-linear-value-pilot.py": "43c2366efca17eaa3619afeae8a31d2e82561295993e9b48ea8aa3839d95277f",
+    "test/kiwi-linear-value-pilot_test.py": "409ac3e0b071f5a2625a055ecbc52ba7cdc15454d85cf119baaad24ac1db349b",
+    "docs/audits/cc2-alignment/LINEAR_VALUE_PILOT_PLAN_2026-10-06.md": "e4a946bd3be529cd11a5451d30f7166e8dc845c4862ed642b2f4ac67ec1fce6d"
+  }
+}

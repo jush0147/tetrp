@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-06 使用者明確授權改做[離線線性勝負預測小原型](audits/cc2-alignment/LINEAR_VALUE_PILOT_RESULT_2026-10-06.md)：固定既有run37452163955 block0–19共40局／20seed groups，3918 samples，5fold按seed隔離。完整logloss .690777 vs常數 .693147、三項 .691594；前20秒 .695645劣於常數。CPU訓練10fits共.372秒、資料處理15.13秒；算力可行但訊號弱，無可部署候選。不改bot／不開arena／不安裝套件，不自動加資料或feature；舊residual路線已卡住，此次是明確換方向的離線可行性檢查。
+
 2026-10-06 [leaf 合法性資料重用檢查](audits/cc2-alignment/RESIDUAL_LEGALITY_REUSE_REVIEW_2026-10-06.md)完成。movegen 屬父 board、evaluate 屬 advance 後子 board；未展開 leaf 沒有下一手證據。同層已展開 transposition 的 eval 已重用；AIR_PREFIXES 只有空中前綴，非落點 cache。直接重用提案不成立，不新增 cache／trace／tail／arena；目前沒有第二個低成本 residual 候選。僅文件，accepted 不變。
 
 2026-10-06 [incoming／資源防守用途設計檢討](audits/cc2-alignment/RESIDUAL_DEFENSE_REVIEW_2026-10-06.md)完成，只文件／已有資料／2既有規則tests。P_due折減未區分clear blocking／cancel，屬模型省略，不是authority bug；480取樣僅5個d1+due，其中2個single模板，無立即TSD證據，沒有root因果歸因，不能說造成104–96。已展開child的防守已計價；未展開模板欠path／使用時機證明。尚無可推薦第二候選，不改公式／開run／重啟支線。設計卡點已明確記錄。

@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-06 [離線線性原型完成](LINEAR_VALUE_PILOT_RESULT_2026-10-06.md)：使用者授權新方向，40既有KO／20seed groups，3918 samples。訓練.372秒；留出訊號很弱，early劣於常數。非新arena或production候選，不接舊調參清單、不自動擴大樣本或調feature。value/reward及root→leaf分布問題尚未解決。
+
 2026-10-06 [leaf 合法性重用檢查](RESIDUAL_LEGALITY_REUSE_REVIEW_2026-10-06.md)：父 movegen 不能證明子 leaf；同狀態已展開值已由 transposition/backprop 使用；空中 cache 不含 board-specific 落點。直接重用方案不成立，目前無第二候選。本次只有文件，不派新 run，不自動接 cache／tail／舊參數。
 
 2026-10-06 [剩餘資源防守檢討](RESIDUAL_DEFENSE_REVIEW_2026-10-06.md)：確認P_due近似忽略條件性clear blocking/cancel，但無104–96因果證據。已搜尋收益不可重算，未搜尋模板欠合法可用性證明；尚無第二個低成本候選。本次無新實驗，不自動回舊參數清單。
