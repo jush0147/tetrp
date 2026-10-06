@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-06 [勝負value接線設計](WIN_VALUE_SEARCH_CONTRACT_2026-10-06.md)：edge=0、leaf用同一勝負尺度，但F必須含root context與模擬出攻擊／時間資訊；自己盤面value不足以替代現有sent。尚無可用模型與資料契約實作，不開arena、不恢復22項fit或舊權重。設計文件已交付，非新候選。
+
 2026-10-06 [線性模型固定holdout未過](LINEAR_VALUE_HOLDOUT_RESULT_2026-10-06.md)：160既有局訓練／40保留，full logloss .688775，但對常數及三項基準的改善區間皆含0、early較差。依事先門檻停止22項outcome predictor，無新候選／arena／自動調feature或加資料；accepted保持。不要回到舊參數順序或手寫residual支線。
 
 2026-10-06 [離線線性原型完成](LINEAR_VALUE_PILOT_RESULT_2026-10-06.md)：使用者授權新方向，40既有KO／20seed groups，3918 samples。訓練.372秒；留出訊號很弱，early劣於常數。非新arena或production候選，不接舊調參清單、不自動擴大樣本或調feature。value/reward及root→leaf分布問題尚未解決。
