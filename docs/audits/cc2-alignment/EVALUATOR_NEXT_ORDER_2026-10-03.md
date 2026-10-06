@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-06 [剩餘資源防守檢討](RESIDUAL_DEFENSE_REVIEW_2026-10-06.md)：確認P_due近似忽略條件性clear blocking/cancel，但無104–96因果證據。已搜尋收益不可重算，未搜尋模板欠合法可用性證明；尚無第二個低成本候選。本次無新實驗，不自動回舊參數清單。
+
 2026-10-06 [residual KO結果](RESIDUAL_VALUE_KO_RESULT_37452163955.md)：104–96 accepted，CI44.82–59.18%、p=.67781，correctness過、強度未確認改善。保持accepted，不採用此候選、不追加或調參，無新任務；不自動恢復歷史參數清單。
 
 2026-10-06 新授權：[此凍結residual候選一次200 KO](RESIDUAL_VALUE_KO_PLAN_2026-10-06.md)，使用者接受本次約3%成本例外。沒有改weights／候選，非重啟舊參數掃描，cost fail仍成立；不自動追加或promotion。
