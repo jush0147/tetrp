@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-06 [residual固定200 KO已派送](audits/cc2-alignment/RESIDUAL_VALUE_KO_DISPATCH.md)：run37452163955、source1962147，in_progress。100新seed×seat swap直接對accepted，使用者已接受此凍結候選成本例外，並非恢復任意調參。gate過才arena、16pair jobs並行、完成ntfy不盯跑，無第二批／自動promotion。
+
 2026-10-06 使用者明確接受此候選約3%成本例外：[固定200 KO比較](audits/cc2-alignment/RESIDUAL_VALUE_KO_PLAN_2026-10-06.md)。覆蓋「不開arena」決定但不改寫cost fail。凍結run37444591656 snapshot-on直接對aligned accepted，100新seed×seat swap、24frames／200k／KO-only、零fallback，單候選p<=.05及paired CI門檻。重用二進位不調公式，不做加速，不自動promotion／追加；Linux身份與兩seat smoke過才開批次。完成ntfy、不盯跑，run另記。
 
 2026-10-06 [residual value結果：停止此候選](audits/cc2-alignment/RESIDUAL_VALUE_RESULT_37444591656.md)。run37444591656完成，CI修正37445002303 success。13語意/snapshot tests與trace過；40完整reports、本機480witness／20locks／8Holds重播一致，2/20首選變化。60pair總+1.57%、中位+3.04%、p95+1.34%，三輪皆慢，未過預定成本gate。依計畫不做browser／arena、不修效能救候選、不改weights。強度未測；主線方向未被證偽，但目前無第二候選或新任務。
