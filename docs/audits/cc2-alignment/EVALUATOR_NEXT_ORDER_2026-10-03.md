@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-06 設計進度：[第一版具體公式](RESIDUAL_VALUE_DESIGN_2026-10-06.md)。只有低成本剩餘資源估值主線下的局部cutout資產替換；先真實board再對潛在改善折減，不是舊參數掃描。未實作、未派送；成本與機制假設尚待驗證，無自動arena。
+
 **此頁原參數順序現為歷史，不自動續做。2026-10-05目前依據：[低成本剩餘資源估值主線](RESIDUAL_VALUE_DIRECTION_2026-10-05.md)。先做具體替代evaluator設計，不增加搜尋／分析時間，再單一候選，最後KO驗證。tail與效能支線已關閉，newly-sent 1→2撤回；不重啟調參。使用者本次只要求記錄，未派任何新實驗。**
 
 2026-10-05 [shortcut結果](FRONTIER_SHORTCUT_RESULT_37332904019.md)：完整report96次一致、Rust8tests過，但只快0.54%、有一輪較慢，未過5%工程gate；不採用，不開browser／arena。這條性能小實驗結束，沒有新weight依據，原accepted保持，tail仍停止，無新dispatch。

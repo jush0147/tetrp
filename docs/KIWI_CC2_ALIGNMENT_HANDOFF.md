@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-06 [低成本剩餘資源估值第一版設計](audits/cc2-alignment/RESIDUAL_VALUE_DESIGN_2026-10-06.md)已交付，僅文件／source核對。選定局部cutout資產機制：真實board基準 + 單一模板改善 × T供給等待／公開due壓力折減；R0與現有H1/H9/B2B保持，不新增rollout。明列proxy、可達性／Hold／成本限制，並非完整重寫全部資源。尚未實作／測效能／證明強度，無Actions。下一步若續作只能此候選的隔離正確性／成本gate，不擅自開arena、調係數或支線。
+
 **目前唯一主線（2026-10-05，使用者確認）：[低成本剩餘資源估值](audits/cc2-alignment/RESIDUAL_VALUE_DIRECTION_2026-10-05.md)。後續先參考此文件；優先於下方歷史下一步。保留CC2搜尋與Tetrp authority，不增加額外搜尋，先交付明確替代leaf公式與成本／去重設計，再單一候選，最後KO驗證。禁止默默轉向tail、效能支線、搜尋重寫或舊權重掃描；newly-sent 1→2提議已撤回。具體新設計尚未完成。本次僅紀錄，無程式修改／新run。**
 
 2026-10-05 [frontier shortcut驗收：不採用](audits/cc2-alignment/FRONTIER_SHORTCUT_RESULT_37332904019.md)。run37332904019成功完成，8 Rust tests／96完整report parity過；36組timing重算總下降僅0.5387%，三輪+1.0968%／−0.3300%／+0.8466%，未過固定5%且三輪皆快門檻。保持accepted，不追加browser／arena，不重跑到顯著；小型shortcut支線關閉，無新run。82.21% attempts不能推成耗時或棋力損失。
