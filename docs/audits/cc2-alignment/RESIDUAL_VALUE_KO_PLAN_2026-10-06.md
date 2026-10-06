@@ -1,5 +1,7 @@
 # Deferred asset v1：固定200 KO直接比較
 
+**已結束：[run37452163955結果](RESIDUAL_VALUE_KO_RESULT_37452163955.md)104–96，未確認改善。Correctness過，維持accepted，不promotion／追加。以下為原預註冊計畫。**
+
 2026-10-06，使用者明確接受本候選約3%中位耗時增加，授權一次強度驗證。此項覆蓋先前因cost gate停止的執行決定，**不改寫原cost fail結果，也不一般性放寬未來候選成本限制**。
 
 ## 唯一候選與對手
