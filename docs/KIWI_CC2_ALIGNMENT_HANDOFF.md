@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-06 [leaf 合法性資料重用檢查](audits/cc2-alignment/RESIDUAL_LEGALITY_REUSE_REVIEW_2026-10-06.md)完成。movegen 屬父 board、evaluate 屬 advance 後子 board；未展開 leaf 沒有下一手證據。同層已展開 transposition 的 eval 已重用；AIR_PREFIXES 只有空中前綴，非落點 cache。直接重用提案不成立，不新增 cache／trace／tail／arena；目前沒有第二個低成本 residual 候選。僅文件，accepted 不變。
+
 2026-10-06 [incoming／資源防守用途設計檢討](audits/cc2-alignment/RESIDUAL_DEFENSE_REVIEW_2026-10-06.md)完成，只文件／已有資料／2既有規則tests。P_due折減未區分clear blocking／cancel，屬模型省略，不是authority bug；480取樣僅5個d1+due，其中2個single模板，無立即TSD證據，沒有root因果歸因，不能說造成104–96。已展開child的防守已計價；未展開模板欠path／使用時機證明。尚無可推薦第二候選，不改公式／開run／重啟支線。設計卡點已明確記錄。
 
 2026-10-06 [residual固定200 KO已驗收](audits/cc2-alignment/RESIDUAL_VALUE_KO_RESULT_37452163955.md)：run37452163955成功，104–96 accepted，52%，paired CI44.82–59.18%，exact p=.67781，未確認改善。200正常KO／169286placements／64130Holds，零failure/fallback/rejection/mismatch；唯一terminal Hold查raw並本機重播一致garbagesmash。保持accepted，不promotion／追加／調參救候選；此批結束，無新任務。原成本例外已使用，不表示往後一般放寬。
