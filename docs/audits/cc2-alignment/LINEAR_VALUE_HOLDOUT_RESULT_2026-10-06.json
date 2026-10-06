@@ -1,0 +1,4170 @@
+{
+  "schema": "kiwi-linear-fixed-holdout/1",
+  "sourceRun": 37452163955,
+  "trainBlocks": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79
+  ],
+  "holdoutBlocks": [
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99
+  ],
+  "trainRows": 14724,
+  "holdoutRows": 3416,
+  "games": [
+    {
+      "game": "37452163955/0/0",
+      "seed": 2026210001,
+      "block": 0,
+      "winner": 0,
+      "requests": [
+        941,
+        938
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-0/block-0/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "314f9b89b97d61d029a7af1df020196969fd2a26045fdff5f9327a8182fefa95",
+      "compressedBytes": 3885665
+    },
+    {
+      "game": "37452163955/0/1",
+      "seed": 2026210001,
+      "block": 0,
+      "winner": 1,
+      "requests": [
+        214,
+        224
+      ],
+      "sampled": [
+        21,
+        21
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-0/block-0/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3acd17777f86c5d89e98b7341a87842f82552b4b10fd65fbd7c849bfe9c7d451",
+      "compressedBytes": 909373
+    },
+    {
+      "game": "37452163955/1/0",
+      "seed": 2026210101,
+      "block": 1,
+      "winner": 0,
+      "requests": [
+        388,
+        378
+      ],
+      "sampled": [
+        35,
+        35
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-1/block-1/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "fd3cf9316b7c272edf3c817dbe1a5fc041e59f16f98483c799e54c94dd735e03",
+      "compressedBytes": 1578543
+    },
+    {
+      "game": "37452163955/1/1",
+      "seed": 2026210101,
+      "block": 1,
+      "winner": 1,
+      "requests": [
+        741,
+        748
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-1/block-1/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "609fbb698c0e705f4eadd6fd6b20aec198816f97a499c7776597df8b1d83ad94",
+      "compressedBytes": 3070724
+    },
+    {
+      "game": "37452163955/2/0",
+      "seed": 2026210201,
+      "block": 2,
+      "winner": 0,
+      "requests": [
+        895,
+        867
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-2/block-2/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "193476a984cc14d9962eb8223f9d347b7cba166880b60c33e9d92e74d2dbeec3",
+      "compressedBytes": 3628621
+    },
+    {
+      "game": "37452163955/2/1",
+      "seed": 2026210201,
+      "block": 2,
+      "winner": 0,
+      "requests": [
+        884,
+        931
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-2/block-2/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "58aef90a268a317de1fc5cfe29b16ca9070598acf6be2b83db60375be7e9bc97",
+      "compressedBytes": 3739013
+    },
+    {
+      "game": "37452163955/3/0",
+      "seed": 2026210301,
+      "block": 3,
+      "winner": 0,
+      "requests": [
+        810,
+        838
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-3/block-3/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "25ee90627725f364eece9aa936b2cdd7894e58721ccc467d9c2f81b199a6ac7a",
+      "compressedBytes": 3410397
+    },
+    {
+      "game": "37452163955/3/1",
+      "seed": 2026210301,
+      "block": 3,
+      "winner": 0,
+      "requests": [
+        848,
+        854
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-3/block-3/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "745003c832fb43579b54bd894099ce5673cae9dc5a755f9fad3bfc3b1e90b1ba",
+      "compressedBytes": 3503957
+    },
+    {
+      "game": "37452163955/4/0",
+      "seed": 2026210401,
+      "block": 4,
+      "winner": 0,
+      "requests": [
+        838,
+        841
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-4/block-4/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "dcaaa34b2e71e396514fd401482ba40db63bbac5d5f1a1047dcd251bfced217f",
+      "compressedBytes": 3483380
+    },
+    {
+      "game": "37452163955/4/1",
+      "seed": 2026210401,
+      "block": 4,
+      "winner": 0,
+      "requests": [
+        226,
+        213
+      ],
+      "sampled": [
+        21,
+        21
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-4/block-4/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "55d78018ed3beb8bc457caa0eb721d3e92dd04c2e668e6634d7f948fc374bb99",
+      "compressedBytes": 896770
+    },
+    {
+      "game": "37452163955/5/0",
+      "seed": 2026210501,
+      "block": 5,
+      "winner": 1,
+      "requests": [
+        935,
+        933
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-5/block-5/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a271d828314987b45a86d49c17c8b84b329e399754a67df82d85fdf2c1c4bfb8",
+      "compressedBytes": 3858369
+    },
+    {
+      "game": "37452163955/5/1",
+      "seed": 2026210501,
+      "block": 5,
+      "winner": 0,
+      "requests": [
+        789,
+        788
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-5/block-5/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "94592d988ab6b786f3bb7f11b9d8cec308e100f1f846f2ab5c5fd1030d2da9bc",
+      "compressedBytes": 3267831
+    },
+    {
+      "game": "37452163955/6/0",
+      "seed": 2026210601,
+      "block": 6,
+      "winner": 0,
+      "requests": [
+        722,
+        696
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-6/block-6/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "76ea625c84b11473db61e1740d38dd16fa67f86bfc031c18c70b7b20637436c5",
+      "compressedBytes": 2922242
+    },
+    {
+      "game": "37452163955/6/1",
+      "seed": 2026210601,
+      "block": 6,
+      "winner": 0,
+      "requests": [
+        365,
+        369
+      ],
+      "sampled": [
+        34,
+        34
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-6/block-6/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "6566f3e774d3747defd65587479be401c877c654e5d8a20e3853b444c2d40691",
+      "compressedBytes": 1508229
+    },
+    {
+      "game": "37452163955/7/0",
+      "seed": 2026210701,
+      "block": 7,
+      "winner": 1,
+      "requests": [
+        337,
+        339
+      ],
+      "sampled": [
+        31,
+        31
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-7/block-7/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "cbb33448f499d5e288ea39bfea4d9133d7a5e03a1ef85d10eebe8b0a572d216f",
+      "compressedBytes": 1393807
+    },
+    {
+      "game": "37452163955/7/1",
+      "seed": 2026210701,
+      "block": 7,
+      "winner": 0,
+      "requests": [
+        862,
+        875
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-7/block-7/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "ff4cb3703e65da98ec32af7963aeb105c098bde28f36a3c0eb487e2d359ac589",
+      "compressedBytes": 3589600
+    },
+    {
+      "game": "37452163955/8/0",
+      "seed": 2026210801,
+      "block": 8,
+      "winner": 1,
+      "requests": [
+        917,
+        946
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-8/block-8/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4a95cf7aa50987fcdbc83419e4b46fff119a14fb55449cb01dee8b2c904dcfba",
+      "compressedBytes": 3851107
+    },
+    {
+      "game": "37452163955/8/1",
+      "seed": 2026210801,
+      "block": 8,
+      "winner": 1,
+      "requests": [
+        142,
+        140
+      ],
+      "sampled": [
+        13,
+        13
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-8/block-8/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e3cf1fe126b10dcdce0c616a39785fd4d29453eddefde635ed878b96574a1441",
+      "compressedBytes": 572359
+    },
+    {
+      "game": "37452163955/9/0",
+      "seed": 2026210901,
+      "block": 9,
+      "winner": 1,
+      "requests": [
+        823,
+        819
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-9/block-9/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f5643e3041dd45c21629904f1f445709a4082c21da8331c527f250a8d5f06e6a",
+      "compressedBytes": 3401078
+    },
+    {
+      "game": "37452163955/9/1",
+      "seed": 2026210901,
+      "block": 9,
+      "winner": 0,
+      "requests": [
+        394,
+        401
+      ],
+      "sampled": [
+        36,
+        36
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-9/block-9/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1e43534e87a6d697da29d62dc68486883c0796bdc9f84be3b83305f5c27d299d",
+      "compressedBytes": 1655760
+    },
+    {
+      "game": "37452163955/10/0",
+      "seed": 2026211001,
+      "block": 10,
+      "winner": 0,
+      "requests": [
+        239,
+        242
+      ],
+      "sampled": [
+        23,
+        23
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-10/block-10/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "59cc674ecd19590e24f1e71cd43819851111dac3f284d4f51b84928d78e39ca2",
+      "compressedBytes": 982933
+    },
+    {
+      "game": "37452163955/10/1",
+      "seed": 2026211001,
+      "block": 10,
+      "winner": 1,
+      "requests": [
+        108,
+        102
+      ],
+      "sampled": [
+        10,
+        10
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-10/block-10/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "53704c0b2de885d0dbee6a9ad3432b757d5a7eaa0cb33f0e6801a5a9e771e128",
+      "compressedBytes": 416857
+    },
+    {
+      "game": "37452163955/11/0",
+      "seed": 2026211101,
+      "block": 11,
+      "winner": 0,
+      "requests": [
+        504,
+        515
+      ],
+      "sampled": [
+        47,
+        47
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-11/block-11/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0e9ae34d11f5656697be913e5ed3fb6c6d5745df6942641ae5f3a0f7876ef39f",
+      "compressedBytes": 2106688
+    },
+    {
+      "game": "37452163955/11/1",
+      "seed": 2026211101,
+      "block": 11,
+      "winner": 1,
+      "requests": [
+        692,
+        698
+      ],
+      "sampled": [
+        63,
+        63
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-11/block-11/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3f1849428acf84ab1741d1fbe99633b77092a355b6892656e1dda0c91ace1010",
+      "compressedBytes": 2874976
+    },
+    {
+      "game": "37452163955/12/0",
+      "seed": 2026211201,
+      "block": 12,
+      "winner": 0,
+      "requests": [
+        776,
+        796
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-12/block-12/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "ad8172e64839b0d32de34b9261a4ee927f7e197dc4d4732fdb07acc68ca0ca1b",
+      "compressedBytes": 3250525
+    },
+    {
+      "game": "37452163955/12/1",
+      "seed": 2026211201,
+      "block": 12,
+      "winner": 0,
+      "requests": [
+        42,
+        39
+      ],
+      "sampled": [
+        4,
+        4
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-12/block-12/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "b22e4fb02008cc39904ff4592e17171826fc8db004520e25b41246f3d13c6446",
+      "compressedBytes": 163552
+    },
+    {
+      "game": "37452163955/13/0",
+      "seed": 2026211301,
+      "block": 13,
+      "winner": 1,
+      "requests": [
+        860,
+        848
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-13/block-13/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d6b98dd5499102ea38238c9953c7a78caa81213a1ee569347e483a45a65337df",
+      "compressedBytes": 3510452
+    },
+    {
+      "game": "37452163955/13/1",
+      "seed": 2026211301,
+      "block": 13,
+      "winner": 0,
+      "requests": [
+        885,
+        906
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-13/block-13/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1b6b4e9a6b61d24dafcec27c0fc82d889ceddfa1346b98e998c8c22e2856bcb6",
+      "compressedBytes": 3708764
+    },
+    {
+      "game": "37452163955/14/0",
+      "seed": 2026211401,
+      "block": 14,
+      "winner": 1,
+      "requests": [
+        960,
+        975
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-14/block-14/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "c0f4ec08009ed86516fcc46ddda8d6acb73c463112e17a271fa3d37fce854da8",
+      "compressedBytes": 3989373
+    },
+    {
+      "game": "37452163955/14/1",
+      "seed": 2026211401,
+      "block": 14,
+      "winner": 1,
+      "requests": [
+        771,
+        780
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-14/block-14/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4c46ff4a8a63345b96d2d4e8d3eb0de65488d1697e883c371762f90eebebc724",
+      "compressedBytes": 3200664
+    },
+    {
+      "game": "37452163955/15/0",
+      "seed": 2026211501,
+      "block": 15,
+      "winner": 1,
+      "requests": [
+        886,
+        896
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-15/block-15/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "77c49a0a93538f1ceaebc808c43f08a6d22be98ef1c2b9b8bf941a239f3b14ef",
+      "compressedBytes": 3688628
+    },
+    {
+      "game": "37452163955/15/1",
+      "seed": 2026211501,
+      "block": 15,
+      "winner": 1,
+      "requests": [
+        825,
+        809
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-15/block-15/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0c0f5f780cdba62b452f8800710f3e8577fd9f6c3b572332f4bbb5e3fece5a02",
+      "compressedBytes": 3372725
+    },
+    {
+      "game": "37452163955/16/0",
+      "seed": 2026211601,
+      "block": 16,
+      "winner": 0,
+      "requests": [
+        901,
+        890
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-16/block-16/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d61c3985c23e37040812e3d7244c82415c2c11c9277aa7984826fb292b0f2f02",
+      "compressedBytes": 3695917
+    },
+    {
+      "game": "37452163955/16/1",
+      "seed": 2026211601,
+      "block": 16,
+      "winner": 0,
+      "requests": [
+        468,
+        467
+      ],
+      "sampled": [
+        43,
+        43
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-16/block-16/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f787514e93c1b38145a4a3402df87ea5131ae1278f1b8df8a3909c8c28ae4d2c",
+      "compressedBytes": 1926159
+    },
+    {
+      "game": "37452163955/17/0",
+      "seed": 2026211701,
+      "block": 17,
+      "winner": 0,
+      "requests": [
+        756,
+        752
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-17/block-17/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e967a74952f4cdd33ae44ad1606cf3a1b66ab9644bd387d30e8d5258165e69f6",
+      "compressedBytes": 3108132
+    },
+    {
+      "game": "37452163955/17/1",
+      "seed": 2026211701,
+      "block": 17,
+      "winner": 1,
+      "requests": [
+        440,
+        436
+      ],
+      "sampled": [
+        39,
+        39
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-17/block-17/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "fac7bd6626af73d3ff4c3979483ceb55077e0ebdd0a8e7660f73b17e7d69684e",
+      "compressedBytes": 1800180
+    },
+    {
+      "game": "37452163955/18/0",
+      "seed": 2026211801,
+      "block": 18,
+      "winner": 1,
+      "requests": [
+        95,
+        95
+      ],
+      "sampled": [
+        9,
+        9
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-18/block-18/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4f6fbdf75d808075fe09e182f09db85af1d2605a8704030f15def7ed8106d9c3",
+      "compressedBytes": 393966
+    },
+    {
+      "game": "37452163955/18/1",
+      "seed": 2026211801,
+      "block": 18,
+      "winner": 1,
+      "requests": [
+        263,
+        276
+      ],
+      "sampled": [
+        26,
+        26
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-18/block-18/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f406c058f922fb7fab5ad1b561540388abeeb2b82978daa7158b5e5a01486aea",
+      "compressedBytes": 1105005
+    },
+    {
+      "game": "37452163955/19/0",
+      "seed": 2026211901,
+      "block": 19,
+      "winner": 0,
+      "requests": [
+        433,
+        450
+      ],
+      "sampled": [
+        41,
+        41
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-19/block-19/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d7d08664f6f81c01d73b07b3e003868f1df6754974a1f8a30ccdda208a15c7ad",
+      "compressedBytes": 1825108
+    },
+    {
+      "game": "37452163955/19/1",
+      "seed": 2026211901,
+      "block": 19,
+      "winner": 1,
+      "requests": [
+        591,
+        614
+      ],
+      "sampled": [
+        55,
+        55
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-19/block-19/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0b884aa9689c57e67a134c803dd0d77d16c09e71d53e3789106a21a4b0ebe39f",
+      "compressedBytes": 2486177
+    },
+    {
+      "game": "37452163955/20/0",
+      "seed": 2026212001,
+      "block": 20,
+      "winner": 1,
+      "requests": [
+        1114,
+        1109
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-20/block-20/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "98dbe76e78a6e6e265dd9fe89005ce6bc41646c46886ed426a2862aeb3a2cb4a",
+      "compressedBytes": 4588872
+    },
+    {
+      "game": "37452163955/20/1",
+      "seed": 2026212001,
+      "block": 20,
+      "winner": 0,
+      "requests": [
+        137,
+        139
+      ],
+      "sampled": [
+        13,
+        13
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-20/block-20/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "9dc59fb5ba4a2f8c6ce7d78776c785e31946932213f0fc851d891234f3602dfc",
+      "compressedBytes": 570243
+    },
+    {
+      "game": "37452163955/21/0",
+      "seed": 2026212101,
+      "block": 21,
+      "winner": 1,
+      "requests": [
+        47,
+        59
+      ],
+      "sampled": [
+        5,
+        5
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-21/block-21/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "979dbce017709d69913c5add395050b38bb1d013e8e26b95f5112285635b2edb",
+      "compressedBytes": 214095
+    },
+    {
+      "game": "37452163955/21/1",
+      "seed": 2026212101,
+      "block": 21,
+      "winner": 1,
+      "requests": [
+        188,
+        188
+      ],
+      "sampled": [
+        17,
+        17
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-21/block-21/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "034776e9b76c955e0a6f140bc1277f10f94f117141126bb8752760f661b59b21",
+      "compressedBytes": 769199
+    },
+    {
+      "game": "37452163955/22/0",
+      "seed": 2026212201,
+      "block": 22,
+      "winner": 1,
+      "requests": [
+        750,
+        755
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-22/block-22/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "fb9090fb53a3484fd804ff36a440df02573047ed8e668056409e24f50a52b4b1",
+      "compressedBytes": 3119476
+    },
+    {
+      "game": "37452163955/22/1",
+      "seed": 2026212201,
+      "block": 22,
+      "winner": 0,
+      "requests": [
+        212,
+        214
+      ],
+      "sampled": [
+        19,
+        19
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-22/block-22/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "815d6f1aa73f2c822516bdf6a8683ce2bff446fac10b72a7cd232a1278dcbacc",
+      "compressedBytes": 871074
+    },
+    {
+      "game": "37452163955/23/0",
+      "seed": 2026212301,
+      "block": 23,
+      "winner": 0,
+      "requests": [
+        320,
+        305
+      ],
+      "sampled": [
+        29,
+        29
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-23/block-23/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "6e2c38326d21ac22226d64b1aaa4543097b83f6cd2fbe7cec41a8e490b9b3937",
+      "compressedBytes": 1284273
+    },
+    {
+      "game": "37452163955/23/1",
+      "seed": 2026212301,
+      "block": 23,
+      "winner": 1,
+      "requests": [
+        831,
+        806
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-23/block-23/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3756ac58141193e937b502193f691ab8daae6c7068048d94cecc46ec56f29ecb",
+      "compressedBytes": 3402214
+    },
+    {
+      "game": "37452163955/24/0",
+      "seed": 2026212401,
+      "block": 24,
+      "winner": 0,
+      "requests": [
+        756,
+        785
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-24/block-24/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3f8ce720c1e30a5e361a625e50e55312c6cd558f5917e60619eabdbe415b9c70",
+      "compressedBytes": 3186141
+    },
+    {
+      "game": "37452163955/24/1",
+      "seed": 2026212401,
+      "block": 24,
+      "winner": 1,
+      "requests": [
+        864,
+        839
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-24/block-24/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "43f6bd198d85d97479b0b09782c33c17cd5456ab250f5dc0529201b4bd7ac693",
+      "compressedBytes": 3533341
+    },
+    {
+      "game": "37452163955/25/0",
+      "seed": 2026212501,
+      "block": 25,
+      "winner": 1,
+      "requests": [
+        1064,
+        1076
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-25/block-25/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "545ca967dc7e3a38da21f21df6188b3659ba72c71a122a96fb50646031c97c94",
+      "compressedBytes": 4453675
+    },
+    {
+      "game": "37452163955/25/1",
+      "seed": 2026212501,
+      "block": 25,
+      "winner": 1,
+      "requests": [
+        275,
+        279
+      ],
+      "sampled": [
+        26,
+        26
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-25/block-25/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0285d9a8e39b9869682e158171a950c544cfceb412208b6b9ee833fb361698dd",
+      "compressedBytes": 1145411
+    },
+    {
+      "game": "37452163955/26/0",
+      "seed": 2026212601,
+      "block": 26,
+      "winner": 1,
+      "requests": [
+        1075,
+        1063
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-26/block-26/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4d772ee7e328cd413e085e5254c647c4a27956267da0b357d6b078d07cac0c1a",
+      "compressedBytes": 4424127
+    },
+    {
+      "game": "37452163955/26/1",
+      "seed": 2026212601,
+      "block": 26,
+      "winner": 1,
+      "requests": [
+        386,
+        399
+      ],
+      "sampled": [
+        37,
+        37
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-26/block-26/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "8f0ba89dd730b24f791cbf9e5d8c438bc787cb752aff37bf5e5251dd2024e3d7",
+      "compressedBytes": 1619236
+    },
+    {
+      "game": "37452163955/27/0",
+      "seed": 2026212701,
+      "block": 27,
+      "winner": 1,
+      "requests": [
+        315,
+        316
+      ],
+      "sampled": [
+        30,
+        30
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-27/block-27/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1e79f6c6b14e1e5a9a279b997c8f41b4a6a877dcbb273e35cee3b72c108f2e2d",
+      "compressedBytes": 1296237
+    },
+    {
+      "game": "37452163955/27/1",
+      "seed": 2026212701,
+      "block": 27,
+      "winner": 0,
+      "requests": [
+        790,
+        803
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-27/block-27/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "84e4e4686106abd669c21042990a0a4ba853001f4ab38fa4ef47eb8d24d0e33d",
+      "compressedBytes": 3276461
+    },
+    {
+      "game": "37452163955/28/0",
+      "seed": 2026212801,
+      "block": 28,
+      "winner": 1,
+      "requests": [
+        875,
+        861
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-28/block-28/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "13c3d732d67e1592f343c38089afc0dde802181d703fc27a112f5d0493a27634",
+      "compressedBytes": 3606282
+    },
+    {
+      "game": "37452163955/28/1",
+      "seed": 2026212801,
+      "block": 28,
+      "winner": 1,
+      "requests": [
+        830,
+        846
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-28/block-28/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d8cd34652c7dda19330241eedbb944180361d4d8dea6831e9af5cc756379e3ae",
+      "compressedBytes": 3485668
+    },
+    {
+      "game": "37452163955/29/0",
+      "seed": 2026212901,
+      "block": 29,
+      "winner": 0,
+      "requests": [
+        943,
+        962
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-29/block-29/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e28f9eb12242c728cf774ea11d458a56cc7ae5e10562a42d534541437207b33d",
+      "compressedBytes": 3926119
+    },
+    {
+      "game": "37452163955/29/1",
+      "seed": 2026212901,
+      "block": 29,
+      "winner": 0,
+      "requests": [
+        791,
+        788
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-29/block-29/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f496646f946a70cfe784b5029644cdc0c1de8a2705c3299b52ce78ddd7fbb357",
+      "compressedBytes": 3258614
+    },
+    {
+      "game": "37452163955/30/0",
+      "seed": 2026213001,
+      "block": 30,
+      "winner": 0,
+      "requests": [
+        982,
+        959
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-30/block-30/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "36fb915956c74965cfad2e00917d247e9d3cc99f90115e6ca6e92e1cfbd227af",
+      "compressedBytes": 4009418
+    },
+    {
+      "game": "37452163955/30/1",
+      "seed": 2026213001,
+      "block": 30,
+      "winner": 1,
+      "requests": [
+        337,
+        342
+      ],
+      "sampled": [
+        31,
+        31
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-30/block-30/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "830cdecb8099b70af0614c0e34af91126a9cd40db474be23eab8d545224e2496",
+      "compressedBytes": 1396573
+    },
+    {
+      "game": "37452163955/31/0",
+      "seed": 2026213101,
+      "block": 31,
+      "winner": 1,
+      "requests": [
+        687,
+        694
+      ],
+      "sampled": [
+        62,
+        62
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-31/block-31/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "02a6337457b80d469d2a3071e1ca5fdf301e450e8539d9ff5a987ed72f62d02b",
+      "compressedBytes": 2844039
+    },
+    {
+      "game": "37452163955/31/1",
+      "seed": 2026213101,
+      "block": 31,
+      "winner": 1,
+      "requests": [
+        704,
+        707
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-31/block-31/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "8ad8ba01647fde69f64b6c899aabeaeb9e7af281327f8e89b98874ab7772e125",
+      "compressedBytes": 2901151
+    },
+    {
+      "game": "37452163955/32/0",
+      "seed": 2026213201,
+      "block": 32,
+      "winner": 0,
+      "requests": [
+        895,
+        876
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-32/block-32/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "c61247825da97a743bf01a34d5bdcad449bbbeac2025ba31f75992ca9b769d73",
+      "compressedBytes": 3662984
+    },
+    {
+      "game": "37452163955/32/1",
+      "seed": 2026213201,
+      "block": 32,
+      "winner": 1,
+      "requests": [
+        247,
+        241
+      ],
+      "sampled": [
+        23,
+        23
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-32/block-32/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "9dc8d9bc22fb143f4665563eee615504bfd246a6df32c2a6c6cc4c20789f39b2",
+      "compressedBytes": 998239
+    },
+    {
+      "game": "37452163955/33/0",
+      "seed": 2026213301,
+      "block": 33,
+      "winner": 0,
+      "requests": [
+        234,
+        229
+      ],
+      "sampled": [
+        22,
+        22
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-33/block-33/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f3d857b79a69085ecbd1027dc7db6ad4a312ed06f94402cd6084ea0299facc46",
+      "compressedBytes": 957777
+    },
+    {
+      "game": "37452163955/33/1",
+      "seed": 2026213301,
+      "block": 33,
+      "winner": 0,
+      "requests": [
+        52,
+        52
+      ],
+      "sampled": [
+        5,
+        5
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-33/block-33/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "99588d95bcc621b428c7e2139d9c2450fbb51735d785ff755a1af2053bb9a530",
+      "compressedBytes": 216311
+    },
+    {
+      "game": "37452163955/34/0",
+      "seed": 2026213401,
+      "block": 34,
+      "winner": 0,
+      "requests": [
+        161,
+        165
+      ],
+      "sampled": [
+        16,
+        16
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-34/block-34/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "dfdba960eab4ca916c24648512ad329a1a3eb7b70986aa7ca9f4fba6d251d9ce",
+      "compressedBytes": 670117
+    },
+    {
+      "game": "37452163955/34/1",
+      "seed": 2026213401,
+      "block": 34,
+      "winner": 1,
+      "requests": [
+        775,
+        769
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-34/block-34/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1aa2571729d8868d13fae9899e60e42861f9193f3cc493946e307f71b867db9d",
+      "compressedBytes": 3191138
+    },
+    {
+      "game": "37452163955/35/0",
+      "seed": 2026213501,
+      "block": 35,
+      "winner": 1,
+      "requests": [
+        1113,
+        1101
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-35/block-35/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e4188479e31e35b87e51230a9613fbd36325388678d13d1be55397c766ed81b4",
+      "compressedBytes": 4572856
+    },
+    {
+      "game": "37452163955/35/1",
+      "seed": 2026213501,
+      "block": 35,
+      "winner": 0,
+      "requests": [
+        1023,
+        1071
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-35/block-35/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a7418a2f039843d3fd91b510c116f0ca2edd1b14545acfe7e58b84e919bf4e06",
+      "compressedBytes": 4335246
+    },
+    {
+      "game": "37452163955/36/0",
+      "seed": 2026213601,
+      "block": 36,
+      "winner": 1,
+      "requests": [
+        437,
+        449
+      ],
+      "sampled": [
+        40,
+        40
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-36/block-36/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e766e9172ff0c4426d04d545a18c98b72b47091231124b2085da4345fe7adb23",
+      "compressedBytes": 1824491
+    },
+    {
+      "game": "37452163955/36/1",
+      "seed": 2026213601,
+      "block": 36,
+      "winner": 1,
+      "requests": [
+        730,
+        725
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-36/block-36/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "ec59647747234bd9c1ff41f7301d4fad4f578f8824b2ee4c8006a6290a47e37e",
+      "compressedBytes": 3009960
+    },
+    {
+      "game": "37452163955/37/0",
+      "seed": 2026213701,
+      "block": 37,
+      "winner": 0,
+      "requests": [
+        849,
+        850
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-37/block-37/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "2ed31309be210c0721ddb1560a46647b8782ca972d6d2dbc35f52850fa91ad9d",
+      "compressedBytes": 3515817
+    },
+    {
+      "game": "37452163955/37/1",
+      "seed": 2026213701,
+      "block": 37,
+      "winner": 0,
+      "requests": [
+        575,
+        559
+      ],
+      "sampled": [
+        52,
+        52
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-37/block-37/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "50edcc5ae377e26eefd4de644d62d9dc0f266618d6d82c029e18a8fdb5b92cf3",
+      "compressedBytes": 2335195
+    },
+    {
+      "game": "37452163955/38/0",
+      "seed": 2026213801,
+      "block": 38,
+      "winner": 0,
+      "requests": [
+        187,
+        186
+      ],
+      "sampled": [
+        17,
+        17
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-38/block-38/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a024f738fc09b32ad21c1eb1ab4dc41a76baae5c88efcde3a9d2c2f715cae2e6",
+      "compressedBytes": 759982
+    },
+    {
+      "game": "37452163955/38/1",
+      "seed": 2026213801,
+      "block": 38,
+      "winner": 1,
+      "requests": [
+        1093,
+        1069
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-38/block-38/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "7958e2a38cd0feec88fca0a4f01f3c8cf8fec7ab13a2639bc60c232f21c45413",
+      "compressedBytes": 4459107
+    },
+    {
+      "game": "37452163955/39/0",
+      "seed": 2026213901,
+      "block": 39,
+      "winner": 0,
+      "requests": [
+        258,
+        252
+      ],
+      "sampled": [
+        24,
+        24
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-39/block-39/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a0d2442027a45665ed641e6df6c71435a70c5dc0520d5cedd1dbb3a6e8440002",
+      "compressedBytes": 1055306
+    },
+    {
+      "game": "37452163955/39/1",
+      "seed": 2026213901,
+      "block": 39,
+      "winner": 1,
+      "requests": [
+        781,
+        831
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-39/block-39/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4e485600e6eaa2fd851c55088821e41b0eddebf27fdf08ee8b9604cbe4662baa",
+      "compressedBytes": 3333237
+    },
+    {
+      "game": "37452163955/40/0",
+      "seed": 2026214001,
+      "block": 40,
+      "winner": 1,
+      "requests": [
+        664,
+        659
+      ],
+      "sampled": [
+        60,
+        60
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-40/block-40/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f0d6395eb66348f5d78875e362a91871d3da5d5a7197b53f0ffde37f5ab18801",
+      "compressedBytes": 2719054
+    },
+    {
+      "game": "37452163955/40/1",
+      "seed": 2026214001,
+      "block": 40,
+      "winner": 1,
+      "requests": [
+        862,
+        852
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-40/block-40/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "fc2977ec5abecdf170859da36d0aac4a47d407de5ee40725b59bc193155799de",
+      "compressedBytes": 3531319
+    },
+    {
+      "game": "37452163955/41/0",
+      "seed": 2026214101,
+      "block": 41,
+      "winner": 0,
+      "requests": [
+        364,
+        358
+      ],
+      "sampled": [
+        33,
+        33
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-41/block-41/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "610ceb1acb35c52ca6f3a19c29f5d1f61347774abc03cf330d14d8e99ccb709f",
+      "compressedBytes": 1481547
+    },
+    {
+      "game": "37452163955/41/1",
+      "seed": 2026214101,
+      "block": 41,
+      "winner": 1,
+      "requests": [
+        758,
+        772
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-41/block-41/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "eef82b56c499c886016b5191e5a6a5f57b195f40d2540d2d2e33777e799294c5",
+      "compressedBytes": 3166580
+    },
+    {
+      "game": "37452163955/42/0",
+      "seed": 2026214201,
+      "block": 42,
+      "winner": 1,
+      "requests": [
+        660,
+        647
+      ],
+      "sampled": [
+        61,
+        61
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-42/block-42/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a874936eb4aeb5a7b10d267573af3de036396116af9ebf18ef94b386ebeae0df",
+      "compressedBytes": 2696177
+    },
+    {
+      "game": "37452163955/42/1",
+      "seed": 2026214201,
+      "block": 42,
+      "winner": 0,
+      "requests": [
+        924,
+        952
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-42/block-42/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "16e0a20a7c552b6ea9aa23f89a14c4efa95937afefc19d3c8366f12c36a0caac",
+      "compressedBytes": 3892118
+    },
+    {
+      "game": "37452163955/43/0",
+      "seed": 2026214301,
+      "block": 43,
+      "winner": 0,
+      "requests": [
+        391,
+        355
+      ],
+      "sampled": [
+        34,
+        34
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-43/block-43/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1c3aaa83bde3240e6d05e7b46aac43744a264e8059a0e0ec324477e73c874c6c",
+      "compressedBytes": 1527271
+    },
+    {
+      "game": "37452163955/43/1",
+      "seed": 2026214301,
+      "block": 43,
+      "winner": 1,
+      "requests": [
+        409,
+        416
+      ],
+      "sampled": [
+        38,
+        38
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-43/block-43/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "c47a289aca8a78e108f2e9a9a4bb02715a18bcaa24b04ab135a9d49885fb72ea",
+      "compressedBytes": 1684506
+    },
+    {
+      "game": "37452163955/44/0",
+      "seed": 2026214401,
+      "block": 44,
+      "winner": 0,
+      "requests": [
+        913,
+        901
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-44/block-44/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "7388e2e67838371e68d584202674970010579d2a899a792866996796aee14d37",
+      "compressedBytes": 3754721
+    },
+    {
+      "game": "37452163955/44/1",
+      "seed": 2026214401,
+      "block": 44,
+      "winner": 0,
+      "requests": [
+        970,
+        949
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-44/block-44/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3bf0cad6a6e3c40f3a04426f595edac015f08462ac1f87b2317a4a7f017f28cc",
+      "compressedBytes": 3961367
+    },
+    {
+      "game": "37452163955/45/0",
+      "seed": 2026214501,
+      "block": 45,
+      "winner": 1,
+      "requests": [
+        1119,
+        1085
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-45/block-45/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "17994159199df51193e3d8be5fa637c7559c761f2e1e3b6257d6dda419ef7b46",
+      "compressedBytes": 4571611
+    },
+    {
+      "game": "37452163955/45/1",
+      "seed": 2026214501,
+      "block": 45,
+      "winner": 0,
+      "requests": [
+        990,
+        968
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-45/block-45/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d901a8544c6035b5a0be991a17a7519a6f5e8c9f42b18e957995ccbfcf52b484",
+      "compressedBytes": 4037708
+    },
+    {
+      "game": "37452163955/46/0",
+      "seed": 2026214601,
+      "block": 46,
+      "winner": 0,
+      "requests": [
+        173,
+        162
+      ],
+      "sampled": [
+        15,
+        15
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-46/block-46/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "060dfa624f4c0fe9d8291db9a91f2a346a7d49e1b7809aad1996ffe217b67997",
+      "compressedBytes": 682239
+    },
+    {
+      "game": "37452163955/46/1",
+      "seed": 2026214601,
+      "block": 46,
+      "winner": 1,
+      "requests": [
+        898,
+        887
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-46/block-46/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "069d0acc7de545cdf732518061113f3f39839e17e308d7245e42563ba435e98e",
+      "compressedBytes": 3700997
+    },
+    {
+      "game": "37452163955/47/0",
+      "seed": 2026214701,
+      "block": 47,
+      "winner": 0,
+      "requests": [
+        84,
+        98
+      ],
+      "sampled": [
+        9,
+        9
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-47/block-47/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "91fd9dca97a0d2691f67383f2a122f01b0b84cd7f1c77f67ec8596b34c109907",
+      "compressedBytes": 367516
+    },
+    {
+      "game": "37452163955/47/1",
+      "seed": 2026214701,
+      "block": 47,
+      "winner": 1,
+      "requests": [
+        802,
+        793
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-47/block-47/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f6dc0c4ffd57bfeb54d675e1c20f08383ebd1875f4a5d11126b5ce3a6405e62f",
+      "compressedBytes": 3303469
+    },
+    {
+      "game": "37452163955/48/0",
+      "seed": 2026214801,
+      "block": 48,
+      "winner": 1,
+      "requests": [
+        977,
+        964
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-48/block-48/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "9e275c5ddb95187c27a8f2fcb4c3de7bcadc15b3ca595a55a0b84ddcdc183be9",
+      "compressedBytes": 4006616
+    },
+    {
+      "game": "37452163955/48/1",
+      "seed": 2026214801,
+      "block": 48,
+      "winner": 0,
+      "requests": [
+        807,
+        809
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-48/block-48/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "61fed11ba1739de3ec0cdaea75b44df771d8d5e6bd8664f689978b50d813d156",
+      "compressedBytes": 3340739
+    },
+    {
+      "game": "37452163955/49/0",
+      "seed": 2026214901,
+      "block": 49,
+      "winner": 1,
+      "requests": [
+        1084,
+        1094
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-49/block-49/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "66b16c2e70f8e0de60cc6a9050c6b68c78c6cddc2631e7d66357a174a0007d2c",
+      "compressedBytes": 4484860
+    },
+    {
+      "game": "37452163955/49/1",
+      "seed": 2026214901,
+      "block": 49,
+      "winner": 0,
+      "requests": [
+        161,
+        165
+      ],
+      "sampled": [
+        16,
+        16
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-49/block-49/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e1208ae74c91ca5bfe5e0ec7121042ac99950b05d1dee7f2732137cacf5e3e55",
+      "compressedBytes": 661319
+    },
+    {
+      "game": "37452163955/50/0",
+      "seed": 2026215001,
+      "block": 50,
+      "winner": 1,
+      "requests": [
+        323,
+        320
+      ],
+      "sampled": [
+        30,
+        30
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-50/block-50/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "087e6114ce8c5db52b13979643bc751deb9020e4d88fe5a2d35e7038f3b1f55a",
+      "compressedBytes": 1336539
+    },
+    {
+      "game": "37452163955/50/1",
+      "seed": 2026215001,
+      "block": 50,
+      "winner": 1,
+      "requests": [
+        539,
+        528
+      ],
+      "sampled": [
+        49,
+        49
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-50/block-50/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "698afa0cf37ea45c630a1d88f96d61294e4f484b0e965d82ad4c53a8885d6f96",
+      "compressedBytes": 2195037
+    },
+    {
+      "game": "37452163955/51/0",
+      "seed": 2026215101,
+      "block": 51,
+      "winner": 1,
+      "requests": [
+        1067,
+        1068
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-51/block-51/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e83581714083b0a09c4fa3a182704368a075960d5e36759a25aab2fa0c215b38",
+      "compressedBytes": 4389581
+    },
+    {
+      "game": "37452163955/51/1",
+      "seed": 2026215101,
+      "block": 51,
+      "winner": 1,
+      "requests": [
+        854,
+        856
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-51/block-51/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "9bdd75aa4c847defa4511e1dd2ebd3eea6539cf4173f95e039bad80acc50ee6e",
+      "compressedBytes": 3520075
+    },
+    {
+      "game": "37452163955/52/0",
+      "seed": 2026215201,
+      "block": 52,
+      "winner": 1,
+      "requests": [
+        482,
+        475
+      ],
+      "sampled": [
+        43,
+        43
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-52/block-52/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0c143f972ca2e7d7124c3570a2d80aa5be9c1e833aeaa7c1f5d7b1e2dc31f9c8",
+      "compressedBytes": 1982332
+    },
+    {
+      "game": "37452163955/52/1",
+      "seed": 2026215201,
+      "block": 52,
+      "winner": 0,
+      "requests": [
+        832,
+        847
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-52/block-52/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d22d644b9c4c1c17b4d5559a6cf7ffa2327967f10e107d151fe0f07535ce0609",
+      "compressedBytes": 3477122
+    },
+    {
+      "game": "37452163955/53/0",
+      "seed": 2026215301,
+      "block": 53,
+      "winner": 1,
+      "requests": [
+        254,
+        245
+      ],
+      "sampled": [
+        23,
+        23
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-53/block-53/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3fff7a90cb8af395f241f64fbca12d7162a53bc363a215d024a2f64ddd3ca78d",
+      "compressedBytes": 1020412
+    },
+    {
+      "game": "37452163955/53/1",
+      "seed": 2026215301,
+      "block": 53,
+      "winner": 0,
+      "requests": [
+        218,
+        225
+      ],
+      "sampled": [
+        21,
+        21
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-53/block-53/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "91af6f2a15c48bf6e21fc7555008ea2551a6c1a7bdbc80b3e0d962db6e186403",
+      "compressedBytes": 903833
+    },
+    {
+      "game": "37452163955/54/0",
+      "seed": 2026215401,
+      "block": 54,
+      "winner": 1,
+      "requests": [
+        436,
+        422
+      ],
+      "sampled": [
+        40,
+        40
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-54/block-54/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "267499e1fadf6b92b599ddcdf315c1853de06f56788f102ab08d391da93b69d3",
+      "compressedBytes": 1765828
+    },
+    {
+      "game": "37452163955/54/1",
+      "seed": 2026215401,
+      "block": 54,
+      "winner": 1,
+      "requests": [
+        493,
+        500
+      ],
+      "sampled": [
+        46,
+        46
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-54/block-54/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "79163cc4213d14e4d3a22ae9ab152c159d7266e2c625faf839080834d7ff73eb",
+      "compressedBytes": 2059608
+    },
+    {
+      "game": "37452163955/55/0",
+      "seed": 2026215501,
+      "block": 55,
+      "winner": 0,
+      "requests": [
+        173,
+        182
+      ],
+      "sampled": [
+        17,
+        17
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-55/block-55/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "2f3ee99300b73558b042919af121de6379ebb02401b5e5277b12ce46a229bff0",
+      "compressedBytes": 728241
+    },
+    {
+      "game": "37452163955/55/1",
+      "seed": 2026215501,
+      "block": 55,
+      "winner": 0,
+      "requests": [
+        122,
+        118
+      ],
+      "sampled": [
+        12,
+        12
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-55/block-55/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "002759b5af51206bb500ad82ef975127d800233e7c063f427134ff6c08344daa",
+      "compressedBytes": 493418
+    },
+    {
+      "game": "37452163955/56/0",
+      "seed": 2026215601,
+      "block": 56,
+      "winner": 0,
+      "requests": [
+        950,
+        952
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-56/block-56/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "6a52ea9cbb669f8554503fbce4cb033525d6ca1e5dea9ed9bb7369c36f4ef45b",
+      "compressedBytes": 3932762
+    },
+    {
+      "game": "37452163955/56/1",
+      "seed": 2026215601,
+      "block": 56,
+      "winner": 1,
+      "requests": [
+        1149,
+        1134
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-56/block-56/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "b8b01587e1cbd20ea0dcbcdc90da9f63d91f08f90bc9979cab79008ff7e28f05",
+      "compressedBytes": 4719907
+    },
+    {
+      "game": "37452163955/57/0",
+      "seed": 2026215701,
+      "block": 57,
+      "winner": 1,
+      "requests": [
+        814,
+        807
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-57/block-57/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "096c09e45992b018f72ae2ec021ab97fd403aa51e3274c0deb9f17ae98c7e381",
+      "compressedBytes": 3353864
+    },
+    {
+      "game": "37452163955/57/1",
+      "seed": 2026215701,
+      "block": 57,
+      "winner": 1,
+      "requests": [
+        351,
+        350
+      ],
+      "sampled": [
+        32,
+        32
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-57/block-57/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e290ba11db439600200aff4679fc9ebe01335dff33dcb67180a59523cf550210",
+      "compressedBytes": 1443118
+    },
+    {
+      "game": "37452163955/58/0",
+      "seed": 2026215801,
+      "block": 58,
+      "winner": 0,
+      "requests": [
+        777,
+        758
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-58/block-58/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "42a89c83c9eb6f087a92b399fbe78f064f6492942b97ad4d5a3519c4127e6ad0",
+      "compressedBytes": 3175203
+    },
+    {
+      "game": "37452163955/58/1",
+      "seed": 2026215801,
+      "block": 58,
+      "winner": 0,
+      "requests": [
+        174,
+        164
+      ],
+      "sampled": [
+        16,
+        16
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-58/block-58/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "05e3cc55709ab98c310cf3f97fc3caf4ad702cf40c4a647bad9eaf8bb4a8e29d",
+      "compressedBytes": 694033
+    },
+    {
+      "game": "37452163955/59/0",
+      "seed": 2026215901,
+      "block": 59,
+      "winner": 1,
+      "requests": [
+        923,
+        933
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-59/block-59/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "8a206ace5b0c838b60f46ba7c42ba816aa2a6282f7a7cd976ff5a855c2b18883",
+      "compressedBytes": 3851758
+    },
+    {
+      "game": "37452163955/59/1",
+      "seed": 2026215901,
+      "block": 59,
+      "winner": 1,
+      "requests": [
+        816,
+        822
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-59/block-59/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "284130818864c933bc43217e387f994462597d285f6485d5257178c07c74122b",
+      "compressedBytes": 3380160
+    },
+    {
+      "game": "37452163955/60/0",
+      "seed": 2026216001,
+      "block": 60,
+      "winner": 0,
+      "requests": [
+        911,
+        918
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-60/block-60/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d533d02b37b229c16bf451beebbb1365a5c02d6560f0877bac2a024e6ae5cf35",
+      "compressedBytes": 3791429
+    },
+    {
+      "game": "37452163955/60/1",
+      "seed": 2026216001,
+      "block": 60,
+      "winner": 0,
+      "requests": [
+        575,
+        558
+      ],
+      "sampled": [
+        51,
+        51
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-60/block-60/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "49ab8b49df761045bdc35399921cbda2e366b3830fe8386389ea1b86cf6dd92f",
+      "compressedBytes": 2343014
+    },
+    {
+      "game": "37452163955/61/0",
+      "seed": 2026216101,
+      "block": 61,
+      "winner": 1,
+      "requests": [
+        822,
+        832
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-61/block-61/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f85424feb689530923335c062c320df7822dd1eda347574954e6e7151ad7060a",
+      "compressedBytes": 3414379
+    },
+    {
+      "game": "37452163955/61/1",
+      "seed": 2026216101,
+      "block": 61,
+      "winner": 0,
+      "requests": [
+        881,
+        864
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-61/block-61/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e297350afc4c9c5f8cbac8d4b96c8502888a80d13c99df568c1cd78b77749a04",
+      "compressedBytes": 3597434
+    },
+    {
+      "game": "37452163955/62/0",
+      "seed": 2026216201,
+      "block": 62,
+      "winner": 0,
+      "requests": [
+        110,
+        120
+      ],
+      "sampled": [
+        11,
+        11
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-62/block-62/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "82e0bdf61a98fddebbb4ef19235c3135042fcd85d4b0b7a532590ad42fc3044e",
+      "compressedBytes": 468176
+    },
+    {
+      "game": "37452163955/62/1",
+      "seed": 2026216201,
+      "block": 62,
+      "winner": 1,
+      "requests": [
+        982,
+        991
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-62/block-62/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4e3607055e7adf5dbb27a94ecbc194799c7e0df18471598d995a3fa8ca38b34b",
+      "compressedBytes": 4082426
+    },
+    {
+      "game": "37452163955/63/0",
+      "seed": 2026216301,
+      "block": 63,
+      "winner": 1,
+      "requests": [
+        755,
+        757
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-63/block-63/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "2d6ff13f3c251c76ac85daaa59fb2a3f570e2e26f8cb9f854d700b783d74d6cb",
+      "compressedBytes": 3119228
+    },
+    {
+      "game": "37452163955/63/1",
+      "seed": 2026216301,
+      "block": 63,
+      "winner": 1,
+      "requests": [
+        297,
+        294
+      ],
+      "sampled": [
+        27,
+        27
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-63/block-63/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "c8e1086eae9b271a5795f6a28a15e265294799101cc01e82d023588f534749fb",
+      "compressedBytes": 1215032
+    },
+    {
+      "game": "37452163955/64/0",
+      "seed": 2026216401,
+      "block": 64,
+      "winner": 0,
+      "requests": [
+        902,
+        903
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-64/block-64/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "8dbe2a3349ad1813180b0f76ad79afea92fd2779d93733c7b21a5309a366b141",
+      "compressedBytes": 3745118
+    },
+    {
+      "game": "37452163955/64/1",
+      "seed": 2026216401,
+      "block": 64,
+      "winner": 0,
+      "requests": [
+        134,
+        148
+      ],
+      "sampled": [
+        13,
+        13
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-64/block-64/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "9c55db46233cf0adce12d43ef791a07c71f37540ed729617422bbb83ac169653",
+      "compressedBytes": 582394
+    },
+    {
+      "game": "37452163955/65/0",
+      "seed": 2026216501,
+      "block": 65,
+      "winner": 0,
+      "requests": [
+        734,
+        736
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-65/block-65/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "c6bb329035184d0135228f6547d62e7798b6ff61fb55ceddf54b314d1aa095d0",
+      "compressedBytes": 3032534
+    },
+    {
+      "game": "37452163955/65/1",
+      "seed": 2026216501,
+      "block": 65,
+      "winner": 1,
+      "requests": [
+        897,
+        904
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-65/block-65/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "df5f7109a47af87e7afb7c097d73d670fe1bd97273572b3914fff25d3e435921",
+      "compressedBytes": 3741291
+    },
+    {
+      "game": "37452163955/66/0",
+      "seed": 2026216601,
+      "block": 66,
+      "winner": 1,
+      "requests": [
+        98,
+        109
+      ],
+      "sampled": [
+        10,
+        10
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-66/block-66/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3519f47cfed1a3e7362a6891393eb6cb8ed123a38bd1cec1eff7574a6d6e7f0e",
+      "compressedBytes": 429628
+    },
+    {
+      "game": "37452163955/66/1",
+      "seed": 2026216601,
+      "block": 66,
+      "winner": 1,
+      "requests": [
+        559,
+        557
+      ],
+      "sampled": [
+        51,
+        51
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-66/block-66/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "527b43ed4cec7f6e6dd33e5a1e818b21a8a4a989bb69d17769954958a67c0d2c",
+      "compressedBytes": 2319562
+    },
+    {
+      "game": "37452163955/67/0",
+      "seed": 2026216701,
+      "block": 67,
+      "winner": 0,
+      "requests": [
+        933,
+        957
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-67/block-67/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f2c6cffe97773f2a7c7fe3157a9ad32937532b5c9a5254a6b4cc5cf7dbac686c",
+      "compressedBytes": 3893986
+    },
+    {
+      "game": "37452163955/67/1",
+      "seed": 2026216701,
+      "block": 67,
+      "winner": 0,
+      "requests": [
+        766,
+        781
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-67/block-67/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3edd9d63e094bebe3608f861a43171c343f3a358051e9d3246245853197040ac",
+      "compressedBytes": 3194553
+    },
+    {
+      "game": "37452163955/68/0",
+      "seed": 2026216801,
+      "block": 68,
+      "winner": 1,
+      "requests": [
+        865,
+        841
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-68/block-68/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "b3df5eab38a96442bdfdc071c189279f531f4d37c2b4e96cb604cf767776be42",
+      "compressedBytes": 3503842
+    },
+    {
+      "game": "37452163955/68/1",
+      "seed": 2026216801,
+      "block": 68,
+      "winner": 1,
+      "requests": [
+        222,
+        218
+      ],
+      "sampled": [
+        21,
+        21
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-68/block-68/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "9364f2813fd5f4e5a83abb45aa8f9cf9783a89a649c13ec44b4fff730ee512c7",
+      "compressedBytes": 890859
+    },
+    {
+      "game": "37452163955/69/0",
+      "seed": 2026216901,
+      "block": 69,
+      "winner": 0,
+      "requests": [
+        29,
+        30
+      ],
+      "sampled": [
+        3,
+        3
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-69/block-69/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "680c48d56c0a6594cfa7b2a83e8b51bc466090189f468e85760db09c0c6b3604",
+      "compressedBytes": 117751
+    },
+    {
+      "game": "37452163955/69/1",
+      "seed": 2026216901,
+      "block": 69,
+      "winner": 1,
+      "requests": [
+        30,
+        30
+      ],
+      "sampled": [
+        3,
+        3
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-69/block-69/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "185b91486207943848c66b105de10c772c277c25c7e754ac7065ba2dd2b6f61a",
+      "compressedBytes": 122904
+    },
+    {
+      "game": "37452163955/70/0",
+      "seed": 2026217001,
+      "block": 70,
+      "winner": 0,
+      "requests": [
+        445,
+        454
+      ],
+      "sampled": [
+        42,
+        42
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-70/block-70/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "21bc2f8318f176f8c89a1632c7c08830c1724d3036a637d3ef589d8256567406",
+      "compressedBytes": 1861228
+    },
+    {
+      "game": "37452163955/70/1",
+      "seed": 2026217001,
+      "block": 70,
+      "winner": 1,
+      "requests": [
+        419,
+        417
+      ],
+      "sampled": [
+        38,
+        38
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-70/block-70/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4d3a12fd83cf2b16af42646ac8df5a911701f847194d44f75ab25e420f344e8a",
+      "compressedBytes": 1721134
+    },
+    {
+      "game": "37452163955/71/0",
+      "seed": 2026217101,
+      "block": 71,
+      "winner": 1,
+      "requests": [
+        1083,
+        1085
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-71/block-71/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "37bedf7f6b44fe0dccfbced91e39a0b957c6feeb1def78004b01052519c0703f",
+      "compressedBytes": 4478937
+    },
+    {
+      "game": "37452163955/71/1",
+      "seed": 2026217101,
+      "block": 71,
+      "winner": 1,
+      "requests": [
+        58,
+        58
+      ],
+      "sampled": [
+        6,
+        6
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-71/block-71/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3d5b8774c8163f8a99ef2b0c7f7007eda6ef7d6bcec03aadc562d0d280913277",
+      "compressedBytes": 233032
+    },
+    {
+      "game": "37452163955/72/0",
+      "seed": 2026217201,
+      "block": 72,
+      "winner": 1,
+      "requests": [
+        963,
+        949
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-72/block-72/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3388fc7d47467b74fb4c0ce5ff85486ec4ca08574a7777248687dfc077b975ee",
+      "compressedBytes": 3960444
+    },
+    {
+      "game": "37452163955/72/1",
+      "seed": 2026217201,
+      "block": 72,
+      "winner": 1,
+      "requests": [
+        59,
+        55
+      ],
+      "sampled": [
+        6,
+        6
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-72/block-72/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d68292e95d203a248079776478f2b2927dd189ae88c03957ef944238c8df8672",
+      "compressedBytes": 227371
+    },
+    {
+      "game": "37452163955/73/0",
+      "seed": 2026217301,
+      "block": 73,
+      "winner": 1,
+      "requests": [
+        148,
+        149
+      ],
+      "sampled": [
+        15,
+        15
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-73/block-73/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "27520011700506db0e9c68a5362b1e600bf54bbd682b8b4a81d1d45430d7754e",
+      "compressedBytes": 606041
+    },
+    {
+      "game": "37452163955/73/1",
+      "seed": 2026217301,
+      "block": 73,
+      "winner": 0,
+      "requests": [
+        314,
+        310
+      ],
+      "sampled": [
+        29,
+        29
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-73/block-73/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4d185c0d8b50f4feb0c065cdddb872ccd211a8c60e8cc03768b002b7f21bc55c",
+      "compressedBytes": 1285421
+    },
+    {
+      "game": "37452163955/74/0",
+      "seed": 2026217401,
+      "block": 74,
+      "winner": 0,
+      "requests": [
+        39,
+        41
+      ],
+      "sampled": [
+        4,
+        4
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-74/block-74/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "b8d038bf8954a71bbb2d77c9fb27db9dce72f3c44d76d351b0a92adf808ac702",
+      "compressedBytes": 163467
+    },
+    {
+      "game": "37452163955/74/1",
+      "seed": 2026217401,
+      "block": 74,
+      "winner": 1,
+      "requests": [
+        126,
+        122
+      ],
+      "sampled": [
+        11,
+        11
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-74/block-74/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3784eeceda5953ef2d7a50a59a89bd77dc7bfa3f1143f1cef6083cd85905daa2",
+      "compressedBytes": 512659
+    },
+    {
+      "game": "37452163955/75/0",
+      "seed": 2026217501,
+      "block": 75,
+      "winner": 1,
+      "requests": [
+        485,
+        476
+      ],
+      "sampled": [
+        44,
+        44
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-75/block-75/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "0432b558065bed77b5be775beaf811e7c270fbca778638fc77cddd9a4f2d7ead",
+      "compressedBytes": 1984260
+    },
+    {
+      "game": "37452163955/75/1",
+      "seed": 2026217501,
+      "block": 75,
+      "winner": 0,
+      "requests": [
+        384,
+        395
+      ],
+      "sampled": [
+        36,
+        36
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-75/block-75/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "33cf266927446f902fa9cfafe065a2b312e833b2cb82f9d2ebd6ddd3b05ee276",
+      "compressedBytes": 1601727
+    },
+    {
+      "game": "37452163955/76/0",
+      "seed": 2026217601,
+      "block": 76,
+      "winner": 1,
+      "requests": [
+        148,
+        146
+      ],
+      "sampled": [
+        14,
+        14
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-76/block-76/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1444007db85b9f0a7e400676e2a106d1a34ff0f62f496a4a82294fd8b9c4ccf1",
+      "compressedBytes": 603461
+    },
+    {
+      "game": "37452163955/76/1",
+      "seed": 2026217601,
+      "block": 76,
+      "winner": 0,
+      "requests": [
+        772,
+        770
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-76/block-76/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3a2549430e644ab5c3701479068ab84000950b2b96510345def7105f8b41d1ae",
+      "compressedBytes": 3182605
+    },
+    {
+      "game": "37452163955/77/0",
+      "seed": 2026217701,
+      "block": 77,
+      "winner": 1,
+      "requests": [
+        375,
+        375
+      ],
+      "sampled": [
+        34,
+        34
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-77/block-77/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f77143af29c73417bf3eecc6b642a50d22db32fa03624c382c98f7052a01b24b",
+      "compressedBytes": 1560978
+    },
+    {
+      "game": "37452163955/77/1",
+      "seed": 2026217701,
+      "block": 77,
+      "winner": 1,
+      "requests": [
+        881,
+        865
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-77/block-77/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a3725bb8eec1ba41f2ba5e68d98db48222aad44c54712ba6c3e43c1deae52812",
+      "compressedBytes": 3621436
+    },
+    {
+      "game": "37452163955/78/0",
+      "seed": 2026217801,
+      "block": 78,
+      "winner": 0,
+      "requests": [
+        737,
+        743
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-78/block-78/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a5c435a398662e94208dc875780c213a1cdaa2a5bbd13a8999a82c84cc5cf911",
+      "compressedBytes": 3057685
+    },
+    {
+      "game": "37452163955/78/1",
+      "seed": 2026217801,
+      "block": 78,
+      "winner": 0,
+      "requests": [
+        179,
+        181
+      ],
+      "sampled": [
+        17,
+        17
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-78/block-78/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d871812de3686ebe1915340a9e5ac19d770d416c27b38f2a768b00b4bf62002c",
+      "compressedBytes": 739407
+    },
+    {
+      "game": "37452163955/79/0",
+      "seed": 2026217901,
+      "block": 79,
+      "winner": 1,
+      "requests": [
+        152,
+        147
+      ],
+      "sampled": [
+        14,
+        14
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-79/block-79/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f7a314f5b50bcc090301e9249f464bf6c60e75777011b4e59d91ce8046fd9d58",
+      "compressedBytes": 610820
+    },
+    {
+      "game": "37452163955/79/1",
+      "seed": 2026217901,
+      "block": 79,
+      "winner": 0,
+      "requests": [
+        815,
+        809
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-79/block-79/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "67bfe59cb0d1a5228dd920a06b91f445f3412497369f7284b938ac2ffce4287c",
+      "compressedBytes": 3346727
+    },
+    {
+      "game": "37452163955/80/0",
+      "seed": 2026218001,
+      "block": 80,
+      "winner": 0,
+      "requests": [
+        294,
+        295
+      ],
+      "sampled": [
+        26,
+        26
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-80/block-80/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "8b11d13a7395d1bc3d3b5b2a6dfdc5ad77bd40f35eca4ae4ad76f15c61ff794c",
+      "compressedBytes": 1208376
+    },
+    {
+      "game": "37452163955/80/1",
+      "seed": 2026218001,
+      "block": 80,
+      "winner": 1,
+      "requests": [
+        769,
+        785
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-80/block-80/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "e9bb630326bde7d02606dd3adc75ccdaf65bee3ac3f415d12247db6b89dbe62c",
+      "compressedBytes": 3220217
+    },
+    {
+      "game": "37452163955/81/0",
+      "seed": 2026218101,
+      "block": 81,
+      "winner": 1,
+      "requests": [
+        757,
+        744
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-81/block-81/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "fb4e48bf3b4a5917d332f269559e1bc9ed2bc89346131cbf3d84fb689e4d4335",
+      "compressedBytes": 3079576
+    },
+    {
+      "game": "37452163955/81/1",
+      "seed": 2026218101,
+      "block": 81,
+      "winner": 0,
+      "requests": [
+        852,
+        860
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-81/block-81/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "60e1d2025935b34fffcbd5cc89c3a1e4d82c4200ba5d9cc13ca1ca2fa0fb5821",
+      "compressedBytes": 3519307
+    },
+    {
+      "game": "37452163955/82/0",
+      "seed": 2026218201,
+      "block": 82,
+      "winner": 0,
+      "requests": [
+        75,
+        79
+      ],
+      "sampled": [
+        7,
+        7
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-82/block-82/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "7384695eae8baa552dbaf62e4bd37f8088580a6fe1ada38a2782a5390d3204d0",
+      "compressedBytes": 306335
+    },
+    {
+      "game": "37452163955/82/1",
+      "seed": 2026218201,
+      "block": 82,
+      "winner": 0,
+      "requests": [
+        342,
+        366
+      ],
+      "sampled": [
+        32,
+        32
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-82/block-82/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d40d55d2c50f1352531da10bfcde1922bb447d684bac5583e33df5ef0f0d4fc0",
+      "compressedBytes": 1437062
+    },
+    {
+      "game": "37452163955/83/0",
+      "seed": 2026218301,
+      "block": 83,
+      "winner": 0,
+      "requests": [
+        732,
+        720
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-83/block-83/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "bda82b2596775fa15c1c0f57fbe0e99e35f0dd16a66d2d9af303d1e503ad993b",
+      "compressedBytes": 3008763
+    },
+    {
+      "game": "37452163955/83/1",
+      "seed": 2026218301,
+      "block": 83,
+      "winner": 0,
+      "requests": [
+        970,
+        989
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-83/block-83/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "adc96ecf6683db648978d51c92934b713e65d325a5b3e125804e84ec5bbb117c",
+      "compressedBytes": 4064594
+    },
+    {
+      "game": "37452163955/84/0",
+      "seed": 2026218401,
+      "block": 84,
+      "winner": 1,
+      "requests": [
+        513,
+        510
+      ],
+      "sampled": [
+        47,
+        47
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-84/block-84/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "ea39b4cdc0b286bf7d17e840657ecfbe3fbb6c58eaad95b644ed6f53cb5a1ac3",
+      "compressedBytes": 2102270
+    },
+    {
+      "game": "37452163955/84/1",
+      "seed": 2026218401,
+      "block": 84,
+      "winner": 0,
+      "requests": [
+        211,
+        211
+      ],
+      "sampled": [
+        20,
+        20
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-84/block-84/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "bacd1575cc002e18f2a6ada80fa2945e28dd4df25c78edbf3a7c93fda411a770",
+      "compressedBytes": 862984
+    },
+    {
+      "game": "37452163955/85/0",
+      "seed": 2026218501,
+      "block": 85,
+      "winner": 0,
+      "requests": [
+        101,
+        96
+      ],
+      "sampled": [
+        10,
+        10
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-85/block-85/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "7ac5e808d103e6b843db4ab61b7247ad679a5a791f130b13e7716ce2c7868ce2",
+      "compressedBytes": 404535
+    },
+    {
+      "game": "37452163955/85/1",
+      "seed": 2026218501,
+      "block": 85,
+      "winner": 0,
+      "requests": [
+        121,
+        121
+      ],
+      "sampled": [
+        12,
+        12
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-85/block-85/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "3cda97c547c1ff449f3d9ac1a63af9cc741e94bfec9a42df4a3d5009be418b83",
+      "compressedBytes": 499387
+    },
+    {
+      "game": "37452163955/86/0",
+      "seed": 2026218601,
+      "block": 86,
+      "winner": 0,
+      "requests": [
+        869,
+        866
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-86/block-86/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "dfce58b2f8d911bf75a57222d91582ad613441ea83e96c7c0c680899e47b8e8b",
+      "compressedBytes": 3578909
+    },
+    {
+      "game": "37452163955/86/1",
+      "seed": 2026218601,
+      "block": 86,
+      "winner": 0,
+      "requests": [
+        875,
+        869
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-86/block-86/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "6c05207e6ecd3c57fd8677e00ddad8bbc5f66557044b02fe3b300eebdcc8a1fb",
+      "compressedBytes": 3604557
+    },
+    {
+      "game": "37452163955/87/0",
+      "seed": 2026218701,
+      "block": 87,
+      "winner": 1,
+      "requests": [
+        888,
+        874
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-87/block-87/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f0a3145dc777d6ca6d575740e4582d30442808daeb7215d6881f70205e9ec2c4",
+      "compressedBytes": 3631810
+    },
+    {
+      "game": "37452163955/87/1",
+      "seed": 2026218701,
+      "block": 87,
+      "winner": 0,
+      "requests": [
+        598,
+        615
+      ],
+      "sampled": [
+        55,
+        55
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-87/block-87/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1b3c88a79d26639f9c53b5623107d6ac465c6eb41db0be34b1de8ba296ff5ba2",
+      "compressedBytes": 2489267
+    },
+    {
+      "game": "37452163955/88/0",
+      "seed": 2026218801,
+      "block": 88,
+      "winner": 0,
+      "requests": [
+        877,
+        901
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-88/block-88/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "43f1d5cc6f1f3b3510629c9219b8aed3d3823b0b9e9623855372089e27659633",
+      "compressedBytes": 3663979
+    },
+    {
+      "game": "37452163955/88/1",
+      "seed": 2026218801,
+      "block": 88,
+      "winner": 1,
+      "requests": [
+        813,
+        814
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-88/block-88/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1e955b5d6475bd116a86f0a890a836e2f0a5d901cf4e6434679d94dc4d3ec40f",
+      "compressedBytes": 3366961
+    },
+    {
+      "game": "37452163955/89/0",
+      "seed": 2026218901,
+      "block": 89,
+      "winner": 0,
+      "requests": [
+        904,
+        898
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-89/block-89/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "833ef7c467fd5868cb4936e12926b5c6d01b2852766025b682b52497a8a2a1be",
+      "compressedBytes": 3722408
+    },
+    {
+      "game": "37452163955/89/1",
+      "seed": 2026218901,
+      "block": 89,
+      "winner": 1,
+      "requests": [
+        151,
+        156
+      ],
+      "sampled": [
+        14,
+        14
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-89/block-89/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "8de93c0ed94443f9486b31a27e92d499647fd79a4144732d585c9f552a855a5c",
+      "compressedBytes": 629105
+    },
+    {
+      "game": "37452163955/90/0",
+      "seed": 2026219001,
+      "block": 90,
+      "winner": 0,
+      "requests": [
+        736,
+        759
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-90/block-90/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "a9d547ecf27211dc136f2947edd2bddaf2af41c663745745472bac464836273d",
+      "compressedBytes": 3093294
+    },
+    {
+      "game": "37452163955/90/1",
+      "seed": 2026219001,
+      "block": 90,
+      "winner": 1,
+      "requests": [
+        498,
+        498
+      ],
+      "sampled": [
+        45,
+        45
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-90/block-90/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "07789f5e08de79b96c13af3cdce54deb407e82a7699f6e448df89ab17a3afe01",
+      "compressedBytes": 2058047
+    },
+    {
+      "game": "37452163955/91/0",
+      "seed": 2026219101,
+      "block": 91,
+      "winner": 0,
+      "requests": [
+        112,
+        108
+      ],
+      "sampled": [
+        11,
+        11
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-91/block-91/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "280cb84e96d8d5af5b7eefcf19f6936c6a3ee021b766b9d66f2e90d67a5769f9",
+      "compressedBytes": 448682
+    },
+    {
+      "game": "37452163955/91/1",
+      "seed": 2026219101,
+      "block": 91,
+      "winner": 1,
+      "requests": [
+        971,
+        962
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-91/block-91/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "2775b6979dc8d72f3c674df0b4d9937af24b23dba97bfea30a5a4cc664d5beff",
+      "compressedBytes": 3999824
+    },
+    {
+      "game": "37452163955/92/0",
+      "seed": 2026219201,
+      "block": 92,
+      "winner": 1,
+      "requests": [
+        342,
+        330
+      ],
+      "sampled": [
+        31,
+        31
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-92/block-92/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "8f510f75df7b7a9855811d935c69a5b773274573fd10bf23ffa8f863b525079e",
+      "compressedBytes": 1390947
+    },
+    {
+      "game": "37452163955/92/1",
+      "seed": 2026219201,
+      "block": 92,
+      "winner": 1,
+      "requests": [
+        139,
+        134
+      ],
+      "sampled": [
+        13,
+        13
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-92/block-92/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "bb41e96822ad37aa87eb9fc90b75a398f0bffda9643654aff16c65c03e2bae26",
+      "compressedBytes": 558193
+    },
+    {
+      "game": "37452163955/93/0",
+      "seed": 2026219301,
+      "block": 93,
+      "winner": 1,
+      "requests": [
+        997,
+        988
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-93/block-93/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "fca6315ce733656cfc62c0566bb712711e18112c61d8705026db38f73cb5c596",
+      "compressedBytes": 4107355
+    },
+    {
+      "game": "37452163955/93/1",
+      "seed": 2026219301,
+      "block": 93,
+      "winner": 0,
+      "requests": [
+        102,
+        98
+      ],
+      "sampled": [
+        10,
+        10
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-93/block-93/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "6e473250abc96db174266ec783d360ac11b50d81ba05a0a1527381b72b2bd0ee",
+      "compressedBytes": 405154
+    },
+    {
+      "game": "37452163955/94/0",
+      "seed": 2026219401,
+      "block": 94,
+      "winner": 1,
+      "requests": [
+        913,
+        905
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-94/block-94/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "d4fc3b17e310c4f074e7d2b6cd454f20451f671a435e6b94b4f1fdca022d50a9",
+      "compressedBytes": 3752730
+    },
+    {
+      "game": "37452163955/94/1",
+      "seed": 2026219401,
+      "block": 94,
+      "winner": 1,
+      "requests": [
+        816,
+        815
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-94/block-94/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "6da8d153ec89de379befeff8eb97365e1d629169188950ede5afd76af2599a1d",
+      "compressedBytes": 3374897
+    },
+    {
+      "game": "37452163955/95/0",
+      "seed": 2026219501,
+      "block": 95,
+      "winner": 0,
+      "requests": [
+        962,
+        982
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-95/block-95/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "eced878dbe235270153ab72981df81c39528df2b272ef97ae2e73897444f1480",
+      "compressedBytes": 4023000
+    },
+    {
+      "game": "37452163955/95/1",
+      "seed": 2026219501,
+      "block": 95,
+      "winner": 0,
+      "requests": [
+        869,
+        845
+      ],
+      "sampled": [
+        64,
+        64
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-95/block-95/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "bcc1e6410e8612e8bf30890566d7c59cbe94e8c175d0c6642eeeb186d3168e82",
+      "compressedBytes": 3536260
+    },
+    {
+      "game": "37452163955/96/0",
+      "seed": 2026219601,
+      "block": 96,
+      "winner": 1,
+      "requests": [
+        470,
+        460
+      ],
+      "sampled": [
+        42,
+        42
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-96/block-96/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "1eb032a59e4e0637a33bd8f6d285ad1e921c6fff9596cf93bff0dd46d7a27764",
+      "compressedBytes": 1913397
+    },
+    {
+      "game": "37452163955/96/1",
+      "seed": 2026219601,
+      "block": 96,
+      "winner": 0,
+      "requests": [
+        48,
+        52
+      ],
+      "sampled": [
+        5,
+        5
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-96/block-96/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "db95cfda390e43a295b643bf562627c989b7a22c1b282ccf53ed105cd9ba54d5",
+      "compressedBytes": 201430
+    },
+    {
+      "game": "37452163955/97/0",
+      "seed": 2026219701,
+      "block": 97,
+      "winner": 1,
+      "requests": [
+        97,
+        94
+      ],
+      "sampled": [
+        9,
+        9
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-97/block-97/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "99ae45c6901ef69cd11551da625522bbbfcc35b8b5943463d5de8ee22ec6b0ca",
+      "compressedBytes": 367143
+    },
+    {
+      "game": "37452163955/97/1",
+      "seed": 2026219701,
+      "block": 97,
+      "winner": 1,
+      "requests": [
+        382,
+        380
+      ],
+      "sampled": [
+        35,
+        35
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-97/block-97/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "f8ee8f5e3aafd1c9e6abf91f0105dbf254b45a9fa33b8af43b619d108454e63e",
+      "compressedBytes": 1553597
+    },
+    {
+      "game": "37452163955/98/0",
+      "seed": 2026219801,
+      "block": 98,
+      "winner": 0,
+      "requests": [
+        40,
+        41
+      ],
+      "sampled": [
+        4,
+        4
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-98/block-98/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "4822c67634958401107db520f9f0224fe947713a0ccd69491a8081a632c5fa98",
+      "compressedBytes": 162881
+    },
+    {
+      "game": "37452163955/98/1",
+      "seed": 2026219801,
+      "block": 98,
+      "winner": 0,
+      "requests": [
+        638,
+        645
+      ],
+      "sampled": [
+        59,
+        59
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-98/block-98/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "00fe5e6fa9a07fea2dc347fa0fb596d8f2d1c803ea2ef3b63d24b0a9e4a8b20c",
+      "compressedBytes": 2637598
+    },
+    {
+      "game": "37452163955/99/0",
+      "seed": 2026219901,
+      "block": 99,
+      "winner": 1,
+      "requests": [
+        428,
+        426
+      ],
+      "sampled": [
+        39,
+        39
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-99/block-99/attempt-0/leg-0/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "735f95bb1a996a7a7ca27758ac067841cddc3553f0e393e3423f49fc270fe984",
+      "compressedBytes": 1759108
+    },
+    {
+      "game": "37452163955/99/1",
+      "seed": 2026219901,
+      "block": 99,
+      "winner": 1,
+      "requests": [
+        322,
+        312
+      ],
+      "sampled": [
+        30,
+        30
+      ],
+      "path": ".cache/linear-value-pilot/traces/residual-arena-traces-99/block-99/attempt-0/leg-1/reports.jsonl.gz",
+      "uncompressedReportsSHA256": "35233c08e5e48e258b276e6f2c0a1173d0ed50c06247fea035db2cc056d4d9f2",
+      "compressedBytes": 1316974
+    }
+  ],
+  "features": [
+    "max_height",
+    "mean_height",
+    "holes",
+    "covered_cells",
+    "roughness",
+    "above_10",
+    "above_15",
+    "combo",
+    "btb",
+    "btb_charged",
+    "pending",
+    "active_pending",
+    "are",
+    "multiplier",
+    "hold_available",
+    "current_t",
+    "current_i",
+    "hold_t",
+    "hold_i",
+    "next_t_count",
+    "next_i_count",
+    "visible_t_distance"
+  ],
+  "pilotSamplingParity": true,
+  "gradientCheckMaxError": 2.0120127786071862e-10,
+  "trainDataSeconds": 64.87687740009278,
+  "holdoutDataSeconds": 15.061726899817586,
+  "trainingSeconds": 0.35409670043736696,
+  "totalSeconds": 80.42195519991219,
+  "featureMatrixBytesFloat64": 3192640,
+  "models": {
+    "simple": {
+      "columns": [
+        0,
+        2,
+        10
+      ],
+      "fit": {
+        "mean": [
+          8.172738151706582,
+          3.7382283861512695,
+          0.9571856842804679
+        ],
+        "scale": [
+          4.383757770496212,
+          3.822271966129907,
+          2.146079059753287
+        ],
+        "beta": [
+          -0.0001763995425002607,
+          0.08312001449433068,
+          -0.159135779466766,
+          -0.0752507576515047
+        ],
+        "iterations": 94,
+        "loss": 0.6909257535964575,
+        "maxAbsGradient": 9.750005424162198e-8,
+        "seconds": 0.03905710019171238
+      }
+    },
+    "full": {
+      "columns": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "fit": {
+        "mean": [
+          8.172738151706582,
+          6.27653377003206,
+          3.7382283861512695,
+          5.267505316826499,
+          10.573859318292001,
+          1.0385970639187547,
+          0.16858761076639847,
+          0.6392847023858552,
+          1.8763993910948902,
+          0.11567364574908048,
+          0.9571856842804679,
+          0.27964246255771086,
+          0,
+          1.005496147398679,
+          1,
+          0.1425036288767091,
+          0.13488275494410878,
+          0.2218986871552076,
+          0.15117212688248022,
+          0.6838917585667088,
+          0.7290238418608124,
+          2.311018654927393
+        ],
+        "scale": [
+          4.383757770496212,
+          4.14061567468957,
+          3.822271966129907,
+          7.17186860260233,
+          5.272897845474162,
+          2.167298757805535,
+          0.8313143038607591,
+          1.183032085833471,
+          2.0734923287040816,
+          0.3198331649910571,
+          2.146079059753287,
+          1.2254770668900556,
+          1,
+          0.02535243129769587,
+          1,
+          0.34956593746198766,
+          0.3415982982434138,
+          0.41552335649636224,
+          0.35821657546281627,
+          0.5914714206715107,
+          0.5718380732253323,
+          2.2855424482208755
+        ],
+        "beta": [
+          -0.0009187111647006806,
+          0.005539432490804801,
+          -0.0063715595206543674,
+          -0.04171722472556699,
+          -0.11286754714174341,
+          0.06925725621880698,
+          0.09582059678200239,
+          -0.08907698502018048,
+          0.04699652038066493,
+          0.01020694505650334,
+          0.019670005650852446,
+          -0.06188759422439708,
+          -0.0355538764563089,
+          0,
+          -0.00218989166952649,
+          0,
+          0.015137739796540704,
+          0.004170359030414136,
+          0.027290556129209383,
+          0.03560151914396686,
+          0.0019399248361068938,
+          0.006747594205706446,
+          0.007730499285333466
+        ],
+        "iterations": 500,
+        "loss": 0.6887770446206334,
+        "maxAbsGradient": 1.0921013326904304e-7,
+        "seconds": 0.3150396002456546
+      }
+    }
+  },
+  "frozenModelSHA256": "2ffd009d0a569a21214f6e26c80977d7a6fdf93ca779a28c6b8a01671b418086",
+  "trainingMetricsDiagnosticOnly": {
+    "constant": {
+      "rows": 14724,
+      "logLoss": 0.6931471805599454,
+      "brier": 0.25
+    },
+    "simple": {
+      "rows": 14724,
+      "logLoss": 0.6907362745482417,
+      "brier": 0.24880068428311747
+    },
+    "full": {
+      "rows": 14724,
+      "logLoss": 0.6885438940847607,
+      "brier": 0.24774562734205405
+    }
+  },
+  "holdoutMetrics": {
+    "constant": {
+      "rows": 3416,
+      "logLoss": 0.6931471805599454,
+      "brier": 0.25
+    },
+    "simple": {
+      "rows": 3416,
+      "logLoss": 0.6906960194974284,
+      "brier": 0.24880186717859606
+    },
+    "full": {
+      "rows": 3416,
+      "logLoss": 0.688774625208443,
+      "brier": 0.24784855985183474
+    }
+  },
+  "earlyHoldoutMetrics": {
+    "constant": {
+      "rows": 550,
+      "logLoss": 0.6931471805599456,
+      "brier": 0.2500000000000001
+    },
+    "simple": {
+      "rows": 550,
+      "logLoss": 0.6937363790326131,
+      "brier": 0.25029804082034074
+    },
+    "full": {
+      "rows": 550,
+      "logLoss": 0.6947548412911636,
+      "brier": 0.2507884530434767
+    }
+  },
+  "blockMetrics": [
+    {
+      "block": 80,
+      "metrics": {
+        "constant": {
+          "rows": 180,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 180,
+          "logLoss": 0.6977853613330613,
+          "brier": 0.2523079888274524
+        },
+        "full": {
+          "rows": 180,
+          "logLoss": 0.7056322088211114,
+          "brier": 0.2561104739992957
+        }
+      }
+    },
+    {
+      "block": 81,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6961173028718337,
+          "brier": 0.2514920489371497
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.6889626033305388,
+          "brier": 0.2480163335348473
+        }
+      }
+    },
+    {
+      "block": 82,
+      "metrics": {
+        "constant": {
+          "rows": 78,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 78,
+          "logLoss": 0.6723057674922268,
+          "brier": 0.23967641194705674
+        },
+        "full": {
+          "rows": 78,
+          "logLoss": 0.6589969436915428,
+          "brier": 0.23307265348682907
+        }
+      }
+    },
+    {
+      "block": 83,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6968900491773606,
+          "brier": 0.25187232705570906
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.695017151179999,
+          "brier": 0.2509996600782345
+        }
+      }
+    },
+    {
+      "block": 84,
+      "metrics": {
+        "constant": {
+          "rows": 134,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 134,
+          "logLoss": 0.6941274482900905,
+          "brier": 0.25051044829480124
+        },
+        "full": {
+          "rows": 134,
+          "logLoss": 0.681810588707621,
+          "brier": 0.2445371442795698
+        }
+      }
+    },
+    {
+      "block": 85,
+      "metrics": {
+        "constant": {
+          "rows": 44,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 44,
+          "logLoss": 0.6846069002039644,
+          "brier": 0.24574332238918065
+        },
+        "full": {
+          "rows": 44,
+          "logLoss": 0.6861934407580175,
+          "brier": 0.2466128863076709
+        }
+      }
+    },
+    {
+      "block": 86,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6963023776378789,
+          "brier": 0.25156856893825363
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.6970934860755504,
+          "brier": 0.25203064070621467
+        }
+      }
+    },
+    {
+      "block": 87,
+      "metrics": {
+        "constant": {
+          "rows": 238,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 238,
+          "logLoss": 0.6934872300497941,
+          "brier": 0.25016806119390045
+        },
+        "full": {
+          "rows": 238,
+          "logLoss": 0.6931602441540822,
+          "brier": 0.24999400042366887
+        }
+      }
+    },
+    {
+      "block": 88,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6962082796509947,
+          "brier": 0.25153283180454256
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.7010216907588401,
+          "brier": 0.2539965201077211
+        }
+      }
+    },
+    {
+      "block": 89,
+      "metrics": {
+        "constant": {
+          "rows": 156,
+          "logLoss": 0.6931471805599452,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 156,
+          "logLoss": 0.6974613541321418,
+          "brier": 0.2521467460174521
+        },
+        "full": {
+          "rows": 156,
+          "logLoss": 0.6995371113377771,
+          "brier": 0.2531169540170325
+        }
+      }
+    },
+    {
+      "block": 90,
+      "metrics": {
+        "constant": {
+          "rows": 218,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 218,
+          "logLoss": 0.6975619048837374,
+          "brier": 0.2522228608978309
+        },
+        "full": {
+          "rows": 218,
+          "logLoss": 0.6976536563422885,
+          "brier": 0.2522450382590672
+        }
+      }
+    },
+    {
+      "block": 91,
+      "metrics": {
+        "constant": {
+          "rows": 150,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 150,
+          "logLoss": 0.6910405468088917,
+          "brier": 0.24903606610487283
+        },
+        "full": {
+          "rows": 150,
+          "logLoss": 0.6911732619892152,
+          "brier": 0.24904447610015662
+        }
+      }
+    },
+    {
+      "block": 92,
+      "metrics": {
+        "constant": {
+          "rows": 88,
+          "logLoss": 0.6931471805599452,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 88,
+          "logLoss": 0.6851494447584424,
+          "brier": 0.24603585523713994
+        },
+        "full": {
+          "rows": 88,
+          "logLoss": 0.6764039950875014,
+          "brier": 0.24182233188761257
+        }
+      }
+    },
+    {
+      "block": 93,
+      "metrics": {
+        "constant": {
+          "rows": 148,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 148,
+          "logLoss": 0.6755628070502654,
+          "brier": 0.2413454875478866
+        },
+        "full": {
+          "rows": 148,
+          "logLoss": 0.6715150137342748,
+          "brier": 0.23941196134981724
+        }
+      }
+    },
+    {
+      "block": 94,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6982281044678994,
+          "brier": 0.25254318949714044
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.7040024443161566,
+          "brier": 0.2553549927575596
+        }
+      }
+    },
+    {
+      "block": 95,
+      "metrics": {
+        "constant": {
+          "rows": 256,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 256,
+          "logLoss": 0.6912268573978282,
+          "brier": 0.24903520897462705
+        },
+        "full": {
+          "rows": 256,
+          "logLoss": 0.6940510248330969,
+          "brier": 0.2501497167644746
+        }
+      }
+    },
+    {
+      "block": 96,
+      "metrics": {
+        "constant": {
+          "rows": 94,
+          "logLoss": 0.6931471805599453,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 94,
+          "logLoss": 0.6830315225909198,
+          "brier": 0.24497297101603263
+        },
+        "full": {
+          "rows": 94,
+          "logLoss": 0.6805106517411184,
+          "brier": 0.24366520504339645
+        }
+      }
+    },
+    {
+      "block": 97,
+      "metrics": {
+        "constant": {
+          "rows": 88,
+          "logLoss": 0.6931471805599452,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 88,
+          "logLoss": 0.6838420958495152,
+          "brier": 0.245433246610393
+        },
+        "full": {
+          "rows": 88,
+          "logLoss": 0.682509921634656,
+          "brier": 0.2447735708840083
+        }
+      }
+    },
+    {
+      "block": 98,
+      "metrics": {
+        "constant": {
+          "rows": 126,
+          "logLoss": 0.6931471805599451,
+          "brier": 0.25000000000000006
+        },
+        "simple": {
+          "rows": 126,
+          "logLoss": 0.688366121236201,
+          "brier": 0.24764014260898193
+        },
+        "full": {
+          "rows": 126,
+          "logLoss": 0.6754921276395951,
+          "brier": 0.241256573500403
+        }
+      }
+    },
+    {
+      "block": 99,
+      "metrics": {
+        "constant": {
+          "rows": 138,
+          "logLoss": 0.6931471805599454,
+          "brier": 0.25
+        },
+        "simple": {
+          "rows": 138,
+          "logLoss": 0.6946189140655202,
+          "brier": 0.25075355967151747
+        },
+        "full": {
+          "rows": 138,
+          "logLoss": 0.6947549380358775,
+          "brier": 0.25076006354911506
+        }
+      }
+    }
+  ],
+  "comparisons": {
+    "constant": {
+      "meanLogLossReduction": 0.0043725553515022554,
+      "approx95CI": [
+        -0.001241792433548476,
+        0.009986903136552986
+      ],
+      "improvedBlocks": 10,
+      "pairedGroups": 20
+    },
+    "simple": {
+      "meanLogLossReduction": 0.0019213942889853564,
+      "approx95CI": [
+        -0.0009397188066039355,
+        0.004782507384574648
+      ],
+      "improvedBlocks": 10,
+      "pairedGroups": 20
+    }
+  },
+  "meetsPredictionSignalGate": false,
+  "strengthEvidence": false,
+  "automaticArena": false,
+  "limitations": [
+    "Only 20 paired seed clusters in holdout, one matchup; approximate cluster t intervals.",
+    "Entire run outcomes were previously reviewed; block90 terminal Hold inspected, not a historically blind dataset.",
+    "No holdout features or labels used in fitting or hyperparameter selection.",
+    "Root-to-leaf distribution and value/reward contract unresolved; not a deployable evaluator."
+  ],
+  "sourceHashes": {
+    "scripts/kiwi-linear-value-pilot.py": "d6633ca475b915a84d0e3fb98c1604a2f8a571d02d60120adcd9327f61b7c4d0",
+    "scripts/kiwi-linear-value-holdout.py": "a27f3beaa12e9f51b904f61af5acfe2d8f51db4e96bf6badfd4c28abdd5ba49a",
+    "test/kiwi-linear-value-pilot_test.py": "409ac3e0b071f5a2625a055ecbc52ba7cdc15454d85cf119baaad24ac1db349b",
+    "test/kiwi-linear-value-holdout_test.py": "583677947e052e360422808e16e82b6958ef62e5ed31ad2445f94978cef8477f",
+    "docs/audits/cc2-alignment/LINEAR_VALUE_HOLDOUT_PLAN_2026-10-06.md": "7b4c026a7c3985499b1f3f3684d59d6cc6a2550f6f36ab57975ff7b0d9e5a93a"
+  },
+  "functionASTParityWithPilotCommit": "baf160a: features, objective_gradient, fit, predict, metrics, finite_difference_check unchanged"
+}

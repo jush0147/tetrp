@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-06 [線性模型固定holdout未過](LINEAR_VALUE_HOLDOUT_RESULT_2026-10-06.md)：160既有局訓練／40保留，full logloss .688775，但對常數及三項基準的改善區間皆含0、early較差。依事先門檻停止22項outcome predictor，無新候選／arena／自動調feature或加資料；accepted保持。不要回到舊參數順序或手寫residual支線。
+
 2026-10-06 [離線線性原型完成](LINEAR_VALUE_PILOT_RESULT_2026-10-06.md)：使用者授權新方向，40既有KO／20seed groups，3918 samples。訓練.372秒；留出訊號很弱，early劣於常數。非新arena或production候選，不接舊調參清單、不自動擴大樣本或調feature。value/reward及root→leaf分布問題尚未解決。
 
 2026-10-06 [leaf 合法性重用檢查](RESIDUAL_LEGALITY_REUSE_REVIEW_2026-10-06.md)：父 movegen 不能證明子 leaf；同狀態已展開值已由 transposition/backprop 使用；空中 cache 不含 board-specific 落點。直接重用方案不成立，目前無第二候選。本次只有文件，不派新 run，不自動接 cache／tail／舊參數。

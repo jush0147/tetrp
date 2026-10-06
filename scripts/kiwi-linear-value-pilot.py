@@ -129,9 +129,8 @@ def finite_difference_check():
     return error
 
 
-def run(root, output):
-    start = time.perf_counter()
-    output.mkdir(parents=True, exist_ok=True)
+def load_examples(root, blocks):
+    """Shared fixed sampling/audit; caller selects whole seed groups, never rows."""
     inventory = subprocess.run(['rg', '--files', '--hidden', '.cache', '-g', '*reports*.jsonl',
                                 '-g', '*reports*.jsonl.gz'], capture_output=True, text=True, check=True)
     local_paths = inventory.stdout.splitlines()
@@ -140,7 +139,7 @@ def run(root, output):
     frozen_games = {(b['block'], leg): g for b in aggregate['blocks']
                     for leg, g in enumerate(b['attempts'][0]['games']) if b['attempt'] == 0}
     examples, games, seen = [], [], set()
-    for block in range(20):
+    for block in blocks:
         for leg in range(2):
             paths = list(root.glob(f'**/block-{block}/attempt-0/leg-{leg}/reports.jsonl.gz'))
             assert len(paths) == 1, (block, leg, paths)
@@ -188,6 +187,13 @@ def run(root, output):
                           'sampled': [len(a) for a in selected], 'path': path.as_posix(),
                           'uncompressedReportsSHA256': source_hash.hexdigest(),
                           'compressedBytes': path.stat().st_size})
+    return examples, games, local_paths
+
+
+def run(root, output):
+    start = time.perf_counter()
+    output.mkdir(parents=True, exist_ok=True)
+    examples, games, local_paths = load_examples(root, range(20))
     data_seconds = time.perf_counter()-start
     x = np.array([e['x'] for e in examples], dtype=float)
     y = np.array([e['y'] for e in examples], dtype=float)
