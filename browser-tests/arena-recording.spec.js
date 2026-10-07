@@ -1,0 +1,24 @@
+import {test,expect} from '@playwright/test';
+import {fileURLToPath} from 'node:url';
+test('arena recording uses the normal viewer for landing, clear, NEXT and rounds',async({page})=>{
+ await page.goto('./');
+ await page.locator('#file').setInputFiles(fileURLToPath(new URL('../test/fixtures/arena-placement.ttrm',import.meta.url)));
+ await expect(page.locator('#viewer')).toBeVisible();
+ await expect(page.locator('#next-placement')).toBeEnabled();
+ await expect(page.locator('#next canvas')).toHaveCount(5);
+ await expect(page.locator('#round option')).toHaveCount(2);
+ await page.locator('#next-placement').click();
+ await expect(page.locator('#position-status')).toContainText('落點／消行前');
+ await page.locator('#next-placement').click();
+ await expect(page.locator('#pieces')).toHaveText('1');
+ await expect(page.locator('#position-status')).toContainText('消行後');
+ await page.locator('#previous').click();
+ await expect(page.locator('#pieces')).toHaveText('0');
+ await expect(page.locator('#analyze')).toBeDisabled();
+ await page.locator('#round').selectOption('1');
+ await expect(page.locator('#pieces')).toHaveText('0');
+ await expect(page.locator('#next-placement')).toBeEnabled();
+ await page.locator('#play').click();
+ await expect(page.locator('#pieces')).toHaveText('1');
+ await expect(page.locator('#play')).toHaveAttribute('aria-pressed','false');
+});

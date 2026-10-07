@@ -1,5 +1,6 @@
 import { parseReplay, selectPlayer, prepareReplay, Reconstruction } from '../src/replay/index.js';
 import {visibleState} from '../src/analysis/visible-state.js';
+import {PlacementRecordingSession} from './placement-recording.js';
 
 export const MAX_FILE_BYTES = 32 * 1024 * 1024;
 export const MAX_FRAMES = 216000; // One hour at 60 source frames/second.
@@ -28,6 +29,7 @@ export class ViewerSession {
   constructor(replay, round, player) {
     const selected=selectPlayer(replay,round,player);
     if(selected.stream.frames>MAX_FRAMES)throw new Error('此 viewer 支援最長一小時的 stream。');
+    if(selected.stream.tetrp)return new PlacementRecordingSession(selected);
     this.session=new Reconstruction(prepareReplay(selected));
     this.frames=selected.stream.frames;
     this.total=0;this.conformance=null;this.placements=new Map();
