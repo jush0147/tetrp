@@ -27,12 +27,6 @@ jobs:
       - run: npx playwright install --with-deps chromium webkit
       # Synthetic fixtures only. Private sample paths, traces and screenshots stay local.
       - run: npm run test:browser -- --grep-invert "real private"
-      - name: Include mobile Kiwi match viewer
-        run: |
-          curl -fL --retry 3 https://github.com/jush0147/tetrp/releases/download/kiwi-observation-37616553558/kiwi-observation-mobile.zip -o /tmp/kiwi-observation.zip
-          echo "69c62d598e74751cd3d1112bd1c0774a4da29a771f607afaa69ffe383d6b630a  /tmp/kiwi-observation.zip" | sha256sum --check
-          mkdir -p dist/kiwi-ft7
-          unzip -q /tmp/kiwi-observation.zip -d dist/kiwi-ft7
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
