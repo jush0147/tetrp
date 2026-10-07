@@ -62,6 +62,7 @@ export function projectAnchor(data, {preSpawn=false, solo=false} = {}) {
 /** v19 compatibility behavior for observed v15 solo and v19 1v1 variants. */
 export function prepareReplay(player) {
   const stream=player.stream, raw=orderedEvents(player), end=raw.find(e=>e.type==='end');
+  if(stream.tetrp)fail('stream.tetrp','Placement recordings require the Tetrp recording viewer; they are not physical input replays');
   const mode=player.gamemode==='league'?'tl':player.gamemode==='40l'?'40l':null;
   if(!mode || mode==='tl' && stream.options.version!==19 || mode==='40l' && stream.options.version!==15)fail('gamemode/version','Unsupported profile combination');
   if (![15,19].includes(stream.options.version)) fail('options.version','Unsupported gameplay version');

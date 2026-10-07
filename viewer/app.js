@@ -218,12 +218,12 @@ function renderRound(m,initial){
   $('boards').classList.toggle('dual',Boolean(other));$('peer-lane').hidden=!other;
   const model=renderLane('',primary,initial);if(other)renderLane('peer-',other,initial);
   state=primary.state??null;total=primary.total??0;desired=state?.stats.pieces??0;
-  $('analyze').disabled=!state||!state.playing||state.piece.sleeping;
+  $('analyze').disabled=!state||!state.playing||state.piece.sleeping||state.recording;
   $('scrubber').max=String(total);$('scrubber').value=String(desired);$('scrubber').disabled=!state;
   $('scrubber').setAttribute('aria-valuetext',state?`${desired} / ${total}`:'此玩家不支援');
-  $('previous').disabled=!state||(desired===0&&!primary.navigationStop);$('next-placement').disabled=!state||desired>=total;$('play').disabled=!available;
+  $('previous').disabled=!state||(primary.canPrevious!==undefined?!primary.canPrevious:desired===0&&!primary.navigationStop);$('next-placement').disabled=!state||(primary.canNext!==undefined?!primary.canNext:desired>=total);$('play').disabled=!available;
   autoStep.check();
-  $('position-status').textContent=`Frame ${roundFrame}${state?`，第 ${desired} / ${total} 顆`:''}`;
+  $('position-status').textContent=`Frame ${roundFrame}${state?`，第 ${desired} / ${total} 顆`:''}${primary.recordingPhase==='landing'?' · 落點／消行前':primary.recordingPhase==='result'?' · 消行後':''}`;
   $('playback-position').textContent=`${timeLabel(roundFrame/60)} / Piece ${desired}${primary.navigationStop?' · 垃圾入盤前':''}`;
   $('playback-position').title=`Frame ${roundFrame}`;
   document.dispatchEvent(new CustomEvent('tetrp:position',{detail:structuredClone({state,model,views:m.views,roundFrame})}));
