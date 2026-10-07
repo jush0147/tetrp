@@ -1,0 +1,61 @@
+name: Aligned versus vendored Kiwi observation FT7
+on:
+  push:
+    branches: [codex/kiwi-ft7-actions]
+    paths: [.github/workflows/kiwi-observation-ft7.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: kiwi-observation-ft7
+  cancel-in-progress: false
+jobs:
+  arena:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fetch exact accepted aligned binary
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 36849221714 --repo jush0147/tetrp --name kiwi-native-runtime-36849221714 --dir .cache/observation-build
+          chmod +x .cache/observation-build/snapshot-accepted
+      - name: Authority and recording checks
+        run: node --test test/placement-authority.test.js test/kiwi-parallel-arena.test.js test/kiwi-cc2-series-score.test.js test/kiwi-native-client.test.js test/kiwi-observation.test.js
+      - name: Two-seat bounded correctness smoke, no score
+        run: node scripts/kiwi-observation-ft7.js smoke
+      - name: One KO-only FT7 with all rounds and decision reports
+        timeout-minutes: 320
+        run: node scripts/kiwi-observation-ft7.js run
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kiwi-observation-ft7-${{ github.run_id }}
+          path: .cache/observation-ft7/
+          include-hidden-files: true
+          retention-days: 30
+  notify:
+    if: always() && github.event_name == 'workflow_dispatch'
+    needs: arena
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: kiwi-observation-ft7-${{ github.run_id }}
+          path: .cache/observation-ft7
+      - name: Notify once
+        env:
+          AUDIT_JOB_STATUS: ${{ needs.arena.result }}
+        run: node scripts/kiwi-observation-ft7.js notify

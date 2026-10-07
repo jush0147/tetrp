@@ -1,5 +1,7 @@
 # 後續 evaluator 機制順序
 
+2026-10-07 [分支續局端到端可行性審查](BRANCH_VALUE_FEASIBILITY_2026-10-07.md)完成，僅文件。發現舊 root A/B KO 工程及未重現方向的複驗已存在，收回再做小批同類續局的建議。這類資料直接支援 root reranking，不能冒充 search leaf labels；尚無合格新模型與成本方案，不派資料／訓練／arena。accepted 不變，目前無待跑任務。下方「唯一主線」及 pending 均為歷史狀態，以本段和最新文件為準。
+
 2026-10-07 [六手樣本核對完成](VALUE_SEGMENT_AUDIT_2026-10-07.md)：8段實際trajectory與root資訊分開保存，揭露／新incoming／endpoint時序導致其非現行search leaf。缺scenario leaf及其合法label對應，沒有新training rows／模型／對戰；不自動延續為leaf-trace工程。
 
 2026-10-06 [勝負value接線設計](WIN_VALUE_SEARCH_CONTRACT_2026-10-06.md)：edge=0、leaf用同一勝負尺度，但F必須含root context與模擬出攻擊／時間資訊；自己盤面value不足以替代現有sent。尚無可用模型與資料契約實作，不開arena、不恢復22項fit或舊權重。設計文件已交付，非新候選。

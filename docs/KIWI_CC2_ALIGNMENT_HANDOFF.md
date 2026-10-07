@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-07 [分支續局端到端可行性審查](audits/cc2-alignment/BRANCH_VALUE_FEASIBILITY_2026-10-07.md)完成，僅文件。發現舊 root A/B KO 工程及未重現方向的複驗已存在，收回再做小批同類續局的建議。這類資料直接支援 root reranking，不能冒充 search leaf labels；尚無合格新模型與成本方案，不派資料／訓練／arena。accepted 不變，目前無待跑任務。下方「唯一主線」及 pending 均為歷史狀態，以本段和最新文件為準。
+
 2026-10-07 [連續六手資料樣本審查](audits/cc2-alignment/VALUE_SEGMENT_AUDIT_2026-10-07.md)完成：既有block0/leg0固定4起點×雙方，8段48locks紀錄parity與token序列通過。4段中途新incoming；8段都有後續request暴露於新preview，empty-Hold段第6手用了起點未知piece。真實trajectory可作behavior資料，但不是起點固定資訊下的model leaf；一般reports缺scenario best-chain leaf，更缺counterfactual label。保存完整公共樣本與時間差異，trainingRowsCreated=0，未訓練／開arena／改bot。不自動派leaf trace或新資料工程。
 
 2026-10-06 [勝負value搜尋契約](audits/cc2-alignment/WIN_VALUE_SEARCH_CONTRACT_2026-10-06.md)完成，僅設計。選定非終局edge reward=0、leaf為root／model-state／Δsent／elapsed／known-prefix條件化utility，跨scenario平均；不將勝率/logit與sent混加。現有forecast沒有對手受擊／未來回攻，因此不能只刪attack reward再接舊22項分類器。精確POMDP價值與現行情境近似分開；Hold資訊增益、simultaneous retry、TT/path摘要、成本與資料label限制均記錄。尚無合格F／訓練資料方案，未實作／訓練／派arena，不重啟停止的線性模型。
