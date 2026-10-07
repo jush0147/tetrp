@@ -1,5 +1,7 @@
 # Kiwi：回到 CC2 分支做 Tetrp 規則耦合審查
 
+2026-10-07 使用者新授權一場[觀察用FT7](audits/cc2-alignment/OBSERVATION_FT7_2026-10-07.md)：aligned accepted vs repo內建Kiwi v3.2，非Native或residual候選。run37616553558，source8e912e7，已dispatch；一次FT7、ntfy、不盯跑。所有rounds的離線watch.html與完整候選／authority traces供定位skim，不是.ttrm，也不恢復調參／學習支線。以下「無待跑任務」為前一輪停止時狀態。
+
 2026-10-07 [分支續局端到端可行性審查](audits/cc2-alignment/BRANCH_VALUE_FEASIBILITY_2026-10-07.md)完成，僅文件。發現舊 root A/B KO 工程及未重現方向的複驗已存在，收回再做小批同類續局的建議。這類資料直接支援 root reranking，不能冒充 search leaf labels；尚無合格新模型與成本方案，不派資料／訓練／arena。accepted 不變，目前無待跑任務。下方「唯一主線」及 pending 均為歷史狀態，以本段和最新文件為準。
 
 2026-10-07 [連續六手資料樣本審查](audits/cc2-alignment/VALUE_SEGMENT_AUDIT_2026-10-07.md)完成：既有block0/leg0固定4起點×雙方，8段48locks紀錄parity與token序列通過。4段中途新incoming；8段都有後續request暴露於新preview，empty-Hold段第6手用了起點未知piece。真實trajectory可作behavior資料，但不是起點固定資訊下的model leaf；一般reports缺scenario best-chain leaf，更缺counterfactual label。保存完整公共樣本與時間差異，trainingRowsCreated=0，未訓練／開arena／改bot。不自動派leaf trace或新資料工程。

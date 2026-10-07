@@ -26,3 +26,9 @@
 不偽裝成.ttrm：既有 exporter只接受physical-input-v1，強制用它會改變此次測驗語意。新HTML無正式viewer修改，不加入TBP／real-time transport。
 
 單次GitHub Actions，完成或失敗送ntfy `just_a_kiwi_for_tetrp`，不持續盯跑、不自動追加。workflow push僅註冊，真正FT7需一次dispatch。
+
+## Dispatch
+
+2026-10-07 已啟動 [run37616553558](https://github.com/jush0147/tetrp/actions/runs/37616553558)，source `8e912e725e745411a51590f5aa64b5d5c5dbefe8`。首次查詢 queued；尚無比賽結果。push run37616532028只註冊workflow，沒有執行arena。Artifact名稱 `kiwi-observation-ft7-37616553558`。
+
+啟動確認：artifact下載、21項tests、兩seat smoke均success；2026-10-07 11:48:22 UTC進入正式FT7。此後不監看，等待ntfy。dispatch紀錄後續只保存在本機docs commit，不改此次source。
