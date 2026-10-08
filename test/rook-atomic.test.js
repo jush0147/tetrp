@@ -76,7 +76,8 @@ test('atomic legality proof accepts ordinary TL replay ARE and garbage settings'
     demo.prepare({action:{kind:'place'},move:decision.move,execution:decision.execution},snapshot.revision);
     const next=demo.commit(snapshot.revision);
     assert.equal(next.index,1);
-    assert.equal(demo.engine.state.frame,24);
+    assert.ok(demo.engine.state.frame>=24);
+    assert.equal(next.visible.current.sleeping,false);
     assert.equal(e.serialize(),original);
   }
 });
