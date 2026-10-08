@@ -12,7 +12,8 @@ const options={depth:Number(process.env.ROOK_DEPTH??4),
   beamWidth:Number(process.env.ROOK_BEAM??24),
   maxNodes:Number(process.env.ROOK_NODES??6000),
   maxStates:Number(process.env.ROOK_STATES??1200),
-  maxSteps:42,includeRanked:true};
+  maxSteps:42,includeRanked:true,
+  spinForecast:process.env.ROOK_SPIN_FORECAST!=='0'};
 if(!seeds.length||seeds.some(x=>!Number.isSafeInteger(x))||
   !Number.isSafeInteger(count)||count<1||count>1000)throw Error('invalid strength screen');
 for(const seed of seeds){
@@ -21,6 +22,7 @@ for(const seed of seeds){
   const demo=new BotDemo(engine);
   const original=engine.serialize();
   let pieces=0,holdMoves=0,quads=0,spins=0,attempted=0,elapsed=0;
+  const spinByPiece={},spinByKind={};let peakB2B=0;
   while(pieces<count&&!demo.view().stopped){
     let placed=false;
     const start=performance.now();
@@ -42,7 +44,13 @@ for(const seed of seeds){
             pieces++;
             const clear=demo.view().lastPlacement;
             if(clear.lines===4)quads++;
-            if(clear.spin!=='none'&&clear.lines>0)spins++;
+            if(clear.spin!=='none'&&clear.lines>0){
+              spins++;
+              const name=clear.piece.toUpperCase();
+              spinByPiece[name]=(spinByPiece[name]??0)+1;
+              spinByKind[clear.spin]=(spinByKind[clear.spin]??0)+1;
+            }
+            peakB2B=Math.max(peakB2B,demo.engine.state.attack.btb);
             placed=true;
           }
           prepared=true;break;
@@ -56,7 +64,7 @@ for(const seed of seeds){
   }
   const a=demo.engine.state.attack.totals;
   const row={type:'rook-visible-strength-screen',seed,pieces,holds:holdMoves,quads,spins,
-    generated:a.generated,sent:a.sent,rawAPP:Number((a.generated/pieces).toFixed(4)),
+    generated:a.generated,sent:a.sent,spinByPiece,spinByKind,peakB2B,rawAPP:Number((a.generated/pieces).toFixed(4)),
     sentAPP:Number((a.sent/pieces).toFixed(4)),attempted,
     meanDecisionMs:Math.round(elapsed/pieces),stopped:demo.view().stopped,
     originalUnchanged:engine.serialize()===original,options};
