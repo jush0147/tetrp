@@ -1,5 +1,6 @@
 import {setRecoveryHooks} from './pwa.js';
 import {DemoController} from './demo-controller.js';
+import {BotAdapter} from './bot-adapter.js';
 import {CurrentReplayStore} from './persistence.js';
 import {bindViewport} from './viewport.js';
 bindViewport(window,document.documentElement);
@@ -8,6 +9,8 @@ import {bindPlayModes,bindPicker,nextRound} from './play-modes.js';
 import {boardModel,drawBoard,drawPreview} from './render.js';
 import {PlaybackClock,displayStats,placementLabel,incomingGarbage,visibleGarbage} from './playback.js';
 const $=id=>document.getElementById(id);
+const botName=()=>$('bot-mode').value==='rook'?'ROOK':'Kiwi';
+const isRook=()=>$('bot-mode').value==='rook';
 const playbackMode=bindPlayModes($('play-mode'),$('mode-menu'),$('mode-toast'),()=>{if(transitionTimer)finishRound();});
 let transitionTimer=null,resumeRound=false;
 const autoStep=bindAutoStep($('previous'),$('next-placement'),direction=>step(direction),()=>!!state&&!inflight);
@@ -45,34 +48,47 @@ function demoControls(){
   $('next-placement').disabled=demo.busy||!v||v.index>=v.total&&v.stopped;
   $('analyze').disabled=demo.busy||!v||v.index>=v.total&&v.stopped;
   $('analyze').setAttribute('aria-busy',String(demo.busy));
-  $('analyze').setAttribute('aria-label','Kiwi 示範下一手');
+  $('analyze').setAttribute('aria-label',botName()+' 示範下一手');
 }
 function showDemo(view){
   if(!view||!demoActive)return;
   const primary=originalRound.views.find(v=>v.player===originalRound.focus);
   renderLane('',{...primary,state:view.state,lastPlacement:view.lastPlacement,conformance:null},false);
-  $('board').setAttribute('aria-label',$('board').getAttribute('aria-label')+' Kiwi 示範');
-  $('playback-position').textContent='Kiwi '+view.index+' / '+view.total;
-  $('analysis-status').textContent=view.stopped?'Kiwi 分支已結束':'Kiwi 第 '+view.index+' 手 · → 下一手';
+  $('board').setAttribute('aria-label',$('board').getAttribute('aria-label')+' '+botName()+' 示範');
+  $('playback-position').textContent=botName()+' '+view.index+' / '+view.total;
+  $('analysis-status').textContent=view.stopped?botName()+' 分支已結束':botName()+' 第 '+view.index+' 手 · → 下一手';
   demoControls();
   document.dispatchEvent(new CustomEvent('tetrp:demo',{detail:structuredClone({index:view.index,total:view.total,state:view.visible,stopped:view.stopped})}));
 }
 const demo=new DemoController({rpc:demoRpc,onView:showDemo,
-  onThinking:()=>{$('analysis-panel').hidden=false;$('analysis-status').textContent='Kiwi 思考中…';demoControls();},
+  onThinking:()=>{$('analysis-panel').hidden=false;$('analysis-status').textContent=botName()+' 思考中…';demoControls();},
   onRecommendation:result=>{
     drawBoard($('board'),boardModel(demo.view.state),result.move);
-    $('analysis-status').textContent=result.action.kind==='hold'?'Kiwi HOLD · 補齊預覽後重新分析':'Kiwi 準備落子…';
-    $('analysis-details').textContent=['200,000 node budget · '+result.nodes+' nodes · '+result.completion,
+    $('analysis-status').textContent=result.action.kind==='hold'?botName()+' HOLD · 補齊預覽後重新分析':botName()+' 準備落子…';
+    $('analysis-details').textContent=[result.nodeBudget+' node budget · '+result.nodes+' nodes · '+result.completion,
       ...result.warnings,'示範使用獨立垃圾洞位；不加入對手未來攻擊，未確認抵達時間維持未知。'].join('\n');
-  },onResult:result=>{document.dispatchEvent(new CustomEvent('tetrp:analysis',{detail:structuredClone(result)}));},
+  },onResult:result=>{document.dispatchEvent(new CustomEvent('tetrp:analysis',{detail:structuredClone({...result,bot:$('bot-mode').value})}));},
   onError:error=>{$('analysis-status').textContent=error.message;demoControls();}
 });
+function switchBot(){
+  // Each engine receives the exact same player-visible snapshot via BotAdapter.
+  // A mode change cancels the entire disposable branch, never its replay source.
+  demo.bot.dispose();
+  demo.bot=isRook()
+    ?new BotAdapter(()=>new Worker(new URL('./rook-worker.js',import.meta.url),{type:'module'}))
+    :new BotAdapter();
+  $('analyze').dataset.bot=$('bot-mode').value;
+  $('kiwi-mark').hidden=isRook();
+  $('rook-mark').hidden=!isRook();
+  $('analyze').setAttribute('aria-label',botName()+' 分析此位置');
+  $('analyze').title=botName()+' 分析此位置';
+}
 function clearAnalysis(){
   const wasActive=demoActive;demoActive=false;demo.cancel();
   for(const p of demoRequests.values())p.reject(new DOMException('Demo cancelled','AbortError'));demoRequests.clear();
   if(wasActive)worker?.postMessage({type:'demo-exit'});
   $('analysis-panel').hidden=true;$('analysis-status').textContent='';$('analysis-details').textContent='';
-  $('analyze').setAttribute('aria-busy','false');$('analyze').setAttribute('aria-label','Kiwi 分析此位置');
+  $('analyze').setAttribute('aria-busy','false');$('analyze').setAttribute('aria-label',botName()+' 分析此位置');
   if(wasActive&&originalRound){renderRound(originalRound,false);$('speed').disabled=!available;$('play-mode').disabled=!available;}
 }
 $('analyze').addEventListener('click',()=>{
@@ -80,9 +96,13 @@ $('analyze').addEventListener('click',()=>{
   if(demoActive){demo.next();return;}
   demoActive=true;$('analysis-panel').hidden=false;$('analysis-details').textContent='';demo.begin();
 });
-$('clear-analysis').setAttribute('aria-label','退出 Kiwi，回到原 replay');
-$('clear-analysis').title='退出 Kiwi，回到原 replay';
+$('clear-analysis').setAttribute('aria-label','退出分析，回到原 replay');
+$('clear-analysis').title='退出分析，回到原 replay';
 $('clear-analysis').addEventListener('click',clearAnalysis);
+$('bot-mode').addEventListener('change',()=>{
+  clearAnalysis();switchBot();$('bot-mode').closest('details').open=false;
+});
+switchBot();
 const request=(type,data={})=>{clearAnalysis();active=++serial;worker.postMessage({id:active,type,...data});return active;};
 function stop(cancelAuto=true){scrubbing=false;scrubWasPlaying=false;scrubResumeId=null;clearTimeout(transitionTimer);transitionTimer=null;resumeRound=false;$('boards').classList.remove('round-transition');if(cancelAuto)autoStep.stop();if(playing)clock.pause(performance.now());playing=false;cancelAnimationFrame(raf);$('play').textContent='▶';$('play').setAttribute('aria-label','播放');$('play').title='播放';$('play').setAttribute('aria-pressed','false');}
 function busy(message){stop();inflight=false;state=null;available=false;for(const id of ['play','previous','next-placement'])$(id).disabled=true;$('viewer').hidden=true;$('error').hidden=true;$('busy').textContent=message;$('busy').hidden=false;}
