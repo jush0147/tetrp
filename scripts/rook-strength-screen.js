@@ -15,7 +15,9 @@ const options={depth:Number(process.env.ROOK_DEPTH??4),
   maxSteps:42,includeRanked:true,
   spinForecast:process.env.ROOK_SPIN_FORECAST!=='0',
   reversePlanner:process.env.ROOK_REVERSE_PLANNER==='1',
-  reverseMaxCandidates:Number(process.env.ROOK_REVERSE_CANDIDATES??250)};
+  reverseMaxCandidates:Number(process.env.ROOK_REVERSE_CANDIDATES??250),
+  reverseLongMaxCandidates:Number(process.env.ROOK_REVERSE_LONG_CANDIDATES??600),
+  reverseLongMaxGoals:Number(process.env.ROOK_REVERSE_LONG_GOALS??15)};
 if(!seeds.length||seeds.some(x=>!Number.isSafeInteger(x))||
   !Number.isSafeInteger(count)||count<1||count>1000)throw Error('invalid strength screen');
 for(const seed of seeds){
