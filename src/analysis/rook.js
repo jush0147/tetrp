@@ -230,13 +230,13 @@ function applyPlacement(node,placement,rules){
   B.removeLines(board,full);
   const allClear=full.length>0&&B.emptyWithPerma(board);
   const attack=predictAttack(node,full.length,placement.spin,allClear,garbageRows,rules);
+  // Tetrp only declares a lockout KO when nolockout is disabled and no
+  // clutch clear saved it. Above-visible locks may still be legal in TL.
+  const lockout=toppedOut&&!rules.nolockout&&(!full.length||!rules.clutch);
   const reward=attack.offensive*4.8+attack.defensive*5.1+
     (placement.spin==='full'&&full.length?2.1:0)+
     (allClear?12:0)+(full.length&&attack.btb>0?1.0:0)-
-    (toppedOut?100000:0)-placement.softdrop*.035;
-  // B.commit reports an above-visible lock, NOT necessarily a KO. Tetrp
-  // allows it with nolockout, and Clutch can rescue a lock that cleared rows.
-  const lockout=toppedOut&&!rules.nolockout&&(!full.length||!rules.clutch);
+    (lockout?100000:0)-placement.softdrop*.035;
   return {board,...attack,reward,topout:lockout,lines:full.length,
     spin:placement.spin,allClear};
 }
