@@ -43,7 +43,7 @@ function land(board,p){
   return q;
 }
 
-export function enumerateReachable(board,piece,rules,{maxStates=900,maxSteps=19}={}){
+export function enumerateReachable(board,piece,rules,{maxStates=1200,maxSteps=42}={}){
   if(!B.legal(board,piece))return [];
   const fifo=[{p:{...piece},path:[]}],seen=new Set(),results=new Map();
   for(let head=0;head<fifo.length&&seen.size<maxStates;head++){
@@ -58,9 +58,25 @@ export function enumerateReachable(board,piece,rules,{maxStates=900,maxSteps=19}
     }
     if(path.length>=maxSteps)continue;
     for(const act of ACTIONS){
-      if(act==='down'&&path.filter(a=>a==='down').length>=8)continue;
-      const next=step(board,p,act,rules);
-      if(next&&!seen.has(poseKey(next)))fifo.push({p:next,path:[...path,act]});
+      if(act!=='down'){
+        const next=step(board,p,act,rules);
+        if(next&&!seen.has(poseKey(next)))fifo.push({p:next,path:[...path,act]});
+        continue;
+      }
+      // T-spin slots can be twenty rows below spawn. A single-row BFS with
+      // a short path bound silently excludes them. Explore legal vertical
+      // corridors with macro drops; the executable witness still contains
+      // every individual down input and Tetrp must validate its timing.
+      for(const count of [1,4,8,16,24]){
+        if(path.length+count>maxSteps)continue;
+        let dropped=p,legal=true;
+        for(let i=0;i<count;i++){
+          dropped=step(board,dropped,'down',rules);
+          if(!dropped){legal=false;break}
+        }
+        if(legal&&!seen.has(poseKey(dropped)))
+          fifo.push({p:dropped,path:[...path,...Array(count).fill('down')]});
+      }
     }
   }
   return [...results.values()];
@@ -167,7 +183,7 @@ function applyPlacement(node,placement,rules){
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
 export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
-  maxStates=900,maxSteps=19,includeRanked=false}={}){
+  maxStates=1200,maxSteps=42,includeRanked=false}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
