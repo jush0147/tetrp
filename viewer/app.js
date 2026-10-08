@@ -60,7 +60,7 @@ function showDemo(view){
   demoControls();
   document.dispatchEvent(new CustomEvent('tetrp:demo',{detail:structuredClone({index:view.index,total:view.total,state:view.visible,stopped:view.stopped})}));
 }
-const demo=new DemoController({rpc:demoRpc,onView:showDemo,
+const demo=new DemoController({rpc:demoRpc,onView:showDemo,placementMode:()=>isRook()?'atomic':'timed',
   onThinking:()=>{$('analysis-panel').hidden=false;$('analysis-status').textContent=botName()+' 思考中…';demoControls();},
   onRecommendation:result=>{
     drawBoard($('board'),boardModel(demo.view.state),result.move);
