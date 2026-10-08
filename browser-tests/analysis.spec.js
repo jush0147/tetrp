@@ -86,6 +86,11 @@ test('empty Hold executes and reanalyzes before placement; all assets stay local
 });
 
 test('ROOK mode runs in isolated browser Worker, keeps NEXT 5, and exits without modifying replay',async({page})=>{
+  page.on('console',msg=>{if(msg.type()==='error')console.log('ROOK_BROWSER_CONSOLE',msg.text());});
+  page.on('pageerror',error=>console.log('ROOK_PAGE_ERROR',error.message));
+  page.on('requestfailed',request=>console.log('ROOK_REQUEST_FAILED',request.url(),request.failure()));
+  page.on('response',response=>{if(response.url().includes('rook-worker'))console.log('ROOK_WORKER_HTTP',response.status(),response.url());});
+  page.on('worker',worker=>console.log('ROOK_WORKER_STARTED',worker.url()));
   await page.addInitScript(()=>document.addEventListener('tetrp:demo',e=>window.demo=e.detail));
   await open(page,replay(42));
   const original=await page.evaluate(()=>JSON.stringify(window.position));
