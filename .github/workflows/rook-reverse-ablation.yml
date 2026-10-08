@@ -5,6 +5,7 @@ on:
     paths:
       - src/analysis/rook.js
       - src/analysis/rook-reverse-planner.js
+      - src/analysis/rook-long-planner.js
       - scripts/rook-strength-screen.js
       - .github/workflows/rook-reverse-ablation.yml
   workflow_dispatch:
@@ -29,6 +30,8 @@ jobs:
         env:
           ROOK_REVERSE_PLANNER: ${{ matrix.reverse }}
           ROOK_REVERSE_CANDIDATES: '250'
+          ROOK_REVERSE_LONG_CANDIDATES: '600'
+          ROOK_REVERSE_LONG_GOALS: '15'
           SEEDS: ${{ matrix.seed }}
           PIECES: '120'
           ROOK_NODES: '6000'
