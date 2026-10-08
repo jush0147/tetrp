@@ -234,7 +234,10 @@ function applyPlacement(node,placement,rules){
     (placement.spin==='full'&&full.length?2.1:0)+
     (allClear?12:0)+(full.length&&attack.btb>0?1.0:0)-
     (toppedOut?100000:0)-placement.softdrop*.035;
-  return {board,...attack,reward,topout:toppedOut,lines:full.length,
+  // B.commit reports an above-visible lock, NOT necessarily a KO. Tetrp
+  // allows it with nolockout, and Clutch can rescue a lock that cleared rows.
+  const lockout=toppedOut&&!rules.nolockout&&(!full.length||!rules.clutch);
+  return {board,...attack,reward,topout:lockout,lines:full.length,
     spin:placement.spin,allClear};
 }
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
