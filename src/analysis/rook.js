@@ -151,7 +151,7 @@ function evaluateBoard(board,ctx){
 function applyPlacement(node,placement,rules){
   const board=copyBoard(node.board);
   if(!B.legal(board,placement.piece))return null;
-  const wasAbove=B.commit(board,placement.piece);
+  const toppedOut=B.commit(board,placement.piece);
   const full=B.fullLines(board);
   const garbageRows=full.filter(y=>board.rows[y].includes('gb')).length;
   B.removeLines(board,full);
@@ -160,8 +160,8 @@ function applyPlacement(node,placement,rules){
   const reward=attack.offensive*4.8+attack.defensive*5.1+
     (placement.spin==='full'&&full.length?2.1:0)+
     (allClear?12:0)+(full.length&&attack.btb>0?1.0:0)-
-    (wasAbove?0:100000)-placement.softdrop*.035;
-  return {board,...attack,reward,topout:!wasAbove,lines:full.length,
+    (toppedOut?100000:0)-placement.softdrop*.035;
+  return {board,...attack,reward,topout:toppedOut,lines:full.length,
     spin:placement.spin,allClear};
 }
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
@@ -181,7 +181,7 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
     btb:visible.attack?.btb??0,multiplier:visible.attack?.multiplier??1,
     pending,score:0,rootAction:null};
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
-  const clamp=depth=Math.min(depth,queue.length);
+  const clamp=Math.min(depth,queue.length);
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
     for(const node of beam){
