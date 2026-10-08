@@ -115,3 +115,27 @@ test('at least eight consecutive real authority locks progressively refill NEXT5
   assert.equal(observed.length>=8,true);
   assert.notDeepEqual(observed[0],observed.at(-1));
 });
+
+test('ROOK itself elects a Hold action when the visible held I clears a four-line well',()=>{
+  const e=new Engine({seed:21,mode:'tl',rules:{g:0,b2bcharge_base:3}});
+  e.state.piece.type='o';
+  e.state.hold.piece='i';e.state.hold.locked=false;
+  for(let y=36;y<40;y++)
+    for(let x=1;x<10;x++)e.state.board.rows[y][x]='z';
+  const before=visibleState(e.state);
+  const decision=chooseMove(before,{depth:1,maxNodes:3000,maxStates:1200,maxSteps:24});
+  assert.equal(decision.kind,'hold');
+  assert.equal(decision.mode,'occupied');
+  assert.equal(decision.samePiece,false);
+  assert.equal(decision.requiresReanalysis,true);
+  const captures=[];
+  const session=new RookSession(e,{decide:v=>{
+    captures.push(structuredClone(v));
+    return captures.length===1?decision:hardDrop(v);
+  }});
+  const result=session.step();
+  assert.deepEqual(result.actions.map(a=>a.kind),['hold','place']);
+  assert.equal(captures[1].hold.locked,true);
+  assert.deepEqual(captures[1].next,captures[0].next);
+  assert.equal(result.view.index,1);
+});
