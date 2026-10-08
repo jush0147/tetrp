@@ -89,5 +89,23 @@ pending arrival/cancellation and future attack scaling. Root reachability
 uses bounded BFS and timed input authority may still reject a geometrically
 reachable candidate. Full Clutch/ARE parity, simultaneous KO evidence against
 Kiwi or Cold Clear 2, and full viewer UI integration are **not** established.
-The bot currently runs as a Node demo and an importable class, not as the
-site's deployed Kiwi button.
+The bot runs as a Node demo, importable class, and opt-in experimental
+**ROOK browser Worker**. It is **not** deployed to the public production site.
+On this feature branch's browser preview, open a local replay, choose
+**⋮ > 分析 Bot > ROOK (實驗)**, then press the existing analysis button.
+Choosing Kiwi leaves the pinned production Kiwi algorithm unchanged. The
+isolated Tetrp demo worker owns actual actions and source checkpoints; both
+bots receive the identical visible-state projection.
+
+Build a local browser preview with `npm ci && npm run build && npm run preview`.
+The local preview server and offline service-worker asset list explicitly
+include `rook-worker.js`. The focused Chromium E2E test covers three real
+ROOK placements, correct NEXT5, switching back to Kiwi and returning to an
+unchanged replay. Source: `browser-tests/analysis.spec.js`.
+
+**Measured strength is below Kiwi.** The first four scored synchronous Tetrp
+KO matches (two asymmetric seed pairs, swapped slots, 2.5 PPS) ended
+ROOK 0-4 against the pinned Kiwi; Kiwi had 200k evaluator nodes per decision,
+ROOK 6k, so this is not a compute-equivalent comparison. Both bots use the
+visible-state snapshot and Tetrp authority. The feature is an experimental
+benchmark, not a promoted strategy or a claim of world-class strength.
