@@ -1,8 +1,8 @@
 import {test,expect} from '@playwright/test';
-import {fileURLToPath} from 'node:url';
+import {arenaFixture} from '../test/fixtures/arena-placement.js';
 test('arena recording uses the normal viewer for landing, clear, NEXT and rounds',async({page})=>{
  await page.goto('./');
- await page.locator('#file').setInputFiles(fileURLToPath(new URL('../test/fixtures/arena-placement.ttrm',import.meta.url)));
+ await page.locator('#file').setInputFiles({name:'synthetic-arena.ttrm',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(arenaFixture()))});
  await expect(page.locator('#viewer')).toBeVisible();
  await expect(page.locator('#next-placement')).toBeEnabled();
  await expect(page.locator('#next canvas')).toHaveCount(5);
