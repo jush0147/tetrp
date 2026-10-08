@@ -167,7 +167,7 @@ function applyPlacement(node,placement,rules){
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
 export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
-  maxStates=900,maxSteps=19}={}){
+  maxStates=900,maxSteps=19,includeRanked=false}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -197,6 +197,7 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
     btb:visible.attack?.btb??0,multiplier:visible.attack?.multiplier??1,
     pending,score:0,rootAction:null};
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
+  const rootChoices=new Map();
   const clamp=Math.min(depth,queue.length);
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
@@ -232,6 +233,11 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction
           };
           const evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
+          if(ply===0){
+            const key=JSON.stringify(rootAction);
+            const oldRoot=rootChoices.get(key);
+            if(!oldRoot||evalScore>oldRoot.value)rootChoices.set(key,{action:rootAction,value:evalScore});
+          }
           const hash=boardKey(next.board)+'|'+next.hold+'|'+next.queue.join('')+
             '|'+next.combo+'|'+next.btb+'|'+next.pending;
           const old=transposed.get(hash);
@@ -248,6 +254,14 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
     best=beam[0];
   }
   if(!best)throw Error('ROOK found no legal placement');
-  return {...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
+  const result={...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
     value:Number(best.evalScore.toFixed(3)),pending,reason:'stateless Tetrp-native beam search'}};
+  if(includeRanked){
+    const bestKey=JSON.stringify(best.rootAction);
+    const alternatives=[...rootChoices.entries()]
+      .filter(([key])=>key!==bestKey).map(([,candidate])=>candidate)
+      .sort((a,b)=>b.value-a.value||JSON.stringify(a.action).localeCompare(JSON.stringify(b.action)));
+    result.ranked=[best.rootAction,...alternatives.map(x=>x.action)];
+  }
+  return result;
 }
