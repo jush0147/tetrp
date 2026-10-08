@@ -1,6 +1,17 @@
 # ROOK reverse attack planner: design, continuation checkpoint
 
-Status: **proposal / experimental implementation in progress; do not merge or claim strength yet**.
+Status: **M1 inverse-goal prototype implemented on experimental branch; no rollout or strength claim**.
+The first independent prototype is now `src/analysis/rook-reverse-planner.js`
+with `test/rook-reverse-planner.test.js`. It **does not yet control the
+live ROOK chooseMove()**. It plans constrained 0-2 setup-ply sequences
+ending in Full TSS/TSD/TST only, with no Hold-dependent line shifts or
+unknown pieces. An inverse target tracks both row completion *and corner /
+roof support* for a genuine Full T spin. Every proposed route is
+forward-checked with Tetrp's SRS+ move generator and canonical attack
+projection; the `actualAuthorityExecuted` marker stays false until
+BotDemo really commits it. The tests execute 2-ply O -> TSD,
+2-ply O -> Full TSS, and 3-ply I -> O -> TSD atomically under Tetrp.
+Avoid presenting these crafted puzzles as a natural-game TSD breakthrough.
 Owner repo: `jush0147/tetrp`, working branch: `feat/rook-independent-bot`,
 draft PR: https://github.com/jush0147/tetrp/pull/6 .
 Updated: 2026-10-08. **This document is the handoff entrypoint when chat context is lost.**
@@ -151,8 +162,8 @@ learning strong Tetris. The authority and legality checks remain external.
 
 ## First prototype: small, falsifiable, test-driven experiment
 
-**Milestone M1, reverse planner library:**
-`src/analysis/rook-reverse-planner.js` (new). Input strictly
+**Milestone M1, reverse planner library (prototype present, not yet production-integrated):**
+`src/analysis/rook-reverse-planner.js` (experimental). Input strictly
 `{board, current, hold, next[5], rules, combat-visible-fields}`.
 Output grounded construction candidates with `goal`, `root`,
 `intermediate`, `routeWitnesses`, `clear`, `scoredAttack`,
@@ -195,6 +206,29 @@ seed and slot swap. Distinguish capped/unscored from real KO.
   of APP gains.
 - No merge to `main` until regression suite, browser feature checks and
   representative paired KO benchmark are reviewed. No claim of world-best.
+
+## Prototype discovery: spin-corner support is part of the inverse goal
+
+The originally proven O -> Full TSD fixture has **no missing target-row
+support cells** before O is placed. The O's useful contribution is the
+**roof/corner blocker** enabling full T-spin classification and access.
+Any inverse planner that only tracks "empty cells in rows cleared by T"
+misses this valid TSD. That is why M1 also derives Tetrp's T-corner
+obligations using the public `spins.json` geometry; it verifies final
+spin and reachability afterward, not by guessing that the corner pattern
+guarantees it.
+
+For a nontrivial 3-ply fixture, remove row-37 cells x=6..9 from the
+near-complete O -> TSD puzzle. Known sequence **I -> O -> T**:
+I fills the four row cells; O makes the missing roof; T performs Full TSD.
+This is the first real backward-derived proof path and test.
+
+**Known limitations:** M1 restricts intermediate setup placements to
+zero-line clears (no row reindexing), uses a bounded support-target scan,
+considers a T within the first 3 known pieces (Current + NEXT), and
+does not plan Hold swaps or general empty-board openers yet. It is
+separate from the main ROOK search and cannot be credited for improvements
+in real-game APP/KO. M2 must lift these constraints one at a time.
 
 ## Picking up from another conversation
 
