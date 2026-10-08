@@ -103,8 +103,8 @@ it was blind to *all* NEXT-piece spin attacks. The new experimental
    search ply. It never reads a sixth NEXT, hidden bag or future opponent state.
 
 Regressions in `test/rook-spin.test.js` confirm Z/L/S/J/T/I mini clears,
-B2B continuation in Tetrp's real 24-frame BotDemo from a staged reachable
-near-cavity snapshot, non-T mode exclusion under T-spins-only rules, a blocked
+B2B continuation through Tetrp's real lock/attack authority from a
+staged reachable near-cavity snapshot, non-T mode exclusion under T-spins-only rules, a blocked
 overhang with no valid path, and a NEXT Z-mini influencing the two-ply planner.
 An O-mini is eligible under Tetrp rules but **not demonstrated as a reachable
 clearing placement** by these tests.
@@ -116,20 +116,47 @@ so the new feature **has not yet increased overall attacking strength**. It
 increases CPU cost and is retained as experimental pending more paired KO data.
 The actual Tetrp authority, not hypothetical lookahead, counted the Spin clears.
 
-The planner's future spin paths are geometry-reachable; **their 24-frame input
-timing is not pre-validated**. After the next real piece becomes current, the
-BotDemo authority must validate every actual landing. Ranked alternatives
-are used when a proposed root path is not executable. This limitation is
-especially important for deep Soft Drops and unrevealed future arrivals.
+Future spin paths are SRS+ forward-reachable, not just holes awarded imaginary
+attack points. **No 24-frame input scheduling is required.** ROOK re-proves
+the route and earned Spin in an isolated witness, then Tetrp locks the final
+pose directly. A fixed 24-frame clock increment preserves the match's
+2.5 PPS attack/garbage cadence, not an action limit. Ranked alternatives are
+used when a root target is genuinely unreachable or its reported Spin is false.
+
+## Two-ply Full TSD construction and exact landing authority
+
+The dedicated `rook-tsd.js` scans *actual* two-row T-slot construction
+geometry. At the root, `chooseMove` considers known NEXT T or visible Hold T
+and verifies whether an immediately preceding non-T placement constructs a
+**full TSD**. The verifier searches a legal SRS+ forward path to the actual
+two-line clear, then injects that proven continuation into the next beam ply.
+A mere cavity match is not a TSD and receives no guaranteed attack credit.
+
+`test/rook-tsd.test.js` proves a concrete two-placement **O -> full TSD**
+route against real Tetrp, ending with 2 cleared rows, one B2B charge, and
+5 generated garbage lines (base TSD 4 + 1 garbage-special bonus on this test
+board). It rejects fabricated routes and hidden NEXT6. `test/rook-atomic.test.js`
+shows that a valid route with over 24 legal steps succeeds atomically,
+a forged Mini/Full Spin is rejected, and normal ARE/delayed-garbage replay
+rules remain usable. The original replay checkpoint is not altered.
+
+This is **one-turn TSD completion search**, not a general automatic multi-ply
+TSD opener. In the last measured two ordinary seed screens (240 pieces),
+**full TSD was still 0**. Proving a constructed TSD works is not evidence that
+ROOK now discovers enough TSDs in arbitrary games or beats Kiwi. Match-benchmark
+results remain the promotion gate.
 
 ## Unresolved
 
 This passes a narrow **information-access boundary**, not complete gameplay
-rule equivalence or competitive strength. The current evaluator simplifies
-pending arrival/cancellation and future attack scaling. Root reachability
-uses bounded BFS and timed input authority may still reject a geometrically
-reachable candidate. Full Clutch/ARE parity, timing-proof of speculative future spins, and
-competitive KO strength above Kiwi or Cold Clear 2 are **not** established.
+rule equivalence or competitive strength. Attack calculation now calls Tetrp's canonical resolveAttack() on the
+player-visible state (verified against the real engine on TSD, B2B, surge,
+all-clear and hardened/ARE pending packets). Future garbage arrival and
+opponent interaction are still approximate; the reachability BFS remains
+bounded and may miss difficult routes. The atomic demo settles canonical
+ARE/wait events before exposing the next playable piece. Exhaustive rule
+parity and competitive KO strength above Kiwi or Cold Clear 2 are **not**
+established.
 The bot runs as a Node demo, importable class, and opt-in experimental
 **ROOK browser Worker**. It is **not** deployed to the public production site.
 On this feature branch's browser preview, open a local replay, choose
