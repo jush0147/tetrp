@@ -2,7 +2,7 @@ import {Engine} from '../engine.js';
 import * as B from '../board.js';
 import * as R from '../rotation.js';
 import {createHoles} from '../random.js';
-import {validatePlacement,placementIdentity} from './placement-authority.js';
+import {placementIdentity} from './placement-authority.js';
 import {visibleState} from './visible-state.js';
 import {createPlacementTools} from '../../vendor/kiwi-v1/tetrp-placement-path.mjs';
 
@@ -26,6 +26,38 @@ class AtomicBranchEngine extends BranchEngine {
 const tools=createPlacementTools({Engine:BranchEngine,boardModule:B,rotationModule:R});
 const cellKey=cells=>cells.map(([x,y])=>`${x},${Math.ceil(y)}`).sort().join(';');
 const moves=new Set(['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down','hardDrop']);
+// Untimed legal-route witness for all supported replay lifecycles. Unlike the
+// narrow PlacementArenaEngine adapter, it does not reject ordinary TL rules
+// just because the replay uses ARE/garbage settings. Only the SRS+ path
+// and its actually earned spin matter; no frame-limited key scheduling.
+function proveUntimedPlacement(engine,result){
+  const witness=engine.constructor.restore(engine.serialize());
+  const path=result.execution.moves;
+  for(const op of path){
+    let accepted=true;
+    if(op==='moveLeft')accepted=witness.move(-1);
+    else if(op==='moveRight')accepted=witness.move(1);
+    else if(op==='rotateCW')accepted=witness.rotate(1);
+    else if(op==='rotateCCW')accepted=witness.rotate(3);
+    else if(op==='rotate180')accepted=witness.rotate(2);
+    else if(op==='down')accepted=witness.descend(1);
+    else if(op==='hardDrop')witness.slam(true);
+    else throw new Error('Unknown legal-route move');
+    if(!accepted||!B.legal(witness.state.board,witness.state.piece))
+      throw new Error('Illegal route toward proposed placement');
+  }
+  const p=witness.state.piece,actual=placementIdentity(p),target=result.move;
+  if(actual.piece!==target.piece||actual.x!==target.x||actual.y!==target.y||
+     actual.rotation!==target.rotation||actual.spin!==result.execution.spin||
+     cellKey(actual.cells)!==cellKey(target.cells)||
+     B.legal(witness.state.board,{...p,y:p.y+1}))
+    throw new Error('Legal-route witness does not match claimed final position or spin');
+  const board=structuredClone(witness.state.board);B.commit(board,p);
+  const rows=B.fullLines(board);B.removeLines(board,rows);
+  return {intent:actual,finalPiece:structuredClone(p),clear:{lines:rows.length,
+    rows,allClear:rows.length>0&&B.emptyWithPerma(board)}};
+}
+
 export class BotDemo {
   constructor(engine,{placementMode='timed'}={}){
     if(!['timed','atomic'].includes(placementMode))throw new TypeError('Invalid bot placement mode');
@@ -74,7 +106,7 @@ export class BotDemo {
       // Prove actual SRS+ reachability and earned spin without a frame limit.
       // Only public Current/Hold/NEXT5 enters the witness. Never trust an
       // arbitrary client-provided target pose or claimed spin.
-      const proof=validatePlacement(visibleState(s),result);
+      const proof=proveUntimedPlacement(trial,result);
       const before=s.stats.pieces,oldFrame=s.frame;
       const locks=[];trial.trace=[];
       const originalEmit=trial.emit.bind(trial);
