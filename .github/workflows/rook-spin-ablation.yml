@@ -1,0 +1,65 @@
+name: ROOK Spin Forecast A-B
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-strength-screen.js
+      - src/analysis/rook.js
+      - .github/workflows/rook-spin-ablation.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paired:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Same two Tetrp seeds, authority, nodes and pieces, no forecast
+        env:
+          ROOK_SPIN_FORECAST: '0'
+        run: node scripts/rook-strength-screen.js > rook-no-spin-forecast.jsonl
+      - name: Exact same conditions, reachable all-mini spin forecast enabled
+        env:
+          ROOK_SPIN_FORECAST: '1'
+        run: node scripts/rook-strength-screen.js > rook-with-spin-forecast.jsonl
+      - name: Compare actual Tetrp clears, B2B and attack with no promotion bias
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const data=(p)=>readFileSync(p,'utf8').trim().split('\n').map(JSON.parse);
+          const base=data('rook-no-spin-forecast.jsonl');
+          const spin=data('rook-with-spin-forecast.jsonl');
+          if(base.length!==spin.length||base.some((b,i)=>
+            b.seed!==spin[i].seed||b.pieces!==spin[i].pieces||
+            !b.originalUnchanged||!spin[i].originalUnchanged||
+            b.stopped||spin[i].stopped||b.pieces!==120))
+            throw Error('A/B scenarios were not identical or complete');
+          const rows=base.map((b,i)=>({
+            seed:b.seed,pieces:b.pieces,
+            noForecast:{spins:b.spins,generated:b.generated,app:b.rawAPP,b2bPeak:b.peakB2B},
+            withForecast:{spins:spin[i].spins,generated:spin[i].generated,
+              app:spin[i].rawAPP,b2bPeak:spin[i].peakB2B,types:spin[i].spinByPiece},
+            attackDelta:spin[i].generated-b.generated,
+            spinDelta:spin[i].spins-b.spins
+          }));
+          const summary={version:'rook-spin-ablation-v1',matched:true,
+            rookTotal:rows.length,allMiniSpinGain:rows.reduce((n,r)=>n+r.spinDelta,0),
+            attackDelta:rows.reduce((n,r)=>n+r.attackDelta,0),rows};
+          writeFileSync('rook-spin-ablation.json',JSON.stringify(summary,null,2)+'\n');
+          console.log(JSON.stringify(summary));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-spin-ablation
+          path: |
+            rook-no-spin-forecast.jsonl
+            rook-with-spin-forecast.jsonl
+            rook-spin-ablation.json
+          retention-days: 30
