@@ -31,3 +31,17 @@ test('Hold path never masquerades as a placement',()=>{
   assert.equal(result.kind,'place');
   assert.equal(result.move.useHold,false);
 });
+
+test('ROOK ignores fields outside the visible-state contract',()=>{
+  const v=visibleState(new Engine({seed:67,rules:{g:0}}).state);
+  const opts={depth:2,beamWidth:3,maxNodes:250,maxStates:250};
+  const expected=chooseMove(v,opts);
+  const altered={...structuredClone(v),internalBag:['i','t'],internalRandom:999,
+    previousDraws:['o','z'],otherPlayer:{attack:1000}};
+  assert.deepEqual(chooseMove(altered,opts),expected);
+});
+test('ROOK refuses previews beyond the public five',()=>{
+  const v=visibleState(new Engine({seed:67,rules:{g:0}}).state);
+  assert.throws(()=>chooseMove({...v,next:[...v.next,'z']}),
+    /exactly five publicly visible NEXT/);
+});
