@@ -3,6 +3,7 @@ on:
   push:
     branches: [feat/rook-independent-bot]
     paths:
+      - src/analysis/rook.js
       - scripts/rook-vs-kiwi.js
       - .github/workflows/rook-ko.yml
   workflow_dispatch:
