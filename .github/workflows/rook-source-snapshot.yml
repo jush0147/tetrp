@@ -1,0 +1,24 @@
+name: ROOK source snapshot for offline profiling
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - '.github/workflows/rook-source-snapshot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Archive exact source revision for reproducible local profiling
+        run: git archive --format=zip --output=rook-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-exact-source
+          path: rook-source.zip
+          retention-days: 7
