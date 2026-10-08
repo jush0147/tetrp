@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Engine} from '../src/engine.js';
 import * as B from '../src/board.js';
-import {enumerateReachable} from '../src/analysis/rook.js';
+import {enumerateReachable,chooseMove} from '../src/analysis/rook.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {visibleState} from '../src/analysis/visible-state.js';
 import {validatePlacement} from '../src/analysis/placement-authority.js';
@@ -63,4 +63,20 @@ test('timed mode remains the explicit unchanged Kiwi default',()=>{
   const timed=new BotDemo(e);
   assert.throws(()=>timed.prepare(request,0));
   assert.equal(timed.view().index,0);
+});
+
+test('atomic legality proof accepts ordinary TL replay ARE and garbage settings',()=>{
+  for(const rules of [{g:0,garbagearebump:5},{g:0,garbageentry:'delayed',garbageare:2},{g:0,are:1}]){
+    const e=new Engine({seed:8,mode:'tl',rules});
+    e.state.hold.locked=true;
+    const original=e.serialize(),demo=new BotDemo(e,{placementMode:'atomic'});
+    const snapshot=demo.view();
+    const decision=chooseMove(snapshot.visible,{depth:1,maxNodes:600});
+    assert.equal(decision.kind,'place');
+    demo.prepare({action:{kind:'place'},move:decision.move,execution:decision.execution},snapshot.revision);
+    const next=demo.commit(snapshot.revision);
+    assert.equal(next.index,1);
+    assert.equal(demo.engine.state.frame,24);
+    assert.equal(e.serialize(),original);
+  }
 });
