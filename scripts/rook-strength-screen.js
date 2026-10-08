@@ -28,7 +28,7 @@ for(const seed of seeds){
   let pieces=0,holdMoves=0,quads=0,spins=0,attempted=0,elapsed=0;
   const spinByPiece={},spinByKind={},spinByClear={};let peakB2B=0;
   let tsd=0,tss=0,tst=0,tMini=0;
-  let reverseProposals=0,reverseSelections=0,reverseCandidates=0;
+  let reverseProposals=0,reverseSelections=0,reverseCandidates=0,regularNodes=0;
   while(pieces<count&&!demo.view().stopped){
     let placed=false;
     const start=performance.now();
@@ -39,6 +39,7 @@ for(const seed of seeds){
       reverseProposals+=report.diagnostics.reversePlans;
       reverseSelections+=Number(report.diagnostics.reverseSelectedGoal!==null);
       reverseCandidates+=report.diagnostics.reverseCandidates;
+      regularNodes+=report.diagnostics.evaluated;
       let prepared=false;
       for(const action of report.ranked){
         const candidate=action.kind==='hold'
@@ -83,7 +84,7 @@ for(const seed of seeds){
   const row={type:'rook-visible-strength-screen',seed,pieces,holds:holdMoves,quads,spins,
     generated:a.generated,sent:a.sent,spinByPiece,spinByKind,spinByClear,tsd,tss,tst,tMini,peakB2B,rawAPP:Number((a.generated/pieces).toFixed(4)),
     sentAPP:Number((a.sent/pieces).toFixed(4)),attempted,
-    reverseProposals,reverseSelections,reverseCandidates,
+    reverseProposals,reverseSelections,reverseCandidates,regularNodes,
     meanDecisionMs:Math.round(elapsed/pieces),stopped:demo.view().stopped,
     originalUnchanged:engine.serialize()===original,options};
   console.log(JSON.stringify(row));
