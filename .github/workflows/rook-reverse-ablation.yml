@@ -1,0 +1,99 @@
+name: ROOK reverse-goal planner paired ablation
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - src/analysis/rook.js
+      - src/analysis/rook-reverse-planner.js
+      - scripts/rook-strength-screen.js
+      - .github/workflows/rook-reverse-ablation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        reverse: ['0','1']
+        seed: ['67020','67021']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Real Tetrp authority, identical seed and visible information
+        env:
+          ROOK_REVERSE_PLANNER: ${{ matrix.reverse }}
+          ROOK_REVERSE_CANDIDATES: '250'
+          SEEDS: ${{ matrix.seed }}
+          PIECES: '120'
+          ROOK_NODES: '6000'
+        run: |
+          node scripts/rook-strength-screen.js > "rook-reverse-${{ matrix.reverse }}-${{ matrix.seed }}.json"
+          cat "rook-reverse-${{ matrix.reverse }}-${{ matrix.seed }}.json"
+          node --input-type=module -e '
+            import {readFileSync} from "node:fs";
+            const x=JSON.parse(readFileSync("rook-reverse-${{ matrix.reverse }}-${{ matrix.seed }}.json","utf8"));
+            if(x.type!=="rook-visible-strength-screen"||x.pieces!==120||
+              x.stopped||!x.originalUnchanged||
+              x.options.reversePlanner!==Boolean(Number("${{ matrix.reverse }}")))
+              throw Error("Invalid paired Tetrp authority screen");
+          '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-reverse-${{ matrix.reverse }}-${{ matrix.seed }}
+          path: rook-reverse-${{ matrix.reverse }}-${{ matrix.seed }}.json
+          retention-days: 30
+  compare:
+    needs: paired
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-reverse-*
+          merge-multiple: true
+      - name: Quantify matched attack, Spin, B2B and CPU deltas
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seedRows=[];
+          for(const seed of ['67020','67021']){
+            const load=x=>JSON.parse(readFileSync('rook-reverse-'+x+'-'+seed+'.json','utf8'));
+            const base=load('0'),candidate=load('1');
+            if(base.seed!==candidate.seed||base.pieces!==candidate.pieces||
+               base.options.maxNodes!==candidate.options.maxNodes||
+               !base.originalUnchanged||!candidate.originalUnchanged)
+               throw Error('Invalid paired experiment for '+seed);
+            seedRows.push({seed,base:{app:base.rawAPP,sentAPP:base.sentAPP,
+              tsd:base.tsd,tss:base.tss,tst:base.tst,spins:base.spins,
+              generated:base.generated,peakB2B:base.peakB2B,ms:base.meanDecisionMs},
+              candidate:{app:candidate.rawAPP,sentAPP:candidate.sentAPP,
+              tsd:candidate.tsd,tss:candidate.tss,tst:candidate.tst,
+              spins:candidate.spins,generated:candidate.generated,
+              peakB2B:candidate.peakB2B,ms:candidate.meanDecisionMs,
+              reversePlans:candidate.reverseProposals,
+              reverseSelections:candidate.reverseSelections,
+              reverseCandidates:candidate.reverseCandidates}});
+          }
+          const total=(which,key)=>seedRows.reduce((n,r)=>n+r[which][key],0);
+          const result={experiment:'real-authority-inverse-goal-ablation-v1',
+            identicalVisibleSeeds:true,budget:'6000 generic nodes, reverse setup candidates charged; wall time tracked',
+            seeds:seedRows,
+            totals:{baseGenerated:total('base','generated'),
+              candidateGenerated:total('candidate','generated'),
+              baseTSD:total('base','tsd'),candidateTSD:total('candidate','tsd'),
+              baseMs:total('base','ms'),candidateMs:total('candidate','ms')},
+            advice:'Do not enable by default without real APP and matched KO improvement'};
+          writeFileSync('rook-reverse-ablation.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify(result));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-reverse-ablation-comparison
+          path: rook-reverse-ablation.json
+          retention-days: 30
