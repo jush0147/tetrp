@@ -2,7 +2,7 @@
 // no checkpoint, source replay, RNG, original future or other-player state.
 import {chooseMove} from '../src/analysis/rook.js';
 
-const budget={depth:3,beamWidth:14,maxNodes:6000,maxStates:1200,maxSteps:42};
+const budget={depth:4,beamWidth:24,maxNodes:6000,maxStates:1200,maxSteps:42};
 let lastKey=null,lastChoices=null,lastMeta=null;
 self.onmessage=({data:{id,state,candidateIndex=0}})=>{
   try{
