@@ -4,6 +4,9 @@ on:
     branches: [feat/rook-independent-bot]
     paths:
       - 'src/analysis/rook.js'
+      - 'src/analysis/rook-reverse-planner.js'
+      - 'src/analysis/rook-tsd.js'
+      - 'scripts/rook-strength-screen.js'
       - '.github/workflows/rook-source-snapshot.yml'
   workflow_dispatch:
 permissions:
