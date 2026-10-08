@@ -124,11 +124,18 @@ export class BotDemo {
         throw new Error('Placement arena unexpectedly consumed a piece');
       trial.state.piece=structuredClone(proof.finalPiece);
       trial.lock();
+      // ARE/delayed spawn belongs to the canonical Tetrp clock. Continue
+      // without gravity/key inputs until the next public piece is available.
+      let areWait=0;
+      while(trial.state.playing&&trial.state.piece.sleeping&&areWait++<240)
+        trial.step([]);
+      if(trial.state.playing&&trial.state.piece.sleeping)
+        throw new Error('Atomic placement could not reach the next public spawn');
       const actual=locks[0],intended=proof.intent;
       if(locks.length!==1||trial.state.stats.pieces!==before+1||
          actual.piece!==intended.piece||actual.x!==intended.x||actual.y!==intended.y||
          actual.rotation!==intended.rotation||actual.spin!==intended.spin||
-         cellKey(actual.cells)!==cellKey(intended.cells)||trial.state.frame!==oldFrame+24)
+         cellKey(actual.cells)!==cellKey(intended.cells)||trial.state.frame<oldFrame+24)
         throw new Error('Atomic Tetrp lock failed authority verification');
       const clear=trial.trace.find(e=>e.type==='remove-lines');
       if((clear?.rows.length??0)!==proof.clear.lines)
