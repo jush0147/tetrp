@@ -82,6 +82,36 @@ export function enumerateReachable(board,piece,rules,{maxStates=1200,maxSteps=42
   return [...results.values()];
 }
 
+// Future known pieces are used for board evaluation, not forwarded as inputs.
+// Reserve the expensive Tetrp-legal SRS+ reachability BFS for the real root.
+// Later plies use exact *non-spin* hard-drop geometry, so their speculative
+// moves can never silently become executable without fresh root verification.
+function forecastHardDrops(board,kind,rules){
+  const start=spawn(kind,board);
+  if(!B.legal(board,start))return [];
+  const rotations=[start];
+  for(let dir=1;dir<=3;dir++){
+    if(dir===2&&!rules.allow180)continue;
+    const p=R.rotate(board,start,dir,rules.lockresets);
+    if(p)rotations.push({...p,rotated:true});
+  }
+  const output=new Map();
+  for(const rotated of rotations){
+    let left=rotated;
+    while(B.legal(board,{...left,x:left.x-1}))left={...left,x:left.x-1};
+    let pos=left;
+    while(B.legal(board,pos)){
+      const landed=land(board,pos);
+      // Dropping vertically after a spawn rotation is not a T-Spin.
+      landed.spin='none';landed.rotated=false;
+      const key=fmtCells(landed)+'|none';
+      if(!output.has(key))output.set(key,{piece:landed,path:[],spin:'none',softdrop:0});
+      pos={...pos,x:pos.x+1};
+    }
+  }
+  return [...output.values()];
+}
+
 function surface(board){
   const H=board.rows.length,W=board.width,heights=[],holes=[],covered=[];
   let rough=0,transitions=0,filled=0,garbage=0;
@@ -109,6 +139,28 @@ function surface(board){
     const left=x===0?H:heights[x-1],right=x===W-1?H:heights[x+1];
     return Math.max(best,Math.min(left,right)-h);
   },0);
+  // Smoothly reward progress toward a real, four-high, single-column well.
+  // It is useful *before* four full rows are built, unlike a binary Tetris
+  // bonus that arrives too late for a fixed-width beam.
+  let tetrisReady=0,tetrisConstruction=0;
+  for(let x=0;x<W;x++){
+    let streak=0,support=0;
+    for(let y=H-1;y>=Math.max(0,H-10);y--){
+      const row=board.rows[y];
+      if(row[x]!==null)break;
+      let filled=0;
+      for(let z=0;z<W;z++)if(z!==x&&row[z]!==null)filled++;
+      if(filled===W-1){
+        streak++;
+        tetrisReady=Math.max(tetrisReady,Math.min(4,streak));
+      }else streak=0;
+      if(H-y<=7){
+        if(filled<3)break;
+        support+=Math.pow(filled/(W-1),2);
+        tetrisConstruction=Math.max(tetrisConstruction,support);
+      }
+    }
+  }
   let tspots=0;
   // Only reachable-ish empty cells near the surface; speculative T-slot
   // potential is a *small* feature, not a fake guaranteed T-spin.
@@ -121,7 +173,7 @@ function surface(board){
     if(corners>=3&&heights[x]<=H-y+3)tspots++;
   }
   return {max,min,heights,holes:holes.reduce((a,b)=>a+b,0),
-    covered:covered.reduce((a,b)=>a+b,0),rough,transitions,well,tspots,filled,garbage};
+    covered:covered.reduce((a,b)=>a+b,0),rough,transitions,well,tetrisReady,tetrisConstruction,tspots,filled,garbage};
 }
 
 function predictAttack(state,lines,spin,allClear,garbageRows,rules){
@@ -159,7 +211,9 @@ function evaluateBoard(board,ctx){
   return -a.holes*8.6*danger-a.covered*.27*danger
     -a.max*1.05-a.rough*.42-a.transitions*.16
     -Math.max(0,a.max-12)*.35*danger-urgency*urgency*2.5*danger
-    +Math.min(5,a.well)*.45 +Math.min(4,a.tspots)*.85
+    +Math.min(5,a.well)*.38 +Math.min(4,a.tspots)*.85
+    +a.tetrisReady*a.tetrisReady*0.55
+    +a.tetrisConstruction*4.2
     -a.garbage*.04
     +Math.min(10,ctx.btb)*.75 +Math.min(5,ctx.combo)*.43;
 }
@@ -182,7 +236,7 @@ function applyPlacement(node,placement,rules){
 }
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
-export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
+export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
@@ -214,6 +268,7 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
     pending,score:0,rootAction:null};
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
   const rootChoices=new Map();
+  let evaluatedFast=0;
   const clamp=Math.min(depth,queue.length);
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
@@ -231,7 +286,10 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
         const key=boardKey(node.board)+'|'+option.type+'|'+(ply===0?poseKey(option.piece):'spawn');
         let moves=cache.get(key);
         if(!moves){
-          moves=enumerateReachable(node.board,option.piece,visible.rules,{maxStates,maxSteps});
+          moves=ply===0
+            ?enumerateReachable(node.board,option.piece,visible.rules,{maxStates,maxSteps})
+            :forecastHardDrops(node.board,option.type,visible.rules);
+          if(ply>0)evaluatedFast+=moves.length;
           cache.set(key,moves);
         }
         for(const move of moves){
@@ -266,12 +324,31 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
     candidates.push(...transposed.values());
     if(!candidates.length)break;
     candidates.sort((a,b)=>b.evalScore-a.evalScore);
-    beam=candidates.slice(0,beamWidth);
+    // Retain several different first moves across depths, rather than
+    // allowing one locally smooth but strategically sterile root to consume
+    // every beam slot.
+    const grouped=new Map();
+    for(const candidate of candidates){
+      const key=JSON.stringify(candidate.rootAction);
+      if(!grouped.has(key))grouped.set(key,[]);
+      grouped.get(key).push(candidate);
+    }
+    const roots=[...grouped.values()];
+    beam=[];
+    for(let round=0;beam.length<beamWidth;round++){
+      let appended=0;
+      for(const group of roots){
+        if(group[round]){beam.push(group[round]);appended++;}
+        if(beam.length>=beamWidth)break;
+      }
+      if(!appended)break;
+    }
+    beam.sort((a,b)=>b.evalScore-a.evalScore);
     best=beam[0];
   }
   if(!best)throw Error('ROOK found no legal placement');
   const result={...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
-    value:Number(best.evalScore.toFixed(3)),pending,reason:'stateless Tetrp-native beam search'}};
+    value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,reason:'two-tier visible-preview search with root diversity'}};
   if(includeRanked){
     const bestKey=JSON.stringify(best.rootAction);
     const alternatives=[...rootChoices.entries()]
