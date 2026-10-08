@@ -27,3 +27,29 @@ jobs:
           name: rook-tetrp-player-visible-run
           path: rook-run.jsonl
           retention-days: 30
+  browser-preview:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - name: Build Kiwi and ROOK browser workers
+        run: npm run build
+      - name: Install Chromium for ROOK-specific browser test
+        run: npx playwright install --with-deps chromium
+      - name: Verify real ROOK Worker, three placements and unchanged replay
+        run: npx playwright test --project=desktop-chromium --grep 'ROOK mode'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tetrp-rook-browser-preview
+          path: dist/
+          if-no-files-found: warn
+          retention-days: 30
