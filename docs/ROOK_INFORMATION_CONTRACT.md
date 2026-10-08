@@ -57,7 +57,7 @@ move choice do not import or reuse CC2/Kiwi search or its evaluator.
 From the feature branch, with Node.js 22+:
 
 ```sh
-node --test test/rook.test.js test/rook-session.test.js
+node --test test/rook.test.js test/rook-session.test.js test/rook-spin.test.js
 npm test
 node scripts/rook-demo.js 99 8
 ```
@@ -81,14 +81,52 @@ flag. The bot can also be called as a pure decision function via
   refill NEXT 5 and reset Hold.
 - Full existing Tetrp engine, oracle and provenance tests remain mandatory.
 
+## All-mini+ and multi-piece B2B forecast
+
+ROOK's root search already traverses Tetrp SRS+ rotations, including 180-degree
+kicks, and delegates actual spin classification to Tetrp's own `classifySpin`.
+The second-stage search previously included only non-spin Hard Drops, meaning
+it was blind to *all* NEXT-piece spin attacks. The new experimental
+`forecastSpinClears` preserves that inexpensive ordinary lookahead but:
+
+1. Uses the *current public spinbonuses profile* (all-mini+, all-mini,
+   T-spins, etc.), not hard-coded T-only eligibility.
+2. Checks whether an imagined future board has a legal, grounded, spin-clear
+   geometry. This is a **pre-filter, not a spin claim**.
+3. Runs a bounded SRS+ **forward reachability search** from the known NEXT
+   piece's spawn; credits only genuinely reachable spin placements that
+   complete at least one line.
+4. Carries the resulting mini/full B2B and Combo into the following visible
+   search ply. It never reads a sixth NEXT, hidden bag or future opponent state.
+
+Regressions in `test/rook-spin.test.js` confirm Z/L/S/J/T/I mini clears,
+B2B continuation in Tetrp's real 24-frame BotDemo from a staged reachable
+near-cavity snapshot, non-T mode exclusion under T-spins-only rules, a blocked
+overhang with no valid path, and a NEXT Z-mini influencing the two-ply planner.
+An O-mini is eligible under Tetrp rules but **not demonstrated as a reachable
+clearing placement** by these tests.
+
+Paired same-seed Tetrp authority screen (seed 67020 and 67021, 120 pieces each,
+6k proposal budget) gives **0 to 15 spin clears**, including 14 mini and one
+full, and B2B maximum **5 to 6**. Attack totals change **121 to 120 lines**,
+so the new feature **has not yet increased overall attacking strength**. It
+increases CPU cost and is retained as experimental pending more paired KO data.
+The actual Tetrp authority, not hypothetical lookahead, counted the Spin clears.
+
+The planner's future spin paths are geometry-reachable; **their 24-frame input
+timing is not pre-validated**. After the next real piece becomes current, the
+BotDemo authority must validate every actual landing. Ranked alternatives
+are used when a proposed root path is not executable. This limitation is
+especially important for deep Soft Drops and unrevealed future arrivals.
+
 ## Unresolved
 
 This passes a narrow **information-access boundary**, not complete gameplay
 rule equivalence or competitive strength. The current evaluator simplifies
 pending arrival/cancellation and future attack scaling. Root reachability
 uses bounded BFS and timed input authority may still reject a geometrically
-reachable candidate. Full Clutch/ARE parity, simultaneous KO evidence against
-Kiwi or Cold Clear 2, and full viewer UI integration are **not** established.
+reachable candidate. Full Clutch/ARE parity, timing-proof of speculative future spins, and
+competitive KO strength above Kiwi or Cold Clear 2 are **not** established.
 The bot runs as a Node demo, importable class, and opt-in experimental
 **ROOK browser Worker**. It is **not** deployed to the public production site.
 On this feature branch's browser preview, open a local replay, choose
