@@ -81,11 +81,12 @@ jobs:
               peakB2B:candidate.peakB2B,ms:candidate.meanDecisionMs,
               reversePlans:candidate.reverseProposals,
               reverseSelections:candidate.reverseSelections,
-              reverseCandidates:candidate.reverseCandidates}});
+              reverseCandidates:candidate.reverseCandidates,
+              regularNodes:candidate.regularNodes}});
           }
           const total=(which,key)=>seedRows.reduce((n,r)=>n+r[which][key],0);
           const result={experiment:'real-authority-inverse-goal-ablation-v1',
-            identicalVisibleSeeds:true,budget:'6000 generic nodes, reverse setup candidates charged; wall time tracked',
+            identicalVisibleSeeds:true,budget:'6000 regular ROOK nodes per decision, inverse probes EXTRA and separately counted; wall time tracked',
             seeds:seedRows,
             totals:{baseGenerated:total('base','generated'),
               candidateGenerated:total('candidate','generated'),
