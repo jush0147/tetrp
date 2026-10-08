@@ -218,9 +218,14 @@ be pruned simply because generic surface features dislike it. The module
 does not read the hidden bag, RNG, opponent private state, or NEXT6.
 
 The integration is explicitly opt-in (reversePlanner:true). Reverse setup
-candidate work reduces the nominal regular beam budget. Geometry-probe
-cost is also reflected in wall-clock timing, so equal generic node counts
-must **not** be presented as exactly equal computing resources.
+candidate work was initially subtracted from the regular beam budget.
+That caused a regression: in the first long-horizon A/B, generated attack
+fell from 120 to 113 across two seeds, and TSD remained zero. We changed
+this research implementation to **preserve the entire ordinary beam budget**
+when optional reverse search runs; additional reverse BFS work is counted
+and timed separately. This is **equal regular search nodes, NOT equal
+total compute**. Future promotion must justify the additional CPU cost
+and show genuine APP / KO improvement.
 
 The new integration regression proves that enabling the planner actually
 changes a constructed O setup, which Tetrp can follow with genuine Full
@@ -324,6 +329,20 @@ B2B chains. Do not confuse five-piece ability with a high-APP opener.
 The promotion gate remains real paired normal-play TSD/APP/B2B/KO evidence
 with search-time disclosure. Full integration and measured A/B are tracked
 at Issue #7 and draft PR #6, not silently shipped.
+
+### Long-horizon A/B hazard discovered in development
+
+[Earlier reverse-long A/B](https://github.com/jush0147/tetrp/actions/runs/37854074939)
+on the two canonical 120-piece seeds reported **120 -> 113 generated**
+and **0 -> 0 Full TSD** when extra goal candidates cannibalized ordinary
+search nodes. Mean per-decision time rose substantially. The reduction
+was not a rules bug; it was the tactical planner starving the baseline
+beam of search candidates, even when it never produced a selected goal.
+
+After isolating separate regular and tactical search budgets, unproductive
+inverse probes must leave the ordinary move unchanged. This is enforced
+in `test/rook-long-planner.test.js`. The cost is more CPU; a candidate
+with identical APP but extra time is still **not an improvement**.
 
 ## Picking up from another conversation
 
