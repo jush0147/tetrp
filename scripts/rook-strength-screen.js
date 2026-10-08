@@ -13,7 +13,9 @@ const options={depth:Number(process.env.ROOK_DEPTH??4),
   maxNodes:Number(process.env.ROOK_NODES??6000),
   maxStates:Number(process.env.ROOK_STATES??1200),
   maxSteps:42,includeRanked:true,
-  spinForecast:process.env.ROOK_SPIN_FORECAST!=='0'};
+  spinForecast:process.env.ROOK_SPIN_FORECAST!=='0',
+  reversePlanner:process.env.ROOK_REVERSE_PLANNER==='1',
+  reverseMaxCandidates:Number(process.env.ROOK_REVERSE_CANDIDATES??250)};
 if(!seeds.length||seeds.some(x=>!Number.isSafeInteger(x))||
   !Number.isSafeInteger(count)||count<1||count>1000)throw Error('invalid strength screen');
 for(const seed of seeds){
@@ -24,6 +26,7 @@ for(const seed of seeds){
   let pieces=0,holdMoves=0,quads=0,spins=0,attempted=0,elapsed=0;
   const spinByPiece={},spinByKind={},spinByClear={};let peakB2B=0;
   let tsd=0,tss=0,tst=0,tMini=0;
+  let reverseProposals=0,reverseSelections=0,reverseCandidates=0;
   while(pieces<count&&!demo.view().stopped){
     let placed=false;
     const start=performance.now();
@@ -31,6 +34,9 @@ for(const seed of seeds){
       const {visible,revision}=demo.view();
       if(visible.next.length!==5)throw Error('leaked or missing NEXT5');
       const report=chooseMove(visible,options);
+      reverseProposals+=report.diagnostics.reversePlans;
+      reverseSelections+=Number(report.diagnostics.reverseSelectedGoal!==null);
+      reverseCandidates+=report.diagnostics.reverseCandidates;
       let prepared=false;
       for(const action of report.ranked){
         const candidate=action.kind==='hold'
@@ -75,6 +81,7 @@ for(const seed of seeds){
   const row={type:'rook-visible-strength-screen',seed,pieces,holds:holdMoves,quads,spins,
     generated:a.generated,sent:a.sent,spinByPiece,spinByKind,spinByClear,tsd,tss,tst,tMini,peakB2B,rawAPP:Number((a.generated/pieces).toFixed(4)),
     sentAPP:Number((a.sent/pieces).toFixed(4)),attempted,
+    reverseProposals,reverseSelections,reverseCandidates,
     meanDecisionMs:Math.round(elapsed/pieces),stopped:demo.view().stopped,
     originalUnchanged:engine.serialize()===original,options};
   console.log(JSON.stringify(row));
