@@ -3,6 +3,7 @@ on:
   push:
     branches: [feat/rook-independent-bot]
     paths:
+      - 'src/analysis/rook.js'
       - '.github/workflows/rook-source-snapshot.yml'
   workflow_dispatch:
 permissions:
