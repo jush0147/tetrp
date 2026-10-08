@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Test independently implemented bot
-        run: node --test test/rook.test.js test/rook-session.test.js test/rook-atomic.test.js test/rook-tsd.test.js test/rook-spin.test.js test/rook-combat.test.js test/rook-reverse-planner.test.js test/rook-reverse-integration.test.js
+        run: node --test test/rook.test.js test/rook-session.test.js test/rook-atomic.test.js test/rook-tsd.test.js test/rook-spin.test.js test/rook-combat.test.js test/rook-reverse-planner.test.js test/rook-reverse-integration.test.js test/rook-long-planner.test.js
       - name: Full Tetrp engine tests
         run: npm test
       - name: Execute independent ROOK against Tetrp authority
