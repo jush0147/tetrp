@@ -51,7 +51,7 @@ test('atomic authority rejects fake spin and unreachable destination, no state c
   const {e,m,target}=tsdFixture(),original=e.serialize();
   const demo=new BotDemo(e,{placementMode:'atomic'});
   const request={action:{kind:'place'},move:target,execution:{moves:m.path,spin:'mini'}};
-  assert.throws(()=>demo.prepare(request,0),/does not match top-1 intent/);
+  assert.throws(()=>demo.prepare(request,0),/does not match claimed final position or spin/);
   assert.equal(demo.view().index,0);
   assert.equal(e.serialize(),original);
 });
