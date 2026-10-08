@@ -326,6 +326,27 @@ board** has NOT been demonstrated. The solver currently ignores Hold
 reshuffling, intermediate row shifts, timed incoming garbage and general
 B2B chains. Do not confuse five-piece ability with a high-APP opener.
 
+**Latest honest paired natural-play A/B** (fixed seeds 67020 and 67021,
+120 placements each, same full ordinary ROOK search nodes, reverse-goal
+CPU added and separately counted):
+https://github.com/jush0147/tetrp/actions/runs/37854589783
+
+| Metric | Ordinary ROOK | Optional long inverse goals |
+| --- | ---: | ---: |
+| Actual generated attack | 120 | 120 |
+| Full TSD | 0 | 0 |
+| Full TSS | 1 | 1 |
+| Reverse plans offered | 0 | 7 |
+| Reverse plans actually chosen | 0 | 0 |
+| Per-piece mean search ms, seed 67020 | 325 | 587 |
+| Per-piece mean search ms, seed 67021 | 311 | 568 |
+
+The safeguard **restored baseline APP**, but paid an extra 31,805 and
+34,341 reverse setup candidate examinations on the two seeds. That
+overhead is not acceptable without better attacks or wins. The long
+planner therefore **remains disabled by default**. It has not met the
+strong-bot objective, despite passing constructed proofs.
+
 The promotion gate remains real paired normal-play TSD/APP/B2B/KO evidence
 with search-time disclosure. Full integration and measured A/B are tracked
 at Issue #7 and draft PR #6, not silently shipped.
