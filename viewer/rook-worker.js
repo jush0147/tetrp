@@ -29,7 +29,7 @@ self.onmessage=({data:{id,state,candidateIndex=0}})=>{
       candidateIndex,candidateCount:lastChoices.length,
       nodes:lastMeta.nodes,nodeBudget:budget.maxNodes,completion:'bounded-beam-search',
       warnings:['ROOK 獨立搜尋實驗版；只讀玩家當下可見快照與 NEXT 5。',
-        '攻擊與待接收垃圾採近似評分；所有實際落點與時序仍由 Tetrp 驗證。',
+        'SRS+ 合法路徑由 Tetrp 驗證後直接鎖定；24 frames 只維持每顆的對戰時間，不限制按鍵數。',
         '未提供對戰勝率證據，不能視為比 Kiwi 或 CC2 強。'],
       path:'rook-finite-visible',searchMs:lastMeta.elapsedMs,cached,
     }});
