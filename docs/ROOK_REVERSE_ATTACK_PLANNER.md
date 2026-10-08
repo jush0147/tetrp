@@ -281,6 +281,50 @@ does not plan Hold swaps or general empty-board openers yet. It is available onl
 natural-play A/B showed **zero decisions selected and no APP benefit**.
 Do not promote it by default. M2 must lift these constraints one at a time.
 
+## M2: bounded 4-6 visible-piece reverse construction (2026-10-09)
+
+**Implemented in an opt-in experimental module**, not promoted to default:
+`src/analysis/rook-long-planner.js`. When the first known T occurs at
+index 3, 4 or 5 of the public `[Current,...NEXT5]` sequence, the module:
+
+- Enumerates concrete Full TSS/TSD target rows and corner/roof constraints,
+  avoiding T's final cells throughout the setup.
+- Uses bounded, goal-conditioned SRS+ placement search; each setup move must
+  reduce unmet row/corner support and leave enough remaining tetromino cells.
+  The two-row TSD targets get priority so easier TSS shapes cannot consume
+  the entire inverse-goal budget.
+- Rejects intermediate clears for now because row coordinates would shift.
+  Finally proves a real reachable Full T spin and exact clear count, and
+  values the *actual* attack through Tetrp's canonical combat projection.
+- Provides explicit node/candidate counters and returns witness paths. Only
+  `reversePlanner:true` triggers it. Defaults have bounded 600 setup
+  candidates; deeper crafted tests deliberately request a higher budget,
+  so such proofs are **not** evidence of affordable natural-play strength.
+- Extends the regular ROOK comparison horizon only if a fully proven tactical
+  path exists, never beyond the six pieces presently visible.
+
+**Authority regression examples** in `test/rook-long-planner.test.js`:
+
+- Four locks **I -> I -> O -> Full TSD**: fills two 4-cell holes in the
+  planned TSD rows, then builds the Spin roof before T.
+- Five locks **J -> I -> I -> O -> Full TSD**: additional missing left
+  support makes the J an essential earlier setup.
+- Both independently replan after each real atomic placement, still finish
+  with Full T-Spin Double, two-line clear and canonical B2B/attack (5 lines
+  in this fixture due to the garbage-row bonus).
+- Private RNG, opponent future, hidden sixth preview and invalid goals
+  must not influence or fabricate a plan. Original replay bytes unchanged.
+
+**Important limitation:** these are highly structured fixture boards with
+existing garbage support. Creating useful T-Slots from an **empty/very open
+board** has NOT been demonstrated. The solver currently ignores Hold
+reshuffling, intermediate row shifts, timed incoming garbage and general
+B2B chains. Do not confuse five-piece ability with a high-APP opener.
+
+The promotion gate remains real paired normal-play TSD/APP/B2B/KO evidence
+with search-time disclosure. Full integration and measured A/B are tracked
+at Issue #7 and draft PR #6, not silently shipped.
+
 ## Picking up from another conversation
 
 1. Read **this document first**, then
