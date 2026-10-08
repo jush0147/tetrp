@@ -4,6 +4,8 @@ on:
     branches: [feat/rook-independent-bot]
     paths:
       - src/analysis/rook.js
+      - src/analysis/rook-tsd.js
+      - src/analysis/demo.js
       - scripts/rook-vs-kiwi.js
       - .github/workflows/rook-ko.yml
   workflow_dispatch:
