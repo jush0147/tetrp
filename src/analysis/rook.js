@@ -2,7 +2,7 @@
 // Tetrp owns SRS+, spin classification, board physics and canonical match rules.
 import * as B from '../board.js';
 import * as R from '../rotation.js';
-import {baseAttack} from '../attack.js';
+import {visibleCombat,projectCombat} from './rook-combat.js';
 import spinTables from '../data/spins.json' with { type: 'json' };
 
 const ACTIONS=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
@@ -229,35 +229,6 @@ function surface(board){
     covered:covered.reduce((a,b)=>a+b,0),rough,transitions,well,tetrisReady,tetrisConstruction,tspots,filled,garbage};
 }
 
-function predictAttack(state,lines,spin,allClear,garbageRows,rules){
-  const chain=lines>=4||(lines>0&&spin!=='none')||(allClear&&rules.allclear_b2b);
-  const oldBtb=state.btb;
-  let btb=oldBtb,surge=0;
-  if(chain)btb++;
-  else if(lines){
-    if(rules.b2bcharging&&oldBtb>rules.b2bcharge_at)
-      surge=Math.floor((oldBtb-rules.b2bcharge_at+rules.b2bcharge_base)*state.multiplier);
-    btb=0;
-  }
-  const combo=lines?state.combo+1:0;
-  let raw=baseAttack(lines,spin);
-  if(lines>0&&btb>1&&!(allClear&&rules.allclear_b2b)){
-    if(rules.b2bchaining){
-      const log=Math.log1p((btb-1)*.8);
-      raw+=Math.floor(1+log)+(btb===2?0:(1+log%1)/3);
-    }else raw++;
-  }
-  if(combo>1)raw=Math.max(raw*(1+.25*(combo-1)),
-    combo>2?Math.log1p(1.25*(combo-1)):0);
-  let attack=Math.floor(raw*state.multiplier);
-  if(rules.garbagespecialbonus&&garbageRows>0&&(lines===4||spin!=='none'))attack++;
-  if(rules.garbageattackcap>0)attack=Math.min(attack,rules.garbageattackcap);
-  attack+=surge;
-  if(allClear&&rules.allclears)attack+=Math.floor(rules.allclear_garbage*state.multiplier);
-  const defensive=rules.garbageblocking==='none'?0:Math.min(attack,state.pending);
-  return {btb,combo,attack,defensive,offensive:attack-defensive,
-    pending:Math.max(0,state.pending-attack),surge};
-}
 function evaluateBoard(board,ctx){
   const a=surface(board),danger=ctx.pending>0?1+Math.min(1.5,ctx.pending/9):1;
   const urgency=Math.max(0,a.max-(board.height+board.buffer-18));
@@ -279,7 +250,8 @@ function applyPlacement(node,placement,rules){
   const garbageRows=full.filter(y=>board.rows[y].includes('gb')).length;
   B.removeLines(board,full);
   const allClear=full.length>0&&B.emptyWithPerma(board);
-  const attack=predictAttack(node,full.length,placement.spin,allClear,garbageRows,rules);
+  const attack=projectCombat(node.combat,
+    {lines:full.length,spin:placement.spin,allClear,garbageRows},rules);
   // Tetrp only declares a lockout KO when nolockout is disabled and no
   // clutch clear saved it. Above-visible locks may still be legal in TL.
   const lockout=toppedOut&&!rules.nolockout&&(!full.length||!rules.clutch);
@@ -306,8 +278,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     attack:visible.attack?{
       combo:visible.attack.combo,btb:visible.attack.btb,
       multiplier:visible.attack.multiplier,
+      cumulativeSent:visible.attack.cumulativeSent,
       pending:visible.attack.pending,are:visible.attack.are,
     }:null,
+    piecesPlaced:visible.piecesPlaced,
   };
   if(!Array.isArray(visible.next)||visible.next.length!==5)
     throw Error('ROOK requires exactly five publicly visible NEXT pieces');
@@ -321,7 +295,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   const initial={board:visible.board,queue,hold:visible.hold?.piece??null,
     holdLocked:!!visible.hold?.locked,combo:visible.attack?.combo??0,
     btb:visible.attack?.btb??0,multiplier:visible.attack?.multiplier??1,
-    pending,score:0,rootAction:null};
+    pending,combat:visibleCombat(visible),score:0,rootAction:null};
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
   const rootChoices=new Map();
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
@@ -372,7 +346,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
               execution:{moves:move.path,spin:move.spin}});
           const next={
             board:p.board,queue:option.rest,hold:option.holdValue,holdLocked:false,
-            combo:p.combo,btb:p.btb,multiplier:node.multiplier,pending:p.pending,
+            combo:p.combo,btb:p.btb,multiplier:node.multiplier,pending:p.pending,combat:p.combat,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction
           };
           const evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
@@ -382,7 +356,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             if(!oldRoot||evalScore>oldRoot.value)rootChoices.set(key,{action:rootAction,value:evalScore});
           }
           const hash=boardKey(next.board)+'|'+next.hold+'|'+next.queue.join('')+
-            '|'+next.combo+'|'+next.btb+'|'+next.pending;
+            '|'+JSON.stringify(next.combat);
           const old=transposed.get(hash);
           if(!old||evalScore>old.evalScore)
             transposed.set(hash,{...next,evalScore});
