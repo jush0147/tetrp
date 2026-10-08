@@ -45,3 +45,26 @@ test('ROOK refuses previews beyond the public five',()=>{
   assert.throws(()=>chooseMove({...v,next:[...v.next,'z']}),
     /exactly five publicly visible NEXT/);
 });
+
+test('high-stack ROOK obeys TL nolockout instead of inventing a hidden-row KO',()=>{
+  for(const nolockout of [true,false]){
+    const e=new Engine({mode:'tl',seed:33,
+      rules:{g:0,b2bcharge_base:3,nolockout,clutch:true}});
+    e.state.piece.type='o';
+    e.state.hold.locked=true;
+    for(let y=20;y<40;y++){
+      e.state.board.rows[y].fill('gb');
+      e.state.board.rows[y][9]=null;
+    }
+    assert.equal(B.legal(e.state.board,e.state.piece),true);
+    const visible=visibleState(e.state);
+    if(nolockout){
+      const chosen=chooseMove(visible,{depth:1,maxNodes:600,beamWidth:24});
+      assert.equal(chosen.kind,'place');
+      assert.equal(chosen.move.piece,'o');
+    }else{
+      assert.throws(()=>chooseMove(visible,{depth:1,maxNodes:600,beamWidth:24}),
+        /no legal placement/);
+    }
+  }
+});
