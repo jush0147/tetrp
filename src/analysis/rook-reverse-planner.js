@@ -172,6 +172,9 @@ export function searchReverseAttacks(visible,{targets=['TSS','TSD','TST'],
           y:goal.y,rotation:goal.rotation,requiredRows:goal.requiredRows,
           minMissing:goal.minMissing},
           actions:steps.map(choice),
+          // SRS+-reachable move witnesses for downstream tactical scoring.
+          // They are hypothetical until the root is revalidated at lock time.
+          witnesses:steps.map(s=>({piece:s.piece,path:s.path,spin:s.spin,softdrop:s.softdrop})),
           evidence:{reachable:true,actualAuthorityExecuted:false,
             spin:'full',lines:cleared.length,attack:attack.generated,
             sent:attack.offensive,btb:attack.btb,allClear},
