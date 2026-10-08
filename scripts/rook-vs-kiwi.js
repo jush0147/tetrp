@@ -21,7 +21,7 @@ await init({module_or_path:readFileSync(new URL('../vendor/kiwi-v1/pkg/cold_clea
 
 const botOptions={depth:4,beamWidth:24,maxNodes:rookBudget,maxStates:1200,maxSteps:42};
 const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,rules:{g:0,gincrease:0,b2bcharge_base:3},
-  handling:{arr:0,das:1,dcd:0,sdf:20,safelock:false,cancel:false,may20g:true,irs:'off',ihs:'off'}}));
+  handling:{arr:0,das:1,dcd:0,sdf:20,safelock:false,cancel:false,may20g:true,irs:'off',ihs:'off'}}),{placementMode:'atomic'});
 
 function candidates(kind,visible){
   // Only one deeply ranked ROOK search or Kiwi snapshot search per decision.
