@@ -1,0 +1,81 @@
+name: ROOK vs pinned Kiwi Tetrp KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-vs-kiwi.js
+      - .github/workflows/rook-ko.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  protocol-smoke:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Both bots play the same synchronous Tetrp authority
+        env:
+          KIWI_NODES: '6000'
+          ROOK_NODES: '2500'
+          MAX_LOCKS: '8'
+          SEED_A: '67000'
+          SEED_B: '67001'
+        run: |
+          node scripts/rook-vs-kiwi.js > rook-vs-kiwi-smoke.jsonl
+          cat rook-vs-kiwi-smoke.jsonl
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const rows=fs.readFileSync("rook-vs-kiwi-smoke.jsonl","utf8").trim().split("\n").map(JSON.parse);
+            if(rows.length!==2||rows.some(x=>x.error||!x.lockSteps||x.slots.some(s=>s.pieces!==x.lockSteps)))
+              throw Error("invalid synchronous-match smoke");
+          '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-kiwi-smoke
+          path: rook-vs-kiwi-smoke.jsonl
+          retention-days: 30
+  paired-ko:
+    needs: protocol-smoke
+    runs-on: ubuntu-22.04
+    timeout-minutes: 80
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        pair: [0,1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Matched asymmetric seed pair with swapped slots
+        env:
+          KIWI_NODES: '200000'
+          ROOK_NODES: '6000'
+          MAX_LOCKS: '600'
+        run: |
+          set -eu
+          export SEED_A=$((67020 + ${{ matrix.pair }} * 2))
+          export SEED_B=$((SEED_A + 1))
+          node scripts/rook-vs-kiwi.js > "ko-pair-${{ matrix.pair }}.jsonl" 2> "ko-pair-${{ matrix.pair }}.progress"
+          cat "ko-pair-${{ matrix.pair }}.jsonl"
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const rows=fs.readFileSync("ko-pair-${{ matrix.pair }}.jsonl","utf8").trim().split("\n").map(JSON.parse);
+            if(rows.length!==2||rows.some(x=>x.error))throw Error("KO pair contains an invalid match; do not count wins");
+            const wins=rows.filter(x=>x.scored).map(x=>x.winner);
+            console.log(JSON.stringify({scored:wins.length,rook:wins.filter(w=>w==="rook").length,kiwi:wins.filter(w=>w==="kiwi").length,unscored:2-wins.length}));
+          '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-kiwi-ko-pair-${{ matrix.pair }}
+          path: |
+            ko-pair-${{ matrix.pair }}.jsonl
+            ko-pair-${{ matrix.pair }}.progress
+          retention-days: 30
