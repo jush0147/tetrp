@@ -1,0 +1,19 @@
+name: Independent ROOK bot acceptance
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test independently implemented bot
+        run: node --test test/rook.test.js
+      - name: Full Tetrp engine tests
+        run: npm test
