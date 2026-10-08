@@ -16,7 +16,7 @@ export class RookSession {
   #options;
   constructor(engine,{decide=chooseMove,options={}}={}){
     if(typeof decide!=='function')throw new TypeError('ROOK decision function required');
-    this.#demo=new BotDemo(engine);
+    this.#demo=new BotDemo(engine,{placementMode:'atomic'});
     this.#decide=decide;
     this.#options={...options};
   }
