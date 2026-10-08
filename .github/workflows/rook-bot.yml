@@ -17,6 +17,6 @@ jobs:
         with:
           python-version: '3.12'
       - name: Test independently implemented bot
-        run: node --test test/rook.test.js
+        run: node --test test/rook.test.js test/rook-session.test.js
       - name: Full Tetrp engine tests
         run: npm test
