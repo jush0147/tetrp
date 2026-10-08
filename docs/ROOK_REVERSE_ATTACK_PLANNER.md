@@ -1,9 +1,10 @@
 # ROOK reverse attack planner: design, continuation checkpoint
 
-Status: **M1 inverse-goal prototype implemented on experimental branch; no rollout or strength claim**.
-The first independent prototype is now `src/analysis/rook-reverse-planner.js`
-with `test/rook-reverse-planner.test.js`. It **does not yet control the
-live ROOK chooseMove()**. It plans constrained 0-2 setup-ply sequences
+Status: **M1 inverse attack-goal portfolio integrated but OFF by default; no strength claim**.
+The independent prototype now feeds forward-proven Full TSS/TSD/TST
+continuations into the real ROOK decision when the caller sets
+reversePlanner:true. New tests cover the actual change of chosen root.
+It is deliberately off by default until normal-play APP and KO improve. It plans constrained 0-2 setup-ply sequences
 ending in Full TSS/TSD/TST only, with no Hold-dependent line shifts or
 unknown pieces. An inverse target tracks both row completion *and corner /
 roof support* for a genuine Full T spin. Every proposed route is
@@ -162,7 +163,7 @@ learning strong Tetris. The authority and legality checks remain external.
 
 ## First prototype: small, falsifiable, test-driven experiment
 
-**Milestone M1, reverse planner library (prototype present, not yet production-integrated):**
+**Milestone M1, reverse planner library with opt-in beam integration (implemented, not promoted):**
 `src/analysis/rook-reverse-planner.js` (experimental). Input strictly
 `{board, current, hold, next[5], rules, combat-visible-fields}`.
 Output grounded construction candidates with `goal`, `root`,
@@ -207,6 +208,56 @@ seed and slot swap. Distinguish capped/unscored from real KO.
 - No merge to `main` until regression suite, browser feature checks and
   representative paired KO benchmark are reviewed. No claim of world-best.
 
+## Paired real-authority M1 result and promotion decision
+
+The inverse module now adds grounded Full TSS/TSD/TST setup prefixes to a
+reserved tactical beam portfolio inside ROOK's actual decision function.
+Every candidate is forward-reachable under SRS+, and only the canonical
+Tetrp attack projection awards points. A temporarily ugly overhang cannot
+be pruned simply because generic surface features dislike it. The module
+does not read the hidden bag, RNG, opponent private state, or NEXT6.
+
+The integration is explicitly opt-in (reversePlanner:true). Reverse setup
+candidate work reduces the nominal regular beam budget. Geometry-probe
+cost is also reflected in wall-clock timing, so equal generic node counts
+must **not** be presented as exactly equal computing resources.
+
+The new integration regression proves that enabling the planner actually
+changes a constructed O setup, which Tetrp can follow with genuine Full
+TSS or Full TSD. It also proves disabled-by-default, hidden-state
+invariance, and legal atomic landing. See the integration test file.
+
+**Measured experiment at fdd09db8**: two real Tetrp seeds, 120 pieces per
+seed, matched visible previews and regular 6,000-node search budget.
+https://github.com/jush0147/tetrp/actions/runs/37802038139
+
+| Metric, both seeds | Baseline OFF | Inverse goals ON |
+| --- | ---: | ---: |
+| Generated attack | 120 | 120 |
+| Full TSD | 0 | 0 |
+| Full TSS | 1 | 1 |
+| Tactical plans proposed | 0 | 7 |
+| Tactical plans selected | 0 | 0 |
+
+Per-seed average decision timing was noisy and provides no robust speed
+improvement claim. **Natural-play strength is unchanged.** This experiment
+does **not** justify enabling reverse goals by default or claiming higher
+APP or KO strength.
+
+A local 40-piece diagnostic found a reachable Full TSS offer that scored
+36.87 points *below* the ordinary completed line. Its projected stack
+height was eight rows instead of six, for just two lines of sent attack.
+Rejecting this route was rational; artificially rewarding every possible
+T-Spin would make the bot weaker.
+
+**Next research milestone:** generate useful T-Slots from comparatively
+open boards by reasoning across four or five known setup pieces and a
+known T, within Current+NEXT5. Add public Hold branches with authority
+reanalysis, and permit row-shifting intermediate clears with exact
+forward verification. Compare attack versus top-out risk as a Pareto
+portfolio, then use genuine paired KO rather than spin count to decide
+whether the new planner should be promoted.
+
 ## Prototype discovery: spin-corner support is part of the inverse goal
 
 The originally proven O -> Full TSD fixture has **no missing target-row
@@ -226,9 +277,9 @@ This is the first real backward-derived proof path and test.
 **Known limitations:** M1 restricts intermediate setup placements to
 zero-line clears (no row reindexing), uses a bounded support-target scan,
 considers a T within the first 3 known pieces (Current + NEXT), and
-does not plan Hold swaps or general empty-board openers yet. It is
-separate from the main ROOK search and cannot be credited for improvements
-in real-game APP/KO. M2 must lift these constraints one at a time.
+does not plan Hold swaps or general empty-board openers yet. It is available only as an opt-in ROOK search module, and its latest
+natural-play A/B showed **zero decisions selected and no APP benefit**.
+Do not promote it by default. M2 must lift these constraints one at a time.
 
 ## Picking up from another conversation
 
