@@ -5,6 +5,7 @@ import * as R from '../rotation.js';
 import {visibleCombat,projectCombat} from './rook-combat.js';
 import spinTables from '../data/spins.json' with { type: 'json' };
 import {tsdScaffolds} from './rook-tsd.js';
+import {searchReverseAttacks} from './rook-reverse-planner.js';
 
 const ACTIONS=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
 const DIR={rotateCW:1,rotateCCW:3,rotate180:2};
@@ -266,7 +267,7 @@ function applyPlacement(node,placement,rules){
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
-  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200}={}){
+  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -297,6 +298,38 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     holdLocked:!!visible.hold?.locked,combo:visible.attack?.combo??0,
     btb:visible.attack?.btb??0,multiplier:visible.attack?.multiplier??1,
     pending,combat:visibleCombat(visible),score:0,rootAction:null};
+  // M1 inverse attack goal portfolio: only verified SRS+ continuations.
+  // This experimental module stays opt-in until APP and KO improve.
+  // Its setup-candidate work is charged against the nominal search budget.
+  const reverseEligible=reversePlanner&&depth>=2&&
+    visible.next.slice(0,2).includes('t')&&visible.current.type!=='t'&&
+    Number.isInteger(reverseMaxCandidates)&&reverseMaxCandidates>0;
+  const reverseReport=reverseEligible?searchReverseAttacks(visible,{
+    targets:['TSS','TSD','TST'],maxGoals:reverseMaxGoals,
+    maxCandidates:Math.min(maxNodes,reverseMaxCandidates),
+    maxStates:Math.min(1600,maxStates),maxSteps:Math.max(maxSteps,70),
+    maxPlans:reverseMaxPlans
+  }):{plans:[],stats:{goals:0,setupCandidates:0,forwardProofs:0,budgetExceeded:false}};
+  const reverseBudget=Math.max(1,maxNodes-
+    Math.min(maxNodes-1,reverseReport.stats.setupCandidates));
+  const tacticalPrefixes=new Map();
+  for(const plan of reverseReport.plans){
+    if(plan.actions[0]?.kind!=='place'||!plan.witnesses?.length)continue;
+    let node=initial;
+    for(let ply=0;ply<plan.witnesses.length;ply++){
+      const p=applyPlacement(node,plan.witnesses[ply],visible.rules);
+      if(!p||p.topout)break;
+      const next={board:p.board,queue:initial.queue.slice(ply+1),
+        hold:initial.hold,holdLocked:false,combo:p.combo,btb:p.btb,
+        multiplier:p.combat.multiplier,pending:p.pending,combat:p.combat,
+        score:node.score+p.reward*Math.pow(.94,ply),
+        rootAction:plan.actions[0],tacticalGoal:plan.goal.kind};
+      next.evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
+      if(!tacticalPrefixes.has(ply))tacticalPrefixes.set(ply,[]);
+      tacticalPrefixes.get(ply).push(next);
+      node=next;
+    }
+  }
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
   const rootChoices=new Map();
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
@@ -305,7 +338,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
     for(const node of beam){
-      if(!node.queue.length||evaluated>=maxNodes)break;
+      if(!node.queue.length||evaluated>=reverseBudget)break;
       const options=[{type:node.queue[0],hold:false,holdValue:node.hold,
         rest:node.queue.slice(1),piece:ply===0?visible.current:spawn(node.queue[0],node.board)}];
       if(!node.holdLocked&&visible.rules.hold){
@@ -338,7 +371,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           cache.set(key,moves);
         }
         for(const move of moves){
-          if(evaluated++>=maxNodes)break;
+          if(evaluated++>=reverseBudget)break;
           const p=applyPlacement(node,move,visible.rules);
           if(!p||p.topout)continue;
           const rootAction=node.rootAction??(option.hold?{kind:'hold',mode:node.hold===null?'empty':'occupied',samePiece:option.type===node.queue[0],requiresReanalysis:true}:
@@ -349,7 +382,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           const next={
             board:p.board,queue:option.rest,hold:option.holdValue,holdLocked:false,
             combo:p.combo,btb:p.btb,multiplier:node.multiplier,pending:p.pending,combat:p.combat,
-            score:node.score+p.reward*Math.pow(.94,ply),rootAction
+            score:node.score+p.reward*Math.pow(.94,ply),rootAction,
+            tacticalGoal:node.tacticalGoal??null
           };
           const evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
           if(ply===0&&rootAction.kind==='place'&&
@@ -368,7 +402,22 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           if(!old||evalScore>old.evalScore)
             transposed.set(hash,{...next,evalScore});
         }
-        if(evaluated>=maxNodes)break;
+        if(evaluated>=reverseBudget)break;
+      }
+    }
+    // Inject fully forward-proven tactical prefixes at their exact ply.
+    // No T-slot shape earns attack until a reachable Full Spin clears rows.
+    const forced=tacticalPrefixes.get(ply)??[];
+    for(const node of forced){
+      const hash=boardKey(node.board)+'|'+node.hold+'|'+node.queue.join('')+
+        '|'+JSON.stringify(node.combat);
+      const old=transposed.get(hash);
+      if(!old||node.evalScore>old.evalScore)transposed.set(hash,node);
+      if(ply===0){
+        const key=JSON.stringify(node.rootAction);
+        const oldRoot=rootChoices.get(key);
+        if(!oldRoot||node.evalScore>oldRoot.value)
+          rootChoices.set(key,{action:node.rootAction,value:node.evalScore});
       }
     }
     candidates.push(...transposed.values());
@@ -426,12 +475,32 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
         }
       }
     }
+    // Preserve a small independent tactical portfolio through temporary
+    // ugly setup boards. Ordinary survival/downstack owns other beam slots.
+    const reserve=Math.min(Math.max(0,reverseReserve),Math.max(0,beamWidth-1));
+    let reserved=0;
+    for(const tactical of forced){
+      if(reserved>=reserve)break;
+      const already=beam.some(node=>boardKey(node.board)===boardKey(tactical.board)&&
+        node.queue.join('')===tactical.queue.join('')&&
+        node.tacticalGoal===tactical.tacticalGoal);
+      if(already)continue;
+      if(beam.length>=beamWidth)beam.pop();
+      beam.push(tactical);reserved++;
+    }
     beam.sort((a,b)=>b.evalScore-a.evalScore);
     best=beam[0];
   }
   if(!best)throw Error('ROOK found no legal placement');
   const result={...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
-    value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,forecastedSpinClears,tsdProbes,tsdProven,reason:'two-tier visible-preview search with root diversity'}};
+    value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,
+    forecastedSpinClears,tsdProbes,tsdProven,
+    reverseGoals:reverseReport.stats.goals,
+    reversePlans:reverseReport.plans.length,
+    reverseCandidates:reverseReport.stats.setupCandidates,
+    reverseProbes:reverseReport.stats.forwardProofs,
+    reverseSelectedGoal:best.tacticalGoal??null,reverseBudget,
+    reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(includeRanked){
     const bestKey=JSON.stringify(best.rootAction);
     const alternatives=[...rootChoices.entries()]
