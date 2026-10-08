@@ -94,7 +94,20 @@ test('ROOK mode runs in isolated browser Worker, keeps NEXT 5, and exits without
   await expect(page.locator('#analyze')).toHaveAttribute('data-bot','rook');
   await expect(page.locator('#rook-mark')).toBeVisible();
   for(let i=1;i<=3;i++){
-    const r=await analyze(page);
+    await page.evaluate(()=>window.analysis=null);
+    await page.locator('#analyze').click();
+    try{
+      await expect.poll(()=>page.evaluate(()=>Boolean(window.analysis)),{timeout:25000}).toBe(true);
+    }catch(error){
+      const state=await page.evaluate(()=>({
+        status:document.querySelector('#analysis-status')?.textContent,
+        details:document.querySelector('#analysis-details')?.textContent,
+        busy:document.querySelector('#analyze')?.getAttribute('aria-busy'),
+        position:document.querySelector('#playback-position')?.textContent,
+      }));
+      throw new Error('ROOK Worker/browser failure: '+JSON.stringify(state),{cause:error});
+    }
+    const r=await page.evaluate(()=>window.analysis);
     expect(r.bot).toBe('rook');
     expect(r.action.kind).toBe('place');
     expect(r.nodeBudget).toBe(6000);
