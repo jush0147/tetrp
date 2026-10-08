@@ -65,7 +65,7 @@ const demo=new DemoController({rpc:demoRpc,onView:showDemo,
   onRecommendation:result=>{
     drawBoard($('board'),boardModel(demo.view.state),result.move);
     $('analysis-status').textContent=result.action.kind==='hold'?botName()+' HOLD · 補齊預覽後重新分析':botName()+' 準備落子…';
-    $('analysis-details').textContent=[result.nodeBudget+' node budget · '+result.nodes+' nodes · '+result.completion,
+    $('analysis-details').textContent=[Number(result.nodeBudget).toLocaleString('en-US')+' node budget · '+Number(result.nodes).toLocaleString('en-US')+' nodes · '+result.completion,
       ...result.warnings,'示範使用獨立垃圾洞位；不加入對手未來攻擊，未確認抵達時間維持未知。'].join('\n');
   },onResult:result=>{document.dispatchEvent(new CustomEvent('tetrp:analysis',{detail:structuredClone({...result,bot:$('bot-mode').value})}));},
   onError:error=>{$('analysis-status').textContent=error.message;demoControls();}
