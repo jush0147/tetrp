@@ -320,8 +320,12 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       beamWidth:reverseLongBeamWidth,maxPlans:reverseMaxPlans
     }))
     :{plans:[],stats:{goals:0,setupCandidates:0,forwardProofs:0,budgetExceeded:false}};
-  const reverseBudget=Math.max(1,maxNodes-
-    Math.min(maxNodes-1,reverseReport.stats.setupCandidates));
+  // Tactical BFS proposals are not equivalent in cost to a regular
+  // candidate evaluation. Preserve all ordinary beam nodes to avoid
+  // degrading good baseline moves when an optional goal search finds
+  // nothing. Record extra tactical work and real elapsed time separately:
+  // this is an equal BASE search budget, not equal total CPU.
+  const reverseBudget=maxNodes;
   const tacticalPrefixes=new Map();
   for(const plan of reverseReport.plans){
     if(plan.actions[0]?.kind!=='place'||!plan.witnesses?.length)continue;
