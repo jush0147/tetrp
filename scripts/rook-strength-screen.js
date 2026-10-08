@@ -22,7 +22,8 @@ for(const seed of seeds){
   const demo=new BotDemo(engine);
   const original=engine.serialize();
   let pieces=0,holdMoves=0,quads=0,spins=0,attempted=0,elapsed=0;
-  const spinByPiece={},spinByKind={};let peakB2B=0;
+  const spinByPiece={},spinByKind={},spinByClear={};let peakB2B=0;
+  let tsd=0,tss=0,tst=0,tMini=0;
   while(pieces<count&&!demo.view().stopped){
     let placed=false;
     const start=performance.now();
@@ -49,6 +50,14 @@ for(const seed of seeds){
               const name=clear.piece.toUpperCase();
               spinByPiece[name]=(spinByPiece[name]??0)+1;
               spinByKind[clear.spin]=(spinByKind[clear.spin]??0)+1;
+              const key=clear.piece.toUpperCase()+':'+clear.spin+':'+clear.lines;
+              spinByClear[key]=(spinByClear[key]??0)+1;
+              if(clear.piece==='t'&&clear.spin==='full'){
+                if(clear.lines===2)tsd++;
+                else if(clear.lines===1)tss++;
+                else if(clear.lines===3)tst++;
+              }
+              if(clear.piece==='t'&&clear.spin==='mini')tMini++;
             }
             peakB2B=Math.max(peakB2B,demo.engine.state.attack.btb);
             placed=true;
@@ -64,7 +73,7 @@ for(const seed of seeds){
   }
   const a=demo.engine.state.attack.totals;
   const row={type:'rook-visible-strength-screen',seed,pieces,holds:holdMoves,quads,spins,
-    generated:a.generated,sent:a.sent,spinByPiece,spinByKind,peakB2B,rawAPP:Number((a.generated/pieces).toFixed(4)),
+    generated:a.generated,sent:a.sent,spinByPiece,spinByKind,spinByClear,tsd,tss,tst,tMini,peakB2B,rawAPP:Number((a.generated/pieces).toFixed(4)),
     sentAPP:Number((a.sent/pieces).toFixed(4)),attempted,
     meanDecisionMs:Math.round(elapsed/pieces),stopped:demo.view().stopped,
     originalUnchanged:engine.serialize()===original,options};
