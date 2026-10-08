@@ -3,6 +3,7 @@
 import * as B from '../board.js';
 import * as R from '../rotation.js';
 import {baseAttack} from '../attack.js';
+import spinTables from '../data/spins.json' with { type: 'json' };
 
 const ACTIONS=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
 const DIR={rotateCW:1,rotateCCW:3,rotate180:2};
@@ -110,6 +111,55 @@ function forecastHardDrops(board,kind,rules){
     }
   }
   return [...output.values()];
+}
+
+// A future spin must be proved geometrically, not guessed from a cavity's
+// appearance. The cheap local probe only decides *whether to run* an actual
+// SRS+ reachability search. It never creates a fake scored spin placement.
+function spinClearRows(board,piece){
+  const positions=B.cells(piece).map(([x,y])=>[x,Math.ceil(y)]);
+  const used=new Set(positions.map(([x,y])=>y*board.width+x));
+  let cleared=0;
+  for(const y of new Set(positions.map(([,y])=>y))){
+    if(y<0||y>=board.rows.length)continue;
+    const row=board.rows[y];
+    if(row.every((cell,x)=>cell!==null&&cell!=='gbd'||used.has(y*board.width+x)))cleared++;
+  }
+  return cleared;
+}
+
+export function hasSpinClearGeometry(board,kind,rules){
+  const eligible=spinTables.spinbonuses_rules[rules.spinbonuses]?.types;
+  if(!eligible?.includes(kind))return false;
+  const base=spawn(kind,board);
+  // Start with rows that could be completed by one tetromino. Anchoring a
+  // mino in each remaining cell avoids scanning every 40x10x4 pose.
+  for(let rowY=Math.max(board.buffer-2,board.rows.length-18);rowY<board.rows.length;rowY++){
+    const row=board.rows[rowY],empty=[];
+    for(let x=0;x<board.width;x++)if(row[x]===null)empty.push(x);
+    if(empty.length<1||empty.length>4||row.includes('gbd'))continue;
+    for(let r=0;r<4;r++){
+      const template=B.cells({...base,x:0,r});
+      for(const targetX of empty){
+        for(const [cx,cy] of template){
+          const pose={...base,x:targetX-cx,y:base.y+rowY-Math.ceil(cy),r,
+            rotated:true,spin:'none',kick:0};
+          if(!B.legal(board,pose)||B.legal(board,{...pose,y:pose.y+1}))continue;
+          if(R.classifySpin(board,pose,rules.spinbonuses)==='none')continue;
+          if(spinClearRows(board,pose)>0)return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+export function forecastSpinClears(board,kind,rules,{maxStates=1400,maxSteps=42}={}){
+  if(!hasSpinClearGeometry(board,kind,rules))return [];
+  // A forecast receives only a known piece type, the hypothetical board made
+  // from visible moves and public SRS+ rules. No hidden NEXT or RNG is read.
+  const moves=enumerateReachable(board,spawn(kind,board),rules,{maxStates,maxSteps});
+  return moves.filter(m=>m.spin!=='none'&&spinClearRows(board,m.piece)>0);
 }
 
 function surface(board){
@@ -243,7 +293,7 @@ function applyPlacement(node,placement,rules){
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
-  maxStates=1200,maxSteps=42,includeRanked=false}={}){
+  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -274,7 +324,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     pending,score:0,rootAction:null};
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
   const rootChoices=new Map();
-  let evaluatedFast=0;
+  let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
   const clamp=Math.min(depth,queue.length);
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
@@ -292,10 +342,23 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
         const key=boardKey(node.board)+'|'+option.type+'|'+(ply===0?poseKey(option.piece):'spawn');
         let moves=cache.get(key);
         if(!moves){
-          moves=ply===0
-            ?enumerateReachable(node.board,option.piece,visible.rules,{maxStates,maxSteps})
-            :forecastHardDrops(node.board,option.type,visible.rules);
-          if(ply>0)evaluatedFast+=moves.length;
+          if(ply===0){
+            moves=enumerateReachable(node.board,option.piece,visible.rules,{maxStates,maxSteps});
+          }else{
+            moves=forecastHardDrops(node.board,option.type,visible.rules);
+            if(spinForecast&&ply<=spinForecastPly&&spinProbes<spinForecastProbes&&
+               hasSpinClearGeometry(node.board,option.type,visible.rules)){
+              spinProbes++;
+              const spins=forecastSpinClears(node.board,option.type,visible.rules,
+                {maxStates:spinForecastStates,maxSteps});
+              forecastedSpinClears+=spins.length;
+              // Forecast spin paths are SRS+-reachable but not accepted as
+              // root actions. The next real piece is always revalidated by
+              // the Tetrp time-limited placement authority.
+              moves.push(...spins);
+            }
+            evaluatedFast+=moves.length;
+          }
           cache.set(key,moves);
         }
         for(const move of moves){
@@ -354,7 +417,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   }
   if(!best)throw Error('ROOK found no legal placement');
   const result={...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
-    value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,reason:'two-tier visible-preview search with root diversity'}};
+    value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,forecastedSpinClears,reason:'two-tier visible-preview search with root diversity'}};
   if(includeRanked){
     const bestKey=JSON.stringify(best.rootAction);
     const alternatives=[...rootChoices.entries()]
