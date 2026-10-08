@@ -4,6 +4,7 @@ import * as B from '../board.js';
 import * as R from '../rotation.js';
 import {visibleCombat,projectCombat} from './rook-combat.js';
 import spinTables from '../data/spins.json' with { type: 'json' };
+import {tsdScaffolds} from './rook-tsd.js';
 
 const ACTIONS=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
 const DIR={rotateCW:1,rotateCCW:3,rotate180:2};
@@ -265,7 +266,7 @@ function applyPlacement(node,placement,rules){
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
-  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8}={}){
+  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -299,6 +300,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
   const rootChoices=new Map();
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
+  const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
   const clamp=Math.min(depth,queue.length);
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
@@ -350,6 +352,11 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction
           };
           const evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
+          if(ply===0&&rootAction.kind==='place'&&
+             (option.rest[0]==='t'||option.holdValue==='t')){
+            const patterns=tsdScaffolds(p.board,visible.rules,{maxMissing:0});
+            if(patterns.some(t=>t.fullSpinGeometry))tsdCandidates.push({node:next,score:evalScore});
+          }
           if(ply===0){
             const key=JSON.stringify(rootAction);
             const oldRoot=rootChoices.get(key);
@@ -386,12 +393,45 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       }
       if(!appended)break;
     }
+    if(ply===0&&tsdCandidates.length&&tsdTacticalProbes>0){
+      // Keep a few tactical roots whose exact next move is a PROVEN TSD.
+      // A generic surface beam often prunes the setup before its payoff.
+      tsdCandidates.sort((a,b)=>b.score-a.score);
+      const checked=new Set();
+      for(const candidate of tsdCandidates){
+        if(tsdProbes>=tsdTacticalProbes)break;
+        const key=JSON.stringify(candidate.node.rootAction);
+        if(checked.has(key))continue;
+        checked.add(key);tsdProbes++;
+        const plan=forecastSpinClears(candidate.node.board,'t',visible.rules,
+          {maxStates:tsdTacticalStates,maxSteps:Math.max(maxSteps,70)})
+          .find(move=>{
+            if(move.spin!=='full')return false;
+            const board=copyBoard(candidate.node.board);
+            B.commit(board,move.piece);
+            return B.fullLines(board).length===2;
+          });
+        if(!plan)continue;
+        tsdProven++;
+        // Include the proven continuation in the next-ply search. Merely
+        // preserving the setup root would not help if the faster generic
+        // Hard Drop forecast ignores the actual T-Spin.
+        const futureKey=boardKey(candidate.node.board)+'|t|spawn';
+        const otherMoves=cache.get(futureKey)??forecastHardDrops(candidate.node.board,'t',visible.rules);
+        cache.set(futureKey,[...otherMoves,plan]);
+        const rootExists=beam.some(item=>JSON.stringify(item.rootAction)===key);
+        if(!rootExists){
+          if(beam.length>=beamWidth)beam.pop();
+          beam.push(candidate.node);
+        }
+      }
+    }
     beam.sort((a,b)=>b.evalScore-a.evalScore);
     best=beam[0];
   }
   if(!best)throw Error('ROOK found no legal placement');
   const result={...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
-    value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,forecastedSpinClears,reason:'two-tier visible-preview search with root diversity'}};
+    value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,forecastedSpinClears,tsdProbes,tsdProven,reason:'two-tier visible-preview search with root diversity'}};
   if(includeRanked){
     const bestKey=JSON.stringify(best.rootAction);
     const alternatives=[...rootChoices.entries()]
