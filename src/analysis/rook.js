@@ -170,6 +170,22 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
   maxStates=900,maxSteps=19}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
+  // Enforce the product's information boundary even for direct API callers.
+  // Re-project only fields a human player can see; never use extras from a
+  // checkpoint, replay, RNG stream, opponent, or future bag tail.
+  const safe={
+    board:visible.board,current:visible.current,hold:visible.hold,
+    next:Array.isArray(visible.next)?visible.next.slice(0,5):null,
+    rules:visible.rules,playing:visible.playing,
+    attack:visible.attack?{
+      combo:visible.attack.combo,btb:visible.attack.btb,
+      multiplier:visible.attack.multiplier,
+      pending:visible.attack.pending,are:visible.attack.are,
+    }:null,
+  };
+  if(!Array.isArray(visible.next)||visible.next.length!==5)
+    throw Error('ROOK requires exactly five publicly visible NEXT pieces');
+  visible=safe;
   const queue=[visible.current.type,...visible.next];
   if(!queue.length||queue.some(p=>!PIECES.has(p)))throw Error('invalid visible bag');
   if(!Number.isInteger(depth)||depth<1||depth>5||!Number.isInteger(beamWidth)||beamWidth<1||
