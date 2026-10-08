@@ -61,11 +61,13 @@ export function searchLongReverseAttacks(visible,{maxSetupPieces=5,maxGoals=18,
     return {plans:[],stats,scope:'only 3-5 publicly known non-T setup pieces before T'};
   const initialGoals=reverseAttackGoals(visible.board,visible.rules,{
     targets:goalTypes,maxGoals:4000,maxMissing:Math.min(20,pre*4),scanRows:goalScanRows});
-  // Globally sorting by missing cells puts all TSS ahead of TSD. Prioritize
-  // TSD where its two-row obligation is feasible, but retain TSS candidates.
-  const ordered=[...initialGoals.filter(g=>g.kind==='TSD'),
-    ...initialGoals.filter(g=>g.kind==='TSS'),
-    ...initialGoals.filter(g=>g.kind==='TST')];
+  // TSS has easier deficits, but excluding it in favor of only TSD also
+  // wastes Full Single / B2B options. Keep a minimum pool for each.
+  const tsd=initialGoals.filter(g=>g.kind==='TSD');
+  const tss=initialGoals.filter(g=>g.kind==='TSS');
+  const tsdSlots=tss.length?Math.max(1,Math.ceil(maxGoals*.72)):maxGoals;
+  const ordered=[...tsd.slice(0,tsdSlots),...tss.slice(0,maxGoals-tsdSlots),
+    ...tsd.slice(tsdSlots),...tss.slice(Math.max(0,maxGoals-tsdSlots))];
   const chosen=[],seen=new Set();
   for(const goal of ordered){
     const k=[goal.kind,goal.x,goal.y,goal.rotation].join(':');
@@ -76,6 +78,11 @@ export function searchLongReverseAttacks(visible,{maxSetupPieces=5,maxGoals=18,
   stats.goals=chosen.length;
   if(!chosen.length)return {plans:[],stats,scope:'no attainable row/corner preimages'};
   const output=[],seenPlan=new Set();
+  const dualGoal=tsd.length>0&&tss.length>0;
+  const tssBudget=dualGoal?Math.max(1,Math.floor(maxCandidates*.25)):maxCandidates;
+  const tsdBudget=dualGoal?maxCandidates-tssBudget:maxCandidates;
+  const usedByType={TSD:0,TSS:0};
+  const capFor=kind=>dualGoal?(kind==='TSD'?tsdBudget:tssBudget):maxCandidates;
   const combat=visibleCombat({piecesPlaced:visible.piecesPlaced,attack:visible.attack});
   const witnessCache=new Map();
   function moves(board,index){
@@ -89,15 +96,17 @@ export function searchLongReverseAttacks(visible,{maxSetupPieces=5,maxGoals=18,
   }
   for(const goal of chosen){
     if(stats.setupCandidates>=maxCandidates||output.length>=maxPlans)break;
+    if(usedByType[goal.kind]>=capFor(goal.kind))continue;
     const forbidden=new Set(goal.blockedCells);
     let beam=[{board:visible.board,history:[],score:0}];
     for(let step=0;step<pre&&beam.length;step++){
       const next=[],dedup=new Set();
       for(const node of beam){
-        if(stats.setupCandidates>=maxCandidates)break;
+        if(stats.setupCandidates>=maxCandidates||usedByType[goal.kind]>=capFor(goal.kind))break;
         const was=progress(node.board,goal),remain=pre-step;
         for(const move of moves(node.board,step)){
-          stats.setupCandidates++;
+          if(usedByType[goal.kind]>=capFor(goal.kind))break;
+          usedByType[goal.kind]++;stats.setupCandidates++;
           if(stats.setupCandidates>maxCandidates)break;
           if(overlapGoal(move,forbidden)){stats.prunedByConstraint++;continue;}
           const board=fill(node.board,move);
@@ -150,6 +159,7 @@ export function searchLongReverseAttacks(visible,{maxSetupPieces=5,maxGoals=18,
           btb:attack.btb,allClear},planLength:history.length});
     }
   }
+  stats.byType=usedByType;
   stats.budgetExceeded=stats.setupCandidates>=maxCandidates;
   output.sort((a,b)=>b.evidence.sent-a.evidence.sent||b.evidence.attack-a.evidence.attack||a.planLength-b.planLength);
   return {plans:output,stats,scope:'4-6 piece inverse Full TSS/TSD, no Hold or intermediate clears'};
