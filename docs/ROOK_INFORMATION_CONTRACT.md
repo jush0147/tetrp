@@ -30,9 +30,12 @@ historical events or the current piece count.
 ## Separate Hold decision, public reveal, and second search
 
 `RookSession` in `src/analysis/rook-session.js` delegates **all action
-execution** to Tetrp's existing isolated `BotDemo` authority. For a normal
-Place it verifies the input path under Tetrp's 24-frame scheduling and commits
-one lock. For Hold:
+execution** to Tetrp's existing isolated `BotDemo` authority. For ROOK, Place verifies an untimed legal SRS+ route using Tetrp's own
+movement/rotation semantics, then commits the proven final pose directly
+through Tetrp's real lock/clear/attack engine. 24 frames remain a shared 2.5 PPS
+**battle-clock cadence only**, not an action, finesse or rotation limit. Kiwi's
+legacy timed demo remains available by default; new matched KO experiments
+opt both engines into the same atomic placement mode. For Hold:
 
 1. Request an explicit `kind:'hold'` with `mode`, `samePiece` and
    `requiresReanalysis:true`. No placement bundled with it.
