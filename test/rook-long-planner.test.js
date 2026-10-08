@@ -101,3 +101,19 @@ for(const five of [false,true]){
     assert.equal(e.serialize(),source);
   });
 }
+test('an unproductive optional long-horizon search cannot steal ordinary beam nodes',()=>{
+  const e=new Engine({seed:67020,mode:'tl',rules:{g:0,spinbonuses:'all-mini+'}});
+  e.state.piece.type='l';
+  e.state.bag.queue.splice(0,5,'i','o','j','t','s');
+  const snapshot=visibleState(e.state);
+  const params={depth:4,beamWidth:24,maxNodes:3000,maxStates:950,spinForecast:true};
+  const baseline=chooseMove(snapshot,{...params,reversePlanner:false});
+  const tactical=chooseMove(snapshot,{...params,reversePlanner:true,
+    reverseLongMaxCandidates:300});
+  assert.equal(tactical.diagnostics.reversePlans,0);
+  assert.deepEqual(tactical.move,baseline.move);
+  assert.equal(tactical.kind,baseline.kind);
+  assert.equal(tactical.diagnostics.evaluated,baseline.diagnostics.evaluated);
+  assert.equal(tactical.diagnostics.reverseBudget,params.maxNodes);
+  assert.equal(e.serialize(),e.serialize());
+});
