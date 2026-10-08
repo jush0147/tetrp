@@ -6,6 +6,7 @@ import {visibleCombat,projectCombat} from './rook-combat.js';
 import spinTables from '../data/spins.json' with { type: 'json' };
 import {tsdScaffolds} from './rook-tsd.js';
 import {searchReverseAttacks} from './rook-reverse-planner.js';
+import {searchLongReverseAttacks} from './rook-long-planner.js';
 
 const ACTIONS=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
 const DIR={rotateCW:1,rotateCCW:3,rotate180:2};
@@ -267,7 +268,8 @@ function applyPlacement(node,placement,rules){
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
-  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2}={}){
+  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
+  reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -301,15 +303,23 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   // M1 inverse attack goal portfolio: only verified SRS+ continuations.
   // This experimental module stays opt-in until APP and KO improve.
   // Its setup-candidate work is charged against the nominal search budget.
-  const reverseEligible=reversePlanner&&depth>=2&&
-    visible.next.slice(0,2).includes('t')&&visible.current.type!=='t'&&
+  const firstT=queue.indexOf('t');
+  const reverseEligible=reversePlanner&&depth>=2&&firstT>=1&&firstT<=5&&
     Number.isInteger(reverseMaxCandidates)&&reverseMaxCandidates>0;
-  const reverseReport=reverseEligible?searchReverseAttacks(visible,{
-    targets:['TSS','TSD','TST'],maxGoals:reverseMaxGoals,
-    maxCandidates:Math.min(maxNodes,reverseMaxCandidates),
-    maxStates:Math.min(1600,maxStates),maxSteps:Math.max(maxSteps,70),
-    maxPlans:reverseMaxPlans
-  }):{plans:[],stats:{goals:0,setupCandidates:0,forwardProofs:0,budgetExceeded:false}};
+  const reverseReport=reverseEligible?(firstT<=2
+    ?searchReverseAttacks(visible,{
+      targets:['TSS','TSD','TST'],maxGoals:reverseMaxGoals,
+      maxCandidates:Math.min(maxNodes,reverseMaxCandidates),
+      maxStates:Math.min(1600,maxStates),maxSteps:Math.max(maxSteps,70),
+      maxPlans:reverseMaxPlans
+    })
+    :searchLongReverseAttacks(visible,{
+      goalTypes:['TSS','TSD'],maxGoals:reverseLongMaxGoals,
+      maxCandidates:Math.min(maxNodes-1,reverseLongMaxCandidates),
+      maxStates:Math.min(1400,maxStates),maxSteps:Math.max(maxSteps,70),
+      beamWidth:reverseLongBeamWidth,maxPlans:reverseMaxPlans
+    }))
+    :{plans:[],stats:{goals:0,setupCandidates:0,forwardProofs:0,budgetExceeded:false}};
   const reverseBudget=Math.max(1,maxNodes-
     Math.min(maxNodes-1,reverseReport.stats.setupCandidates));
   const tacticalPrefixes=new Map();
@@ -334,7 +344,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   const rootChoices=new Map();
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
-  const clamp=Math.min(depth,queue.length);
+  // Known T may be the fifth NEXT piece; six placements are publicly
+  // visible but only an actual proven tactical continuation expands ply six.
+  const completedTactic=Math.max(0,...reverseReport.plans.map(p=>p.witnesses.length));
+  const clamp=Math.min(queue.length,Math.max(depth,completedTactic));
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
     for(const node of beam){
@@ -500,6 +513,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseCandidates:reverseReport.stats.setupCandidates,
     reverseProbes:reverseReport.stats.forwardProofs,
     reverseSelectedGoal:best.tacticalGoal??null,reverseBudget,
+    reverseBudgetExceeded:reverseReport.stats.budgetExceeded,
+    effectiveDepth:clamp,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(includeRanked){
     const bestKey=JSON.stringify(best.rootAction);
