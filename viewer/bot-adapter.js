@@ -11,7 +11,7 @@ export class BotAdapter {
       const pending=this.pending;this.pending=null;clearTimeout(pending.timer);
       m.error?pending.reject(new Error(m.error)):pending.resolve(m.result);
     };
-    worker.onerror=event=>{if(worker===this.worker)this.cancel(new Error('Bot Worker 發生錯誤：'+(event.message||'未知錯誤')+(event.filename?' ('+event.filename+':'+event.lineno+')':'')));};
+    worker.onerror=event=>{if(worker===this.worker)this.cancel(new Error('Bot Worker 發生錯誤：'+(event?.message||'未知錯誤')+(event?.filename?' ('+event.filename+':'+event.lineno+')':'')));};
     worker.onmessageerror=()=>{if(worker===this.worker)this.cancel(new Error('Kiwi Worker 回覆無法解碼，請重試。'));};
   }
   analyze(state,{candidateIndex=0}={}){
