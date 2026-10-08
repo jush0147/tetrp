@@ -139,27 +139,30 @@ function surface(board){
     const left=x===0?H:heights[x-1],right=x===W-1?H:heights[x+1];
     return Math.max(best,Math.min(left,right)-h);
   },0);
-  // Smoothly reward progress toward a real, four-high, single-column well.
-  // It is useful *before* four full rows are built, unlike a binary Tetris
-  // bonus that arrives too late for a fixed-width beam.
-  let tetrisReady=0,tetrisConstruction=0;
+  // Two distinct signals: an actually complete Tetris-ready four-high
+  // well, and gradual progress toward that well while the stack is built.
+  // Both use only the currently visible board, never the future bag.
+  let tetrisReady=0;
   for(let x=0;x<W;x++){
-    let streak=0,support=0;
+    let streak=0;
     for(let y=H-1;y>=Math.max(0,H-10);y--){
+      const row=board.rows[y];
+      if(row[x]!==null||row.some((v,i)=>i!==x&&v===null))break;
+      streak++;tetrisReady=Math.max(tetrisReady,Math.min(4,streak));
+    }
+  }
+  let tetrisConstruction=0;
+  for(let x=0;x<W;x++){
+    let support=0;
+    for(let y=H-1;y>=Math.max(0,H-7);y--){
       const row=board.rows[y];
       if(row[x]!==null)break;
       let filled=0;
       for(let z=0;z<W;z++)if(z!==x&&row[z]!==null)filled++;
-      if(filled===W-1){
-        streak++;
-        tetrisReady=Math.max(tetrisReady,Math.min(4,streak));
-      }else streak=0;
-      if(H-y<=7){
-        if(filled<3)break;
-        support+=Math.pow(filled/(W-1),2);
-        tetrisConstruction=Math.max(tetrisConstruction,support);
-      }
+      if(filled<3)break;
+      support+=Math.pow(filled/9,2);
     }
+    tetrisConstruction=Math.max(tetrisConstruction,support);
   }
   let tspots=0;
   // Only reachable-ish empty cells near the surface; speculative T-slot
