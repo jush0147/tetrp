@@ -221,7 +221,7 @@ export function chooseMove(visible,{depth=3,beamWidth=12,maxNodes=8000,
           if(evaluated++>=maxNodes)break;
           const p=applyPlacement(node,move,visible.rules);
           if(!p||p.topout)continue;
-          const rootAction=node.rootAction??(option.hold?{kind:'hold',mode:node.hold===null?'empty':'occupied'}:
+          const rootAction=node.rootAction??(option.hold?{kind:'hold',mode:node.hold===null?'empty':'occupied',samePiece:option.type===node.queue[0],requiresReanalysis:true}:
             {kind:'place',move:{piece:move.piece.type,x:move.piece.x,
               y:Math.ceil(move.piece.y),rotation:move.piece.r,useHold:false,
               cells:B.cells(move.piece).map(([x,y])=>[x,Math.ceil(y)])},
