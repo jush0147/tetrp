@@ -19,7 +19,7 @@ if(!seeds.length||seeds.some(x=>!Number.isSafeInteger(x))||
 for(const seed of seeds){
   const engine=new Engine({mode:'tl',seed,rules:{g:0,gincrease:0,b2bcharge_base:3},
     handling:{arr:0,das:1,dcd:0,sdf:20,safelock:false,cancel:false,may20g:true,irs:'off',ihs:'off'}});
-  const demo=new BotDemo(engine);
+  const demo=new BotDemo(engine,{placementMode:'atomic'});
   const original=engine.serialize();
   let pieces=0,holdMoves=0,quads=0,spins=0,attempted=0,elapsed=0;
   const spinByPiece={},spinByKind={},spinByClear={};let peakB2B=0;
