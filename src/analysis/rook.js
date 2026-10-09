@@ -304,6 +304,10 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
       const terminal=()=>node.score+
         evaluateBoard(state.board,state)*Math.pow(.88,ply+1);
       if(!node.queue.length)return terminal();
+      // Canonical Engine.spawn checks blockout before a new Hold is allowed.
+      // A fortunate held piece cannot revive an already blocked spawn.
+      if(!B.legal(state.board,spawn(node.queue[0],state.board)))
+        return -100000;
       const options=[node.queue[0]];
       if(!node.holdLocked&&rules.hold){
         const chosen=node.hold===null?node.queue[1]:node.hold;
@@ -324,7 +328,8 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
           if(value>best)best=value;
         }
       }
-      return Number.isFinite(best)?best:terminal()-1000;
+      // All reachable placements failed; this conditional future is KO.
+      return Number.isFinite(best)?best:-100000;
     }
   });
 }
