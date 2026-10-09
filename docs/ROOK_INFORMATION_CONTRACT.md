@@ -14,7 +14,8 @@ point further allowlists the following fields:
 - own Hold piece and `hold.locked`;
 - exactly five NEXT previews, plus current;
 - observable combo, B2B and attack multiplier;
-- presently known incoming garbage packets and public match rules.
+- presently known incoming garbage packets, their public activation timestamps,
+  the public current match frame, and public match rules.
 
 The engine's full bag queue, RNG states, hidden garbage holes, original replay,
 historical draws/inputs, opponent private/future state and original player's
@@ -26,6 +27,24 @@ This is a **stateless, finite-known-preview** bot. Its limited lookahead may
 model any already visible current/NEXT piece; it never assumes the exact
 unknown continuation. It does not reconstruct a SevenBag remainder from
 historical events or the current piece count.
+
+## Public incoming-garbage deadline versus speculative attack construction
+
+A new **experimental** safety check is enabled only when the opt-in reverse
+attack planner runs. A no-clear multi-piece T-Slot setup is valid on a
+hypothetical board **only until actual incoming garbage changes that board**.
+Tetrp's real pending packet `active`, `activeFrame`, `amt` and the public
+`frame` reveal whether a packet will become active by the planned spin
+deadline (24 match frames per setup piece). If so, the speculative reverse
+plan is suppressed and normal immediate move search resumes. See
+`test/rook-pressure.test.js`.
+
+This does **not** infer hidden garbage columns, guarantee survival, or
+reconstruct the opponent's future actions. The timed packet check is a
+conservative uncertainty guard, NOT a substitute for explicit
+turn-by-turn garbage simulation or a proven competitive strategy.
+It is independently togglable with `reversePressureGuard:false` for
+reproducible comparisons, while `reversePlanner` itself defaults OFF.
 
 ## Separate Hold decision, public reveal, and second search
 
@@ -51,8 +70,9 @@ opt both engines into the same atomic placement mode. For Hold:
 A Hold followed by a failed Place leaves the committed post-Hold branch intact
 for inspection/retry; the original replay checkpoint is never mutated.
 
-The existing isolated BotDemo uses the repo's pinned placement input scheduler
-for authoritative **execution**. ROOK's search, board scoring, root BFS and
+The separate, legacy Kiwi timed demo retains its pinned input scheduler.
+ROOK's atomic placement uses *Tetrp legal moves and the final engine lock*,
+not a 24-frame keypress program. ROOK's search, board scoring, root BFS and
 move choice do not import or reuse CC2/Kiwi search or its evaluator.
 
 ## How to run
