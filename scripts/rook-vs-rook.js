@@ -198,7 +198,9 @@ function pairedGame(seed,swap){
         const decision=select(demos[i],kinds[i]===expertKind);
         moves.push(decision);
         for(const key of Object.keys(totals[i]))
-          totals[i][key]+=decision[key]??0;
+          if(key==='deepestPly')
+            totals[i][key]=Math.max(totals[i][key],decision[key]??0);
+          else totals[i][key]+=decision[key]??0;
       }
       // Both decisions are prepared from the SAME tick, before either lock.
       if(assertSimultaneousPair(demos)!==turnFrame)
