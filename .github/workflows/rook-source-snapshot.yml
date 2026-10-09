@@ -3,13 +3,7 @@ on:
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - 'src/analysis/rook.js'
-      - 'src/analysis/rook-reverse-planner.js'
-      - 'src/analysis/rook-long-planner.js'
-      - 'docs/ROOK_REVERSE_ATTACK_PLANNER.md'
-      - 'src/analysis/rook-tsd.js'
-      - 'scripts/rook-strength-screen.js'
-      - '.github/workflows/rook-source-snapshot.yml'
+      - .github/workflows/rook-source-snapshot.yml
   workflow_dispatch:
 permissions:
   contents: read

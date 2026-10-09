@@ -2,6 +2,11 @@ name: Independent ROOK bot acceptance
 on:
   push:
     branches: [feat/rook-independent-bot]
+    paths:
+      - 'src/**'
+      - 'test/rook*'
+      - 'scripts/rook*'
+      - '.github/workflows/rook-bot.yml'
   workflow_dispatch:
 # Only the newest queued trial of a workflow/branch needs CPU.
 concurrency:

@@ -3,10 +3,6 @@ on:
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - src/analysis/rook.js
-      - src/analysis/rook-tsd.js
-      - src/analysis/demo.js
-      - scripts/rook-strength-screen.js
       - .github/workflows/rook-strength-screen.yml
   workflow_dispatch:
 permissions:

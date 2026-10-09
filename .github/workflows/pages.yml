@@ -3,6 +3,12 @@ on:
   push:
     branches: [main]
   pull_request:
+    paths:
+      - 'viewer/**'
+      - 'src/**'
+      - 'test/**'
+      - 'package*.json'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
   contents: read

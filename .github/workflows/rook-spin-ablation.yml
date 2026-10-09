@@ -3,8 +3,6 @@ on:
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - scripts/rook-strength-screen.js
-      - src/analysis/rook.js
       - .github/workflows/rook-spin-ablation.yml
   workflow_dispatch:
 
