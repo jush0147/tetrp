@@ -18,6 +18,7 @@ const expertFuture=process.env.EXPERT_FUTURE==='1';
 const expertBeam=process.env.EXPERT_BEAM==='1';
 const expertOffense=process.env.EXPERT_OFFENSE==='1';
 const expertHoldPlan=process.env.EXPERT_HOLD_PLAN==='1';
+const auditHoldPlan=process.env.HOLD_AUDIT==='1';
 const offenseWeight=Number(process.env.EXPERT_OFFENSE_WEIGHT??7.2);
 const beamRootReserve=Number(process.env.EXPERT_BEAM_ROOT_RESERVE??8);
 const futureProbes=Number(process.env.EXPERT_FUTURE_PROBES??24);
@@ -46,6 +47,13 @@ const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
   reverseOpenMaxTileNodes:openTiles,reverseOpenMaxGoals:8,
   reverseOpenMaxProofs:12};
+// Post-Hold audit compares the actually authority-accepted next placement
+// with the same root search's suggested placement. Different paths with
+// identical landed cells/spin count as the same decision.
+const samePlacement=(a,b)=>a?.kind==='place'&&b?.kind==='place'&&
+  a.move.piece===b.move.piece&&a.execution.spin===b.execution.spin&&
+  a.move.cells.map(([x,y])=>x+','+y).sort().join(';')===
+    b.move.cells.map(([x,y])=>x+','+y).sort().join(';');
 const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,
   rules:{g:0,gincrease:0,b2bcharge_base:3},
   handling:{arr:0,das:1,dcd:0,sdf:20,safelock:false,cancel:false,
@@ -54,7 +62,9 @@ const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,
 function select(demo,open){
   const stats={nodes:0,holds:0,ms:0,rejections:0,offers:0,
     selections:0,forwardProbes:0,forwardMoves:0,
-    holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0};
+    holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
+    holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0};
+  let expectedAfterHold=null;
   for(let turn=0;turn<2;turn++){
     const view=demo.view();
     if(view.visible.next.length!==5)throw Error('Visible NEXT5 contract violated');
@@ -68,7 +78,7 @@ function select(demo,open){
       futureReachableStates:open&&expertFuture?futureStates:800,
       beamRootReserve:open&&expertBeam?beamRootReserve:null,
       offenseWeight:open&&expertOffense?offenseWeight:4.8,
-      includeHoldPlan:open&&expertHoldPlan,
+      includeHoldPlan:(open&&expertHoldPlan)||auditHoldPlan,
       beliefProbes,beliefMaxOutcomes});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
@@ -86,6 +96,8 @@ function select(demo,open){
         if(a.kind==='hold'){
           if(turn!==0)throw Error('second Hold is forbidden');
           demo.commit(view.revision);stats.holds++;didHold=true;
+          if(turn===0&&a===report.ranked[0])
+            expectedAfterHold=report.holdPlan??null;
           // This is only a hypothesis: the planned post-Hold placement
           // must pass the SAME Tetrp authority as every other real move.
           // If rejected, fall back to a fresh visible-state search.
@@ -103,6 +115,11 @@ function select(demo,open){
             }
           }
           break;
+        }
+        if(turn===1&&expectedAfterHold){
+          stats.holdPlanAudited++;
+          if(samePlacement(expectedAfterHold,a))stats.holdPlanMatched++;
+          else stats.holdPlanDiverged++;
         }
         return {revision:view.revision,...stats};
       }catch(e){lastError=e;stats.rejections++}
@@ -152,6 +169,7 @@ function pairedGame(seed,swap){
   const totals=Array.from({length:2},()=>({nodes:0,holds:0,ms:0,
     rejections:0,offers:0,selections:0,forwardProbes:0,forwardMoves:0,
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
+    holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
     tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
   try{
@@ -200,7 +218,7 @@ function pairedGame(seed,swap){
     sameSeed:true,simultaneousLocks:true,pps:2.5,
     nodeBudget:budget,extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
-    expertHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
+    expertHoldPlan,auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
