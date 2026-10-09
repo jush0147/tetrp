@@ -4,10 +4,12 @@ import {writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
+import {parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 
-const limit=Number(process.env.MAX_LOCKS??160);
+const limit=Number(process.env.MAX_LOCKS??400);
 const budget=Number(process.env.ROOK_NODES??6000);
-const seeds=[Number(process.env.SEED_A??1),Number(process.env.SEED_B??8)];
+// SEED_A / SEED_B now designate two independent, matched-seed trials.
+const seeds=parseMatchSeeds();
 const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
 const expertOpen=process.env.EXPERT_OPEN!=='0';
 const expertRecovery=process.env.EXPERT_RECOVERY==='1';
@@ -17,9 +19,8 @@ const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
 const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBelief?'belief':null].filter(Boolean).join('+')||'baseline';
-const expertKind=expertBelief&&!expertOpen&&!expertRecovery?'belief':'opener';
-if(!seeds.every(Number.isSafeInteger)||seeds[0]===seeds[1]||
-  !Number.isSafeInteger(limit)||limit<1||limit>1000||
+const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
+if(!Number.isSafeInteger(limit)||limit<1||limit>1000||
   !Number.isSafeInteger(budget)||budget<1||
   !Number.isSafeInteger(openTiles)||openTiles<1||
   !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4||
@@ -101,9 +102,12 @@ function health(demo){
     sent:s.attack.totals.sent,cancelled:s.attack.totals.cancelled,
     received:s.attack.totals.received,tanked:s.attack.totals.tanked};
 }
-function pairedGame(swap){
+function pairedGame(seed,swap){
   const kinds=swap?['baseline',expertKind]:[expertKind,'baseline'];
-  const demos=seeds.map(makeDemo),original=demos.map(d=>d.engine.serialize());
+  // Both players receive the IDENTICAL seven-bag seed in this match.
+  const demos=[makeDemo(seed),makeDemo(seed)];
+  assertMatchingOpening(demos);
+  const original=demos.map(d=>d.engine.serialize());
   const totals=Array.from({length:2},()=>({nodes:0,holds:0,ms:0,
     rejections:0,offers:0,selections:0,tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
@@ -116,6 +120,7 @@ function pairedGame(swap){
       }
       inbound=[];
       if(demos.some(d=>!d.engine.state.playing))break;
+      const turnFrame=assertSimultaneousPair(demos);
       const moves=[];
       for(let i=0;i<2;i++){
         const decision=select(demos[i],kinds[i]===expertKind);
@@ -123,7 +128,9 @@ function pairedGame(swap){
         for(const key of Object.keys(totals[i]))
           totals[i][key]+=decision[key]??0;
       }
-      // Neither player gets to observe the other player's prepared move.
+      // Both decisions are prepared from the SAME tick, before either lock.
+      if(assertSimultaneousPair(demos)!==turnFrame)
+        throw Error('Decision mutated the shared battle clock');
       for(let i=0;i<2;i++){
         const view=demos[i].commit(moves[i].revision),last=view.lastPlacement;
         totals[i].tsd+=Number(last.piece==='t'&&last.spin==='full'&&last.lines===2);
@@ -132,28 +139,33 @@ function pairedGame(swap){
         totals[i].quad+=Number(last.lines===4);
         totals[i].maxBtb=Math.max(totals[i].maxBtb,demos[i].engine.state.attack.btb);
       }
+      // Lock times remain synchronous; transfer attacks only next turn.
+      assertSimultaneousPair(demos);
       for(let from=0;from<2;from++)
         for(const packet of demos[from].engine.state.attack.outbox.splice(0))
           inbound.push({to:1-from,iid:packet.iid,ackiid:packet.ackiid,amt:packet.amt});
       turns++;
-      if([6,12,24,48,72,96,120,150].includes(turns))
+      if([6,12,24,48,72,96,120,150,200,250,300,400,500,600].includes(turns))
         checkpoints.push({turns,slots:demos.map(health)});
     }
   }catch(e){error=e instanceof Error?e.message:String(e)}
   if(turns&&!error&&demos.some((d,i)=>d.engine.serialize()===original[i]))
     error='A Tetrp authority did not advance';
   const alive=demos.map(d=>d.engine.state.playing);
-  const scored=!error&&turns<limit&&alive[0]!==alive[1];
-  return {format:'rook-paired-tetrp-ko/1',swap,kinds,seeds,pps:2.5,
+  const result=scoreKO({alive,rounds:turns,cap:limit,error});
+  return {format:'rook-paired-tetrp-ko/2',seed,seeds:[seed,seed],swap,kinds,
+    sameSeed:true,simultaneousLocks:true,pps:2.5,
     nodeBudget:budget,extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertBelief,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
-    turns,cap:limit,scored,
-    termination:error?'invalid-match':scored?'KO':turns>=limit?'capped':'unresolved',
-    error,winner:scored?kinds[alive[0]?0:1]:null,
+    turns,cap:limit,scored:result.scored,termination:result.termination,
+    error,winnerSlot:result.winnerSlot,
+    winner:result.scored?kinds[result.winnerSlot]:null,
     checkpoints,slots:demos.map((d,i)=>summary(d,kinds[i],totals[i]))};
 }
-const results=[pairedGame(false),pairedGame(true)];
+// Independent seeds give distinct games; each seed is repeated with the
+// candidate and baseline swapped between the two identical-bag slots.
+const results=seeds.flatMap(seed=>[pairedGame(seed,false),pairedGame(seed,true)]);
 for(const row of results)console.log(JSON.stringify(row));
 if(process.env.RESULTS_PATH)
   writeFileSync(process.env.RESULTS_PATH,JSON.stringify(results,null,2)+'\n');
