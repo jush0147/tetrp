@@ -101,6 +101,8 @@ function asStats(demo,kind,searchNodes,holdMoves,searchMs){
     rawApp:s.stats.pieces?a.totals.generated/s.stats.pieces:0,
     sentApp:s.stats.pieces?a.totals.sent/s.stats.pieces:0};
 }
+// Persist only the same allowlisted public snapshots the policies receive.
+const publicDiagnosticSnapshots=[];
 function runPair(seed,order){
   const kinds=order===0?['rook','kiwi']:['kiwi','rook'];
   const demos=[makeDemo(seed),makeDemo(seed)];
@@ -124,9 +126,15 @@ function runPair(seed,order){
         // authority match. No hidden opponent queue or checkpoint provided.
         const slots=lockSteps===0?[0]:[0,1];
         for(const slot of slots)
-          diagnostics.push(diagnosePublicChoice(demos[slot].view().visible,{
-            rookOptions:botOptions,kiwiBudget,analyzeSnapshot:analyze_snapshot_json,
-            seed,turn:lockSteps,owner:kinds[slot]}));
+          {
+            const state=demos[slot].view().visible;
+            diagnostics.push(diagnosePublicChoice(state,{
+              rookOptions:botOptions,kiwiBudget,analyzeSnapshot:analyze_snapshot_json,
+              seed,turn:lockSteps,owner:kinds[slot]}));
+            if(process.env.ROOK_DIAG_SNAPSHOTS_PATH)
+              publicDiagnosticSnapshots.push({seed,turn:lockSteps,
+                owner:kinds[slot],visible:state});
+          }
       }
       const plans=[];
       for(let i=0;i<2;i++){
@@ -167,5 +175,8 @@ for(const result of results)process.stdout.write(JSON.stringify(result)+'\n');
 if(diagnosticsEnabled&&process.env.ROOK_DIAG_PATH)
   writeFileSync(process.env.ROOK_DIAG_PATH,
     results.flatMap(r=>r.diagnostics).map(r=>JSON.stringify(r)).join('\n')+'\n');
+if(diagnosticsEnabled&&process.env.ROOK_DIAG_SNAPSHOTS_PATH)
+  writeFileSync(process.env.ROOK_DIAG_SNAPSHOTS_PATH,
+    publicDiagnosticSnapshots.map(r=>JSON.stringify(r)).join('\n')+'\n');
 if(process.env.RESULTS_PATH)writeFileSync(process.env.RESULTS_PATH,JSON.stringify(results,null,2)+'\n');
 // No artificial winner. Invalid/capped games remain explicit and unscored.

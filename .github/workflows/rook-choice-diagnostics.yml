@@ -33,6 +33,7 @@ jobs:
           ROOK_DIAG: '1'
           ROOK_DIAG_TURNS: '0,4,8,12,20,30'
           ROOK_DIAG_PATH: 'rook-choice-diff.jsonl'
+          ROOK_DIAG_SNAPSHOTS_PATH: 'rook-public-observations.jsonl'
         run: |
           set -eu
           node scripts/rook-vs-kiwi.js > rook-diagnostic-matches.jsonl 2> rook-diagnostic-progress.jsonl
@@ -40,6 +41,13 @@ jobs:
           import {readFileSync,writeFileSync} from 'node:fs';
           const matches=readFileSync('rook-diagnostic-matches.jsonl','utf8').trim().split('\n').map(JSON.parse);
           const rows=readFileSync('rook-choice-diff.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          const snapshots=readFileSync('rook-public-observations.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(snapshots.length!==rows.length||snapshots.some((s,i)=>
+            s.seed!==rows[i].seed||s.turn!==rows[i].turn||
+            s.owner!==rows[i].owner||s.visible.next.length!==5||
+            'bag' in s.visible||'holes' in s.visible))
+            throw Error('Diagnostics include hidden game information or mismatch public samples');
           if(matches.length!==4||matches.some(m=>m.error||!m.sameSeed||!m.simultaneousLocks||
             m.seeds[0]!==m.seeds[1]||m.cap!==2000||m.scored!==(m.termination==='KO')))
             throw Error('Invalid authoritative synchronized KO diagnostics');
@@ -81,6 +89,7 @@ jobs:
           name: rook-kiwi-shared-position-diagnostic
           path: |
             rook-choice-diff.jsonl
+            rook-public-observations.jsonl
             rook-choice-summary.json
             rook-diagnostic-matches.jsonl
             rook-diagnostic-progress.jsonl
