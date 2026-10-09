@@ -6,6 +6,7 @@ on:
       - src/analysis/rook.js
       - src/analysis/rook-reverse-planner.js
       - src/analysis/rook-long-planner.js
+      - src/analysis/rook-open-slot.js
       - scripts/rook-strength-screen.js
       - .github/workflows/rook-reverse-ablation.yml
   workflow_dispatch:
