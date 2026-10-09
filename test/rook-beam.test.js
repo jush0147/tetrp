@@ -10,7 +10,9 @@ const cfg={depth:4,beamWidth:24,maxNodes:3000,maxStates:600,maxSteps:42,
   traceRootSurvival:true};
 
 test('focused beam spends slots on alternatives within promising roots without changing baseline',()=>{
-  const v=visibleState(new Engine({mode:'tl',seed:67020,rules:{g:0}}).state);
+  const engine=new Engine({mode:'tl',seed:67020,rules:{g:0}});
+  engine.state.hold.locked=true; // Focus this test on placement selection.
+  const v=visibleState(engine.state);
   const original=structuredClone(v);
   const baseline=chooseMove(v,cfg);
   const explicit=chooseMove(v,{...cfg,beamRootReserve:null});
