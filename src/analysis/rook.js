@@ -256,7 +256,8 @@ function applyPlacement(node,placement,rules){
   const toppedOut=B.commit(board,placement.piece);
   const full=B.fullLines(board);
   const garbageRows=full.filter(y=>board.rows[y].includes('gb')).length;
-  const beforeMax=node.recoveryActive?surface(node.board).max:0;
+  // Only compute expensive pre-lock height when an actual garbage row clears.
+  const beforeMax=node.recoveryActive&&garbageRows>0?surface(node.board).max:0;
   B.removeLines(board,full);
   const allClear=full.length>0&&B.emptyWithPerma(board);
   const attack=projectCombat(node.combat,
