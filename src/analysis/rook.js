@@ -289,7 +289,7 @@ function applyPlacement(node,placement,rules){
     unresolvedGarbage:tank.amount>0,forecastTank:tank.amount,
     reward,topout:lockout,lines:full.length,spin:placement.spin,allClear};
 }
-const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('');
+const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
 // Counterfactual NEXT decisions, conditional on observing each possible hole.
 // Every hypothetical continuation is re-planned after that outcome is known,
