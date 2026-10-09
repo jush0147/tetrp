@@ -20,7 +20,8 @@ const options={depth:Number(process.env.ROOK_DEPTH??4),
   reverseLongMaxGoals:Number(process.env.ROOK_REVERSE_LONG_GOALS??15),
   reverseOpenMaxGoals:Number(process.env.ROOK_REVERSE_OPEN_GOALS??8),
   reverseOpenMaxTileNodes:Number(process.env.ROOK_REVERSE_OPEN_TILES??1200),
-  reverseOpenMaxProofs:Number(process.env.ROOK_REVERSE_OPEN_PROOFS??12)};
+  reverseOpenMaxProofs:Number(process.env.ROOK_REVERSE_OPEN_PROOFS??12),
+  reverseOnlyOpen:process.env.ROOK_REVERSE_OPEN_ONLY==='1'};
 if(!seeds.length||seeds.some(x=>!Number.isSafeInteger(x))||
   !Number.isSafeInteger(count)||count<1||count>1000)throw Error('invalid strength screen');
 for(const seed of seeds){
