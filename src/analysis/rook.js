@@ -9,6 +9,7 @@ import {searchReverseAttacks} from './rook-reverse-planner.js';
 import {searchLongReverseAttacks} from './rook-long-planner.js';
 import {searchOpenTSD} from './rook-open-slot.js';
 import {recoveryBoardPenalty,clearedGarbageReward} from './rook-recovery.js';
+import {evaluatePublicTankBelief} from './rook-belief.js';
 
 const ACTIONS=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
 const DIR={rotateCW:1,rotateCCW:3,rotate180:2};
@@ -288,7 +289,45 @@ function applyPlacement(node,placement,rules){
     unresolvedGarbage:tank.amount>0,forecastTank:tank.amount,
     reward,topout:lockout,lines:full.length,spin:placement.spin,allClear};
 }
-const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
+const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('');
+
+// Counterfactual NEXT decisions, conditional on observing each possible hole.
+// Every hypothetical continuation is re-planned after that outcome is known,
+// never selected by cherry-picking the one best hidden RNG result.
+function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxStates,maxSteps}){
+  return evaluatePublicTankBelief(node.board,node.combat,rules,{
+    maxOutcomes,riskWeight,score:outcome=>{
+      const pending=[...outcome.combat.pending,...outcome.combat.are]
+        .reduce((total,p)=>total+p.amt,0);
+      const state={...node,board:outcome.board,combat:outcome.combat,
+        pending,unresolvedGarbage:false,forecastTank:0};
+      const terminal=()=>node.score+
+        evaluateBoard(state.board,state)*Math.pow(.88,ply+1);
+      if(!node.queue.length)return terminal();
+      const options=[node.queue[0]];
+      if(!node.holdLocked&&rules.hold){
+        const chosen=node.hold===null?node.queue[1]:node.hold;
+        if(chosen)options.push(chosen);
+      }
+      let best=-Infinity;
+      for(const kind of new Set(options)){
+        const reached=enumerateReachable(state.board,spawn(kind,state.board),
+          rules,{maxStates,maxSteps});
+        for(const move of reached){
+          const p=applyPlacement(state,move,rules);
+          if(!p||p.topout)continue;
+          const next={...state,board:p.board,combat:p.combat,
+            pending:p.pending,combo:p.combo,btb:p.btb,frame:p.frame};
+          const value=node.score+p.reward*Math.pow(.94,ply+1)+
+            evaluateBoard(next.board,next)*Math.pow(.88,ply+2)-
+            (p.unresolvedGarbage?p.forecastTank*7:0);
+          if(value>best)best=value;
+        }
+      }
+      return Number.isFinite(best)?best:terminal()-1000;
+    }
+  });
+}
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
@@ -297,7 +336,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
   reverseOnlyOpen=false,reversePressureGuard=true,
-  garbageRecovery=false,garbageRecoveryWeight=1}={}){
+  garbageRecovery=false,garbageRecoveryWeight=1,
+  garbageBelief=false,beliefProbes=3,beliefMaxOutcomes=10,
+  beliefRiskWeight=.2,beliefReachableStates=300}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -326,7 +367,11 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     futureReachablePly<0||futureReachablePly>5||!Number.isInteger(futureReachableProbes)||
     futureReachableProbes<0||futureReachableProbes>100||
     !Number.isInteger(futureReachableStates)||futureReachableStates<1||
-    !Number.isInteger(tsdTacticalProbes)||tsdTacticalProbes<0)
+    !Number.isInteger(tsdTacticalProbes)||tsdTacticalProbes<0||
+    !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
+    !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100||
+    !Number.isFinite(beliefRiskWeight)||beliefRiskWeight<0||beliefRiskWeight>1||
+    !Number.isInteger(beliefReachableStates)||beliefReachableStates<1)
     throw Error('invalid search budget');
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+(p.amt??0),0);
@@ -421,6 +466,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
   let futureProbes=0,futureMoves=0,futureSpinClears=0;
   let unresolvedTankNodes=0;
+  let beliefEvaluations=0,beliefOutcomes=0,beliefOverBudget=0;
   const futureReachableByPly=Array(depth+1).fill(0);
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
   // Known T may be the fifth NEXT piece; six placements are publicly
@@ -545,6 +591,35 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     candidates.push(...transposed.values());
     if(!candidates.length)break;
     candidates.sort((a,b)=>b.evalScore-a.evalScore);
+    if(garbageBelief&&beliefEvaluations<beliefProbes){
+      // Re-rank root-diverse uncertain candidates under a shared public
+      // hole distribution. Exact enumeration, not a lucky-hole sample.
+      const probedRoots=new Set();
+      for(const candidate of candidates){
+        if(beliefEvaluations>=beliefProbes)break;
+        if(!candidate.unresolvedGarbage)continue;
+        const root=JSON.stringify(candidate.rootAction);
+        if(probedRoots.has(root))continue;
+        probedRoots.add(root);
+        try{
+          const belief=beliefContinuationValue(candidate,visible.rules,ply,{
+            maxOutcomes:beliefMaxOutcomes,riskWeight:beliefRiskWeight,
+            maxStates:beliefReachableStates,maxSteps});
+          beliefEvaluations++;beliefOutcomes+=belief.outcomes;
+          candidate.evalScore=belief.value;
+          candidate.belief={expected:belief.expected,worst:belief.worst,
+            topoutProbability:belief.topoutProbability,
+            outcomes:belief.outcomes};
+          if(ply===0)rootChoices.set(root,{action:candidate.rootAction,
+            value:candidate.evalScore});
+        }catch(error){
+          if(!(error instanceof RangeError&&
+            /scenario limit/.test(error.message)))throw error;
+          beliefOverBudget++;
+        }
+      }
+      candidates.sort((a,b)=>b.evalScore-a.evalScore);
+    }
     // Retain several different first moves across depths, rather than
     // allowing one locally smooth but strategically sterile root to consume
     // every beam slot.
@@ -618,6 +693,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,
     forecastedSpinClears,futureProbes,futureMoves,futureSpinClears,
     futureReachableByPly,unresolvedTankNodes,
+    beliefEvaluations,beliefOutcomes,beliefOverBudget,
+    selectedBelief:best.belief??null,
     selectedUnresolvedGarbage:best.unresolvedGarbage,
     selectedForecastTank:best.forecastTank,selectedFrame:best.frame,
     tsdProbes,tsdProven,
