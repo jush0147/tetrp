@@ -424,3 +424,42 @@ ROOK 原有的 round-robin 根多樣性會將 `beamWidth=24`
 預設或宣稱 ROOK 變強**。如果仍無 KO 或等 CPU 收益，
 下一輪優先審查 Hold 決策的價值估算與目前 beam 的
 多步 reward/terminal evaluation，而不是盲目增加 probe。
+
+
+## 2026-10-09 20:45 研究延續：停止隨意調權重，檢驗 Hold 後的實際棋步
+
+實測結果：
+- [Focused Beam KO](https://github.com/jush0147/tetrp/actions/runs/37899764227)：
+  8 場（4 獨立 seed + 換位置），實驗 2 勝、原版 6 勝；
+  實驗多約 13% 搜尋耗時。**不提高預設。**
+- [攻擊權重 7.2 vs 4.8](https://github.com/jush0147/tetrp/actions/runs/37924464189)：
+  8 場全 KO，雙方各 4 勝（4 獨立 seed 各 2 勝）；
+  實驗版累計 Sent 1582，基線 1650；
+  兩者累計搜尋耗時 1,139,233ms vs 1,121,529ms。
+  **7.2 不提升預設。**
+- Kiwi 在同一批短局的 Hold 並非明顯比 ROOK 少，單純
+  懲罰 Hold 次數沒有證據。真正要處理的是 Hold 分支的
+  「原計畫下一手」與交換後重新搜尋下一手可能不一致。
+
+新 Hold 實驗（正式預設完全不動）：
+- `chooseMove(...,{includeHoldPlan:true})`：只在最佳第一步為
+  Hold 時回傳在**原本同一個 beam** 已模擬的根層預計落點
+  （完整 SRS+ witness）；禁止繞過 Tetrp 權威。
+- `EXPERT_HOLD_PLAN=1`：ROOK vs ROOK 受控對照，
+  Hold 後先以**實際引擎**合法落點／Spin／消行驗證該計畫；
+  若權威拒絕，立即回到普通公開資訊重搜，而非假造落子。
+  新增 `holdPlanAttempts/Accepted/Rejected`、實際 CPU、
+  generated/sent APP 與 KO 統計。
+- `test/rook-hold-plan.test.js`：真實 Tetrp
+  `BotDemo.prepare/commit` 驗證 Hold 交換後，選定落點可
+  在 24-frame atomic placement 正確執行。與未啟用
+  `includeHoldPlan` 的原政策做位元層級結果比較。
+- `.github/workflows/rook-hold-plan-ablation.yml`：4 個獨立
+  seed（1、8、16、23）各交換角色，**雙方使用同 seed、
+  同步鎖定**；每方 2000 鎖安全上限，只有真 KO 計勝，
+  並追蹤 CPU 使用。**尚未有結果，不得宣稱強度提升。**
+
+本項是檢驗決策「計畫連貫性」和減少 Hold 重搜 CPU，
+不是在偷偷抬高 Hold 優先度。若該 A/B 沒有改善，下一步
+量化 root valuation 各 feature 對 Kiwi/Bot 分歧的貢獻，
+避免盲猜新的固定權重。
