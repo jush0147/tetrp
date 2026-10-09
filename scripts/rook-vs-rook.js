@@ -11,13 +11,19 @@ const seeds=[Number(process.env.SEED_A??1),Number(process.env.SEED_B??8)];
 const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
 const expertOpen=process.env.EXPERT_OPEN!=='0';
 const expertRecovery=process.env.EXPERT_RECOVERY==='1';
+const expertBelief=process.env.EXPERT_BELIEF==='1';
+const beliefProbes=Number(process.env.BELIEF_PROBES??3);
+const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
 const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
-const expertLabel=expertRecovery?(expertOpen?'opener+recovery':'recovery-only'):'opener-only';
+const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
+  expertBelief?'belief':null].filter(Boolean).join('+')||'baseline';
 if(!seeds.every(Number.isSafeInteger)||seeds[0]===seeds[1]||
   !Number.isSafeInteger(limit)||limit<1||limit>1000||
   !Number.isSafeInteger(budget)||budget<1||
   !Number.isSafeInteger(openTiles)||openTiles<1||
-  !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4)
+  !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4||
+  !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
+  !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100)
   throw Error('Invalid ROOK self-play configuration');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
@@ -37,7 +43,9 @@ function select(demo,open){
     const report=chooseMove(view.visible,{...base,
       reversePlanner:open&&expertOpen,
       garbageRecovery:open&&expertRecovery,
-      garbageRecoveryWeight:recoveryWeight});
+      garbageRecoveryWeight:recoveryWeight,
+      garbageBelief:open&&expertBelief,
+      beliefProbes,beliefMaxOutcomes});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
     stats.offers+=report.diagnostics.reversePlans;
@@ -137,7 +145,8 @@ function pairedGame(swap){
   const scored=!error&&turns<limit&&alive[0]!==alive[1];
   return {format:'rook-paired-tetrp-ko/1',swap,kinds,seeds,pps:2.5,
     nodeBudget:budget,extraOpenerCPU:expertOpen,expertLabel,
-    expertOpen,expertRecovery,recoveryWeight,
+    expertOpen,expertRecovery,expertBelief,
+    beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored,
     termination:error?'invalid-match':scored?'KO':turns>=limit?'capped':'unresolved',
     error,winner:scored?kinds[alive[0]?0:1]:null,
