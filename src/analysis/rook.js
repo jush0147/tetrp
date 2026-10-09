@@ -376,6 +376,7 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
   futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
+  futureProofSpread='legacy',
   traceRootSurvival=false,traceRootScores=false,beamRootReserve=null,offenseWeight=4.8,
   intermediateHoleRelief=0,includeHoldPlan=false,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
@@ -412,6 +413,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isInteger(maxNodes)||maxNodes<1||!Number.isInteger(futureReachablePly)||
     futureReachablePly<0||futureReachablePly>5||!Number.isInteger(futureReachableProbes)||
     futureReachableProbes<0||futureReachableProbes>100||
+    !['legacy','balanced'].includes(futureProofSpread)||
     !Number.isInteger(futureReachableStates)||futureReachableStates<1||
     !Number.isInteger(tsdTacticalProbes)||tsdTacticalProbes<0||
     !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
@@ -529,7 +531,15 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
     // Divide the bounded full-action probes across the public future plies.
-    const plyProofCap=Math.ceil(futureReachableProbes/Math.max(1,clamp-1));
+    // Default compatibility: ceil spends all 9 on the first 3 future plies
+    // when depth=5; balanced reserves real SRS+ proof for final public ply.
+    // This is diagnostic/opt-in. Neither option sees hidden NEXT6 or bag.
+    const proofPlies=Math.max(1,Math.min(clamp-1,futureReachablePly));
+    const baseProofCap=Math.floor(futureReachableProbes/proofPlies);
+    const extraProofs=futureReachableProbes%proofPlies;
+    const plyProofCap=futureProofSpread==='balanced'
+      ?baseProofCap+Number(ply-1>=proofPlies-extraProofs)
+      :Math.ceil(futureReachableProbes/Math.max(1,clamp-1));
     for(const node of beam){
       if(node.unresolvedGarbage){
         // Stop at the first hidden-hole insertion; no phantom future board.
@@ -814,6 +824,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseSkippedPressure,reverseThreat,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
+    futureProofSpread,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(includeHoldPlan&&result.kind==='hold')
     result.holdPlan=best.rootHoldPlan??null;
