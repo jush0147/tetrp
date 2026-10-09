@@ -306,3 +306,40 @@ Hold 與實際垃圾／消行會使雙方後續可見序列與盤面分歧，這
 的 wall-clock timeout 提高到 330 分鐘（GitHub Actions 仍可能受服務
 本身的資源／配額限制）。**CI job 因時間／外部資源中止，不算 capped
 或 KO**，需明確標記為未完成，不能選勝方。
+
+
+## 2026-10-09：以 Kiwi 同局面決策差異決定下一步（診斷中）
+
+放棄「再塞一個招式 expert」的開發模式；第一次明確量測
+**ROOK 是看不到較好的落點，還是看到了卻選錯**。
+
+- `src/analysis/rook-disagreement.js`：在**相同公開盤面**比對
+  Kiwi 經 Tetrp 權威驗證的第一個合法動作與 ROOK 根候選。
+  Identity 包括相同 piece、四格座標、Full/Mini/None 的旋轉判定；
+  Hold 另外作為獨立動作，不偽裝成已揭露的下一顆方塊。
+- `scripts/rook-choice-diagnostics.js`：在相同 `visibleState` 分別
+  呼叫 Kiwi 與 ROOK，並用 ROOK 的 `enumerateReachable`
+  在一般 BFS 預算與擴大 4 倍預算下檢查 Kiwi 的實際落點。
+  分類是 `agreement`、`root-bfs-budget-miss`、
+  `root-reachability-gap`、`generated-but-not-ranked`、
+  `ranked-but-not-selected`，以及 Hold 的專用類別。
+  擴大 BFS 仍是有界搜尋，**未找到絕不等於違反 SRS+ 規則**。
+- `scripts/rook-vs-kiwi.js` 的 `ROOK_DIAG=1`：
+  在真實、雙方同步的整局對戰中，依固定的回合（預設
+  0/4/8/12/20/30），對雙方各自當下的公開局面做 Kiwi vs ROOK
+  決策比對。**絕不把其中一名玩家的盤面誤當成對手盤面**，
+  也不傳送 authority 的私有 bag／garbage hole／checkpoint。
+  抽樣不縮短 2000 鎖的正式 KO 安全上限。
+- `.github/workflows/rook-choice-diagnostics.yml`：固定 seed
+  67020、67023，Kiwi 200000 node、ROOK 6000 eval 的
+  現況診斷，儲存每次差異、耗時、幾何覆蓋、Kiwi 候選 index
+  和分類總表。此非算力等價實驗，也不是新 KO 強度實驗。
+- `test/rook-disagreement.test.js`：動作同一性、不同 spin、
+  真正搜索缺口 vs 根候選被剪 vs 已看見但未採用、Hold 契約。
+
+解讀原則：`root-bfs-budget-miss` 優先改善 reachability 預算與
+搜尋品質；`generated-but-not-ranked` 優先審查候選剪枝與
+maxNodes；`ranked-but-not-selected` 優先用權威多步收益與
+盤面風險檢查評估函數。**此分類只能指向研發假說，不直接證明
+Kiwi 該手在長期一定更好**；尤其 ROOK 的 ranked 清單不同 ply
+不一定是嚴格同分值排序。最後仍需配對 KO／sent APP／CPU 實測。
