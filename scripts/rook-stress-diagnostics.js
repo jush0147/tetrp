@@ -52,6 +52,15 @@ for(let i=0;i<records.length;i++){
       throw Error('Search exceeded configured evaluations');
     opts.push({variant:variant.id,key,ms:Math.round(elapsed),
       evaluated:out.diagnostics.evaluated,score:out.diagnostics.value,
+      // The first visible NEXT5 placements are modeled by a combination
+      // of genuine SRS+ witnesses and cheap Hard Drop forecasts. Count
+      // coverage directly instead of assuming deeper beam has more Spins.
+      futureProofsByPly:out.diagnostics.futureReachableByPly,
+      actualFutureSpinClears:out.diagnostics.futureSpinClears,
+      fastSpinProbes:out.diagnostics.spinProbes,
+      forecastSpinClears:out.diagnostics.forecastedSpinClears,
+      futureMoves:out.diagnostics.futureMoves,
+      unresolvedGarbageBranches:out.diagnostics.unresolvedTankNodes,
       matchesKiwi:key===ref.kiwi.key});
   }
   if(opts[0].key!==ref.rook.key)
@@ -74,7 +83,21 @@ const statistics=Object.fromEntries(kinds.map(name=>{
     deepChanges:subset.filter(r=>r.options[1].key!==r.options[0].key).length,
     reliefChangesVsDeep:subset.filter(r=>r.options[2].key!==r.options[1].key).length,
     meanHoles:subset.length?subset.reduce((n,r)=>n+r.holes,0)/subset.length:null,
-    meanPending:subset.length?subset.reduce((n,r)=>n+r.pending,0)/subset.length:null}];
+    meanPending:subset.length?subset.reduce((n,r)=>n+r.pending,0)/subset.length:null,
+    byVariant:configs.map((variant,i)=>({
+      variant:variant.id,
+      meanFutureProofsByPly:subset.length
+        ?[0,1,2,3,4,5].map(p=>subset.reduce((n,r)=>
+          n+(r.options[i].futureProofsByPly[p]??0),0)/subset.length):[],
+      meanActualFutureSpinClears:subset.length?subset.reduce((n,r)=>
+        n+r.options[i].actualFutureSpinClears,0)/subset.length:null,
+      meanFastSpinProbes:subset.length?subset.reduce((n,r)=>
+        n+r.options[i].fastSpinProbes,0)/subset.length:null,
+      meanForecastSpinClears:subset.length?subset.reduce((n,r)=>
+        n+r.options[i].forecastSpinClears,0)/subset.length:null,
+      meanUnresolvedGarbageBranches:subset.length?subset.reduce((n,r)=>
+        n+r.options[i].unresolvedGarbageBranches,0)/subset.length:null
+    }))}];
 }));
 const result={format:'rook-real-kiwi-public-stress-triage/1',
   source:'same public Tetrp snapshots in pinned Kiwi-vs-ROOK full KO',
