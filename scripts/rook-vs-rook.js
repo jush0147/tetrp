@@ -17,6 +17,7 @@ const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
 const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBelief?'belief':null].filter(Boolean).join('+')||'baseline';
+const expertKind=expertBelief&&!expertOpen&&!expertRecovery?'belief':'opener';
 if(!seeds.every(Number.isSafeInteger)||seeds[0]===seeds[1]||
   !Number.isSafeInteger(limit)||limit<1||limit>1000||
   !Number.isSafeInteger(budget)||budget<1||
@@ -101,7 +102,7 @@ function health(demo){
     received:s.attack.totals.received,tanked:s.attack.totals.tanked};
 }
 function pairedGame(swap){
-  const kinds=swap?['baseline','opener']:['opener','baseline'];
+  const kinds=swap?['baseline',expertKind]:[expertKind,'baseline'];
   const demos=seeds.map(makeDemo),original=demos.map(d=>d.engine.serialize());
   const totals=Array.from({length:2},()=>({nodes:0,holds:0,ms:0,
     rejections:0,offers:0,selections:0,tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
@@ -117,7 +118,7 @@ function pairedGame(swap){
       if(demos.some(d=>!d.engine.state.playing))break;
       const moves=[];
       for(let i=0;i<2;i++){
-        const decision=select(demos[i],kinds[i]==='opener');
+        const decision=select(demos[i],kinds[i]===expertKind);
         moves.push(decision);
         for(const key of Object.keys(totals[i]))
           totals[i][key]+=decision[key]??0;
