@@ -17,6 +17,7 @@ const expertBelief=process.env.EXPERT_BELIEF==='1';
 const expertFuture=process.env.EXPERT_FUTURE==='1';
 const expertBeam=process.env.EXPERT_BEAM==='1';
 const expertOffense=process.env.EXPERT_OFFENSE==='1';
+const expertHoldPlan=process.env.EXPERT_HOLD_PLAN==='1';
 const offenseWeight=Number(process.env.EXPERT_OFFENSE_WEIGHT??7.2);
 const beamRootReserve=Number(process.env.EXPERT_BEAM_ROOT_RESERVE??8);
 const futureProbes=Number(process.env.EXPERT_FUTURE_PROBES??24);
@@ -26,7 +27,8 @@ const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
 const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBelief?'belief':null,expertFuture?'future-srs':null,
-  expertBeam?'focused-beam':null,expertOffense?'offense-weight':null]
+  expertBeam?'focused-beam':null,expertOffense?'offense-weight':null,
+  expertHoldPlan?'hold-plan':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
 if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
@@ -51,7 +53,8 @@ const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,
 
 function select(demo,open){
   const stats={nodes:0,holds:0,ms:0,rejections:0,offers:0,
-    selections:0,forwardProbes:0,forwardMoves:0};
+    selections:0,forwardProbes:0,forwardMoves:0,
+    holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0};
   for(let turn=0;turn<2;turn++){
     const view=demo.view();
     if(view.visible.next.length!==5)throw Error('Visible NEXT5 contract violated');
@@ -65,6 +68,7 @@ function select(demo,open){
       futureReachableStates:open&&expertFuture?futureStates:800,
       beamRootReserve:open&&expertBeam?beamRootReserve:null,
       offenseWeight:open&&expertOffense?offenseWeight:4.8,
+      includeHoldPlan:open&&expertHoldPlan,
       beliefProbes,beliefMaxOutcomes});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
@@ -81,7 +85,24 @@ function select(demo,open){
         demo.prepare(request,view.revision);
         if(a.kind==='hold'){
           if(turn!==0)throw Error('second Hold is forbidden');
-          demo.commit(view.revision);stats.holds++;didHold=true;break;
+          demo.commit(view.revision);stats.holds++;didHold=true;
+          // This is only a hypothesis: the planned post-Hold placement
+          // must pass the SAME Tetrp authority as every other real move.
+          // If rejected, fall back to a fresh visible-state search.
+          if(open&&expertHoldPlan&&turn===0&&a===report.ranked[0]&&
+            report.holdPlan?.kind==='place'){
+            stats.holdPlanAttempts++;
+            const after=demo.view();
+            try{
+              demo.prepare({action:{kind:'place'},move:report.holdPlan.move,
+                execution:report.holdPlan.execution},after.revision);
+              stats.holdPlanAccepted++;
+              return {revision:after.revision,...stats};
+            }catch(error){
+              stats.holdPlanRejected++;
+            }
+          }
+          break;
         }
         return {revision:view.revision,...stats};
       }catch(e){lastError=e;stats.rejections++}
@@ -130,6 +151,7 @@ function pairedGame(seed,swap){
   const original=demos.map(d=>d.engine.serialize());
   const totals=Array.from({length:2},()=>({nodes:0,holds:0,ms:0,
     rejections:0,offers:0,selections:0,forwardProbes:0,forwardMoves:0,
+    holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
   try{
@@ -178,7 +200,7 @@ function pairedGame(seed,swap){
     sameSeed:true,simultaneousLocks:true,pps:2.5,
     nodeBudget:budget,extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
-    offenseWeight,beamRootReserve,futureProbes,futureStates,
+    expertHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,

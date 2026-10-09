@@ -338,6 +338,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
   futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
   traceRootSurvival=false,beamRootReserve=null,offenseWeight=4.8,
+  includeHoldPlan=false,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
@@ -549,6 +550,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           const p=applyPlacement(node,move,visible.rules);
           if(!p||p.topout)continue;
           if(p.unresolvedGarbage)unresolvedTankNodes++;
+          const planned={kind:'place',move:{piece:move.piece.type,x:move.piece.x,
+              y:Math.ceil(move.piece.y),rotation:move.piece.r,useHold:false,
+              cells:B.cells(move.piece).map(([x,y])=>[x,Math.ceil(y)])},
+              execution:{moves:move.path,spin:move.spin}};
           const rootAction=node.rootAction??(option.hold?{kind:'hold',mode:node.hold===null?'empty':'occupied',samePiece:option.type===node.queue[0],requiresReanalysis:true}:
             {kind:'place',move:{piece:move.piece.type,x:move.piece.x,
               y:Math.ceil(move.piece.y),rotation:move.piece.r,useHold:false,
@@ -560,6 +565,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             pending:p.pending,combat:p.combat,frame:p.frame,
             unresolvedGarbage:p.unresolvedGarbage,forecastTank:p.forecastTank,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
+            rootHoldPlan:node.rootHoldPlan??(ply===0&&option.hold?planned:null),
             tacticalGoal:node.tacticalGoal??null,
             recoveryActive:node.recoveryActive,
             recoveryWeight:node.recoveryWeight,
@@ -741,6 +747,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
+  if(includeHoldPlan&&result.kind==='hold')
+    result.holdPlan=best.rootHoldPlan??null;
   if(traceRootSurvival)result.rootSurvival=rootSurvival;
   if(includeRanked){
     const bestKey=JSON.stringify(best.rootAction);
