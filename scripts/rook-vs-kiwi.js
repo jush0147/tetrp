@@ -50,10 +50,12 @@ function candidates(kind,visible){
 }
 
 function prepareUntilPlace(demo,kind){
-  let nodes=0,holdCount=0;
+  let nodes=0,holdCount=0,searchMs=0;
   for(let decision=0;decision<2;decision++){
     const view=demo.view();
+    const start=performance.now();
     const search=candidates(kind,view.visible);
+    searchMs+=performance.now()-start;
     nodes+=search.nodes;
     let lastError=null;
     for(let i=0;i<search.count;){
@@ -69,7 +71,7 @@ function prepareUntilPlace(demo,kind){
           if(!next.visible.hold.locked)throw Error('Hold lock not set');
           holdCount++;break;
         }
-        return {revision:view.revision,nodes,holdCount,placement:result.move};
+        return {revision:view.revision,nodes,holdCount,searchMs,placement:result.move};
       }catch(error){
         lastError=error;
         i=(result.candidateIndex??i)+1;
@@ -81,11 +83,13 @@ function prepareUntilPlace(demo,kind){
   throw Error('post-Hold search did not Place');
 }
 
-function asStats(demo,kind,searchNodes,holdMoves){
+function asStats(demo,kind,searchNodes,holdMoves,searchMs){
   const s=demo.engine.state,a=s.attack;
-  return {kind,playing:s.playing,reason:s.reason,pieces:s.stats.pieces,
+  return {kind,playing:s.playing,reason:s.reason,pieces:s.stats.pieces,frame:s.frame,
     generated:a.totals.generated,sent:a.totals.sent,cancelled:a.totals.cancelled,
     tanked:a.totals.tanked,received:a.totals.received,holdMoves,searchNodes,
+    searchMs:Math.round(searchMs),msPerPiece:s.stats.pieces?
+      Number((searchMs/s.stats.pieces).toFixed(3)):0,
     rawApp:s.stats.pieces?a.totals.generated/s.stats.pieces:0,
     sentApp:s.stats.pieces?a.totals.sent/s.stats.pieces:0};
 }
@@ -94,7 +98,8 @@ function runPair(seed,order){
   const demos=[makeDemo(seed),makeDemo(seed)];
   assertMatchingOpening(demos);
   const original=demos.map(d=>d.view().visible);
-  let transfers=[],lockSteps=0,searchNodes=[0,0],holdMoves=[0,0],error=null;
+  let transfers=[],lockSteps=0,searchNodes=[0,0],
+    holdMoves=[0,0],searchMs=[0,0],error=null;
   try{
     while(lockSteps<limit&&demos.every(d=>d.engine.state.playing)){
       // No side sees the other side's future move or its unrevealed garbage.
@@ -110,6 +115,7 @@ function runPair(seed,order){
       for(let i=0;i<2;i++){
         const plan=prepareUntilPlace(demos[i],kinds[i]);
         plans.push(plan);searchNodes[i]+=plan.nodes;holdMoves[i]+=plan.holdCount;
+        searchMs[i]+=plan.searchMs;
       }
       // Both decisions are prepared before either placement commits.
       if(assertSimultaneousPair(demos)!==turnFrame)
@@ -122,7 +128,7 @@ function runPair(seed,order){
       }
       lockSteps++;
       if(lockSteps%25===0)process.stderr.write(JSON.stringify({
-        game:order,lockSteps,stats:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i]))})+'\n');
+        game:order,lockSteps,stats:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i]))})+'\n');
     }
   }catch(e){error=e instanceof Error?e.message:String(e)}
   const alive=demos.map(d=>d.engine.state.playing);
@@ -134,7 +140,7 @@ function runPair(seed,order){
     scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
     winner:result.scored?kinds[result.winnerSlot]:null,
-    slots:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i])),
+    slots:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i])),
     initialVisibleNext:original.map(v=>v.next)};
 }
 // An independent seed is played twice, with ROOK / Kiwi swapping slots.
