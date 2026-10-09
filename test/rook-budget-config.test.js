@@ -20,7 +20,7 @@ test('independent budgets stay with bot identities across swapped slots',()=>{
   for(const [i,row] of rows.entries()){
     assert.equal(row.swap,Boolean(i));
     assert.deepEqual(row.seeds,[1,1]);
-    assert.equal(row.nodeBudget,80,'legacy common default is preserved');
+    assert.equal(row.nodeBudget,null,'unequal side budgets must not be labeled a shared budget');
     assert.equal(row.candidateNodeBudget,400);
     assert.equal(row.baselineNodeBudget,100);
     assert.equal(row.budgetsByKind.candidate,400);

@@ -40,7 +40,7 @@ jobs:
             r.samples.length!==4||r.samples.map(s=>s.budget).join(',')!=='6000,12000,24000,48000'||
             r.samples.some(s=>s.evaluated>s.budget||s.evaluated<1)))
             throw Error('Invalid public-state budget scaling profile');
-          const summary={format:'rook-budget-scaling-profile/1',positions:rows.length,
+          const summary={format:'rook-budget-scaling-profile/1',positionCount:rows.length,
             byBudget:[6000,12000,24000,48000].map((budget,i)=>{
               const samples=rows.map(r=>r.samples[i]);
               const times=samples.map(s=>s.ms).sort((a,b)=>a-b);
@@ -49,14 +49,14 @@ jobs:
                 medianMs:times[Math.floor(times.length/2)],
                 p95Ms:times[Math.ceil(times.length*.95)-1],
                 differentFrom6K:samples.filter((s,j)=>s.choice!==rows[j].samples[0].choice).length};
-            }),positions:rows.map(r=>({seed:r.seed,turn:r.turn,
+            }),positionDetails:rows.map(r=>({seed:r.seed,turn:r.turn,
               evaluated:r.samples.map(s=>s.evaluated),
               choiceChanges:r.samples.map(s=>s.choice!==r.samples[0].choice)}))};
           const useful=rows.some(r=>r.samples[1].evaluated>r.samples[0].evaluated);
           summary.pilot12K=useful?'go':'skip-saturated';
           writeFileSync('rook-budget-summary.json',JSON.stringify(summary,null,2)+'\n');
           appendFileSync(process.env.GITHUB_OUTPUT,'useful='+useful+'\n');
-          console.log(JSON.stringify({...summary,positions:undefined}));
+          console.log(JSON.stringify({...summary,positionDetails:undefined}));
           JS
       - uses: actions/upload-artifact@v4
         if: always()
