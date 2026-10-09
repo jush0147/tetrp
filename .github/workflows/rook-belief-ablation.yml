@@ -1,0 +1,41 @@
+name: ROOK public-garbage belief paired KO smoke
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-vs-rook.js
+      - src/analysis/rook-belief.js
+      - .github/workflows/rook-belief-ablation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Paired same-seed swapped-role belief vs baseline
+        env:
+          EXPERT_OPEN: '0'
+          EXPERT_RECOVERY: '0'
+          EXPERT_BELIEF: '1'
+          BELIEF_PROBES: '2'
+          BELIEF_MAX_OUTCOMES: '10'
+          ROOK_NODES: '900'
+          MAX_LOCKS: '24'
+          SEED_A: '67000'
+          SEED_B: '67001'
+        run: |
+          node scripts/rook-vs-rook.js > rook-belief-paired.jsonl
+          cat rook-belief-paired.jsonl
+          node --input-type=module -e "import fs from 'node:fs'; const x=fs.readFileSync('rook-belief-paired.jsonl','utf8').trim().split('\\n').map(JSON.parse); if(x.length!==2 || x.some(v=>v.error || v.termination==='invalid-match'))process.exit(1);"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-public-belief-paired-smoke
+          path: rook-belief-paired.jsonl
+          retention-days: 15
