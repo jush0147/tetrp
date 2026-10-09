@@ -25,7 +25,8 @@ export function diagnosePublicChoice(visible,{
     throw Error('Missing independent bot analyzers');
   const source=JSON.stringify(visible);
   const startRook=performance.now();
-  const rook=chooseMove(visible,{...rookOptions,includeRanked:true});
+  const rook=chooseMove(visible,{...rookOptions,includeRanked:true,
+    traceRootSurvival:true});
   const rookMs=performance.now()-startRook;
   const prepared=prepareKiwi(visible);
   prepared.request.node_budget=kiwiBudget;
@@ -56,7 +57,7 @@ export function diagnosePublicChoice(visible,{
   }
   const comparison=classifyRootDisagreement({
     rookChosen:rook.ranked[0],rookRanked:rook.ranked,kiwiChosen:kiwi,
-    normalReachable,expandedReachable});
+    normalReachable,expandedReachable,rootSurvival:rook.rootSurvival});
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+p.amt,0);
   return {format:'rook-kiwi-public-choice-diff/1',seed,turn,owner,frame:visible.frame,
@@ -70,6 +71,9 @@ export function diagnosePublicChoice(visible,{
       ms:Math.round(kiwiMs),candidateIndex:kiwi.candidateIndex,
       reportedCandidates:kiwiReport.candidates?.length??0},
     classification:comparison.category,candidateRank:comparison.candidateRank,
+    firstSurvived:comparison.firstSurvived,
+    lastSurvived:comparison.lastSurvived,
+    maxSurvivedPly:comparison.maxSurvivedPly,
     normalReachable:comparison.normalReachable,
     expandedReachable:comparison.expandedReachable};
 }
