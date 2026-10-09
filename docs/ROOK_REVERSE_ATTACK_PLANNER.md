@@ -1,6 +1,6 @@
 # ROOK reverse attack planner: design, continuation checkpoint
 
-Status: **M1 inverse attack-goal portfolio integrated but OFF by default; no strength claim**.
+Status: **M3 real empty-board Full TSD opener demonstrated, opt-in only; full-game APP is NOT improved**.
 The independent prototype now feeds forward-proven Full TSS/TSD/TST
 continuations into the real ROOK decision when the caller sets
 reversePlanner:true. New tests cover the actual change of chosen root.
@@ -320,11 +320,12 @@ index 3, 4 or 5 of the public `[Current,...NEXT5]` sequence, the module:
 - Private RNG, opponent future, hidden sixth preview and invalid goals
   must not influence or fabricate a plan. Original replay bytes unchanged.
 
-**Important limitation:** these are highly structured fixture boards with
-existing garbage support. Creating useful T-Slots from an **empty/very open
-board** has NOT been demonstrated. The solver currently ignores Hold
-reshuffling, intermediate row shifts, timed incoming garbage and general
-B2B chains. Do not confuse five-piece ability with a high-APP opener.
+**Historical limitation of the older rook-long-planner module:** its
+four/five-piece demonstrations use artificially prebuilt garbage support.
+A separate exact-cover opening module now proves genuine seven-bag
+empty-board Full TSD below. The broader bot still lacks robust Hold
+reshuffling, intermediate row-shift planning, real incoming-garbage
+forecast, and sustained B2B/Surge chains.
 
 **Latest honest paired natural-play A/B** (fixed seeds 67020 and 67021,
 120 placements each, same full ordinary ROOK search nodes, reverse-goal
@@ -364,6 +365,92 @@ After isolating separate regular and tactical search budgets, unproductive
 inverse probes must leave the ordinary move unchanged. This is enforced
 in `test/rook-long-planner.test.js`. The cost is more CPU; a candidate
 with identical APP but extra time is still **not an improvement**.
+
+## M3: real seven-bag Full TSD from an EMPTY board (2026-10-09)
+
+**This is a true tactical ability gain, not yet a strong-bot promotion.**
+
+New experimental code: `src/analysis/rook-open-slot.js`.
+It constructs a target Full TSD via an inverse exact-cover of two clear
+rows and the required Spin roof/corners. It uses ONLY the 1-5 setup
+pieces explicitly visible before a known T in Current+NEXT5. A
+low-stack board with no garbage may be reconsidered after each actual
+lock. The solver searches legal polyomino tilings, then verifies
+every setup in real public SRS+ move/rotation geometry, *in the actual
+known order*. It confirms a last-rotation Full T spin is reachable
+and clears two lines. The tentative goal NEVER receives imaginary
+attack credit; the actual BotDemo/Engine.lock is authoritative.
+
+A cheap proof for simple spawn rotation+shift+Hard Drop avoids excessive
+BFS on unpromising geometric tilings. Expensive operations are bounded
+(maxGoals=8, maxTileNodes=1200, maxProofs=12 by default). The
+`chooseMove` integration is available ONLY via opt-in
+`reversePlanner:true`; `reverseOnlyOpen:true` isolates it from older
+experimental inverse planners for fair benchmarking. The ordinary
+ROOK beam is never robbed of its baseline node allocation. It remains
+**OFF by default**. Opponent packet arrival is not predicted across
+the full six-piece tactical line, so reevaluation is essential.
+
+**Actual naturally generated seven-bag example:** Tetrp seed
+`39589`, initial visible `L, Z, I, J, S, T`. Starting
+from **40 empty board rows**, the actual ROOK calls `chooseMove`
+independently for every piece. It constructs a Full TSD at the sixth
+lock, clears two rows, sends 4 attack lines, earns one B2B charge
+and leaves its original authority replay checkpoint immutable. The
+24-frame clock remains a battle cadence, **not a keypress limit**.
+Other independently generated seeds (e.g. seed 1) also yield a Full
+TSD. Tests: `test/rook-open-slot.test.js` (six new cases, plus all
+existing TSS/TSD/long-planner regression tests).
+
+**Pre-committed cohort, not cherry-picked winners.** The benchmark
+`scripts/rook-open-cohort.js` enumerates integer seeds upward and takes
+the first 12 whose public Current+NEXT5 has T *exactly sixth*, whether
+or not the inverse solver succeeds. Both bots then play **six actual
+Tetrp locks** from the same authority seed with independent legal
+Hold decisions. Result:
+https://github.com/jush0147/tetrp/actions/runs/37865579325
+
+| Six-lock cohort (12 conditional seeds) | Original ROOK | Open-goal experiment |
+| --- | ---: | ---: |
+| Total locked pieces | 72 | 72 |
+| Full TSDs | 0 | **6** |
+| Actual generated/sent garbage | 0 | **24** |
+| Combined decision CPU | 16.4 seconds | 33.9 seconds |
+
+This is a **conditional** opener cohort. T in the sixth position is
+approximately one out of seven initial seven-bag arrangements; these
+12 seeds are NOT representative of the entire game, or of opponent
+garbage, KO or sustained APP. The extra CPU is considerable.
+
+**Full 120-piece follow-through**, isolated open expert enabled and
+disabled on the same public seeds (same GitHub run):
+
+| Seed | 120-piece ordinary ROOK | 120-piece open expert |
+| --- | ---: | ---: |
+| 1 | 64 generated / 0.5333 APP / 1 TSD | **61 generated / 0.5083 APP / 2 TSD** |
+| 8 | 58 generated / 0.4833 APP / 0 TSD | 58 generated / 0.4833 APP / 0 TSD |
+
+The open expert therefore demonstrably **improves tactical opening
+capability**, but on seed 1 **reduces full-game APP** despite producing
+an extra TSD; seed 8 remains unchanged while spending more CPU.
+This is direct evidence that TSD count by itself does not define
+strength. Neither 120-piece test is a scored KO. DO NOT merge or
+enable by default, and do not claim it beats Kiwi.
+
+**Regression fixed during integration:** originally the new expert
+shadowed older short/long TSS/TSD specialists on garbage puzzle
+boards, causing five existing tests to fail. The final routing now
+restricts exact cover to low stacks **without garbage** and falls
+back to existing specialists when it finds no verified opener.
+
+**Next research priority:** use the resulting board and public B2B /
+incoming garbage to choose *follow-through* attacks, not only a
+6-piece spike. Compare post-TSD expected sent APP, peak stack,
+B2B continuity, garbage downstack and actual KO with consistent
+computing budgets; selectively trigger the expensive exact-cover
+search or replace it with a faster policy/value guide. Expand to
+Hold and row-clearing setup, while preserving the exact NEXT5
+privacy contract.
 
 ## Picking up from another conversation
 
