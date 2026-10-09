@@ -95,3 +95,21 @@
 - 對於失敗的實驗，保留可重現資料但不要提高核心默認配置。
 
 > 目前交接結論：**不要再迷信 6000 evaluations 是不可突破的限制。下一步先實作預算分側及規模效益研究；root-score 診斷作為平行證據；有強度趨勢才優化效能。**
+
+
+## 2026-10-09 P0 實作紀錄：獨立候選／基線搜尋預算
+
+- `scripts/rook-vs-rook.js` 已新增環境變數
+  `ROOK_CANDIDATE_NODES`、`ROOK_BASELINE_NODES`，均預設
+  fallback `ROOK_NODES`（舊版同一 budget 的 workflow 不變）。
+  搜尋呼叫前按該 side 選取 maxNodes；swap 後 budget **跟
+  Bot 身份走，不跟 slot 走**。每局 JSON 另顯
+  `candidateNodeBudget`、`baselineNodeBudget`、
+  `budgetsByKind`、`slots[].configuredNodeBudget`、
+  `searches`、`budgetReached`、`deepestPly`。
+- 此處只是 benchmark 設施，不是已證實 48K 比 6K 強；
+  `nodeBudget` 舊欄仍代表 `ROOK_NODES` fallback，
+  **預算不等時以 candidate/baseline 欄為準**。
+- 下一步：跑相同公開盤面 6K/12K/24K/48K 的
+  actual evaluations／best action／depth／ms profile，
+  再做不同 budget 的同 seed/slot-swap 完整 KO。

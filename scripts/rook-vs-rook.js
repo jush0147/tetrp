@@ -7,7 +7,10 @@ import {chooseMove} from '../src/analysis/rook.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 
 const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
+// Legacy ROOK_NODES still means both sides use the same evaluation budget.
 const budget=Number(process.env.ROOK_NODES??6000);
+const candidateBudget=Number(process.env.ROOK_CANDIDATE_NODES??budget);
+const baselineBudget=Number(process.env.ROOK_BASELINE_NODES??budget);
 // SEED_A / SEED_B now designate two independent, matched-seed trials.
 const seeds=parseMatchSeeds();
 const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
@@ -34,6 +37,8 @@ const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
 if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isSafeInteger(budget)||budget<1||
+  !Number.isSafeInteger(candidateBudget)||candidateBudget<1||candidateBudget>2000000||
+  !Number.isSafeInteger(baselineBudget)||baselineBudget<1||baselineBudget>2000000||
   !Number.isSafeInteger(openTiles)||openTiles<1||
   !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4||
   !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
@@ -63,13 +68,15 @@ function select(demo,open){
   const stats={nodes:0,holds:0,ms:0,rejections:0,offers:0,
     selections:0,forwardProbes:0,forwardMoves:0,
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
-    holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0};
+    holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
+    searches:0,budgetReached:0,deepestPly:0};
   let expectedAfterHold=null;
   for(let turn=0;turn<2;turn++){
     const view=demo.view();
     if(view.visible.next.length!==5)throw Error('Visible NEXT5 contract violated');
     const started=performance.now();
-    const report=chooseMove(view.visible,{...base,
+    const searchBudget=open?candidateBudget:baselineBudget;
+    const report=chooseMove(view.visible,{...base,maxNodes:searchBudget,
       reversePlanner:open&&expertOpen,
       garbageRecovery:open&&expertRecovery,
       garbageRecoveryWeight:recoveryWeight,
@@ -82,6 +89,9 @@ function select(demo,open){
       beliefProbes,beliefMaxOutcomes});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
+    stats.searches++;
+    stats.budgetReached+=Number(report.diagnostics.evaluated>=searchBudget);
+    stats.deepestPly=Math.max(stats.deepestPly,report.diagnostics.effectiveDepth);
     stats.offers+=report.diagnostics.reversePlans;
     stats.selections+=Number(report.diagnostics.reverseSelectedGoal!==null);
     stats.forwardProbes+=report.diagnostics.futureProbes;
@@ -170,6 +180,7 @@ function pairedGame(seed,swap){
     rejections:0,offers:0,selections:0,forwardProbes:0,forwardMoves:0,
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
+    searches:0,budgetReached:0,deepestPly:0,
     tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
   try{
@@ -216,14 +227,20 @@ function pairedGame(seed,swap){
   const result=scoreKO({alive,rounds:turns,cap:limit,error});
   return {format:'rook-paired-tetrp-ko/2',seed,seeds:[seed,seed],swap,kinds,
     sameSeed:true,simultaneousLocks:true,pps:2.5,
-    nodeBudget:budget,extraOpenerCPU:expertOpen,expertLabel,
+    nodeBudget:budget,candidateNodeBudget:candidateBudget,
+    baselineNodeBudget:baselineBudget,
+    budgetsByKind:{[expertKind]:candidateBudget,baseline:baselineBudget},
+    extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
     expertHoldPlan,auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
     winner:result.scored?kinds[result.winnerSlot]:null,
-    checkpoints,slots:demos.map((d,i)=>summary(d,kinds[i],totals[i]))};
+    checkpoints,slots:demos.map((d,i)=>({
+      ...summary(d,kinds[i],totals[i]),
+      configuredNodeBudget:kinds[i]===expertKind?candidateBudget:baselineBudget
+    }))};
 }
 // Independent seeds give distinct games; each seed is repeated with the
 // candidate and baseline swapped between the two identical-bag slots.
