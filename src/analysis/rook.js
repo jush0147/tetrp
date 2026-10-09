@@ -337,7 +337,7 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
   futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
-  traceRootSurvival=false,
+  traceRootSurvival=false,beamRootReserve=null,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
@@ -377,7 +377,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
     !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100||
     !Number.isFinite(beliefRiskWeight)||beliefRiskWeight<0||beliefRiskWeight>1||
-    !Number.isInteger(beliefReachableStates)||beliefReachableStates<1)
+    !Number.isInteger(beliefReachableStates)||beliefReachableStates<1||
+    (beamRootReserve!==null&&(!Number.isInteger(beamRootReserve)||
+      beamRootReserve<1||beamRootReserve>beamWidth)))
     throw Error('invalid search budget');
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+(p.amt??0),0);
@@ -639,13 +641,29 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     }
     const roots=[...grouped.values()];
     beam=[];
-    for(let round=0;beam.length<beamWidth;round++){
-      let appended=0;
-      for(const group of roots){
-        if(group[round]){beam.push(group[round]);appended++;}
-        if(beam.length>=beamWidth)break;
+    if(beamRootReserve===null){
+      // Legacy: fair round-robin over every first move. Keep this baseline
+      // byte-for-byte unless the alternative policy is explicitly requested.
+      for(let round=0;beam.length<beamWidth;round++){
+        let appended=0;
+        for(const group of roots){
+          if(group[round]){beam.push(group[round]);appended++;}
+          if(beam.length>=beamWidth)break;
+        }
+        if(!appended)break;
       }
-      if(!appended)break;
+    }else{
+      // Reserve only N distinct promising first actions; spend the remaining
+      // beam width on globally best continuations (even the same first move).
+      // All candidates have identical evaluation semantics at this ply.
+      const guaranteed=roots.slice(0,beamRootReserve).map(group=>group[0]);
+      const selected=new Set(guaranteed);
+      beam.push(...guaranteed);
+      for(const candidate of candidates){
+        if(beam.length>=beamWidth)break;
+        if(selected.has(candidate))continue;
+        beam.push(candidate);
+      }
     }
     if(ply===0&&tsdCandidates.length&&tsdTacticalProbes>0){
       // Keep a few tactical roots whose exact next move is a PROVEN TSD.
@@ -718,7 +736,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseBudgetExceeded:reverseReport.stats.budgetExceeded,
     reverseSkippedPressure,reverseThreat,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
-    effectiveDepth:clamp,
+    effectiveDepth:clamp,beamRootReserve,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(traceRootSurvival)result.rootSurvival=rootSurvival;
   if(includeRanked){
