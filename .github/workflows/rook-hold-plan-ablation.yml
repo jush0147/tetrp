@@ -1,0 +1,110 @@
+name: ROOK authority-verified Hold plan full KO ablation
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - src/analysis/rook.js
+      - scripts/rook-vs-rook.js
+      - test/rook-hold-plan.test.js
+      - .github/workflows/rook-hold-plan-ablation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired-ko:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        seed: [1, 8, 16, 23]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prove Hold follow-through against Tetrp engine
+        run: node --test test/rook-hold-plan.test.js
+      - name: Full KO with same initial seed, simultaneous locks and Hold plan ablation
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_RECOVERY: '0'
+          EXPERT_BELIEF: '0'
+          EXPERT_FUTURE: '0'
+          EXPERT_BEAM: '0'
+          EXPERT_OFFENSE: '0'
+          EXPERT_HOLD_PLAN: '1'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > "rook-hold-plan-${{ matrix.seed }}.jsonl"
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('rook-hold-plan-${{ matrix.seed }}.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].swap||!rows[1].swap||
+            rows.some(r=>r.error||r.seed!==Number('${{ matrix.seed }}')||
+              !r.sameSeed||!r.simultaneousLocks||r.seeds[0]!==r.seeds[1]||
+              r.nodeBudget!==6000||r.cap!==2000||r.expertLabel!=='hold-plan'||
+              !r.expertHoldPlan||r.expertOpen||r.expertRecovery||r.expertBelief||
+              r.expertFuture||r.expertBeam||r.expertOffense||
+              r.scored!==(r.termination==='KO')||
+              r.slots.some(s=>s.pieces!==r.turns||!Number.isFinite(s.ms))))
+            throw Error('Invalid post-Hold plan versus re-search KO experiment');
+          const trial=rows[0].slots.find(s=>s.kind==='hold-plan');
+          if(!trial||trial.holdPlanAccepted<1||
+            trial.holdPlanAttempts!==trial.holdPlanAccepted+trial.holdPlanRejected)
+            throw Error('Predicted post-Hold placement not exercised');
+          console.log(JSON.stringify(rows.map(r=>({seed:r.seed,swap:r.swap,turns:r.turns,
+            termination:r.termination,winner:r.winner,slots:r.slots.map(s=>({
+              kind:s.kind,ms:s.ms,sentAPP:s.sentAPP,holds:s.holds,
+              holdPlanAttempts:s.holdPlanAttempts,holdPlanAccepted:s.holdPlanAccepted,
+              holdPlanRejected:s.holdPlanRejected}))}))));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-hold-plan-${{ matrix.seed }}
+          path: rook-hold-plan-${{ matrix.seed }}.jsonl
+          retention-days: 30
+  report:
+    needs: paired-ko
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-hold-plan-*
+          merge-multiple: true
+      - name: Count only real KO and compare actual CPU and attack
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seeds=[1,8,16,23],rows=seeds.flatMap(seed=>
+            readFileSync('rook-hold-plan-'+seed+'.jsonl','utf8').trim().split('\n').map(JSON.parse));
+          if(rows.length!==8||rows.some(r=>r.error))throw Error('Incomplete KO set');
+          const wins=rows.filter(r=>r.scored);
+          const total=(kind,key)=>rows.reduce((v,r)=>v+
+            (r.slots.find(s=>s.kind===kind)?.[key]??0),0);
+          const out={protocol:'rook-hold-plan-authority-ko-v1',
+            games:rows.length,independentSeeds:seeds.length,cap:2000,
+            scoredKO:wins.length,capped:rows.filter(r=>r.termination==='capped').length,
+            doubleKO:rows.filter(r=>r.termination==='double-KO').length,
+            holdPlanWins:wins.filter(r=>r.winner==='hold-plan').length,
+            baselineWins:wins.filter(r=>r.winner==='baseline').length,
+            holdPlanMs:total('hold-plan','ms'),baselineMs:total('baseline','ms'),
+            holdPlanTotalAttempts:total('hold-plan','holdPlanAttempts'),
+            holdPlanTotalAccepted:total('hold-plan','holdPlanAccepted'),
+            holdPlanTotalRejected:total('hold-plan','holdPlanRejected'),
+            holdPlanSent:total('hold-plan','sent'),baselineSent:total('baseline','sent'),
+            gamesDetail:rows};
+          writeFileSync('rook-hold-plan-summary.json',JSON.stringify(out,null,2)+'\n');
+          console.log(JSON.stringify({...out,gamesDetail:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-hold-plan-summary
+          path: rook-hold-plan-summary.json
+          retention-days: 30
