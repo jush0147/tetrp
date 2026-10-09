@@ -1,0 +1,105 @@
+name: ROOK focused beam allocation full KO ablation
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-vs-rook.js
+      - src/analysis/rook.js
+      - test/rook-beam.test.js
+      - .github/workflows/rook-focused-beam-ablation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired-ko:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        seed: [1, 8, 16, 23]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate focused beam against baseline search at same 6000 eval cap
+        run: node --test test/rook-beam.test.js
+      - name: Same-seed synchronous KO-first full-match evaluation
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_RECOVERY: '0'
+          EXPERT_BELIEF: '0'
+          EXPERT_FUTURE: '0'
+          EXPERT_BEAM: '1'
+          EXPERT_BEAM_ROOT_RESERVE: '8'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > "rook-focused-beam-${{ matrix.seed }}.jsonl"
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('rook-focused-beam-${{ matrix.seed }}.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].swap||!rows[1].swap||
+            rows.some(r=>r.error||r.seed!==Number('${{ matrix.seed }}')||
+              r.seeds[0]!==r.seeds[1]||!r.simultaneousLocks||!r.sameSeed||
+              r.nodeBudget!==6000||r.cap!==2000||
+              r.expertLabel!=='focused-beam'||!r.expertBeam||
+              r.expertOpen||r.expertRecovery||r.expertBelief||r.expertFuture||
+              r.scored!==(r.termination==='KO')||
+              r.slots.some(s=>s.pieces!==r.turns||!Number.isFinite(s.ms))))
+            throw Error('Invalid focused-beam same-seed full KO result');
+          console.log(JSON.stringify(rows.map(r=>({
+            seed:r.seed,swap:r.swap,turns:r.turns,termination:r.termination,
+            winner:r.winner,
+            slots:r.slots.map(s=>({kind:s.kind,ms:s.ms,sentAPP:s.sentAPP,nodes:s.nodes}))}))));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-focused-beam-${{ matrix.seed }}
+          path: rook-focused-beam-${{ matrix.seed }}.jsonl
+          retention-days: 30
+  report:
+    needs: paired-ko
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-focused-beam-*
+          merge-multiple: true
+      - name: Count only actual KO; distinguish capped and CPU differences
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seeds=[1,8,16,23];
+          const rows=seeds.flatMap(seed=>readFileSync('rook-focused-beam-'+seed+'.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse));
+          if(rows.length!==seeds.length*2||rows.some(r=>r.error))
+            throw Error('Invalid focused-beam paired KO report');
+          const wins=rows.filter(r=>r.scored);
+          const total=(kind,key)=>rows.reduce((sum,r)=>
+            sum+(r.slots.find(s=>s.kind===kind)?.[key]??0),0);
+          const report={protocol:'rook-focused-beam-same-seed-ko-v1',
+            games:rows.length,independentSeeds:seeds.length,cap:2000,
+            scoredKO:wins.length,capped:rows.filter(r=>r.termination==='capped').length,
+            doubleKO:rows.filter(r=>r.termination==='double-KO').length,
+            focusedWins:wins.filter(r=>r.winner==='focused-beam').length,
+            baselineWins:wins.filter(r=>r.winner==='baseline').length,
+            focusedTotalMs:total('focused-beam','ms'),
+            baselineTotalMs:total('baseline','ms'),
+            focusedNodes:total('focused-beam','nodes'),
+            baselineNodes:total('baseline','nodes'),
+            pairs:rows};
+          writeFileSync('rook-focused-beam-summary.json',JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify({...report,pairs:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-focused-beam-summary
+          path: rook-focused-beam-summary.json
+          retention-days: 30
