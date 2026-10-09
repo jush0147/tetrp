@@ -11,24 +11,37 @@ export function actionSignature(action){
 }
 
 export function classifyRootDisagreement({rookChosen,rookRanked,kiwiChosen,
-  normalReachable=false,expandedReachable=false}){
+  normalReachable=false,expandedReachable=false,rootSurvival=null}){
   if(!Array.isArray(rookRanked)||!rookRanked.length)
     throw Error('missing ROOK root candidates');
   const rookKey=actionSignature(rookChosen),kiwiKey=actionSignature(kiwiChosen);
   const candidateRank=rookRanked.findIndex(a=>actionSignature(a)===kiwiKey);
   const same=rookKey===kiwiKey;
+  // Unlike ranked[] (which also contains candidates evaluated only at root),
+  // beam survival tells whether that root received actual deeper analysis.
+  const survived=Array.isArray(rootSurvival)?rootSurvival.map(({roots})=>
+    roots.some(key=>actionSignature(JSON.parse(key))===kiwiKey)):null;
+  const firstSurvived=survived?.[0]??null;
+  const lastSurvived=survived?.at(-1)??null;
+  const maxSurvivedPly=survived?.reduce((max,yes,i)=>
+    yes?i+1:max,0)??null;
   let category;
   if(same)category='agreement';
-  else if(kiwiKey.startsWith('hold:'))
-    category=candidateRank<0?'hold-not-ranked':'hold-ranked-not-selected';
-  else if(rookKey.startsWith('hold:'))
-    category=normalReachable?'rook-prefers-hold':'rook-hold-with-unseen-kiwi-place';
-  else if(!normalReachable)
+  else if(kiwiKey.startsWith('hold:')){
+    if(candidateRank<0)category='hold-not-ranked';
+    else if(firstSurvived===false)category='hold-root-beam-pruned';
+    else if(lastSurvived===false)category='hold-future-beam-pruned';
+    else category='hold-ranked-not-selected';
+  }else if(!normalReachable)
     category=expandedReachable?'root-bfs-budget-miss':'root-reachability-gap';
   else if(candidateRank<0)category='generated-but-not-ranked';
+  else if(firstSurvived===false)category='root-beam-pruned';
+  else if(lastSurvived===false)category='future-beam-pruned';
+  else if(rookKey.startsWith('hold:'))category='rook-prefers-hold';
   else category='ranked-but-not-selected';
-  return {category,same,candidateRank: candidateRank<0?null:candidateRank+1,
+  return {category,same,candidateRank:candidateRank<0?null:candidateRank+1,
     normalReachable:Boolean(normalReachable),
     expandedReachable:Boolean(expandedReachable),
+    firstSurvived,lastSurvived,maxSurvivedPly,
     rookKey,kiwiKey,rootCandidates:rookRanked.length};
 }
