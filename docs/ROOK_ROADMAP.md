@@ -380,3 +380,64 @@ hole relief 在真實戰鬥也只改變 1/22 決策；此前乾淨盤面
 3. 如發現 spin 繼續手被 generic forecast 低估，設計**受控的真正 SRS+ 未來分支擴張**，不是單純再從 9 加到 24 probes；在同預算的新獨立 seeds KO 衡量。
 4. 若未來 reachability 並無致命缺口，優先查長期 attack/garbage value model，不再試孤立的洞數 penalty。
 5. 仍保持 PR #6 Draft，記錄未完成的 CI，未經 Kiwi KO 實證不合併 main。
+
+
+### 2026-10-10 07:15：真正 SRS+ 搜尋在末層歸零，但均分仍未改選
+
+本輪不是新 KO 勝率，而是利用已保存在
+[Actions #37949389406](https://github.com/jush0147/tetrp/actions/runs/37949389406)
+的 22 個真實玩家公開 snapshot，
+搭配 [source snapshot #37954752567](https://github.com/jush0147/tetrp/actions/runs/37954752567)
+在本地重新執行 ROOK 判斷（只有 2 個獨立 seed；
+沒有新增 Kiwi 對手運算，也沒有隱藏資訊）。
+
+在原 5 ply／beam 48／maxNodes 24K，全部 22 個公開盤面
+的真正 `enumerateReachable` 未來 SRS+ 探測：
+後續第 2／3／4／5 層分別 **66／63／63／0 次**，
+因 `ceil(9/(5-1)) = 3`、前三層用完 9 個
+`futureReachableProbes`，最後一層只剩廉價
+Hard Drop 與既有 bounded Spin forecast。
+同組局面額外找到的 `futureSpinClears` 累計 7 個
+候選，另有約 77 個原 spin-forecast 產生的潛在旋轉消行候選。
+**這兩者只是搜索候選計數，不是權威場上實際打出 7/77 次 Spin。**
+這解釋為何更多 depth 不一定有相同比例的 SRS+ 戰術覆蓋。
+
+新增可選 `chooseMove(...,{futureProofSpread:'balanced'})`，
+原版默認 `'legacy'` 不動；仍共用最多 9 次 genuine
+future reachability 探測，不提高 cap、不偷看不可見 NEXT：
+5 ply 時以 **2／2／2／3** 取代
+**3／3／3／0** 的逐層分配。首次真實盤面已確認
+`[0,3,3,3,0,0]` → `[0,2,2,2,3,0]`。
+在同樣 22 個公開真實盤面使用 5×48/24K
+測試後，後四層 genuine probes 總計
+由 **66／63／63／0** 改為
+**44／42／42／63**，實際枚舉到的 SRS+ moves
+由 4014 → 4177，**但 0/22 局面改選**；
+`futureSpinClears` 仍累計 7，
+`forecastedSpinClears` 仍累計 77。
+所以這是一項確實修正搜索**覆蓋位置**的 opt-in 實驗，
+**尚未證明提升戰鬥力，也未改正式預設**。
+
+新增 `test/rook-future-proof-spread.test.js`：
+- 確認 `legacy` 顯式指定和原預設完全相同；
+- balanced 5 ply 真的延伸到最後公開 ply，
+  且全部 probes 合計 <= 9、eval <= 24K；
+- 不讀／不修改玩家公開 Current／Hold／NEXT5；
+- 非法模式會明確拒絕。
+
+新版 [real KO public-state stress workflow](https://github.com/jush0147/tetrp/actions/workflows/rook-real-ko-public-stress.yml)
+也加入 balanced-vs-deep 的第 4 個候選，比對
+每層 future reachability 和 Kiwi root 同手次數；
+結果必須待最新 CI 確認。
+
+**新的優先結論**：只有最後一層的 SRS+ 搜尋未覆蓋，
+**不足以在已觀察的 22 個公開局面改變最佳第一手**。
+不能因程式上找到一個配額缺口，就宣稱那是 Kiwi
+0:8 的原因。下一步應轉向真正長期攻擊價值／
+B2B 和可延續 Spin 戰術的評估與搜尋；
+比對樣本應增加新 seed，避免在這兩個已反覆使用
+的 seed 上過度擬合。
+
+[ROOK vs pinned Kiwi 單場/種子正式對戰工作流程](https://github.com/jush0147/tetrp/actions/workflows/rook-ko.yml)
+已設定 `SWAP_ROLES=0` 和 8 個不同 seed；
+結果排隊期間不得宣稱新版打敗 Kiwi。
