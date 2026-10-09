@@ -309,15 +309,24 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   const firstT=queue.indexOf('t');
   const reverseEligible=reversePlanner&&depth>=2&&firstT>=1&&firstT<=5&&
     Number.isInteger(reverseMaxCandidates)&&reverseMaxCandidates>0;
-  const reverseReport=reverseEligible?(firstT>=1&&firstT<=5&&
-    visible.board.rows.reduce((n,row)=>n+row.filter(v=>v!==null).length,0)<=20
+  // Exact-cover openers are for non-garbage low stacks. Keep the existing
+  // inverse Full TSS/TSD/TST experts on garbage and overhang puzzles, and
+  // fall back to them when the opener finds no legal TSD continuation.
+  const nonGarbage=visible.board.rows.every(row=>
+    row.every(c=>c!=='gb'&&c!=='gbd'));
+  const lowStack=visible.board.rows.reduce((n,row)=>n+
+    row.filter(c=>c!==null).length,0)<=20;
+  const openerReport=reverseEligible&&nonGarbage&&lowStack
     ?searchOpenTSD(visible,{maxGoals:reverseOpenMaxGoals,
       maxTileNodes:reverseOpenMaxTileNodes,maxProofs:reverseOpenMaxProofs,
       maxStates:Math.max(1800,maxStates),maxPlans:reverseMaxPlans})
-    :reverseOnlyOpen
-    ?{plans:[],stats:{goals:0,setupCandidates:0,forwardProofs:0,budgetExceeded:false}}
-    :firstT<=2
-    ?searchReverseAttacks(visible,{
+    :null;
+  const emptyReverse={plans:[],stats:{goals:0,setupCandidates:0,
+    forwardProofs:0,budgetExceeded:false}};
+  const reverseReport=!reverseEligible?emptyReverse
+    :openerReport?.plans.length?openerReport
+    :reverseOnlyOpen?(openerReport??emptyReverse)
+    :firstT<=2?searchReverseAttacks(visible,{
       targets:['TSS','TSD','TST'],maxGoals:reverseMaxGoals,
       maxCandidates:Math.min(maxNodes,reverseMaxCandidates),
       maxStates:Math.min(1600,maxStates),maxSteps:Math.max(maxSteps,70),
@@ -328,8 +337,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       maxCandidates:Math.min(maxNodes-1,reverseLongMaxCandidates),
       maxStates:Math.min(1400,maxStates),maxSteps:Math.max(maxSteps,70),
       beamWidth:reverseLongBeamWidth,maxPlans:reverseMaxPlans
-    }))
-    :{plans:[],stats:{goals:0,setupCandidates:0,forwardProofs:0,budgetExceeded:false}};
+    });
   // Tactical BFS proposals are not equivalent in cost to a regular
   // candidate evaluation. Preserve all ordinary beam nodes to avoid
   // degrading good baseline moves when an optional goal search finds
