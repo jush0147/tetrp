@@ -1,0 +1,63 @@
+name: ROOK 6K to 48K public-state budget scaling
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-vs-rook.js
+      - scripts/rook-budget-profile.js
+      - test/rook-budget-config.test.js
+      - src/analysis/rook.js
+      - .github/workflows/rook-budget-scaling.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regression - independent budget, same bag, swap and legacy behavior
+        run: node --test test/rook-budget-config.test.js
+      - name: Profile real evaluation use, action changes and CPU on identical public Tetrp observations
+        env:
+          BUDGETS: '6000,12000,24000,48000'
+          SEEDS: '67020,67023'
+          SAMPLE_TURNS: '0,4,8'
+        run: |
+          set -eu
+          node scripts/rook-budget-profile.js > rook-budget-profile.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const d=JSON.parse(readFileSync('rook-budget-profile.json','utf8'));
+          if(d.format!=='rook-budget-public-state-profile/1'||
+             JSON.stringify(d.budgets)!==JSON.stringify([6000,12000,24000,48000])||
+             d.positions!==6||d.rows.length!==24||d.summary.length!==4||
+             d.rows.some(r=>!Number.isFinite(r.evaluated)||
+               r.evaluated<1||r.evaluated>r.budget||
+               !Number.isFinite(r.searchMs)||!r.selected||
+               r.searchedPly<1||!r.rootsByPly.length))
+            throw Error('Invalid public-budget profile');
+          const progress=d.summary.map(s=>({...s,
+            actuallyUsedBudget:s.evaluatedMax>=s.budget,
+            changedActionInSomeSample:s.changedVs6000>0}));
+          const conclusion={
+            status:progress.slice(1).some(s=>s.changedVs6000>0)?
+              'larger-budget-changes-choice-not-yet-proof-of-strength':
+              'no-choice-changes-in-this-small-sample',
+            note:'KO comparison should be run only after checking effective actual nodes and CPU. These are not victories.',
+            progress};
+          writeFileSync('rook-budget-summary.json',JSON.stringify(conclusion,null,2)+'\n');
+          console.log(JSON.stringify(conclusion));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-budget-6k-to-48k-public-state-profile
+          path: |
+            rook-budget-profile.json
+            rook-budget-summary.json
+          retention-days: 30
