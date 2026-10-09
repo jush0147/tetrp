@@ -1,0 +1,96 @@
+name: ROOK opener vs baseline paired TL KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-vs-rook.js
+      - src/analysis/rook.js
+      - src/analysis/rook-open-slot.js
+      - .github/workflows/rook-selfplay.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  matched-ko:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - seed_a: 1
+            seed_b: 8
+          - seed_a: 16
+            seed_b: 23
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Tetrp real simultaneous garbage, public NEXT5, swapped roles
+        env:
+          SEED_A: ${{ matrix.seed_a }}
+          SEED_B: ${{ matrix.seed_b }}
+          ROOK_NODES: '6000'
+          MAX_LOCKS: '150'
+          OPEN_TILE_NODES: '1200'
+        run: |
+          node scripts/rook-vs-rook.js > rook-pair-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl
+          cat rook-pair-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('rook-pair-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].swap!==false||rows[1].swap!==true||
+            rows.some(r=>r.error||r.nodeBudget!==6000||r.cap!==150||
+              r.slots.length!==2||r.termination==='invalid-match'||
+              r.slots.some(s=>s.pieces<1)))
+            throw Error('Invalid authority KO protocol');
+          console.log(JSON.stringify({seeds:rows[0].seeds,
+            scored:rows.filter(r=>r.scored).length,
+            unscored:rows.filter(r=>!r.scored).length,
+            winners:rows.map(r=>r.winner)}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-ko-${{ matrix.seed_a }}-${{ matrix.seed_b }}
+          path: rook-pair-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl
+          retention-days: 30
+  report:
+    needs: matched-ko
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-ko-*
+          merge-multiple: true
+      - name: Summarize scored KO, capped games, sent/cancelled, CPU separately
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const out=[];
+          for(const pair of ['1-8','16-23'])
+            for(const x of readFileSync('rook-pair-'+pair+'.jsonl','utf8').trim().split('\n')){
+              const r=JSON.parse(x);
+              if(r.error||r.termination==='invalid-match')throw Error('Invalid KO results');
+              out.push(r);
+            }
+          const scored=out.filter(r=>r.scored);
+          const result={format:'rook-public-paired-ko-summary/1',
+            games:out.length,scored:scored.length,capped:out.filter(r=>r.termination==='capped').length,
+            openerWins:scored.filter(r=>r.winner==='opener').length,
+            baselineWins:scored.filter(r=>r.winner==='baseline').length,
+            cpuNotEqual:true,noArtificialWinner:true,
+            gamesDetail:out.map(r=>({seeds:r.seeds,swap:r.swap,turns:r.turns,
+              termination:r.termination,winner:r.winner,
+              opener:r.slots.find(s=>s.kind==='opener'),
+              baseline:r.slots.find(s=>s.kind==='baseline')}))};
+          writeFileSync('rook-selfplay-results.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify(result));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-paired-ko-summary
+          path: rook-selfplay-results.json
+          retention-days: 30
