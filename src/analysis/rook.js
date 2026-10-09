@@ -8,6 +8,7 @@ import {tsdScaffolds} from './rook-tsd.js';
 import {searchReverseAttacks} from './rook-reverse-planner.js';
 import {searchLongReverseAttacks} from './rook-long-planner.js';
 import {searchOpenTSD} from './rook-open-slot.js';
+import {recoveryBoardPenalty,clearedGarbageReward} from './rook-recovery.js';
 
 const ACTIONS=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
 const DIR={rotateCW:1,rotateCCW:3,rotate180:2};
@@ -236,7 +237,10 @@ function surface(board){
 function evaluateBoard(board,ctx){
   const a=surface(board),danger=ctx.pending>0?1+Math.min(1.5,ctx.pending/9):1;
   const urgency=Math.max(0,a.max-(board.height+board.buffer-18));
-  return -a.holes*8.6*danger-a.covered*.27*danger
+  const recovery=ctx.recoveryActive
+    ?recoveryBoardPenalty(a,{pending:ctx.pending,weight:ctx.recoveryWeight})
+    :0;
+  return -recovery-a.holes*8.6*danger-a.covered*.27*danger
     -a.max*1.05-a.rough*.42-a.transitions*.16
     -Math.max(0,a.max-12)*.35*danger-urgency*urgency*2.5*danger
     +Math.min(5,a.well)*.38 +Math.min(4,a.tspots)*.85
@@ -252,6 +256,7 @@ function applyPlacement(node,placement,rules){
   const toppedOut=B.commit(board,placement.piece);
   const full=B.fullLines(board);
   const garbageRows=full.filter(y=>board.rows[y].includes('gb')).length;
+  const beforeMax=node.recoveryActive?surface(node.board).max:0;
   B.removeLines(board,full);
   const allClear=full.length>0&&B.emptyWithPerma(board);
   const attack=projectCombat(node.combat,
@@ -259,7 +264,10 @@ function applyPlacement(node,placement,rules){
   // Tetrp only declares a lockout KO when nolockout is disabled and no
   // clutch clear saved it. Above-visible locks may still be legal in TL.
   const lockout=toppedOut&&!rules.nolockout&&(!full.length||!rules.clutch);
-  const reward=attack.offensive*4.8+attack.defensive*5.1+
+  const recoveryReward=node.recoveryActive
+    ?clearedGarbageReward(garbageRows,{maxHeight:beforeMax,
+      pending:node.pending,weight:node.recoveryWeight}):0;
+  const reward=recoveryReward+attack.offensive*4.8+attack.defensive*5.1+
     (placement.spin==='full'&&full.length?2.1:0)+
     (allClear?12:0)+(full.length&&attack.btb>0?1.0:0)-
     (lockout?100000:0)-placement.softdrop*.035;
@@ -272,7 +280,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
-  reverseOnlyOpen=false,reversePressureGuard=true}={}){
+  reverseOnlyOpen=false,reversePressureGuard=true,
+  garbageRecovery=false,garbageRecoveryWeight=1}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -300,10 +309,18 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isInteger(maxNodes)||maxNodes<1)throw Error('invalid search budget');
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+(p.amt??0),0);
+  if(!Number.isFinite(garbageRecoveryWeight)||garbageRecoveryWeight<0||
+    garbageRecoveryWeight>4)throw Error('Invalid garbage recovery weight');
+  // Risk-only experimental mode. Do not perturb clean openers, and never
+  // infer future opponent garbage or hidden hole columns.
+  const recoveryActive=garbageRecovery&&
+    (pending>0||visible.board.rows.some(row=>
+      row.some(cell=>cell==='gb'||cell==='gbd')));
   const initial={board:visible.board,queue,hold:visible.hold?.piece??null,
     holdLocked:!!visible.hold?.locked,combo:visible.attack?.combo??0,
     btb:visible.attack?.btb??0,multiplier:visible.attack?.multiplier??1,
-    pending,combat:visibleCombat(visible),score:0,rootAction:null};
+    pending,combat:visibleCombat(visible),score:0,rootAction:null,
+    recoveryActive,recoveryWeight:garbageRecoveryWeight};
   // M1 inverse attack goal portfolio: only verified SRS+ continuations.
   // This experimental module stays opt-in until APP and KO improve.
   // Optional tactical CPU is tracked separately from the ordinary beam budget.
@@ -367,7 +384,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
         hold:initial.hold,holdLocked:false,combo:p.combo,btb:p.btb,
         multiplier:p.combat.multiplier,pending:p.pending,combat:p.combat,
         score:node.score+p.reward*Math.pow(.94,ply),
-        rootAction:plan.actions[0],tacticalGoal:plan.goal.kind};
+        rootAction:plan.actions[0],tacticalGoal:plan.goal.kind,
+        recoveryActive:node.recoveryActive,recoveryWeight:node.recoveryWeight};
       next.evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
       if(!tacticalPrefixes.has(ply))tacticalPrefixes.set(ply,[]);
       tacticalPrefixes.get(ply).push(next);
@@ -430,7 +448,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             board:p.board,queue:option.rest,hold:option.holdValue,holdLocked:false,
             combo:p.combo,btb:p.btb,multiplier:node.multiplier,pending:p.pending,combat:p.combat,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
-            tacticalGoal:node.tacticalGoal??null
+            tacticalGoal:node.tacticalGoal??null,
+            recoveryActive:node.recoveryActive,
+            recoveryWeight:node.recoveryWeight
           };
           const evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
           if(ply===0&&rootAction.kind==='place'&&
@@ -550,6 +570,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseSelectedGoal:best.tacticalGoal??null,reverseBudget,
     reverseBudgetExceeded:reverseReport.stats.budgetExceeded,
     reverseSkippedPressure,reverseThreat,
+    recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(includeRanked){
