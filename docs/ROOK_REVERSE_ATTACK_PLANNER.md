@@ -1,6 +1,6 @@
 # ROOK reverse attack planner: design, continuation checkpoint
 
-Status: **M3 real empty-board Full TSD opener demonstrated, opt-in only; full-game APP is NOT improved**.
+Status: **M4 measured paired KO: the optional TSD opener loses to baseline ROOK; garbage-aware safe mode added, not promoted**.
 The independent prototype now feeds forward-proven Full TSS/TSD/TST
 continuations into the real ROOK decision when the caller sets
 reversePlanner:true. New tests cover the actual change of chosen root.
@@ -451,6 +451,76 @@ computing budgets; selectively trigger the expensive exact-cover
 search or replace it with a faster policy/value guide. Expand to
 Hold and row-clearing setup, while preserving the exact NEXT5
 privacy contract.
+
+## M4: real opponent pressure, B2B follow-through and KO results (2026-10-09)
+
+The **next genuine strength gate is matched KO**, not producing a TSD
+against an empty, non-attacking board. In the first real Tetrp TL
+head-to-head script, `scripts/rook-vs-rook.js`, both independent
+ROOK versions play with **real simultaneous garbage, cancellation,
+B2B, Hold, ARE, 24-frame battle cadence and atomic legal SRS+ moves**.
+Each reads only its own Current/Hold/NEXT5/public information.
+The expert is explicitly opt-in; normal ROOK is unchanged. The
+experiment swaps which side runs the expert on the same pair of
+precommitted native engine seeds, 6k ordinary search-node budget
+per decision, with **additional expert CPU separately disclosed**.
+**A capped match is NOT scored as a win.**
+
+Primary run:
+https://github.com/jush0147/tetrp/actions/runs/37868068311
+
+| Seed pair and swap | Termination | Winner | Expert APP | Baseline APP |
+| --- | --- | --- | ---: | ---: |
+| 16 vs 23, original slots | KO at lock 65 | Baseline | 0.4923 | 0.6000 |
+| 16 vs 23, swapped slots | KO at lock 122 | Baseline | 0.7623 | 0.9672 |
+| 1 vs 8, original slots | Capped at lock 150 | None | 0.7600 | 0.7933 |
+| 1 vs 8, swapped slots | Capped at lock 150 | None | 0.7000 | 0.7800 |
+
+**Actual scored result: 0 expert KO wins vs 2 baseline KO wins,
+two matches capped/unscored**. Sample is too small for broad claims;
+the measured result is NEGATIVE and does **not** justify enabling
+the opener. A live garbage stream can change the board between
+the first T-slot setup and the planned spin, and engine authority
+is the only source of true cleared lines and KO.
+
+**Safety fix (separate from strength improvement):**
+`chooseMove` now retains the PUBLIC `visible.frame`, uses the
+allowlisted pending packet's `activeFrame` and `active` bit to detect
+if a packet will become eligible before a speculative no-clear
+TSD setup finishes (24 match frames per piece). With the opt-in
+`reversePressureGuard:true`, it declines such long speculative
+goals and returns control to the ordinary search. This is conservative:
+it does **not** invent hidden garbage columns or assert which exact
+hole would arrive. It can be disabled only for controlled A/B
+diagnostics. Three regression cases in `test/rook-pressure.test.js`
+verify imminent packet gating, distant public packet non-gating,
+and hidden-information invariance.
+
+A small controlled **synthetic incoming-4-packet** scenario on natural
+Tetrp seed 1 with 12 subsequent locks showed generated attack
+2 -> 5 and peak stack 7 -> 6 when gating was enabled; seeds 23 and
+39589 showed no measured change. This is not real match evidence;
+it is a narrow scenario sanity check. The full KO remains the gate.
+
+**Exploratory Perfect Clear continuation:** An inverse 4-piece
+2-row PC exact-cover after the measured first TSD was checked
+locally on several residual boards. No SRS+-certified path was
+found for their next four public piece types. Even scanning 840
+distinct four-piece orders against seed 1's four-cell TSD
+residue yielded no zero-intermediate-clear geometric tiling.
+This does **not** prove all PCs impossible; extra Hold,
+intermediate clears or other board shapes are unsearched.
+Therefore **no PC expert is being promoted or wired in**.
+Avoid adding more specialists without genuine payoff.
+
+**Next step for strength:** collect B2B break points, actual sent/
+cancelled/tanked garbage and stack/holes over KO games; use
+those measured outcomes to develop an opponent-pressure-aware
+post-TSD value estimate, preferably Pareto-ranking future
+attack potential vs survival risk. Then rerun **same-seed,
+side-swapped scored KO** versus both baseline ROOK and pinned
+Kiwi. High solo APP is insufficient. Never use unseen future
+RNG or future opponent actions.
 
 ## Picking up from another conversation
 
