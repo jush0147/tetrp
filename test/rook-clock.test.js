@@ -48,7 +48,7 @@ test('clock-advanced TSD attack, cancellation and blocking match authoritative a
 
 test('a public packet tank forecast respects activation, shields and cap without hole inference',()=>{
   const e=new Engine({mode:'tl',seed:45,rules:{g:0,garbagecap:4,garbagecapmax:8}});
-  const s=createAttack();
+  const s={...createAttack(),live:true};
   s.pending=[
     {amt:3,active:true,status:'spawn',shielded:false,hardened:true},
     {amt:8,active:true,status:'spawn',shielded:false,hardened:false},
