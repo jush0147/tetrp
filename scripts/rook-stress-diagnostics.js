@@ -17,6 +17,8 @@ const configs=[
   {id:'deep-5x48',settings:{depth:5,beamWidth:48,maxNodes:24000}},
   {id:'relieved-5x48',settings:{depth:5,beamWidth:48,maxNodes:24000,
     intermediateHoleRelief:.65}},
+  {id:'balanced-SRS-5x48',settings:{depth:5,beamWidth:48,maxNodes:24000,
+    futureProofSpread:'balanced'}},
 ];
 function boardFeatures(board){
   let holes=0,height=0,garbage=0;
@@ -80,8 +82,10 @@ const statistics=Object.fromEntries(kinds.map(name=>{
     baselineMatchesKiwi:subset.filter(r=>r.options[0].matchesKiwi).length,
     deepMatchesKiwi:subset.filter(r=>r.options[1].matchesKiwi).length,
     relievedMatchesKiwi:subset.filter(r=>r.options[2].matchesKiwi).length,
+    balancedMatchesKiwi:subset.filter(r=>r.options[3].matchesKiwi).length,
     deepChanges:subset.filter(r=>r.options[1].key!==r.options[0].key).length,
     reliefChangesVsDeep:subset.filter(r=>r.options[2].key!==r.options[1].key).length,
+    balancedChangesVsDeep:subset.filter(r=>r.options[3].key!==r.options[1].key).length,
     meanHoles:subset.length?subset.reduce((n,r)=>n+r.holes,0)/subset.length:null,
     meanPending:subset.length?subset.reduce((n,r)=>n+r.pending,0)/subset.length:null,
     byVariant:configs.map((variant,i)=>({
