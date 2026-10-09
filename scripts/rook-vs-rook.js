@@ -63,12 +63,33 @@ function summary(demo,kind,counters){
     sentAPP:pieces?Number((a.totals.sent/pieces).toFixed(4)):0,
     ...counters,ms:Math.round(counters.ms)};
 }
+// Benchmark-only checkpoints; never forwarded to the bot's visible input.
+function health(demo){
+  const s=demo.engine.state,b=s.board,H=b.rows.length;
+  let height=0,holes=0,garbage=0;
+  for(let x=0;x<b.width;x++){
+    let covered=false;
+    for(let y=0;y<H;y++){
+      const v=b.rows[y][x];
+      if(v!==null){
+        if(!covered)height=Math.max(height,H-y);
+        covered=true;
+        if(v==='gb'||v==='gbd')garbage++;
+      }else if(covered)holes++;
+    }
+  }
+  return {height,holes,garbage,btb:s.attack.btb,
+    pending:s.attack.pending.reduce((n,p)=>n+p.amt,0)+
+      s.attack.are.reduce((n,p)=>n+p.amt,0),
+    sent:s.attack.totals.sent,cancelled:s.attack.totals.cancelled,
+    received:s.attack.totals.received,tanked:s.attack.totals.tanked};
+}
 function pairedGame(swap){
   const kinds=swap?['baseline','opener']:['opener','baseline'];
   const demos=seeds.map(makeDemo),original=demos.map(d=>d.engine.serialize());
   const totals=Array.from({length:2},()=>({nodes:0,holds:0,ms:0,
-    rejections:0,offers:0,selections:0}));
-  let inbound=[],turns=0,error=null;
+    rejections:0,offers:0,selections:0,tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
+  let inbound=[],turns=0,error=null,checkpoints=[];
   try{
     while(turns<limit&&demos.every(d=>d.engine.state.playing)){
       for(const packet of inbound){
@@ -86,11 +107,20 @@ function pairedGame(swap){
           totals[i][key]+=decision[key]??0;
       }
       // Neither player gets to observe the other player's prepared move.
-      for(let i=0;i<2;i++)demos[i].commit(moves[i].revision);
+      for(let i=0;i<2;i++){
+        const view=demos[i].commit(moves[i].revision),last=view.lastPlacement;
+        totals[i].tsd+=Number(last.piece==='t'&&last.spin==='full'&&last.lines===2);
+        totals[i].tss+=Number(last.piece==='t'&&last.spin==='full'&&last.lines===1);
+        totals[i].mini+=Number(last.spin==='mini'&&last.lines>0);
+        totals[i].quad+=Number(last.lines===4);
+        totals[i].maxBtb=Math.max(totals[i].maxBtb,demos[i].engine.state.attack.btb);
+      }
       for(let from=0;from<2;from++)
         for(const packet of demos[from].engine.state.attack.outbox.splice(0))
           inbound.push({to:1-from,iid:packet.iid,ackiid:packet.ackiid,amt:packet.amt});
       turns++;
+      if([6,12,24,48,72,96,120,150].includes(turns))
+        checkpoints.push({turns,slots:demos.map(health)});
     }
   }catch(e){error=e instanceof Error?e.message:String(e)}
   if(turns&&!error&&demos.some((d,i)=>d.engine.serialize()===original[i]))
@@ -101,7 +131,7 @@ function pairedGame(swap){
     nodeBudget:budget,extraOpenerCPU:true,turns,cap:limit,scored,
     termination:error?'invalid-match':scored?'KO':turns>=limit?'capped':'unresolved',
     error,winner:scored?kinds[alive[0]?0:1]:null,
-    slots:demos.map((d,i)=>summary(d,kinds[i],totals[i]))};
+    checkpoints,slots:demos.map((d,i)=>summary(d,kinds[i],totals[i]))};
 }
 const results=[pairedGame(false),pairedGame(true)];
 for(const row of results)console.log(JSON.stringify(row));
