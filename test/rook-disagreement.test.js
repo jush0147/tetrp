@@ -35,3 +35,20 @@ test('Hold is compared as an action, not as a nonexistent post-Hold placement',(
   assert.equal(check(hold,[hold,place(1)],kiwi(place(1)),true).category,'rook-prefers-hold');
   assert.throws(()=>actionSignature({kind:'place'}),/invalid comparable/);
 });
+
+test('distinguishes legal roots pruned before and after the first beam depth',()=>{
+  const a=place(1),b=place(2);
+  const encode=x=>JSON.stringify(x);
+  const classify=roots=>classifyRootDisagreement({
+    rookChosen:a,rookRanked:[a,b],kiwiChosen:kiwi(b),
+    normalReachable:true,rootSurvival:roots.map(r=>({roots:r.map(encode)}))});
+  assert.equal(classify([[a],[a]]).category,'root-beam-pruned');
+  assert.equal(classify([[a,b],[a]]).category,'future-beam-pruned');
+  assert.equal(classify([[a,b],[a,b]]).category,'ranked-but-not-selected');
+  assert.equal(classify([[a,b],[a]]).maxSurvivedPly,1);
+  const bHold={action:hold};
+  const holdPruned=classifyRootDisagreement({rookChosen:a,
+    rookRanked:[a,hold],kiwiChosen:bHold,
+    rootSurvival:[{roots:[encode(a)]}]});
+  assert.equal(holdPruned.category,'hold-root-beam-pruned');
+});
