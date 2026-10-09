@@ -2,7 +2,7 @@
 // Tetrp owns SRS+, spin classification, board physics and canonical match rules.
 import * as B from '../board.js';
 import * as R from '../rotation.js';
-import {visibleCombat,projectCombat} from './rook-combat.js';
+import {visibleCombat,advanceCombatClock,forecastPublicTank,projectCombat} from './rook-combat.js';
 import spinTables from '../data/spins.json' with { type: 'json' };
 import {tsdScaffolds} from './rook-tsd.js';
 import {searchReverseAttacks} from './rook-reverse-planner.js';
@@ -259,8 +259,19 @@ function applyPlacement(node,placement,rules){
   const beforeMax=node.recoveryActive&&garbageRows>0?surface(node.board).max:0;
   B.removeLines(board,full);
   const allClear=full.length>0&&B.emptyWithPerma(board);
-  const attack=projectCombat(node.combat,
+  // Atomic Tetrp advances 24 battle frames before the lock.
+  const lockFrame=node.frame+24;
+  const atLock=advanceCombatClock(node.combat,node.frame,24,rules);
+  const attack=projectCombat(atLock,
     {lines:full.length,spin:placement.spin,allClear,garbageRows},rules);
+  // An ARE wait can activate a packet before the next public piece spawns.
+  // Unknown garbage holes must never be guessed from hidden game state.
+  const delay=full.length?rules.lineclear_are:rules.are;
+  const atReady=advanceCombatClock(attack.combat,lockFrame,delay,rules);
+  const tank=forecastPublicTank(
+    rules.garbageentry==='delayed'?attack.combat:atReady,attack.blocked,rules);
+  const readyFrame=lockFrame+(rules.garbageentry==='delayed'
+    ?Math.max(delay,tank.amount*rules.garbageare):delay);
   // Tetrp only declares a lockout KO when nolockout is disabled and no
   // clutch clear saved it. Above-visible locks may still be legal in TL.
   const lockout=toppedOut&&!rules.nolockout&&(!full.length||!rules.clutch);
@@ -271,8 +282,11 @@ function applyPlacement(node,placement,rules){
     (placement.spin==='full'&&full.length?2.1:0)+
     (allClear?12:0)+(full.length&&attack.btb>0?1.0:0)-
     (lockout?100000:0)-placement.softdrop*.035;
-  return {board,...attack,reward,topout:lockout,lines:full.length,
-    spin:placement.spin,allClear};
+  const combat=readyFrame===lockFrame+delay?atReady:
+    advanceCombatClock(attack.combat,lockFrame,readyFrame-lockFrame,rules);
+  return {board,...attack,combat,frame:readyFrame,
+    unresolvedGarbage:tank.amount>0,forecastTank:tank.amount,
+    reward,topout:lockout,lines:full.length,spin:placement.spin,allClear};
 }
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
@@ -326,7 +340,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   const initial={board:visible.board,queue,hold:visible.hold?.piece??null,
     holdLocked:!!visible.hold?.locked,combo:visible.attack?.combo??0,
     btb:visible.attack?.btb??0,multiplier:visible.attack?.multiplier??1,
-    pending,combat:visibleCombat(visible),score:0,rootAction:null,
+    pending,combat:visibleCombat(visible),frame:visible.frame,
+    unresolvedGarbage:false,forecastTank:0,score:0,rootAction:null,
     recoveryActive,recoveryWeight:garbageRecoveryWeight};
   // M1 inverse attack goal portfolio: only verified SRS+ continuations.
   // This experimental module stays opt-in until APP and KO improve.
