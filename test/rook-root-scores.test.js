@@ -44,5 +44,5 @@ test('diagnostic board decomposition reconstructs the unchanged board evaluator'
   assert.ok(Math.abs(report.boardValue-report.reconstructed)<1e-9);
   assert.equal(report.features.holes,0);
   assert.equal(report.features.height,0);
-  assert.equal(report.terms.holes,0);
+  assert.equal(Math.abs(report.terms.holes),0); // -0 is valid for a zero penalty
 });
