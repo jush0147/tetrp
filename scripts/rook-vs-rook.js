@@ -1,4 +1,4 @@
-// Real synchronous Tetrp TL ROOK vs ROOK, swapped roles and public NEXT5.
+// Real synchronous Tetrp TL ROOK vs ROOK using player-visible NEXT5.
 // The opener is OFF by default in the main bot. This is an experiment only.
 import {writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
@@ -7,6 +7,11 @@ import {chooseMove} from '../src/analysis/rook.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 
 const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
+// Explicit single-seed benchmark mode avoids mirrored computational duplicates.
+// Legacy multi-role test workflows continue to default to mirrored mode until
+// migrated. A mirror should only be used as a symmetry regression.
+const swapRoles=process.env.SWAP_ROLES??'1';
+if(!['0','1'].includes(swapRoles))throw Error('Invalid SWAP_ROLES (expected 0 or 1)');
 // Legacy ROOK_NODES still means both sides use the same evaluation budget.
 const budget=Number(process.env.ROOK_NODES??6000);
 const candidateBudget=Number(process.env.ROOK_CANDIDATE_NODES??budget);
@@ -249,7 +254,7 @@ function pairedGame(seed,swap){
   const alive=demos.map(d=>d.engine.state.playing);
   const result=scoreKO({alive,rounds:turns,cap:limit,error});
   return {format:'rook-paired-tetrp-ko/2',seed,seeds:[seed,seed],swap,kinds,
-    sameSeed:true,simultaneousLocks:true,pps:2.5,
+    sameSeed:true,simultaneousLocks:true,pps:2.5,swapRoles,
     // Preserve old nodeBudget only when both sides share the same cap.
     nodeBudget:candidateBudget===baselineBudget?budget:null,
     budgetScaling,candidateNodeBudget:candidateBudget,
@@ -273,7 +278,9 @@ function pairedGame(seed,swap){
 }
 // Independent seeds give distinct games; each seed is repeated with the
 // candidate and baseline swapped between the two identical-bag slots.
-const results=seeds.flatMap(seed=>[pairedGame(seed,false),pairedGame(seed,true)]);
+const results=seeds.flatMap(seed=>swapRoles==='1'
+  ?[pairedGame(seed,false),pairedGame(seed,true)]
+  :[pairedGame(seed,false)]);
 for(const row of results)console.log(JSON.stringify(row));
 if(process.env.RESULTS_PATH)
   writeFileSync(process.env.RESULTS_PATH,JSON.stringify(results,null,2)+'\n');

@@ -13,6 +13,8 @@ import {diagnosePublicChoice} from './rook-choice-diagnostics.js';
 const kiwiBudget=Number(process.env.KIWI_NODES??200000);
 const rookBudget=Number(process.env.ROOK_NODES??6000);
 const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
+const swapRoles=process.env.SWAP_ROLES??'1';
+if(!['0','1'].includes(swapRoles))throw Error('Invalid SWAP_ROLES (expected 0 or 1)');
 const diagnosticsEnabled=process.env.ROOK_DIAG==='1';
 const diagnosticTurns=(process.env.ROOK_DIAG_TURNS??'0,4,8,12,20,30')
   .split(',').map(Number);
@@ -170,7 +172,9 @@ function runPair(seed,order){
     ...(diagnosticsEnabled?{diagnostics}: {})};
 }
 // An independent seed is played twice, with ROOK / Kiwi swapping slots.
-const results=seeds.flatMap(seed=>[runPair(seed,0),runPair(seed,1)]);
+const results=seeds.flatMap(seed=>swapRoles==='1'
+  ?[runPair(seed,0),runPair(seed,1)]
+  :[runPair(seed,0)]);
 for(const result of results)process.stdout.write(JSON.stringify(result)+'\n');
 if(diagnosticsEnabled&&process.env.ROOK_DIAG_PATH)
   writeFileSync(process.env.ROOK_DIAG_PATH,

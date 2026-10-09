@@ -39,6 +39,17 @@ test('independent budgets stay with bot identities across swapped slots',()=>{
     }
   }
 });
+test('one real game per independent seed and optional mirrored regression',()=>{
+  const single=run({SWAP_ROLES:'0',SEEDS:'1,8,16'});
+  assert.equal(single.status,0,single.stderr);
+  const rows=single.stdout.trim().split('\n').map(JSON.parse);
+  assert.deepEqual(rows.map(r=>r.seed),[1,8,16]);
+  assert.equal(rows.length,3);
+  assert.ok(rows.every(r=>!r.swap&&r.seeds[0]===r.seeds[1]));
+  const invalid=run({SWAP_ROLES:'invalid'});
+  assert.notEqual(invalid.status,0);
+  assert.match(invalid.stderr,/Invalid SWAP_ROLES/);
+});
 test('old ROOK_NODES still applies to both sides without overrides',()=>{
   const output=run();
   assert.equal(output.status,0,output.stderr);
