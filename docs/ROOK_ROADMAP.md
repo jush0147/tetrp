@@ -194,3 +194,72 @@
 每個 seed 的真 KO／Sent APP／CPU。若更多搜尋仍只
 帶來很小變化，應審查 transposition、多步評分與
 未知垃圾條件，而不是繼續單純加大上限。
+
+
+## 2026-10-10 最新實測：寬度／深度已有效利用算力，但 KO 不升反降
+
+[GitHub Actions #37971335064](https://github.com/jush0147/tetrp/actions/runs/37971335064)
+已完成。相同 4 個 seed（1、8、16、23）的 12 個公開盤面：
+
+| 設定 depth × beam / node cap | 平均實際 evaluated | 12 局中選棋不同於 4x24 | 搜尋耗時中位數 |
+| --- | ---: | ---: | ---: |
+| 4×24 / 6K（原版） | 3,288 | 0 | 344ms |
+| 4×48 / 12K（加寬） | 6,276 | 3 | 473ms |
+| 5×24 / 12K（加深） | 4,401 | 7 | 378ms |
+| 5×48 / 24K（加寬深） | 8,511 | 7 | 564ms |
+| 5×96 / 48K（極大） | 15,314 | 6 | 829ms |
+
+所有組別的 node cap 命中數 0。這代表**深度、beam 寬度確實使
+ROOK 用更多算力產生不同決策，但單純提高 maxNodes 仍沒用滿**。
+
+5×48/24K vs 4×24/6K 的 **4 個獨立 seed、交換位置共 8 場，
+全數真 KO**：實驗組 2 勝，基線 6 勝；實驗
+Sent 1,718 vs 基線 1,748；累計搜尋耗時
+1,818,177ms vs 1,177,157ms（約 +54.5%），累計
+evaluated 27,602,022 vs 10,591,818。**不採用
+5×48 搜尋設定作正式預設**。此結果仍只有 4 個
+獨立 seed，不可強推對所有局面的統計結論，但已無理由
+宣稱「搜尋更深就更強」或繼續無方向加大 beam。
+
+### 新受控實驗：給暫時不平整的攻擊建構路線更多存活機會
+
+Kiwi 同局面逐項評分拆解先前顯示 ROOK 更偏好低 holes 的
+未來盤面；這是**搜尋/評分假說**，不是 Kiwi 行為一定最佳
+的證明。目前 ROOK 在所有 ply 以同一盤面 heuristic
+排序 beam，會提早剪掉「先產生洞、後用 Spin/連續消行
+修復」的路線。
+
+- 新 opt-in `chooseMove(...,{intermediateHoleRelief:0.65})`：
+  僅在尚未抵達搜尋終點時，暫時減輕 holes 對
+  **beam pruning 排名**的影響；真正的 leaf
+  `evalScore`、Tetrp 攻擊/消行、終局盤面洞數
+  懲罰 **完全維持原本**。預設 relief 仍是 0，
+  既有 ROOK 沒有改策略。
+- 改用一次 `surface` 掃描同時取得洞數與原始盤面
+  分數，避免實驗版因額外重算所有行列導致無謂
+  CPU 負擔。仍記錄任何額外耗時。
+- `test/rook-intermediate-pruning.test.js` 要求
+  原版／relief=0 完全一致，且新的 final leaf
+  `score = cumulativeReward + discountedOriginalBoardValue`、
+  ROOK 所用資訊不變、非法 relief 被拒絕。
+- `scripts/rook-vs-rook.js` 實驗版
+  `EXPERT_PRUNING=1 EXPERT_PRUNING_HOLE_RELIEF=0.65`
+  與同設定 baseline 對比（**雙方都是**
+  5 ply、48 beam、24K maxNodes），其它 expert 全關。
+- [ROOK setup-survival workflow](https://github.com/jush0147/tetrp/actions/workflows/rook-intermediate-pruning.yml)：
+  先用 12 個同樣的公開盤面量測是否改選且沒有分數污染，
+  有改選才跑 4 個不同 seed x swap、KO-first、
+  2000 鎖 cap 的完整權威對局，記錄 real
+  KO、Sent APP、CPU 和 evaluated。
+- **目前沒有新實驗 KO 結果**，上述只是
+  針對價值與剪枝機制的受控假說；不可宣稱改善。
+  即使新分數勝過較弱的 5×48 基線，也還需要
+  打敗更強的 4×24 舊版，最後才有資格再跟 Kiwi
+  對照。
+
+**最新唯一接手行動**：查上述新 workflow 的
+profile/report log 以及 test/acceptance；
+若 5×48 的新剪枝沒變強，停止針對同一權重窮舉，
+直接分析 search horizon、沒有有效未來 T-Spin
+合法路徑的簡化 forecast，及帶垃圾時的模擬有效性。
+保留 Draft PR #6，未經 KO 證據絕不併入 main。
