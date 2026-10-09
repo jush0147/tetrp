@@ -37,7 +37,7 @@
 ### P0 — 先測 ROOK「算力換強度」曲線（第一個要實作的工作）
 
 - **禁止把 6K 當最終上限**。先用同一批只含公開資訊的局面做 6K、12K、24K、48K evaluations 的預算擴張，若有收益與資源則再試 96K／更高。這是 ROOK 自身 maxNodes，不是 Kiwi 的 200K node；兩者不可直接比數字。
-- 先補齊**獨立預算**的比較工具：目前 scripts/rook-vs-rook.js 的 ROOK_NODES 同時套用實驗組及基線組，**不能**直接用它驗證 48K vs 6K。要讓兩個 slot 能指定不同預算（如 candidate 48K vs baseline 6K），並保留相同 seed、slot-swap、共同 clock、同樣公開資訊與權威落點驗證。舊 scripts/rook-vs-kiwi.js 已可用 ROOK_NODES 調整 ROOK，自 Kiwi 固定 KIWI_NODES=200000。
+- **已完成**獨立預算對照工具：`scripts/rook-vs-rook.js` 現在可分別以 `ROOK_CANDIDATE_NODES`、`ROOK_BASELINE_NODES` 指定兩個 Bot 的 maxNodes，交換位置仍隨身份移動；未指定時保留 `ROOK_NODES` 共用預設。Kiwi 外部基準可另外用 `scripts/rook-vs-kiwi.js` 的 `ROOK_NODES`／`KIWI_NODES`，但不比較兩邊節點數字作為等 CPU。
 - 在既有公開局面上先做**無 KO 聲稱的剖析**：每次實際 evaluated 數、可行根候選數、各層 beam 的 unique root 數、best action 是否改變、effective depth、搜尋耗時（平均／中位／P95）、記憶體／CPU 增幅、Sent/Generated APP。先確認增加 maxNodes **真的擴大有效搜尋**。如果到 6K 其實就不再用滿預算，擴大數值沒有意義。
 - 先用 4 個互不相同的 seed、各交換 slot 做預試的**真 KO 對照**，2000 鎖上限。不因單次 4:4 就下結論；有改善跡象才擴到至少 16–32 個獨立 seed，之後保留新 seed 作 confirmatory 測試。
 - 區分搜索配額擴張與搜索架構：固定 4-ply / beamWidth 24 時，若 maxNodes 增加後 best action、實際 evaluated 或 attack 幾乎不變，應改測 beamWidth / horizon / candidate allocation 和 transposition 效率，而不是只加大上限。
@@ -46,7 +46,7 @@
 ### P1 — 找出 ROOK 評估／規劃的結構性盲點
 
 - 利用已提交的 src/analysis/rook.js 之 traceRootScores / explainBoardEvaluation，以及 scripts/rook-choice-diagnostics.js，對 Kiwi 和 ROOK 在**同一可見局面**的候選比較：即時 generated/sent/cancelled、累計 reward、終點 board score、holes、covered、高度、Tetris 建槽、T-spots、B2B、combo 和風險。
-- 新版對照會輸出公開的當局觀察資料供重播，且只許 NEXT5；新 root-score workflow 的**最終報表目前尚未確認完成**，恢復工作時先查最新 Actions status 和 error，再做數據解讀。
+- 新版對照已產生根候選評分報表（[Actions #37949389406](https://github.com/jush0147/tetrp/actions/runs/37949389406)）：22 個公開局面、14 次選擇不同，平均 ROOK 選的路線比 Kiwi 那手在**ROOK 自己的評價函數**中高約 18.49 分，其中終點盤面（已折扣）約 +12.21、累積 reward 約 +6.28；最顯著的盤面單項是 holes 懲罰相差約 +13.38（未直接折扣項）。這是**評分偏好診斷**，不是 Kiwi 那手更優的因果證明，也不是勝率改進。局面輸出只許 NEXT5。
 - 特別查：搜索前 4 ply 與真正中長期價值不一致；高度/洞的過度懲罰或假的 Tetris/T-Spin 建槽獎勵；Hold 兩階段策略不連續；未來只能簡化 Hard Drop 的分支偏差；垃圾不確定性和生存風險。
 - **不得**因 Kiwi 挑了某手就當它一定最好。應用獨立 Tetrp 真實攻防後續與多 seed KO，判斷「評分錯」或「搜尋沒找到好延伸」。
 - 若更大的有效搜尋預算仍無法明顯提升強度，優先重做搜索／價值架構（長期攻防的 multi-ply / beam / transposition / tactical continuation）；停止堆一堆特定招式 expert。
@@ -64,21 +64,19 @@
 - 有兩種成績必須分開命名：**offline strength ceiling**（可使用更多算力，不隱瞞耗時）與 **matched-CPU / real-time performance**（公平 wall/CPU 或可明確比較的思考時間）。絕不把任一個當成另一個。
 - 不能縮短 2000 鎖 cap、先以 24/120/500 placements 人工截斷，再假造勝負。小場次僅是執行正確 smoke，不是競技強度證據。
 
-## 3. 下一次直接要做的事情（優先照順序）
+## 3. 下一次直接要做的事情（以此為準）
 
-1. 檢查最新 branch、Issue #8、PR #6 和 root-score CI：
-   https://github.com/jush0147/tetrp/actions/workflows/rook-choice-diagnostics.yml
-   確認通過且讀取公開局面及分數拆解報表；若失敗先修 CI/邊界測試。
-2. 實作 scripts/rook-vs-rook.js「候選／基線獨立 ROOK_NODES」與獨立策略選項的可重現配對 KO 接口，附驗證其採用不同 budget 的測試（不可改 baseline 默認值）。
-3. 建立 **ROOK budget response** workflow：先 6K / 12K / 24K / 48K 公開局面 profiling，回報使用率與延遲；再挑有效 budget 做完整 4 seed x swapped KO 試點，Kiwi 固定 200K 作外部基準。
-4. 看到成績才決定擴大到 96K、優化 beam/depth 或開始修 value model；不能直接宣稱大預算比較強。
-5. 每輪把 commit、實驗 seed、KO/result、CPU、採納/否決決策寫回**本文件 + Issue #8**；PR #6 維持 Draft，達到強度與規則驗收再討論合併 main。
+1. **先讀新的 [budget scaling Actions](https://github.com/jush0147/tetrp/actions/workflows/rook-budget-scaling.yml)**，確認 profile 是 success／failure／queued，禁止把 queued 當成功。提取 6K／12K／24K／48K 的實際 `evaluated`、選棋變化、P95 耗時；如果 12K 根本沒多算，就不要浪費完整 KO 在 12K vs 6K。
+2. 若 12K 的確增加有效搜尋量，讀取 12K vs 6K、seed 1/8/16/23 各交換位置的 **KO-first／2000-lock** A/B，按四個獨立 seed 而非八個獨立樣本報勝率；未完成則不能聲稱提高算力變強。
+3. 如果 4-ply／24 beam 因本身 frontier 飽和而無法消耗更多 maxNodes，下個 P0 實驗改成**明確分側的 beamWidth／depth 擴張**，但須獨立隔離變因、量測額外 CPU 和真正 KO。不可只把 `maxNodes` 上限寫得更大。
+4. 若預算擴張改善實際強度，進一步對 Kiwi 並用至少 16–32 個獨立 seed 做 confirmatory；若沒有改善，回 P1 專注 search horizon / continuation 與 Board/value 結構，不盲調 reward。
+5. 每次把 commit、exact budget、獨立 seed、KO/capped/error、CPU、採納／否決結論更新到**本文件與 Issue #8**；PR #6 保持 Draft，未達標不合併 `main`。
 
 ## 4. 技術入口與現有預設
 
 - Core search：src/analysis/rook.js；chooseMove 默認 depth=4、beamWidth=24、futureReachableProbes=9，通用 maxNodes 默認 8000，但**目前對戰腳本預設實驗 budget = 6000**。不要混淆函式預設與 benchmark 預設。
 - Kiwi 同 seed 完整 KO：scripts/rook-vs-kiwi.js；環境變數 ROOK_NODES、KIWI_NODES、SEEDS、MAX_LOCKS；預設 6000 ROOK eval / 200000 Kiwi nodes / 2000 lock cap。
-- ROOK 自我 A/B：scripts/rook-vs-rook.js；目前 ROOK_NODES 是**雙方相同** budget，EXPERT_* 僅控制特定實驗 side；要跑 48K vs 6K 前必須先加分側 budget。
+- ROOK 自我 A/B：`scripts/rook-vs-rook.js`；`ROOK_NODES` 仍是雙方**共用預設**，可用 `ROOK_CANDIDATE_NODES`、`ROOK_BASELINE_NODES` **分側覆寫**；`BUDGET_SCALING=1` 禁止摻入其他 expert。最新自動流程會先做有效工作量 screen，再決定是否啟動真 KO。
 - 局面／非勝率 smoke：scripts/rook-strength-screen.js；可用 SEEDS、PIECES、ROOK_DEPTH、ROOK_BEAM、ROOK_NODES；它沒有對手，不得當 KO 勝率。
 - 公開決策對照：scripts/rook-choice-diagnostics.js 與 scripts/rook-vs-kiwi.js 的 ROOK_DIAG、ROOK_DIAG_TURNS、ROOK_DIAG_PATH、ROOK_DIAG_SNAPSHOTS_PATH。
 - Authority & protocol：src/analysis/demo.js、src/analysis/visible-state.js、scripts/rook-ko-protocol.js。
@@ -94,7 +92,7 @@
 - **下一個唯一 P0 action**：明確要改的函式、驗證和 budget 邊界。
 - 對於失敗的實驗，保留可重現資料但不要提高核心默認配置。
 
-> 目前交接結論：**不要再迷信 6000 evaluations 是不可突破的限制。下一步先實作預算分側及規模效益研究；root-score 診斷作為平行證據；有強度趨勢才優化效能。**
+> 目前交接結論：**已實作分側預算和 6K/12K/24K/48K 真工作量 profile。下一步先讀 budget-scaling CI 的實測資料；有有效搜尋增量才進入完整 KO，沒有就擴展 search horizon / beamWidth。root-score 評分拆解已完成，不代表對 Kiwi 的勝率改善。**
 
 
 ## 2026-10-09 P0 實作紀錄：獨立候選／基線搜尋預算
