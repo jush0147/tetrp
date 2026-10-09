@@ -405,6 +405,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       const next={board:p.board,queue:initial.queue.slice(ply+1),
         hold:initial.hold,holdLocked:false,combo:p.combo,btb:p.btb,
         multiplier:p.combat.multiplier,pending:p.pending,combat:p.combat,
+        frame:p.frame,unresolvedGarbage:p.unresolvedGarbage,forecastTank:p.forecastTank,
         score:node.score+p.reward*Math.pow(.94,ply),
         rootAction:plan.actions[0],tacticalGoal:plan.goal.kind,
         recoveryActive:node.recoveryActive,recoveryWeight:node.recoveryWeight};
@@ -412,12 +413,14 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       if(!tacticalPrefixes.has(ply))tacticalPrefixes.set(ply,[]);
       tacticalPrefixes.get(ply).push(next);
       node=next;
+      if(next.unresolvedGarbage)break;
     }
   }
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
   const rootChoices=new Map();
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
   let futureProbes=0,futureMoves=0,futureSpinClears=0;
+  let unresolvedTankNodes=0;
   const futureReachableByPly=Array(depth+1).fill(0);
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
   // Known T may be the fifth NEXT piece; six placements are publicly
@@ -429,6 +432,11 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     // Divide the bounded full-action probes across the public future plies.
     const plyProofCap=Math.ceil(futureReachableProbes/Math.max(1,clamp-1));
     for(const node of beam){
+      if(node.unresolvedGarbage){
+        // Stop at the first hidden-hole insertion; no phantom future board.
+        candidates.push(node);
+        continue;
+      }
       if(!node.queue.length||evaluated>=reverseBudget)break;
       const options=[{type:node.queue[0],hold:false,holdValue:node.hold,
         rest:node.queue.slice(1),piece:ply===0?visible.current:spawn(node.queue[0],node.board)}];
@@ -483,6 +491,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           if(evaluated++>=reverseBudget)break;
           const p=applyPlacement(node,move,visible.rules);
           if(!p||p.topout)continue;
+          if(p.unresolvedGarbage)unresolvedTankNodes++;
           const rootAction=node.rootAction??(option.hold?{kind:'hold',mode:node.hold===null?'empty':'occupied',samePiece:option.type===node.queue[0],requiresReanalysis:true}:
             {kind:'place',move:{piece:move.piece.type,x:move.piece.x,
               y:Math.ceil(move.piece.y),rotation:move.piece.r,useHold:false,
@@ -490,7 +499,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
               execution:{moves:move.path,spin:move.spin}});
           const next={
             board:p.board,queue:option.rest,hold:option.holdValue,holdLocked:false,
-            combo:p.combo,btb:p.btb,multiplier:node.multiplier,pending:p.pending,combat:p.combat,
+            combo:p.combo,btb:p.btb,multiplier:p.combat.multiplier,
+            pending:p.pending,combat:p.combat,frame:p.frame,
+            unresolvedGarbage:p.unresolvedGarbage,forecastTank:p.forecastTank,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
             tacticalGoal:node.tacticalGoal??null,
             recoveryActive:node.recoveryActive,
@@ -508,7 +519,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             if(!oldRoot||evalScore>oldRoot.value)rootChoices.set(key,{action:rootAction,value:evalScore});
           }
           const hash=boardKey(next.board)+'|'+next.hold+'|'+next.queue.join('')+
-            '|'+JSON.stringify(next.combat);
+            '|'+next.frame+'|'+next.unresolvedGarbage+'|'+JSON.stringify(next.combat);
           const old=transposed.get(hash);
           if(!old||evalScore>old.evalScore)
             transposed.set(hash,{...next,evalScore});
@@ -521,7 +532,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     const forced=tacticalPrefixes.get(ply)??[];
     for(const node of forced){
       const hash=boardKey(node.board)+'|'+node.hold+'|'+node.queue.join('')+
-        '|'+JSON.stringify(node.combat);
+        '|'+node.frame+'|'+node.unresolvedGarbage+'|'+JSON.stringify(node.combat);
       const old=transposed.get(hash);
       if(!old||node.evalScore>old.evalScore)transposed.set(hash,node);
       if(ply===0){
@@ -606,7 +617,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   const result={...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
     value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,
     forecastedSpinClears,futureProbes,futureMoves,futureSpinClears,
-    futureReachableByPly,tsdProbes,tsdProven,
+    futureReachableByPly,unresolvedTankNodes,
+    selectedUnresolvedGarbage:best.unresolvedGarbage,
+    selectedForecastTank:best.forecastTank,selectedFrame:best.frame,
+    tsdProbes,tsdProven,
     reverseGoals:reverseReport.stats.goals,
     reversePlans:reverseReport.plans.length,
     reverseCandidates:reverseReport.stats.setupCandidates??reverseReport.stats.tileNodes??0,
