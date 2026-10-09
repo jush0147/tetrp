@@ -35,7 +35,7 @@ test('independent budgets stay with bot identities across swapped slots',()=>{
       assert.ok(slot.searches>=1&&slot.searches<=2);
       assert.ok(slot.nodes>0&&slot.nodes<=slot.searches*expected);
       assert.ok(slot.budgetReached<=slot.searches);
-      assert.ok(slot.deepestPly>=1&&slot.deepestPly<=5);
+      assert.ok(slot.searchDepthLimit>=1&&slot.searchDepthLimit<=5);
     }
   }
 });

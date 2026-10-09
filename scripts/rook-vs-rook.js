@@ -69,7 +69,7 @@ function select(demo,open){
     selections:0,forwardProbes:0,forwardMoves:0,
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
-    searches:0,budgetReached:0,deepestPly:0};
+    searches:0,budgetReached:0,searchDepthLimit:0};
   let expectedAfterHold=null;
   for(let turn=0;turn<2;turn++){
     const view=demo.view();
@@ -91,7 +91,7 @@ function select(demo,open){
     stats.nodes+=report.diagnostics.evaluated;
     stats.searches++;
     stats.budgetReached+=Number(report.diagnostics.evaluated>=searchBudget);
-    stats.deepestPly=Math.max(stats.deepestPly,report.diagnostics.effectiveDepth);
+    stats.searchDepthLimit=Math.max(stats.searchDepthLimit,report.diagnostics.effectiveDepth);
     stats.offers+=report.diagnostics.reversePlans;
     stats.selections+=Number(report.diagnostics.reverseSelectedGoal!==null);
     stats.forwardProbes+=report.diagnostics.futureProbes;
@@ -180,7 +180,7 @@ function pairedGame(seed,swap){
     rejections:0,offers:0,selections:0,forwardProbes:0,forwardMoves:0,
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
-    searches:0,budgetReached:0,deepestPly:0,
+    searches:0,budgetReached:0,searchDepthLimit:0,
     tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
   try{
@@ -198,7 +198,7 @@ function pairedGame(seed,swap){
         const decision=select(demos[i],kinds[i]===expertKind);
         moves.push(decision);
         for(const key of Object.keys(totals[i]))
-          if(key==='deepestPly')
+          if(key==='searchDepthLimit')
             totals[i][key]=Math.max(totals[i][key],decision[key]??0);
           else totals[i][key]+=decision[key]??0;
       }

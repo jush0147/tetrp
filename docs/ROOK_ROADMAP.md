@@ -106,7 +106,7 @@
   Bot 身份走，不跟 slot 走**。每局 JSON 另顯
   `candidateNodeBudget`、`baselineNodeBudget`、
   `budgetsByKind`、`slots[].configuredNodeBudget`、
-  `searches`、`budgetReached`、`deepestPly`。
+  `searches`、`budgetReached`、`searchDepthLimit`（設定上限，非真正完成 ply）。
 - 此處只是 benchmark 設施，不是已證實 48K 比 6K 強；
   `nodeBudget` 舊欄仍代表 `ROOK_NODES` fallback，
   **預算不等時以 candidate/baseline 欄為準**。
