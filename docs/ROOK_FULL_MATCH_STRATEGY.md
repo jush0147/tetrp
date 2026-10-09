@@ -343,3 +343,43 @@ maxNodes；`ranked-but-not-selected` 優先用權威多步收益與
 盤面風險檢查評估函數。**此分類只能指向研發假說，不直接證明
 Kiwi 該手在長期一定更好**；尤其 ROOK 的 ranked 清單不同 ply
 不一定是嚴格同分值排序。最後仍需配對 KO／sent APP／CPU 實測。
+
+
+## 2026-10-09 後續：根候選被剪枝位置與 SRS+ 預算 A/B
+
+前一輪共享公開盤面的診斷 [GitHub Actions #37885772159]
+(https://github.com/jush0147/tetrp/actions/runs/37885772159) 已執行完成：
+seed 67020／67023，共 22 筆不同視角的公開局面。
+8 筆選擇一致；14 筆不一致。主要分類：Kiwi 的棋已被 ROOK
+列入 ranked 卻沒選 5、Kiwi Hold 已列入卻沒選 5、
+ROOK 選 Hold 但 Kiwi 選落子 4。沒有觀測到普通根 SRS+
+落點遺漏。但根候選 ranked 清單包含**只有根層被評過**
+的候選，不代表有通過後續 beam；原先將其直接解讀為
+「評估函數選錯」過度武斷。
+
+修正此處的研究方法：
+- `chooseMove(..., {traceRootSurvival:true})` 額外傳回
+  `rootSurvival`，每層 beam 的獨立 first-action keys；
+  只有 opt-in 診斷才收集，不影響正式決策。
+- `rook-disagreement.js` 可區分
+  `root-beam-pruned`、`future-beam-pruned`、
+  `ranked-but-not-selected`，Hold 也同理；
+  `rook-choice-diagnostics.js` 輸出每個 Kiwi 合法第一步
+  是否活過第一層與最終深度。新 CI 在
+  `rook-choice-diagnostics.yml`。
+- 目前 ROOK 預設 `futureReachableProbes=9` 分給三個
+  公開未來 ply，意味多數節點只使用廉價 Hard Drop。
+  `scripts/rook-vs-rook.js` 加入 opt-in
+  `EXPERT_FUTURE=1`、`EXPERT_FUTURE_PROBES=24`、
+  `EXPERT_FUTURE_STATES=800`。A/B 保持普通根搜尋的
+  `ROOK_NODES=6000`，而 probe 額外 CPU 明確分開記錄，
+  **並非公平 CPU**。
+- `rook-future-srs-ablation.yml`：seed 1、8、16、23，
+  雙方同 seed 同時出牌，每個 seed 交換位置，2000
+  鎖上限，按真實 KO／capped 分開統計；比較 Sent APP、
+  後續 reachability probe 次數及實際運算時間。此為
+  實驗，未有結果前不得將 24 probes 設成正式預設。
+
+下一步依據真正的 beam survival 分布決定是改善根候選
+剪枝，還是增強未來 reachability、改寫搜索評估。最後
+仍需同等 CPU 下的整局 KO 與 Kiwi 對戰驗收。
