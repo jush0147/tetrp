@@ -88,10 +88,9 @@ export function enumerateReachable(board,piece,rules,{maxStates=1200,maxSteps=42
   return [...results.values()];
 }
 
-// Future known pieces are used for board evaluation, not forwarded as inputs.
-// Reserve the expensive Tetrp-legal SRS+ reachability BFS for the real root.
-// Later plies use exact *non-spin* hard-drop geometry, so their speculative
-// moves can never silently become executable without fresh root verification.
+// Cheap geometric fallback for future plies when the forward SRS+ budget is
+// exhausted. A geometry-only proposal does NOT certify an executable path;
+// after re-analysis every actual root placement requires an authority witness.
 function forecastHardDrops(board,kind,rules){
   const start=spawn(kind,board);
   if(!B.legal(board,start))return [];
@@ -278,7 +277,9 @@ function applyPlacement(node,placement,rules){
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
-  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
+  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
+  futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
+  tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
   reverseOnlyOpen=false,reversePressureGuard=true,
@@ -307,7 +308,12 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   const queue=[visible.current.type,...visible.next];
   if(!queue.length||queue.some(p=>!PIECES.has(p)))throw Error('invalid visible bag');
   if(!Number.isInteger(depth)||depth<1||depth>5||!Number.isInteger(beamWidth)||beamWidth<1||
-    !Number.isInteger(maxNodes)||maxNodes<1)throw Error('invalid search budget');
+    !Number.isInteger(maxNodes)||maxNodes<1||!Number.isInteger(futureReachablePly)||
+    futureReachablePly<0||futureReachablePly>5||!Number.isInteger(futureReachableProbes)||
+    futureReachableProbes<0||futureReachableProbes>100||
+    !Number.isInteger(futureReachableStates)||futureReachableStates<1||
+    !Number.isInteger(tsdTacticalProbes)||tsdTacticalProbes<0)
+    throw Error('invalid search budget');
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+(p.amt??0),0);
   if(!Number.isFinite(garbageRecoveryWeight)||garbageRecoveryWeight<0||
@@ -396,6 +402,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let beam=[initial],evaluated=0,cache=new Map(),best=null;
   const rootChoices=new Map();
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
+  let futureProbes=0,futureMoves=0,futureSpinClears=0;
+  const futureReachableByPly=Array(depth+1).fill(0);
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
   // Known T may be the fifth NEXT piece; six placements are publicly
   // visible but only an actual proven tactical continuation expands ply six.
@@ -403,6 +411,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   const clamp=Math.min(queue.length,Math.max(depth,completedTactic));
   for(let ply=0;ply<clamp;ply++){
     const candidates=[],transposed=new Map();
+    // Divide the bounded full-action probes across the public future plies.
+    const plyProofCap=Math.ceil(futureReachableProbes/Math.max(1,clamp-1));
     for(const node of beam){
       if(!node.queue.length||evaluated>=reverseBudget)break;
       const options=[{type:node.queue[0],hold:false,holdValue:node.hold,
@@ -420,19 +430,37 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           if(ply===0){
             moves=enumerateReachable(node.board,option.piece,visible.rules,{maxStates,maxSteps});
           }else{
-            moves=forecastHardDrops(node.board,option.type,visible.rules);
-            if(spinForecast&&ply<=spinForecastPly&&spinProbes<spinForecastProbes&&
-               hasSpinClearGeometry(node.board,option.type,visible.rules)){
-              spinProbes++;
-              const spins=forecastSpinClears(node.board,option.type,visible.rules,
-                {maxStates:spinForecastStates,maxSteps});
-              forecastedSpinClears+=spins.length;
-              // Forecast spin paths are SRS+-reachable but not accepted as
-              // root actions. The next real piece is always revalidated by
-              // the Tetrp atomic legal-placement authority.
-              moves.push(...spins);
+            // Look for actual SRS+ tucks, kicks, Spin and non-Spin landings
+            // at *every* visible future ply. Keep geometry-only Hard Drops
+            // when bounded reachability misses an ordinary fallback.
+            const fast=forecastHardDrops(node.board,option.type,visible.rules);
+            const prove=futureReachable&&ply<=futureReachablePly&&
+              futureProbes<futureReachableProbes&&
+              futureReachableByPly[ply]<plyProofCap;
+            if(prove){
+              futureProbes++;futureReachableByPly[ply]++;
+              const reached=enumerateReachable(node.board,option.piece,visible.rules,
+                {maxStates:futureReachableStates,maxSteps});
+              futureMoves+=reached.length;
+              futureSpinClears+=reached.filter(m=>
+                m.spin!=='none'&&spinClearRows(node.board,m.piece)>0).length;
+              const known=new Set(reached.map(m=>fmtCells(m.piece)+'|'+m.spin));
+              moves=[...reached,...fast.filter(m=>
+                !known.has(fmtCells(m.piece)+'|'+m.spin))];
+            }else{
+              moves=fast;
+              if(spinForecast&&ply<=spinForecastPly&&spinProbes<spinForecastProbes&&
+                 hasSpinClearGeometry(node.board,option.type,visible.rules)){
+                spinProbes++;
+                const spins=forecastSpinClears(node.board,option.type,visible.rules,
+                  {maxStates:spinForecastStates,maxSteps});
+                forecastedSpinClears+=spins.length;
+                const known=new Set(moves.map(m=>fmtCells(m.piece)+'|'+m.spin));
+                moves=[...moves,...spins.filter(m=>
+                  !known.has(fmtCells(m.piece)+'|'+m.spin))];
+              }
+              evaluatedFast+=moves.length;
             }
-            evaluatedFast+=moves.length;
           }
           cache.set(key,moves);
         }
@@ -454,7 +482,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             recoveryWeight:node.recoveryWeight
           };
           const evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
-          if(ply===0&&rootAction.kind==='place'&&
+          if(ply===0&&tsdTacticalProbes>0&&rootAction.kind==='place'&&
              (option.rest[0]==='t'||option.holdValue==='t')){
             const patterns=tsdScaffolds(p.board,visible.rules,{maxMissing:0});
             if(patterns.some(t=>t.fullSpinGeometry))tsdCandidates.push({node:next,score:evalScore});
@@ -562,7 +590,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   if(!best)throw Error('ROOK found no legal placement');
   const result={...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
     value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,
-    forecastedSpinClears,tsdProbes,tsdProven,
+    forecastedSpinClears,futureProbes,futureMoves,futureSpinClears,
+    futureReachableByPly,tsdProbes,tsdProven,
     reverseGoals:reverseReport.stats.goals,
     reversePlans:reverseReport.plans.length,
     reverseCandidates:reverseReport.stats.setupCandidates??reverseReport.stats.tileNodes??0,
