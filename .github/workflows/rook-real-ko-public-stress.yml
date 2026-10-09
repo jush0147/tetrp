@@ -1,0 +1,58 @@
+name: ROOK real Kiwi KO public-state stress triage
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-stress-diagnostics.js
+      - src/analysis/rook.js
+      - .github/workflows/rook-real-ko-public-stress.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  triage:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download only archived player-visible snapshots from real Kiwi KO
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-kiwi-shared-position-diagnostic
+          repository: jush0147/tetrp
+          run-id: 37949389406
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compare identical published NEXT5 observations at original and deeper search
+        env:
+          ROOK_PUBLIC_SNAPSHOTS: rook-public-observations.jsonl
+          ROOK_PREVIOUS_DIFF: rook-choice-diff.jsonl
+          ROOK_STRESS_OUTPUT: rook-public-stress-report.json
+        run: |
+          set -eu
+          node scripts/rook-stress-diagnostics.js > rook-public-stress-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const report=JSON.parse(readFileSync('rook-public-stress-report.json','utf8'));
+          if(report.format!=='rook-real-kiwi-public-stress-triage/1'||
+            report.rows.length!==22||report.statistics.all.positions!==22||
+            report.statistics.all.baselineMatchesKiwi!==8||
+            report.rows.some(r=>r.options.length!==3||
+              r.options.some(o=>!Number.isFinite(o.ms)||o.ms<0||
+                !Number.isFinite(o.evaluated)||o.evaluated<=0)))
+            throw Error('Invalid real KO public-state stress triage');
+          console.log(readFileSync('rook-public-stress-summary.json','utf8'));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-real-ko-public-stress-diagnosis
+          path: |
+            rook-public-stress-summary.json
+            rook-public-stress-report.json
+            rook-public-observations.jsonl
+            rook-choice-diff.jsonl
+          retention-days: 30
