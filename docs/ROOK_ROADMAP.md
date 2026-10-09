@@ -308,3 +308,75 @@ CI 正確**跳過**完整 KO。**此設定未提高強度，
 的工作結果（可能仍 queued），再決定需要的搜索架構
 改動；每輪維持 2000 鎖、真正 KO 才計分、分側 CPU
 誠實紀錄，Draft PR #6 不合併。
+
+
+## 2026-10-10 06:50 接手更新：真實 KO 壓力盤面結果、去除鏡像重複運算
+
+### 已證實的壓力局面結果
+
+[Real Kiwi KO public-state stress run #37998159298](https://github.com/jush0147/tetrp/actions/runs/37998159298) **成功**。
+此前完整權威 Kiwi vs ROOK KO 提供 **22 筆公開局面**，
+但只來自 **2 個獨立 seed（67020、67023）**，
+因此它們**不是 22 個獨立對戰實驗**。
+
+| 局面子集 | 局面數 | 原版 4×24 與 Kiwi 同手 | 深搜 5×48 與 Kiwi 同手 | 深搜 + hole relief 與 Kiwi 同手 | hole relief 相對深搜改選 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 全部 | 22 | 8 | 8 | 9 | 1 |
+| 待處理垃圾 pending > 0 | 3 | 0 | 0 | 0 | 0 |
+| 棋盤已有垃圾 | 12 | 6 | 5 | 6 | 1 |
+| 棋盤有洞 | 14 | 7 | 6 | 6 | 0 |
+| 對局回合 >= 20 | 8 | 3 | 2 | 3 | 1 |
+
+**注意**：這不是 Kiwi 的最佳行動證明，更不是 ROOK 的
+KO 勝率。加深加寬沒有提升與 Kiwi 的一致性，
+hole relief 在真實戰鬥也只改變 1/22 決策；此前乾淨盤面
+12/12 次不改選且跳過 KO。**停止在 hole-relief
+單一係數上繼續搜尋，預設仍為 0。**
+新的 `scripts/rook-stress-diagnostics.js` 已追加
+`futureProofsByPly`、`actualFutureSpinClears`、
+`fastSpinProbes`、`forecastSpinClears`、受阻垃圾
+分支數等診斷。新版
+[public stress CI](https://github.com/jush0147/tetrp/actions/workflows/rook-real-ko-public-stress.yml)
+目前尚未完成，**要先看完整後續 Spin 搜尋覆蓋率**，
+再考慮專門改善搜索前幾層的真正 SRS+ 證明。
+
+### 回應使用者的公平性／算力質疑：不應把鏡像當成兩個新樣本
+
+在現有雙方同 seven-bag seed、同步決策及鎖定、
+攻擊在落子後交換的確定性 Tetrp 對戰中，
+大部分角色交換結果都是完全鏡像。
+舊 4 seed × swap 的「8 場」只有 **4 個獨立 seed**。
+多一輪鏡像不是獨立勝率證據。例：seed 8 的
+原／交換位置均在 562 鎖後由同一 Bot KO，
+其節點數完全一樣。
+
+**已實作** `SWAP_ROLES=0`：
+- `scripts/rook-vs-rook.js` 和 `scripts/rook-vs-kiwi.js`
+  都可指定每個獨立 seed **只跑一次**。輸出
+  0/1 slot 正常完整 Tetrp authority，仍須同步落子，
+  相同初始 seed，最多 2000 鎖 KO-first。
+- 為保留仍明確期待兩列鏡像結果的歷史 ablation CI，
+  未指定 `SWAP_ROLES` 暫時**沿用舊預設 '1'**；
+  這是**舊 workflow 相容**，不是正式推薦作法。
+  新、正式強度測試一律明確設定 `SWAP_ROLES='0'`。
+  只在偶爾檢查角色對稱性時使用 `SWAP_ROLES='1'`，
+  不把鏡像當成獨立 seed。
+- [新的 pinned Kiwi KO workflow](https://github.com/jush0147/tetrp/actions/workflows/rook-ko.yml)
+  使用不同的 8 個 seeds 67020–67027，各 seed
+  **只跑 1 場**，保留 Kiwi 200K nodes 和
+  ROOK 6K evaluations、完整真 KO、
+  2000 顆安全上限。
+  這是重新建立 baseline，**不是新 ROOK 強度變更**。
+- `test/rook-budget-config.test.js` 驗證新
+  `SWAP_ROLES='0'` 的單 seed 對戰筆數與交換行為，
+  `test/rook-ko-single-seed.test.js` 以 **1-lock
+  protocol smoke（不是強度測試）** 證明 Kiwi
+  對戰輸出 1 seed/1 match，並列入 acceptance。
+  實際強度仍永遠 KO-first，2000 只作上限。
+
+**最新唯一 P0 下一步**：
+1. 看 [真實壓力 Spin 搜尋覆蓋率 CI](https://github.com/jush0147/tetrp/actions/workflows/rook-real-ko-public-stress.yml) 新版結果：尤其在有洞／垃圾的局面，每個 ply 真正 SRS+ 枚舉分配、futureSpinClears、HardDrop fallback。
+2. 查 8 個不同 seed 的 [Kiwi baseline](https://github.com/jush0147/tetrp/actions/workflows/rook-ko.yml) 和 [最新 acceptance](https://github.com/jush0147/tetrp/actions/workflows/rook-bot.yml) 是否成功，列清 KO/capped/invalid，絕不提前宣稱。
+3. 如發現 spin 繼續手被 generic forecast 低估，設計**受控的真正 SRS+ 未來分支擴張**，不是單純再從 9 加到 24 probes；在同預算的新獨立 seeds KO 衡量。
+4. 若未來 reachability 並無致命缺口，優先查長期 attack/garbage value model，不再試孤立的洞數 penalty。
+5. 仍保持 PR #6 Draft，記錄未完成的 CI，未經 Kiwi KO 實證不合併 main。
