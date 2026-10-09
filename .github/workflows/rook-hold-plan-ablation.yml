@@ -38,6 +38,7 @@ jobs:
           EXPERT_BEAM: '0'
           EXPERT_OFFENSE: '0'
           EXPERT_HOLD_PLAN: '1'
+          HOLD_AUDIT: '1'
         run: |
           set -eu
           node scripts/rook-vs-rook.js > "rook-hold-plan-${{ matrix.seed }}.jsonl"
@@ -49,6 +50,7 @@ jobs:
             rows.some(r=>r.error||r.seed!==Number('${{ matrix.seed }}')||
               !r.sameSeed||!r.simultaneousLocks||r.seeds[0]!==r.seeds[1]||
               r.nodeBudget!==6000||r.cap!==2000||r.expertLabel!=='hold-plan'||
+              !r.auditHoldPlan||
               !r.expertHoldPlan||r.expertOpen||r.expertRecovery||r.expertBelief||
               r.expertFuture||r.expertBeam||r.expertOffense||
               r.scored!==(r.termination==='KO')||
@@ -58,11 +60,14 @@ jobs:
           if(!trial||trial.holdPlanAccepted<1||
             trial.holdPlanAttempts!==trial.holdPlanAccepted+trial.holdPlanRejected)
             throw Error('Predicted post-Hold placement not exercised');
+          if(rows[0].slots.find(s=>s.kind==='baseline').holdPlanAudited<1)
+            throw Error('No actual post-Hold re-search was audited');
           console.log(JSON.stringify(rows.map(r=>({seed:r.seed,swap:r.swap,turns:r.turns,
             termination:r.termination,winner:r.winner,slots:r.slots.map(s=>({
               kind:s.kind,ms:s.ms,sentAPP:s.sentAPP,holds:s.holds,
               holdPlanAttempts:s.holdPlanAttempts,holdPlanAccepted:s.holdPlanAccepted,
-              holdPlanRejected:s.holdPlanRejected}))}))));
+              holdPlanRejected:s.holdPlanRejected,holdPlanAudited:s.holdPlanAudited,
+              holdPlanMatched:s.holdPlanMatched,holdPlanDiverged:s.holdPlanDiverged}))}))));
           JS
       - uses: actions/upload-artifact@v4
         if: always()
@@ -98,6 +103,9 @@ jobs:
             holdPlanTotalAttempts:total('hold-plan','holdPlanAttempts'),
             holdPlanTotalAccepted:total('hold-plan','holdPlanAccepted'),
             holdPlanTotalRejected:total('hold-plan','holdPlanRejected'),
+            baselineHoldPlanAudited:total('baseline','holdPlanAudited'),
+            baselineHoldPlanMatched:total('baseline','holdPlanMatched'),
+            baselineHoldPlanDiverged:total('baseline','holdPlanDiverged'),
             holdPlanSent:total('hold-plan','sent'),baselineSent:total('baseline','sent'),
             gamesDetail:rows};
           writeFileSync('rook-hold-plan-summary.json',JSON.stringify(out,null,2)+'\n');
