@@ -73,7 +73,7 @@ function select(demo,open){
 }
 function summary(demo,kind,counters){
   const s=demo.engine.state,a=s.attack,pieces=s.stats.pieces;
-  return {kind,pieces,playing:s.playing,reason:s.reason,
+  return {kind,pieces,frame:s.frame,playing:s.playing,reason:s.reason,
     generated:a.totals.generated,sent:a.totals.sent,
     cancelled:a.totals.cancelled,received:a.totals.received,
     tanked:a.totals.tanked,btb:a.btb,
