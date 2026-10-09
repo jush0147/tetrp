@@ -1,0 +1,102 @@
+name: ROOK public-garbage recovery paired KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - src/analysis/rook.js
+      - src/analysis/rook-recovery.js
+      - scripts/rook-vs-rook.js
+      - .github/workflows/rook-recovery-ko.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pressure-ko:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - seed_a: 1
+            seed_b: 8
+          - seed_a: 16
+            seed_b: 23
+          - seed_a: 24
+            seed_b: 31
+          - seed_a: 39
+            seed_b: 46
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Simultaneous real Tetrp KO with recovery-only expert and swapped slots
+        env:
+          SEED_A: ${{ matrix.seed_a }}
+          SEED_B: ${{ matrix.seed_b }}
+          MAX_LOCKS: '180'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_RECOVERY: '1'
+          RECOVERY_WEIGHT: '1'
+        run: |
+          node scripts/rook-vs-rook.js > rook-recovery-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl
+          cat rook-recovery-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('rook-recovery-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].swap||!rows[1].swap||
+            rows.some(x=>x.error||x.termination==='invalid-match'||
+              !x.expertRecovery||x.expertOpen||x.expertLabel!=='recovery-only'||
+              x.nodeBudget!==6000||x.slots.some(s=>s.pieces<1)))
+            throw Error('Invalid recovery-only, public-Tetrp paired KO protocol');
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-recovery-${{ matrix.seed_a }}-${{ matrix.seed_b }}
+          path: rook-recovery-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl
+          retention-days: 30
+  score:
+    needs: pressure-ko
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-recovery-*
+          merge-multiple: true
+      - name: Report actual scored KO separately from draw caps
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const files=['1-8','16-23','24-31','39-46'],games=[];
+          for(const pair of files)
+            for(const line of readFileSync('rook-recovery-'+pair+'.jsonl','utf8').trim().split('\n')){
+              const x=JSON.parse(line);
+              if(x.error||x.termination==='invalid-match')
+                throw Error('Invalid matched Tetrp game: '+pair);
+              games.push({seeds:x.seeds,swap:x.swap,
+                winner:x.scored?(x.winner==='opener'?'recovery':'baseline'):null,
+                termination:x.termination,turns:x.turns,scored:x.scored,
+                baseline:x.slots.find(s=>s.kind==='baseline'),
+                recovery:x.slots.find(s=>s.kind==='opener'),
+                checkpoints:x.checkpoints});
+            }
+          const wins=name=>games.filter(g=>g.winner===name).length;
+          const result={format:'rook-garbage-recovery-ko-v1',
+            games:games.length,scored:games.filter(g=>g.scored).length,
+            capped:games.filter(g=>g.termination==='capped').length,
+            baselineWins:wins('baseline'),recoveryWins:wins('recovery'),
+            ordinarySearchBudget:6000,experimentalExtraCPUPossible:true,
+            publicInformationOnly:true,notAKiwiComparison:true,gamesDetail:games};
+          writeFileSync('rook-recovery-scored.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify({...result,gamesDetail:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-recovery-ko-summary
+          path: rook-recovery-scored.json
+          retention-days: 30
