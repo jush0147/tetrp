@@ -263,3 +263,48 @@ profile/report log 以及 test/acceptance；
 直接分析 search horizon、沒有有效未來 T-Spin
 合法路徑的簡化 forecast，及帶垃圾時的模擬有效性。
 保留 Draft PR #6，未經 KO 證據絕不併入 main。
+
+
+### 2026-10-10 06:00：中途 Hole-pruning 假說的第一輪結果及後續稽核
+
+[Setup survival A/B #37997846981](https://github.com/jush0147/tetrp/actions/runs/37997846981)
+已完成初階 profile：4 獨立 seed 的 12 個公開局面，
+5 ply／48 beam／24K eval cap 雙方相同。
+`intermediateHoleRelief=0.65` 對 `=0`，
+**選棋 0/12 次改變**；平均真實 eval
+8,509.5 vs 8,510.75；平均搜尋時間
+589.6ms vs 556ms。由於早期公開局面根本沒改選，
+CI 正確**跳過**完整 KO。**此設定未提高強度，
+絕不可升級正式預設**。早期樣本沒涵蓋全部
+垃圾壓迫局面，不能據此聲稱對所有局面絕對無效。
+
+為避免一直用乾淨開局抽樣，新建
+`scripts/rook-stress-diagnostics.js` 及
+[真實 Kiwi KO 公開局面稽核工作流程](https://github.com/jush0147/tetrp/actions/workflows/rook-real-ko-public-stress.yml)：
+- 直接從先前成功的
+  [Actions #37949389406](https://github.com/jush0147/tetrp/actions/runs/37949389406)
+  讀取 22 筆當時的 `rook-public-observations.jsonl`
+  與對應 `rook-choice-diff.jsonl`；這是
+  **權威對戰真實局面，絕非隨機拼假的盤面**。
+- 嚴格確認 snapshot seed／turn／owner 與 Kiwi
+  決策對照一致、只有玩家可見 NEXT5，
+  而且 baseline 4×24 的行動仍精確匹配舊紀錄；
+  不吻合立即失敗，不拿不同版本混稱同局面。
+- 對同一真實局面比較原版 4×24/6K、
+  5×48/24K、5×48/24K+setup-survival，
+  按 pending garbage／已進入棋盤的垃圾／
+  holes／回合 20+ 分組。
+  統計改選比例、搜尋成本，以及是否較一致 Kiwi
+  的合法第一手。**與 Kiwi 同手是診斷訊號，
+  不是 KO 勝率，也不是 Kiwi 一定正確。**
+- 該新 CI/壓力結果尚未確認完成。除非在真實
+  中後期/壓力盤面出現顯著改選且後續真 KO 有收益，
+  不得繼續無目的調整 `intermediateHoleRelief`
+  數字；若仍找不到方向，應研究不可見垃圾的未來
+  SRS+ reachability／多步攻防估值或重大架構改寫。
+
+**最新接手唯一事項**：先取
+[ROOK real Kiwi KO public stress triage](https://github.com/jush0147/tetrp/actions/workflows/rook-real-ko-public-stress.yml)
+的工作結果（可能仍 queued），再決定需要的搜索架構
+改動；每輪維持 2000 鎖、真正 KO 才計分、分側 CPU
+誠實紀錄，Draft PR #6 不合併。
