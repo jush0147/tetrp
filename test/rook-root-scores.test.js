@@ -20,9 +20,8 @@ test('opt-in root-score explanations preserve original ROOK policy and public in
   assert.deepEqual(policy,baseline);
   assert.deepEqual(publicState,before);
   assert.ok(rootScores.length>0&&rootScores.length<=opts.beamWidth);
-  assert.equal(rootScores[0].leaf.total,explained.diagnostics.value===
-    Number(rootScores[0].leaf.total.toFixed(3))
-    ?rootScores[0].leaf.total:NaN);
+  assert.equal(Number(rootScores[0].leaf.total.toFixed(3)),
+    explained.diagnostics.value);
   assert.equal(actionSignature(rootScores[0].action),
     actionSignature(baseline));
   for(const row of rootScores){
