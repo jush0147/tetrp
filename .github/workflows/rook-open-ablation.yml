@@ -1,12 +1,10 @@
 name: ROOK public seven-bag Full TSD opener A-B
 on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - src/analysis/rook.js
-      - src/analysis/rook-open-slot.js
-      - scripts/rook-open-cohort.js
-      - scripts/rook-strength-screen.js
       - .github/workflows/rook-open-ablation.yml
   workflow_dispatch:
 permissions:

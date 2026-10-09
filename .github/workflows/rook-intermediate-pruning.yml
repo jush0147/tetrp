@@ -1,12 +1,10 @@
 name: ROOK setup-survival pruning full KO ablation
 on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - src/analysis/rook.js
-      - scripts/rook-vs-rook.js
-      - scripts/rook-pruning-profile.js
-      - test/rook-intermediate-pruning.test.js
       - .github/workflows/rook-intermediate-pruning.yml
   workflow_dispatch:
 permissions:

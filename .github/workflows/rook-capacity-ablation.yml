@@ -1,12 +1,10 @@
 name: ROOK search-width and depth capacity full KO ablation
 on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - scripts/rook-vs-rook.js
-      - scripts/rook-capacity-profile.js
-      - test/rook-budget-config.test.js
-      - src/analysis/rook.js
       - .github/workflows/rook-capacity-ablation.yml
   workflow_dispatch:
 permissions:

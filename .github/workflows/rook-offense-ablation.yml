@@ -1,10 +1,10 @@
 name: ROOK attack reward full KO ablation
 on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - src/analysis/rook.js
-      - scripts/rook-vs-rook.js
       - .github/workflows/rook-offense-ablation.yml
   workflow_dispatch:
 permissions:

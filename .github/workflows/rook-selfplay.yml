@@ -1,11 +1,10 @@
 name: ROOK opener vs baseline paired TL KO
 on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - scripts/rook-vs-rook.js
-      - src/analysis/rook.js
-      - src/analysis/rook-open-slot.js
       - .github/workflows/rook-selfplay.yml
   workflow_dispatch:
 permissions:

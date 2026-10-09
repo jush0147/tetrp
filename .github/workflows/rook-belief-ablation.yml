@@ -1,11 +1,10 @@
 name: ROOK public-garbage belief full KO
 on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - scripts/rook-vs-rook.js
-      - scripts/rook-ko-protocol.js
-      - src/analysis/rook-belief.js
       - .github/workflows/rook-belief-ablation.yml
   workflow_dispatch:
 permissions:

@@ -1,10 +1,10 @@
 name: ROOK future SRS+ budget full KO ablation
 on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - scripts/rook-vs-rook.js
-      - src/analysis/rook.js
       - .github/workflows/rook-future-srs-ablation.yml
   workflow_dispatch:
 permissions:

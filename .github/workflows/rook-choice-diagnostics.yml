@@ -1,14 +1,10 @@
 name: ROOK vs Kiwi shared-position decision diagnosis
 on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - src/analysis/rook-disagreement.js
-      - scripts/rook-choice-diagnostics.js
-      - scripts/rook-vs-kiwi.js
-      - test/rook-disagreement.test.js
-      - test/rook-root-scores.test.js
-      - src/analysis/rook.js
       - .github/workflows/rook-choice-diagnostics.yml
   workflow_dispatch:
 permissions:
