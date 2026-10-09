@@ -337,6 +337,7 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
   futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
+  traceRootSurvival=false,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
@@ -471,6 +472,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
   let futureProbes=0,futureMoves=0,futureSpinClears=0;
   let unresolvedTankNodes=0;
+  const rootSurvival=[];
   let beliefAttempts=0,beliefEvaluations=0,beliefOutcomes=0,beliefOverBudget=0;
   const futureReachableByPly=Array(depth+1).fill(0);
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
@@ -692,6 +694,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       beam.push(tactical);reserved++;
     }
     beam.sort((a,b)=>b.evalScore-a.evalScore);
+    if(traceRootSurvival)
+      rootSurvival.push({ply:ply+1,roots:[...new Set(beam.map(n=>
+        JSON.stringify(n.rootAction)))]});
     best=beam[0];
   }
   if(!best)throw Error('ROOK found no legal placement');
@@ -715,6 +720,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
+  if(traceRootSurvival)result.rootSurvival=rootSurvival;
   if(includeRanked){
     const bestKey=JSON.stringify(best.rootAction);
     const alternatives=[...rootChoices.entries()]
