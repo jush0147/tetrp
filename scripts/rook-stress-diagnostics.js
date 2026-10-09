@@ -79,7 +79,7 @@ const statistics=Object.fromEntries(kinds.map(name=>{
 const result={format:'rook-real-kiwi-public-stress-triage/1',
   source:'same public Tetrp snapshots in pinned Kiwi-vs-ROOK full KO',
   matchSeeds:[...new Set(rows.map(r=>r.seed))],
-  configurations:configs.map(c=>({id:c.id,...options,...c.settings})),
+  configurations:configs.map(c=>({id:c.id,...c.settings})),
   statistics,rows,
   warning:'Agreement with Kiwi is not a strength benchmark; search time / KO still required'};
 if(process.env.ROOK_STRESS_OUTPUT)
