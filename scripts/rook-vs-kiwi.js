@@ -5,18 +5,18 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
-import {parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
+import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
 
 const kiwiBudget=Number(process.env.KIWI_NODES??200000);
 const rookBudget=Number(process.env.ROOK_NODES??6000);
-const limit=Number(process.env.MAX_LOCKS??400);
+const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
 const seeds=parseMatchSeeds({...process.env,
   SEED_A:process.env.SEED_A??'67000',SEED_B:process.env.SEED_B??'67001'});
 if(!Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000||
   !Number.isSafeInteger(rookBudget)||rookBudget<1||
-  !Number.isSafeInteger(limit)||limit<1)throw Error('invalid KO configuration');
+  !Number.isSafeInteger(limit)||limit<1||limit>10000)throw Error('invalid KO configuration');
 
 await init({module_or_path:readFileSync(new URL('../vendor/kiwi-v1/pkg/cold_clear_2_bg.wasm',import.meta.url))});
 

@@ -4,9 +4,9 @@ import {writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
-import {parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
+import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 
-const limit=Number(process.env.MAX_LOCKS??400);
+const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
 const budget=Number(process.env.ROOK_NODES??6000);
 // SEED_A / SEED_B now designate two independent, matched-seed trials.
 const seeds=parseMatchSeeds();
@@ -20,7 +20,7 @@ const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBelief?'belief':null].filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
-if(!Number.isSafeInteger(limit)||limit<1||limit>1000||
+if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isSafeInteger(budget)||budget<1||
   !Number.isSafeInteger(openTiles)||openTiles<1||
   !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4||
@@ -145,7 +145,7 @@ function pairedGame(seed,swap){
         for(const packet of demos[from].engine.state.attack.outbox.splice(0))
           inbound.push({to:1-from,iid:packet.iid,ackiid:packet.ackiid,amt:packet.amt});
       turns++;
-      if([6,12,24,48,72,96,120,150,200,250,300,400,500,600].includes(turns))
+      if([6,12,24,48,72,96,120,150,200,250,300,400,500,600,750,1000,1250,1500,1750,2000].includes(turns))
         checkpoints.push({turns,slots:demos.map(health)});
     }
   }catch(e){error=e instanceof Error?e.message:String(e)}

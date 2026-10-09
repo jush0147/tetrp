@@ -13,7 +13,7 @@ permissions:
 jobs:
   pressure-ko:
     runs-on: ubuntu-22.04
-    timeout-minutes: 80
+    timeout-minutes: 330
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -36,7 +36,7 @@ jobs:
         env:
           SEED_A: ${{ matrix.seed_a }}
           SEED_B: ${{ matrix.seed_b }}
-          MAX_LOCKS: '400'
+          MAX_LOCKS: '2000'
           ROOK_NODES: '6000'
           EXPERT_OPEN: '0'
           EXPERT_RECOVERY: '1'
@@ -52,7 +52,7 @@ jobs:
               x.error||x.termination==='invalid-match'||
               !x.sameSeed||!x.simultaneousLocks||x.seeds[0]!==x.seeds[1]||
               !x.expertRecovery||x.expertOpen||x.expertLabel!=='recovery'||
-              x.nodeBudget!==6000||x.cap!==400||
+              x.nodeBudget!==6000||x.cap!==2000||
               x.scored!==(x.termination==='KO')||
               x.slots.some(s=>s.pieces!==x.turns||s.pieces<1)))
             throw Error('Invalid recovery-only, public-Tetrp paired KO protocol');

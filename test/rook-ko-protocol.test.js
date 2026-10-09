@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
-import {parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from '../scripts/rook-ko-protocol.js';
+import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from '../scripts/rook-ko-protocol.js';
 
 const demo=seed=>new BotDemo(new Engine({mode:'tl',seed,
   rules:{g:0,b2bcharge_base:3}}),{placementMode:'atomic'});
@@ -21,15 +21,16 @@ test('each seed is an independent trial, never different bags for opposing playe
   assert.throws(()=>assertSimultaneousPair([a,b]),/clocks diverged/);
 });
 
-test('KO on safety-cap turn is a scored KO, not a capped draw',()=>{
-  assert.deepEqual(scoreKO({alive:[true,false],rounds:400,cap:400}),{
+test('2000-piece KO boundary wins over cap; unresolved and double KO remain unscored',()=>{
+  assert.equal(DEFAULT_KO_LOCK_CAP,2000);
+  assert.deepEqual(scoreKO({alive:[true,false],rounds:2000,cap:DEFAULT_KO_LOCK_CAP}),{
     scored:true,winnerSlot:0,termination:'KO'});
-  assert.deepEqual(scoreKO({alive:[false,true],rounds:400,cap:400}),{
+  assert.deepEqual(scoreKO({alive:[false,true],rounds:2000,cap:DEFAULT_KO_LOCK_CAP}),{
     scored:true,winnerSlot:1,termination:'KO'});
-  assert.deepEqual(scoreKO({alive:[true,true],rounds:400,cap:400}),{
+  assert.deepEqual(scoreKO({alive:[true,true],rounds:2000,cap:DEFAULT_KO_LOCK_CAP}),{
     scored:false,winnerSlot:null,termination:'capped'});
-  assert.deepEqual(scoreKO({alive:[false,false],rounds:400,cap:400}),{
+  assert.deepEqual(scoreKO({alive:[false,false],rounds:2000,cap:DEFAULT_KO_LOCK_CAP}),{
     scored:false,winnerSlot:null,termination:'double-KO'});
-  assert.deepEqual(scoreKO({alive:[false,true],rounds:30,cap:400,error:'bad placement'}),{
+  assert.deepEqual(scoreKO({alive:[false,true],rounds:30,cap:DEFAULT_KO_LOCK_CAP,error:'bad placement'}),{
     scored:false,winnerSlot:null,termination:'invalid-match'});
 });

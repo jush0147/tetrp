@@ -1,4 +1,6 @@
 // Shared KO acceptance contract for ROOK vs baseline and pinned Kiwi.
+// Maximum safety cap per player: 2000 locked pieces. KO always takes priority.
+export const DEFAULT_KO_LOCK_CAP=2000;
 // Seeds identify independent paired trials. BOTH slots in a trial use that
 // exact seed, and both choose from the same pre-lock match tick.
 export function parseMatchSeeds(env=process.env){

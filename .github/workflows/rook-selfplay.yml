@@ -13,7 +13,7 @@ permissions:
 jobs:
   matched-ko:
     runs-on: ubuntu-22.04
-    timeout-minutes: 80
+    timeout-minutes: 330
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -33,7 +33,7 @@ jobs:
           SEED_A: ${{ matrix.seed_a }}
           SEED_B: ${{ matrix.seed_b }}
           ROOK_NODES: '6000'
-          MAX_LOCKS: '400'
+          MAX_LOCKS: '2000'
           OPEN_TILE_NODES: '1200'
         run: |
           node scripts/rook-vs-rook.js > rook-pair-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl
@@ -44,7 +44,7 @@ jobs:
           if(rows.length!==4||
             rows.some((r,i)=>r.swap!==Boolean(i%2)||r.error||
               !r.sameSeed||!r.simultaneousLocks||r.seeds[0]!==r.seeds[1]||
-              r.nodeBudget!==6000||r.cap!==400||r.slots.length!==2||
+              r.nodeBudget!==6000||r.cap!==2000||r.slots.length!==2||
               r.termination==='invalid-match'||r.scored!==(r.termination==='KO')||
               r.slots.some(s=>s.pieces!==r.turns||s.pieces<1)))
             throw Error('Invalid authority KO protocol');

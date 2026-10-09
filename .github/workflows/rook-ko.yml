@@ -15,7 +15,7 @@ permissions:
 jobs:
   paired-ko:
     runs-on: ubuntu-22.04
-    timeout-minutes: 80
+    timeout-minutes: 330
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -26,12 +26,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Same-seed synchronous ROOK vs Kiwi until KO or 500-turn safety cap
+      - name: Same-seed synchronous ROOK vs Kiwi until KO or 2000-turn safety cap
         env:
           SEEDS: ${{ matrix.seed }}
           KIWI_NODES: '200000'
           ROOK_NODES: '6000'
-          MAX_LOCKS: '500'
+          MAX_LOCKS: '2000'
         run: |
           set -eu
           node scripts/rook-vs-kiwi.js > "kiwi-ko-${{ matrix.seed }}.jsonl" 2> "kiwi-ko-${{ matrix.seed }}.progress"
@@ -42,7 +42,7 @@ jobs:
           if(rows.length!==2||rows[0].order!==0||rows[1].order!==1||
             rows.some(x=>x.error||x.seed!==Number('${{ matrix.seed }}')||
               !x.sameSeed||!x.simultaneousLocks||x.seeds[0]!==x.seeds[1]||
-              x.cap!==500||x.scored!==(x.termination==='KO')||
+              x.cap!==2000||x.scored!==(x.termination==='KO')||
               x.slots.some(s=>s.pieces!==x.lockSteps)))
             throw Error('Invalid ROOK vs Kiwi paired KO protocol');
           const scored=rows.filter(x=>x.scored);

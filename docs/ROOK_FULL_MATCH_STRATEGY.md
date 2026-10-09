@@ -270,10 +270,10 @@ Hold 與實際垃圾／消行會使雙方後續可見序列與盤面分歧，這
 
 - `scripts/rook-ko-protocol.js`：共享的 seed 列表、同一 frame
   與初始 NEXT5 驗證、KO／double-KO／capped／invalid 分類。
-- `scripts/rook-vs-rook.js`：預設每場**最多 400 次雙方同步鎖定**；
+- `scripts/rook-vs-rook.js`：預設每場**最多 2000 次雙方同步鎖定**；
   ROOK opener、recovery、belief 實驗和 baseline 都使用同一協議。
-- `scripts/rook-vs-kiwi.js`：預設 400，正式 Kiwi workflow 設定
-  **500 次雙方同步鎖定上限**，兩邊初始 seed 一致，並交換先後位置。
+- `scripts/rook-vs-kiwi.js`：預設 2000，正式 Kiwi workflow 同樣設定
+  **2000 次雙方同步鎖定上限**，兩邊初始 seed 一致，並交換先後位置。
   Kiwi 與 ROOK 的 node 計量不等價，仍需看每決策 CPU。
 - 計分**優先於 cap**：即使恰好最後一回合發生單方 KO，
   仍算有效 KO；雙方同時陣亡只算 `double-KO`；
@@ -281,12 +281,28 @@ Hold 與實際垃圾／消行會使雙方後續可見序列與盤面分歧，這
 - `test/rook-ko-protocol.test.js` 驗證上述重點，包括在安全
   上限當回合的 KO。配對 workflow 驗證兩名玩家 piece count
   和公開 clock 一致、不讓 2 場同 seed 的 slot swap 漏跑。
-- `rook-belief-ablation.yml` 用 400 鎖；`rook-selfplay.yml`
+- `rook-belief-ablation.yml` 用 2000 鎖；`rook-selfplay.yml`
   和 `rook-recovery-ko.yml` 用 400 鎖；
   `rook-ko.yml` 以 4 個不同 seed（每場雙方相同 seed、交換位置）
-  各自打到 KO 或 500 鎖。以前的小 smoke 不能聲稱強度驗收。
+  各自打到 KO 或 2000 鎖。以前的小 smoke 不能聲稱強度驗收。
 
 仍需保留 `scoredKO`、`capped`、`doubleKO`、generated/sent APP、
 收到/抵銷/坦掉的垃圾、KO 原因、CPU／牆上時間等。**沒有 KO 時，
 結論是尚無勝率證據，不是勝率 50% 或實驗通過。**
 最後判強度仍須大量不同 seed、swap 和算力比較，不能單次 KO 就升級。
+
+### 2000 鎖 KO-first 正式安全上限（同日使用者更正）
+
+所有 ROOK vs ROOK／Kiwi 正式強度對局統一每名 Bot 最多 **2000 次鎖定**；
+這是防止極端弱對局永無結果的安全閥，**不是實驗預定長度**。
+雙方繼續同步出牌直到單方 KO、double-KO 或達 2000 鎖上限。
+即使在第 2000 次雙方落子當回合出現單方 KO，也算正式勝利。
+只有仍都存活時才是 `capped`；沒有 KO 的 capped 不得算勝率分母。
+
+`rook-ko-protocol.js` 共用 `DEFAULT_KO_LOCK_CAP=2000`；
+`rook-vs-rook.js` 已移除原本 `limit>1000` 的硬性拒絕，
+兩支對戰腳本允許最高 10000 鎖以便單獨做極限實驗。
+四套 KO CI 工作流程設定 `MAX_LOCKS=2000` 並將每個 match job
+的 wall-clock timeout 提高到 330 分鐘（GitHub Actions 仍可能受服務
+本身的資源／配額限制）。**CI job 因時間／外部資源中止，不算 capped
+或 KO**，需明確標記為未完成，不能選勝方。
