@@ -374,7 +374,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
   futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
   traceRootSurvival=false,traceRootScores=false,beamRootReserve=null,offenseWeight=4.8,
-  includeHoldPlan=false,
+  intermediateHoleRelief=0,includeHoldPlan=false,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
@@ -417,7 +417,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isInteger(beliefReachableStates)||beliefReachableStates<1||
     (beamRootReserve!==null&&(!Number.isInteger(beamRootReserve)||
       beamRootReserve<1||beamRootReserve>beamWidth))||
-    !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24)
+    !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24||
+    !Number.isFinite(intermediateHoleRelief)||
+    intermediateHoleRelief<0||intermediateHoleRelief>1)
     throw Error('invalid search budget');
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+(p.amt??0),0);
@@ -619,7 +621,16 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             recoveryWeight:node.recoveryWeight,
             offenseWeight:node.offenseWeight
           };
-          const evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
+          const discount=Math.pow(.88,ply+1);
+          const evalScore=next.score+evaluateBoard(next.board,next)*discount;
+          // Relax temporary holes ONLY when deciding which intermediate
+          // trajectories survive the beam. The final leaf always uses the
+          // original uncompromised value function and all original rules.
+          const holeShaping=(intermediateHoleRelief>0&&ply+1<clamp)
+            ?intermediateHoleRelief*surface(next.board).holes*8.6*
+              (next.pending>0?1+Math.min(1.5,next.pending/9):1)*discount
+            :0;
+          const beamScore=evalScore+holeShaping;
           if(ply===0&&tsdTacticalProbes>0&&rootAction.kind==='place'&&
              (option.rest[0]==='t'||option.holdValue==='t')){
             const patterns=tsdScaffolds(p.board,visible.rules,{maxMissing:0});
@@ -633,8 +644,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           const hash=boardKey(next.board)+'|'+next.hold+'|'+next.queue.join('')+
             '|'+next.frame+'|'+next.unresolvedGarbage+'|'+JSON.stringify(next.combat);
           const old=transposed.get(hash);
-          if(!old||evalScore>old.evalScore)
-            transposed.set(hash,{...next,evalScore});
+          if(!old||beamScore>(old.beamScore??old.evalScore))
+            transposed.set(hash,{...next,evalScore,beamScore});
         }
         if(evaluated>=reverseBudget)break;
       }
@@ -646,7 +657,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       const hash=boardKey(node.board)+'|'+node.hold+'|'+node.queue.join('')+
         '|'+node.frame+'|'+node.unresolvedGarbage+'|'+JSON.stringify(node.combat);
       const old=transposed.get(hash);
-      if(!old||node.evalScore>old.evalScore)transposed.set(hash,node);
+      if(!old||(node.beamScore??node.evalScore)>
+        (old.beamScore??old.evalScore))transposed.set(hash,node);
       if(ply===0){
         const key=JSON.stringify(node.rootAction);
         const oldRoot=rootChoices.get(key);
@@ -656,7 +668,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     }
     candidates.push(...transposed.values());
     if(!candidates.length)break;
-    candidates.sort((a,b)=>b.evalScore-a.evalScore);
+    candidates.sort((a,b)=>(b.beamScore??b.evalScore)-
+      (a.beamScore??a.evalScore));
     if(garbageBelief&&beliefAttempts<beliefProbes){
       // Re-rank root-diverse uncertain candidates under a shared public
       // hole distribution. Exact enumeration, not a lucky-hole sample.
@@ -685,7 +698,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           beliefOverBudget++;
         }
       }
-      candidates.sort((a,b)=>b.evalScore-a.evalScore);
+      candidates.sort((a,b)=>(b.beamScore??b.evalScore)-
+      (a.beamScore??a.evalScore));
     }
     // Retain several different first moves across depths, rather than
     // allowing one locally smooth but strategically sterile root to consume
@@ -768,7 +782,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       if(beam.length>=beamWidth)beam.pop();
       beam.push(tactical);reserved++;
     }
-    beam.sort((a,b)=>b.evalScore-a.evalScore);
+    beam.sort((a,b)=>(b.beamScore??b.evalScore)-
+      (a.beamScore??a.evalScore));
     if(traceRootSurvival)
       rootSurvival.push({ply:ply+1,roots:[...new Set(beam.map(n=>
         JSON.stringify(n.rootAction)))]});
@@ -793,7 +808,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseBudgetExceeded:reverseReport.stats.budgetExceeded,
     reverseSkippedPressure,reverseThreat,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
-    effectiveDepth:clamp,beamRootReserve,offenseWeight,
+    effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(includeHoldPlan&&result.kind==='hold')
     result.holdPlan=best.rootHoldPlan??null;
