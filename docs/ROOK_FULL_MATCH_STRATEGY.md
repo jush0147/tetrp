@@ -383,3 +383,44 @@ ROOK 選 Hold 但 Kiwi 選落子 4。沒有觀測到普通根 SRS+
 下一步依據真正的 beam survival 分布決定是改善根候選
 剪枝，還是增強未來 reachability、改寫搜索評估。最後
 仍需同等 CPU 下的整局 KO 與 Kiwi 對戰驗收。
+
+
+## 2026-10-09 逐手診斷確認與聚焦式 beam A/B（未通過強度驗收）
+
+兩份實測已完成，不能再將「增加 BFS 次數」視為穩健進步：
+
+1. [SRS+ 9 vs 24 probes KO](https://github.com/jush0147/tetrp/actions/runs/37886562562)：
+   seed 1、8、16、23，兩側同 seed、交換位置，共 8 場全部 KO。
+   24-probe 實驗 4 勝、舊版 4 勝，即獨立 seed 2：2。
+   實驗版累計搜尋約 1,752,043ms，舊版約 1,049,641ms
+   （多約 67%，仍非等算力）。**維持 9 probes 預設。**
+2. [共享局面追蹤](https://github.com/jush0147/tetrp/actions/runs/37886668563)：
+   22 個公開局面有 8 次兩者同手；另 5 次 Kiwi 非 Hold
+   落點在 ROOK 根候選內但未選、5 次 Kiwi Hold 但
+   ROOK 落子、4 次 ROOK Hold 而 Kiwi 落子。
+   `rootSurvival` 詳細記錄顯示，所有這批 Kiwi 候選
+   都留到被觀察的最深 beam。這**不代表同根的其他未來路線
+   被充分搜索**，也不代表棋步評分真有長期正確性。
+
+ROOK 原有的 round-robin 根多樣性會將 `beamWidth=24`
+優先分給 24 種不同第一手，嚴重限制有前途根節點可保留的
+第二、第三種未來路線。因此新增**受控的搜索配置消融**：
+
+- `chooseMove(...,{beamRootReserve:8})` 在每 ply 先保留
+  8 種不同的最好 root，剩下 16 格從全體候選選最好的延伸，
+  可包含同一 root 的多種不同 future。
+  `beamRootReserve:null` 完整保留原有 round-robin 預設。
+- `EXPERT_BEAM=1 EXPERT_BEAM_ROOT_RESERVE=8`：
+  `scripts/rook-vs-rook.js` 僅切換該項；其他 Open、
+  Recovery、Belief、額外 SRS 探測均關閉。
+- `rook-focused-beam-ablation.yml`：4 個 seed x 交換位置，
+  最多 2000 鎖、同步回合、真 KO 才計分，雙方
+  `maxNodes=6000`；記錄 search ms、sent APP、實際
+  nodes 和 KO。即使 node 上限相同，仍需檢驗 CPU 比率。
+- `test/rook-beam.test.js` 覆蓋 baseline 不變性、
+  合法 root witness、budget、資訊邊界和不合法參數。
+
+該實驗結果出現前，**絕對不可將 8-root reserve 改為正式
+預設或宣稱 ROOK 變強**。如果仍無 KO 或等 CPU 收益，
+下一輪優先審查 Hold 決策的價值估算與目前 beam 的
+多步 reward/terminal evaluation，而不是盲目增加 probe。
