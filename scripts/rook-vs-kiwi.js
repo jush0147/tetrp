@@ -8,15 +8,23 @@ import {chooseMove} from '../src/analysis/rook.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
+import {diagnosePublicChoice} from './rook-choice-diagnostics.js';
 
 const kiwiBudget=Number(process.env.KIWI_NODES??200000);
 const rookBudget=Number(process.env.ROOK_NODES??6000);
 const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
+const diagnosticsEnabled=process.env.ROOK_DIAG==='1';
+const diagnosticTurns=(process.env.ROOK_DIAG_TURNS??'0,4,8,12,20,30')
+  .split(',').map(Number);
+const diagnosticSet=new Set(diagnosticTurns);
 const seeds=parseMatchSeeds({...process.env,
   SEED_A:process.env.SEED_A??'67000',SEED_B:process.env.SEED_B??'67001'});
 if(!Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000||
   !Number.isSafeInteger(rookBudget)||rookBudget<1||
-  !Number.isSafeInteger(limit)||limit<1||limit>10000)throw Error('invalid KO configuration');
+  !Number.isSafeInteger(limit)||limit<1||limit>10000||
+  diagnosticTurns.some(n=>!Number.isSafeInteger(n)||n<0)||
+  diagnosticSet.size!==diagnosticTurns.length)
+  throw Error('invalid KO configuration');
 
 await init({module_or_path:readFileSync(new URL('../vendor/kiwi-v1/pkg/cold_clear_2_bg.wasm',import.meta.url))});
 
@@ -99,7 +107,7 @@ function runPair(seed,order){
   assertMatchingOpening(demos);
   const original=demos.map(d=>d.view().visible);
   let transfers=[],lockSteps=0,searchNodes=[0,0],
-    holdMoves=[0,0],searchMs=[0,0],error=null;
+    holdMoves=[0,0],searchMs=[0,0],error=null,diagnostics=[];
   try{
     while(lockSteps<limit&&demos.every(d=>d.engine.state.playing)){
       // No side sees the other side's future move or its unrevealed garbage.
@@ -111,6 +119,15 @@ function runPair(seed,order){
       transfers=[];
       if(demos.some(d=>!d.engine.state.playing))break;
       const turnFrame=assertSimultaneousPair(demos);
+      if(diagnosticsEnabled&&order===0&&diagnosticSet.has(lockSteps)){
+        // Compare BOTH policies against the SAME public state from a live
+        // authority match. No hidden opponent queue or checkpoint provided.
+        const slots=lockSteps===0?[0]:[0,1];
+        for(const slot of slots)
+          diagnostics.push(diagnosePublicChoice(demos[slot].view().visible,{
+            rookOptions:botOptions,kiwiBudget,analyzeSnapshot:analyze_snapshot_json,
+            seed,turn:lockSteps,owner:kinds[slot]}));
+      }
       const plans=[];
       for(let i=0;i<2;i++){
         const plan=prepareUntilPlace(demos[i],kinds[i]);
@@ -141,10 +158,14 @@ function runPair(seed,order){
     error,winnerSlot:result.winnerSlot,
     winner:result.scored?kinds[result.winnerSlot]:null,
     slots:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i])),
-    initialVisibleNext:original.map(v=>v.next)};
+    initialVisibleNext:original.map(v=>v.next),
+    ...(diagnosticsEnabled?{diagnostics}: {})};
 }
 // An independent seed is played twice, with ROOK / Kiwi swapping slots.
 const results=seeds.flatMap(seed=>[runPair(seed,0),runPair(seed,1)]);
 for(const result of results)process.stdout.write(JSON.stringify(result)+'\n');
+if(diagnosticsEnabled&&process.env.ROOK_DIAG_PATH)
+  writeFileSync(process.env.ROOK_DIAG_PATH,
+    results.flatMap(r=>r.diagnostics).map(r=>JSON.stringify(r)).join('\n')+'\n');
 if(process.env.RESULTS_PATH)writeFileSync(process.env.RESULTS_PATH,JSON.stringify(results,null,2)+'\n');
 // No artificial winner. Invalid/capped games remain explicit and unscored.
