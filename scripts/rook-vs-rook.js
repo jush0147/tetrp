@@ -12,6 +12,10 @@ const budget=Number(process.env.ROOK_NODES??6000);
 const candidateBudget=Number(process.env.ROOK_CANDIDATE_NODES??budget);
 const baselineBudget=Number(process.env.ROOK_BASELINE_NODES??budget);
 const budgetScaling=process.env.BUDGET_SCALING==='1';
+const candidateDepth=Number(process.env.ROOK_CANDIDATE_DEPTH??4);
+const baselineDepth=Number(process.env.ROOK_BASELINE_DEPTH??4);
+const candidateBeamWidth=Number(process.env.ROOK_CANDIDATE_BEAM??24);
+const baselineBeamWidth=Number(process.env.ROOK_BASELINE_BEAM??24);
 // SEED_A / SEED_B now designate two independent, matched-seed trials.
 const seeds=parseMatchSeeds();
 const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
@@ -40,6 +44,10 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isSafeInteger(budget)||budget<1||
   !Number.isSafeInteger(candidateBudget)||candidateBudget<1||candidateBudget>2000000||
   !Number.isSafeInteger(baselineBudget)||baselineBudget<1||baselineBudget>2000000||
+  !Number.isInteger(candidateDepth)||candidateDepth<1||candidateDepth>5||
+  !Number.isInteger(baselineDepth)||baselineDepth<1||baselineDepth>5||
+  !Number.isInteger(candidateBeamWidth)||candidateBeamWidth<1||candidateBeamWidth>128||
+  !Number.isInteger(baselineBeamWidth)||baselineBeamWidth<1||baselineBeamWidth>128||
   !Number.isSafeInteger(openTiles)||openTiles<1||
   !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4||
   !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
@@ -80,7 +88,10 @@ function select(demo,open){
     if(view.visible.next.length!==5)throw Error('Visible NEXT5 contract violated');
     const started=performance.now();
     const searchBudget=open?candidateBudget:baselineBudget;
+    const searchDepth=open?candidateDepth:baselineDepth;
+    const searchBeam=open?candidateBeamWidth:baselineBeamWidth;
     const report=chooseMove(view.visible,{...base,maxNodes:searchBudget,
+      depth:searchDepth,beamWidth:searchBeam,
       reversePlanner:open&&expertOpen,
       garbageRecovery:open&&expertRecovery,
       garbageRecoveryWeight:recoveryWeight,
@@ -236,7 +247,8 @@ function pairedGame(seed,swap){
     // Preserve old nodeBudget only when both sides share the same cap.
     nodeBudget:candidateBudget===baselineBudget?budget:null,
     budgetScaling,candidateNodeBudget:candidateBudget,
-    baselineNodeBudget:baselineBudget,
+    baselineNodeBudget:baselineBudget,candidateDepth,baselineDepth,
+    candidateBeamWidth,baselineBeamWidth,
     budgetsByKind:{[expertKind]:candidateBudget,baseline:baselineBudget},
     extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
@@ -247,7 +259,9 @@ function pairedGame(seed,swap){
     winner:result.scored?kinds[result.winnerSlot]:null,
     checkpoints,slots:demos.map((d,i)=>({
       ...summary(d,kinds[i],totals[i]),
-      configuredNodeBudget:kinds[i]===expertKind?candidateBudget:baselineBudget
+      configuredNodeBudget:kinds[i]===expertKind?candidateBudget:baselineBudget,
+      configuredDepth:kinds[i]===expertKind?candidateDepth:baselineDepth,
+      configuredBeamWidth:kinds[i]===expertKind?candidateBeamWidth:baselineBeamWidth
     }))};
 }
 // Independent seeds give distinct games; each seed is repeated with the
