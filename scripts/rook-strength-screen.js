@@ -17,7 +17,10 @@ const options={depth:Number(process.env.ROOK_DEPTH??4),
   reversePlanner:process.env.ROOK_REVERSE_PLANNER==='1',
   reverseMaxCandidates:Number(process.env.ROOK_REVERSE_CANDIDATES??250),
   reverseLongMaxCandidates:Number(process.env.ROOK_REVERSE_LONG_CANDIDATES??600),
-  reverseLongMaxGoals:Number(process.env.ROOK_REVERSE_LONG_GOALS??15)};
+  reverseLongMaxGoals:Number(process.env.ROOK_REVERSE_LONG_GOALS??15),
+  reverseOpenMaxGoals:Number(process.env.ROOK_REVERSE_OPEN_GOALS??8),
+  reverseOpenMaxTileNodes:Number(process.env.ROOK_REVERSE_OPEN_TILES??1200),
+  reverseOpenMaxProofs:Number(process.env.ROOK_REVERSE_OPEN_PROOFS??12)};
 if(!seeds.length||seeds.some(x=>!Number.isSafeInteger(x))||
   !Number.isSafeInteger(count)||count<1||count>1000)throw Error('invalid strength screen');
 for(const seed of seeds){
