@@ -234,8 +234,11 @@ function surface(board){
     covered:covered.reduce((a,b)=>a+b,0),rough,transitions,well,tetrisReady,tetrisConstruction,tspots,filled,garbage};
 }
 
-function evaluateBoard(board,ctx){
+function evaluateBoard(board,ctx,details=null){
   const a=surface(board),danger=ctx.pending>0?1+Math.min(1.5,ctx.pending/9):1;
+  // Optional out-parameter reuses the surface scan for experimental beam
+  // ranking. In the default evaluator this allocates nothing extra.
+  if(details){details.holes=a.holes;details.danger=danger;}
   const urgency=Math.max(0,a.max-(board.height+board.buffer-18));
   const recovery=ctx.recoveryActive
     ?recoveryBoardPenalty(a,{pending:ctx.pending,weight:ctx.recoveryWeight})
@@ -622,13 +625,15 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             offenseWeight:node.offenseWeight
           };
           const discount=Math.pow(.88,ply+1);
-          const evalScore=next.score+evaluateBoard(next.board,next)*discount;
+          const holeDetails=(intermediateHoleRelief>0&&ply+1<clamp)?{}:null;
+          const evalScore=next.score+
+            evaluateBoard(next.board,next,holeDetails)*discount;
           // Relax temporary holes ONLY when deciding which intermediate
           // trajectories survive the beam. The final leaf always uses the
           // original uncompromised value function and all original rules.
-          const holeShaping=(intermediateHoleRelief>0&&ply+1<clamp)
-            ?intermediateHoleRelief*surface(next.board).holes*8.6*
-              (next.pending>0?1+Math.min(1.5,next.pending/9):1)*discount
+          const holeShaping=holeDetails
+            ?intermediateHoleRelief*holeDetails.holes*8.6*
+              holeDetails.danger*discount
             :0;
           const beamScore=evalScore+holeShaping;
           if(ply===0&&tsdTacticalProbes>0&&rootAction.kind==='place'&&
