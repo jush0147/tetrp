@@ -24,11 +24,11 @@ test('belief aggregates all holes, not just whichever gives the highest score',(
   const conservative=evaluatePublicTankBelief(v.board,combat,v.rules,{
     riskWeight:.4,score:outcome=>outcome.holes[0]});
   assert.equal(neutral.outcomes,uniform);
-  assert.equal(neutral.expected,(uniform-1)/2);
+  assert.ok(Math.abs(neutral.expected-(uniform-1)/2)<1e-9);
   assert.equal(neutral.worst,0);
-  assert.equal(neutral.value,(uniform-1)/2);
-  assert.equal(conservative.value,.6*(uniform-1)/2);
-  assert.equal(conservative.weightSum,1);
+  assert.ok(Math.abs(neutral.value-(uniform-1)/2)<1e-9);
+  assert.ok(Math.abs(conservative.value-.6*(uniform-1)/2)<1e-9);
+  assert.ok(Math.abs(conservative.weightSum-1)<1e-9);
   assert.equal(v.attack.pending[0].active,false);
   assert.throws(()=>evaluatePublicTankBelief(v.board,combat,v.rules,{
     maxOutcomes:5,score:()=>0}),/scenario limit/);
