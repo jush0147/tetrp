@@ -13,7 +13,7 @@ permissions:
 jobs:
   pressure-ko:
     runs-on: ubuntu-22.04
-    timeout-minutes: 25
+    timeout-minutes: 80
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -36,7 +36,7 @@ jobs:
         env:
           SEED_A: ${{ matrix.seed_a }}
           SEED_B: ${{ matrix.seed_b }}
-          MAX_LOCKS: '180'
+          MAX_LOCKS: '400'
           ROOK_NODES: '6000'
           EXPERT_OPEN: '0'
           EXPERT_RECOVERY: '1'
@@ -48,10 +48,13 @@ jobs:
           import {readFileSync} from 'node:fs';
           const rows=readFileSync('rook-recovery-${{ matrix.seed_a }}-${{ matrix.seed_b }}.jsonl','utf8')
             .trim().split('\n').map(JSON.parse);
-          if(rows.length!==2||rows[0].swap||!rows[1].swap||
-            rows.some(x=>x.error||x.termination==='invalid-match'||
-              !x.expertRecovery||x.expertOpen||x.expertLabel!=='recovery-only'||
-              x.nodeBudget!==6000||x.slots.some(s=>s.pieces<1)))
+          if(rows.length!==4||rows.some((x,i)=>x.swap!==Boolean(i%2)||
+              x.error||x.termination==='invalid-match'||
+              !x.sameSeed||!x.simultaneousLocks||x.seeds[0]!==x.seeds[1]||
+              !x.expertRecovery||x.expertOpen||x.expertLabel!=='recovery'||
+              x.nodeBudget!==6000||x.cap!==400||
+              x.scored!==(x.termination==='KO')||
+              x.slots.some(s=>s.pieces!==x.turns||s.pieces<1)))
             throw Error('Invalid recovery-only, public-Tetrp paired KO protocol');
           JS
       - uses: actions/upload-artifact@v4
@@ -79,10 +82,10 @@ jobs:
               if(x.error||x.termination==='invalid-match')
                 throw Error('Invalid matched Tetrp game: '+pair);
               games.push({seeds:x.seeds,swap:x.swap,
-                winner:x.scored?(x.winner==='opener'?'recovery':'baseline'):null,
+                winner:x.scored?x.winner:null,
                 termination:x.termination,turns:x.turns,scored:x.scored,
                 baseline:x.slots.find(s=>s.kind==='baseline'),
-                recovery:x.slots.find(s=>s.kind==='opener'),
+                recovery:x.slots.find(s=>s.kind==='recovery'),
                 checkpoints:x.checkpoints});
             }
           const wins=name=>games.filter(g=>g.winner===name).length;
