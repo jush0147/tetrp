@@ -4,9 +4,14 @@ on:
     branches: [feat/rook-independent-bot]
     paths:
       - scripts/rook-stress-diagnostics.js
-      - src/analysis/rook.js
+      # Re-run stored-state diagnostics when the diagnostic tool changes,
+      # not after every unrelated core search or documentation update.
       - .github/workflows/rook-real-ko-public-stress.yml
   workflow_dispatch:
+# Only the newest queued trial of a workflow/branch needs CPU.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
   actions: read

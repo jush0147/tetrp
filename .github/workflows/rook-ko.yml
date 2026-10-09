@@ -3,13 +3,16 @@ on:
   push:
     branches: [feat/rook-independent-bot]
     paths:
-      - src/analysis/rook.js
-      - src/analysis/rook-tsd.js
-      - src/analysis/demo.js
+      # Heavy Kiwi baseline runs only on protocol/benchmark changes.
+      # Candidate strategy changes receive their own gated KO experiment.
       - scripts/rook-vs-kiwi.js
       - scripts/rook-ko-protocol.js
       - .github/workflows/rook-ko.yml
   workflow_dispatch:
+# Only the newest queued trial of a workflow/branch needs CPU.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
