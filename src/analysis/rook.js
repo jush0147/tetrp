@@ -7,6 +7,7 @@ import spinTables from '../data/spins.json' with { type: 'json' };
 import {tsdScaffolds} from './rook-tsd.js';
 import {searchReverseAttacks} from './rook-reverse-planner.js';
 import {searchLongReverseAttacks} from './rook-long-planner.js';
+import {searchOpenTSD} from './rook-open-slot.js';
 
 const ACTIONS=['moveLeft','moveRight','rotateCW','rotateCCW','rotate180','down'];
 const DIR={rotateCW:1,rotateCCW:3,rotate180:2};
@@ -269,7 +270,8 @@ const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').jo
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
-  reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10}={}){
+  reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
+  reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -302,11 +304,16 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     pending,combat:visibleCombat(visible),score:0,rootAction:null};
   // M1 inverse attack goal portfolio: only verified SRS+ continuations.
   // This experimental module stays opt-in until APP and KO improve.
-  // Its setup-candidate work is charged against the nominal search budget.
+  // Optional tactical CPU is tracked separately from the ordinary beam budget.
   const firstT=queue.indexOf('t');
   const reverseEligible=reversePlanner&&depth>=2&&firstT>=1&&firstT<=5&&
     Number.isInteger(reverseMaxCandidates)&&reverseMaxCandidates>0;
-  const reverseReport=reverseEligible?(firstT<=2
+  const reverseReport=reverseEligible?(firstT>=1&&firstT<=5&&
+    visible.board.rows.reduce((n,row)=>n+row.filter(v=>v!==null).length,0)<=20
+    ?searchOpenTSD(visible,{maxGoals:reverseOpenMaxGoals,
+      maxTileNodes:reverseOpenMaxTileNodes,maxProofs:reverseOpenMaxProofs,
+      maxStates:Math.max(1800,maxStates),maxPlans:reverseMaxPlans})
+    :firstT<=2
     ?searchReverseAttacks(visible,{
       targets:['TSS','TSD','TST'],maxGoals:reverseMaxGoals,
       maxCandidates:Math.min(maxNodes,reverseMaxCandidates),
@@ -514,7 +521,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     forecastedSpinClears,tsdProbes,tsdProven,
     reverseGoals:reverseReport.stats.goals,
     reversePlans:reverseReport.plans.length,
-    reverseCandidates:reverseReport.stats.setupCandidates,
+    reverseCandidates:reverseReport.stats.setupCandidates??reverseReport.stats.tileNodes??0,
+    reverseTilings:reverseReport.stats.tilings??0,
     reverseProbes:reverseReport.stats.forwardProofs,
     reverseSelectedGoal:best.tacticalGoal??null,reverseBudget,
     reverseBudgetExceeded:reverseReport.stats.budgetExceeded,
