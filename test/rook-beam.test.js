@@ -35,3 +35,22 @@ test('invalid reserve cannot silently overwrite beam width',()=>{
   assert.throws(()=>chooseMove(v,{...cfg,beamRootReserve:0}),/invalid search budget/);
   assert.throws(()=>chooseMove(v,{...cfg,beamRootReserve:25}),/invalid search budget/);
 });
+
+// Global attack reward ablation must be opt-in and may not silently alter the
+// default ranking; it cannot depend on hidden future pieces or RNG.
+test('offense weight preserves baseline and rejects invalid values',()=>{
+  const e=new Engine({mode:'tl',seed:67023,rules:{g:0}});
+  e.state.hold.locked=true;
+  const v=visibleState(e.state);
+  const cfg={depth:3,beamWidth:12,maxNodes:1200,maxStates:450,
+    spinForecast:false,futureReachableProbes:2};
+  const original=chooseMove(v,cfg);
+  assert.deepEqual(chooseMove(v,{...cfg,offenseWeight:4.8}),original);
+  const varied=chooseMove(v,{...cfg,offenseWeight:7.2});
+  assert.equal(varied.diagnostics.offenseWeight,7.2);
+  assert.equal(original.diagnostics.offenseWeight,4.8);
+  for(const bad of [-1,25,Infinity,NaN]){
+    assert.throws(()=>chooseMove(v,{...cfg,offenseWeight:bad}),
+      /invalid search budget/);
+  }
+});

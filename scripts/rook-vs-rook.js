@@ -16,6 +16,8 @@ const expertRecovery=process.env.EXPERT_RECOVERY==='1';
 const expertBelief=process.env.EXPERT_BELIEF==='1';
 const expertFuture=process.env.EXPERT_FUTURE==='1';
 const expertBeam=process.env.EXPERT_BEAM==='1';
+const expertOffense=process.env.EXPERT_OFFENSE==='1';
+const offenseWeight=Number(process.env.EXPERT_OFFENSE_WEIGHT??7.2);
 const beamRootReserve=Number(process.env.EXPERT_BEAM_ROOT_RESERVE??8);
 const futureProbes=Number(process.env.EXPERT_FUTURE_PROBES??24);
 const futureStates=Number(process.env.EXPERT_FUTURE_STATES??800);
@@ -24,7 +26,7 @@ const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
 const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBelief?'belief':null,expertFuture?'future-srs':null,
-  expertBeam?'focused-beam':null]
+  expertBeam?'focused-beam':null,expertOffense?'offense-weight':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
 if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
@@ -35,7 +37,8 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100||
   !Number.isInteger(futureProbes)||futureProbes<0||futureProbes>100||
   !Number.isInteger(futureStates)||futureStates<1||futureStates>10000||
-  !Number.isInteger(beamRootReserve)||beamRootReserve<1||beamRootReserve>24)
+  !Number.isInteger(beamRootReserve)||beamRootReserve<1||beamRootReserve>24||
+  !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24)
   throw Error('Invalid ROOK self-play configuration');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
@@ -61,6 +64,7 @@ function select(demo,open){
       futureReachableProbes:open&&expertFuture?futureProbes:9,
       futureReachableStates:open&&expertFuture?futureStates:800,
       beamRootReserve:open&&expertBeam?beamRootReserve:null,
+      offenseWeight:open&&expertOffense?offenseWeight:4.8,
       beliefProbes,beliefMaxOutcomes});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
@@ -173,8 +177,8 @@ function pairedGame(seed,swap){
   return {format:'rook-paired-tetrp-ko/2',seed,seeds:[seed,seed],swap,kinds,
     sameSeed:true,simultaneousLocks:true,pps:2.5,
     nodeBudget:budget,extraOpenerCPU:expertOpen,expertLabel,
-    expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,
-    beamRootReserve,futureProbes,futureStates,
+    expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
+    offenseWeight,beamRootReserve,futureProbes,futureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,

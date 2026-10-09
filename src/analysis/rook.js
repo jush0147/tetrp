@@ -279,7 +279,7 @@ function applyPlacement(node,placement,rules){
   const recoveryReward=node.recoveryActive
     ?clearedGarbageReward(garbageRows,{maxHeight:beforeMax,
       pending:node.pending,weight:node.recoveryWeight}):0;
-  const reward=recoveryReward+attack.offensive*4.8+attack.defensive*5.1+
+  const reward=recoveryReward+attack.offensive*(node.offenseWeight??4.8)+attack.defensive*5.1+
     (placement.spin==='full'&&full.length?2.1:0)+
     (allClear?12:0)+(full.length&&attack.btb>0?1.0:0)-
     (lockout?100000:0)-placement.softdrop*.035;
@@ -337,7 +337,7 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
   futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
-  traceRootSurvival=false,beamRootReserve=null,
+  traceRootSurvival=false,beamRootReserve=null,offenseWeight=4.8,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
@@ -379,7 +379,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isFinite(beliefRiskWeight)||beliefRiskWeight<0||beliefRiskWeight>1||
     !Number.isInteger(beliefReachableStates)||beliefReachableStates<1||
     (beamRootReserve!==null&&(!Number.isInteger(beamRootReserve)||
-      beamRootReserve<1||beamRootReserve>beamWidth)))
+      beamRootReserve<1||beamRootReserve>beamWidth))||
+    !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24)
     throw Error('invalid search budget');
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+(p.amt??0),0);
@@ -395,7 +396,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     btb:visible.attack?.btb??0,multiplier:visible.attack?.multiplier??1,
     pending,combat:visibleCombat(visible),frame:visible.frame,
     unresolvedGarbage:false,forecastTank:0,score:0,rootAction:null,
-    recoveryActive,recoveryWeight:garbageRecoveryWeight};
+    recoveryActive,recoveryWeight:garbageRecoveryWeight,
+    offenseWeight};
   // M1 inverse attack goal portfolio: only verified SRS+ continuations.
   // This experimental module stays opt-in until APP and KO improve.
   // Optional tactical CPU is tracked separately from the ordinary beam budget.
@@ -560,7 +562,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
             tacticalGoal:node.tacticalGoal??null,
             recoveryActive:node.recoveryActive,
-            recoveryWeight:node.recoveryWeight
+            recoveryWeight:node.recoveryWeight,
+            offenseWeight:node.offenseWeight
           };
           const evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
           if(ply===0&&tsdTacticalProbes>0&&rootAction.kind==='place'&&
@@ -736,7 +739,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseBudgetExceeded:reverseReport.stats.budgetExceeded,
     reverseSkippedPressure,reverseThreat,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
-    effectiveDepth:clamp,beamRootReserve,
+    effectiveDepth:clamp,beamRootReserve,offenseWeight,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(traceRootSurvival)result.rootSurvival=rootSurvival;
   if(includeRanked){
