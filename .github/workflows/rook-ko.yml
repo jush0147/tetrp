@@ -1,4 +1,4 @@
-name: ROOK vs pinned Kiwi Tetrp KO
+name: ROOK vs pinned Kiwi full Tetrp KO
 on:
   push:
     branches: [feat/rook-independent-bot]
@@ -7,78 +7,90 @@ on:
       - src/analysis/rook-tsd.js
       - src/analysis/demo.js
       - scripts/rook-vs-kiwi.js
+      - scripts/rook-ko-protocol.js
       - .github/workflows/rook-ko.yml
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  protocol-smoke:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 12
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Both bots play the same synchronous Tetrp authority
-        env:
-          KIWI_NODES: '6000'
-          ROOK_NODES: '2500'
-          MAX_LOCKS: '8'
-          SEED_A: '67000'
-          SEED_B: '67001'
-        run: |
-          node scripts/rook-vs-kiwi.js > rook-vs-kiwi-smoke.jsonl
-          cat rook-vs-kiwi-smoke.jsonl
-          node --input-type=module -e '
-            import fs from "node:fs";
-            const rows=fs.readFileSync("rook-vs-kiwi-smoke.jsonl","utf8").trim().split("\n").map(JSON.parse);
-            if(rows.length!==2||rows.some(x=>x.error||!x.lockSteps||x.slots.some(s=>s.pieces!==x.lockSteps)))
-              throw Error("invalid synchronous-match smoke");
-          '
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: rook-kiwi-smoke
-          path: rook-vs-kiwi-smoke.jsonl
-          retention-days: 30
   paired-ko:
-    needs: protocol-smoke
     runs-on: ubuntu-22.04
     timeout-minutes: 80
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        pair: [0,1]
+        seed: [67020,67021,67022,67023]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Matched asymmetric seed pair with swapped slots
+      - name: Same-seed synchronous ROOK vs Kiwi until KO or 500-turn safety cap
         env:
+          SEEDS: ${{ matrix.seed }}
           KIWI_NODES: '200000'
           ROOK_NODES: '6000'
-          MAX_LOCKS: '600'
+          MAX_LOCKS: '500'
         run: |
           set -eu
-          export SEED_A=$((67020 + ${{ matrix.pair }} * 2))
-          export SEED_B=$((SEED_A + 1))
-          node scripts/rook-vs-kiwi.js > "ko-pair-${{ matrix.pair }}.jsonl" 2> "ko-pair-${{ matrix.pair }}.progress"
-          cat "ko-pair-${{ matrix.pair }}.jsonl"
-          node --input-type=module -e '
-            import fs from "node:fs";
-            const rows=fs.readFileSync("ko-pair-${{ matrix.pair }}.jsonl","utf8").trim().split("\n").map(JSON.parse);
-            if(rows.length!==2||rows.some(x=>x.error))throw Error("KO pair contains an invalid match; do not count wins");
-            const wins=rows.filter(x=>x.scored).map(x=>x.winner);
-            console.log(JSON.stringify({scored:wins.length,rook:wins.filter(w=>w==="rook").length,kiwi:wins.filter(w=>w==="kiwi").length,unscored:2-wins.length}));
-          '
+          node scripts/rook-vs-kiwi.js > "kiwi-ko-${{ matrix.seed }}.jsonl" 2> "kiwi-ko-${{ matrix.seed }}.progress"
+          cat "kiwi-ko-${{ matrix.seed }}.jsonl"
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('kiwi-ko-${{ matrix.seed }}.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].order!==0||rows[1].order!==1||
+            rows.some(x=>x.error||x.seed!==Number('${{ matrix.seed }}')||
+              !x.sameSeed||!x.simultaneousLocks||x.seeds[0]!==x.seeds[1]||
+              x.cap!==500||x.scored!==(x.termination==='KO')||
+              x.slots.some(s=>s.pieces!==x.lockSteps)))
+            throw Error('Invalid ROOK vs Kiwi paired KO protocol');
+          const scored=rows.filter(x=>x.scored);
+          console.log(JSON.stringify({seed:Number('${{ matrix.seed }}'),
+            scored:scored.length,rookWins:scored.filter(x=>x.winner==='rook').length,
+            kiwiWins:scored.filter(x=>x.winner==='kiwi').length,
+            capped:rows.filter(x=>x.termination==='capped').length,
+            doubleKO:rows.filter(x=>x.termination==='double-KO').length,
+            cpuEquivalent:false}));
+          JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rook-kiwi-ko-pair-${{ matrix.pair }}
+          name: rook-kiwi-ko-${{ matrix.seed }}
           path: |
-            ko-pair-${{ matrix.pair }}.jsonl
-            ko-pair-${{ matrix.pair }}.progress
+            kiwi-ko-${{ matrix.seed }}.jsonl
+            kiwi-ko-${{ matrix.seed }}.progress
+          retention-days: 30
+  report:
+    needs: paired-ko
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-kiwi-ko-*
+          merge-multiple: true
+      - name: Count only actual KO wins, never capped or double-KO
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const rows=[67020,67021,67022,67023].flatMap(seed=>
+            readFileSync('kiwi-ko-'+seed+'.jsonl','utf8').trim().split('\n').map(JSON.parse));
+          if(rows.length!==8||rows.some(r=>r.error||
+            r.scored!==(r.termination==='KO')||!r.sameSeed))
+            throw Error('Invalid full-match KO report');
+          const ko=rows.filter(r=>r.scored);
+          const stats={protocol:'same-seed-synchronous-Tetrp-full-KO-v2',
+            games:rows.length,scoredKO:ko.length,rookWins:ko.filter(r=>r.winner==='rook').length,
+            kiwiWins:ko.filter(r=>r.winner==='kiwi').length,
+            capped:rows.filter(r=>r.termination==='capped').length,
+            doubleKO:rows.filter(r=>r.termination==='double-KO').length,
+            cpuEquivalent:false,kiwiNodeBudget:200000,rookEvaluationBudget:6000,
+            details:rows};
+          writeFileSync('rook-kiwi-ko-summary.json',JSON.stringify(stats,null,2)+'\n');
+          console.log(JSON.stringify({...stats,details:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-kiwi-ko-summary
+          path: rook-kiwi-ko-summary.json
           retention-days: 30
