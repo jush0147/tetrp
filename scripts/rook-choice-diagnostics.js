@@ -26,7 +26,7 @@ export function diagnosePublicChoice(visible,{
   const source=JSON.stringify(visible);
   const startRook=performance.now();
   const rook=chooseMove(visible,{...rookOptions,includeRanked:true,
-    traceRootSurvival:true});
+    traceRootSurvival:true,traceRootScores:true});
   const rookMs=performance.now()-startRook;
   const prepared=prepareKiwi(visible);
   prepared.request.node_budget=kiwiBudget;
@@ -58,6 +58,25 @@ export function diagnosePublicChoice(visible,{
   const comparison=classifyRootDisagreement({
     rookChosen:rook.ranked[0],rookRanked:rook.ranked,kiwiChosen:kiwi,
     normalReachable,expandedReachable,rootSurvival:rook.rootSurvival});
+  const chosenRoot=rook.rootScores.find(r=>
+    actionSignature(r.action)===comparison.rookKey)??null;
+  const kiwiRoot=rook.rootScores.find(r=>
+    actionSignature(r.action)===comparison.kiwiKey)??null;
+  const compact=root=>root?{
+    score:root.leaf.total,rootScore:root.rootScore,
+    first:root.first,depth:root.leaf.ply,
+    rewards:root.leaf.cumulativeReward,
+    boardValue:root.leaf.board.boardValue,
+    discountedBoard:root.leaf.discountedBoardValue,
+    features:root.leaf.board.features,
+    terms:root.leaf.board.terms,
+    boardError:root.leaf.board.reconstructionError,
+    valueError:root.leaf.valueReconstructionError}:null;
+  const rootComparison={chosen:compact(chosenRoot),
+    kiwi:compact(kiwiRoot),
+    scoreGap:chosenRoot&&kiwiRoot?
+      chosenRoot.leaf.total-kiwiRoot.leaf.total:null,
+    kiwiRootInFinalBeam:Boolean(kiwiRoot)};
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+p.amt,0);
   return {format:'rook-kiwi-public-choice-diff/1',seed,turn,owner,frame:visible.frame,
@@ -75,5 +94,6 @@ export function diagnosePublicChoice(visible,{
     lastSurvived:comparison.lastSurvived,
     maxSurvivedPly:comparison.maxSurvivedPly,
     normalReachable:comparison.normalReachable,
-    expandedReachable:comparison.expandedReachable};
+    expandedReachable:comparison.expandedReachable,
+    rootComparison};
 }

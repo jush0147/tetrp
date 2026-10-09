@@ -7,6 +7,8 @@ on:
       - scripts/rook-choice-diagnostics.js
       - scripts/rook-vs-kiwi.js
       - test/rook-disagreement.test.js
+      - test/rook-root-scores.test.js
+      - src/analysis/rook.js
       - .github/workflows/rook-choice-diagnostics.yml
   workflow_dispatch:
 permissions:
@@ -21,7 +23,7 @@ jobs:
         with:
           node-version: '22'
       - name: Test exact action identity and cause classifications
-        run: node --test test/rook-disagreement.test.js
+        run: node --test test/rook-disagreement.test.js test/rook-root-scores.test.js
       - name: Compare both bots on identical public states sampled inside full KO
         env:
           SEEDS: '67020,67023'
@@ -47,9 +49,25 @@ jobs:
             throw Error('Missing public-state comparisons');
           const categories=Object.fromEntries([...new Set(rows.map(r=>r.classification))]
             .map(kind=>[kind,rows.filter(r=>r.classification===kind).length]));
-          const report={format:'rook-kiwi-shared-position-diagnostic/1',
+          const paired=rows.filter(r=>r.rootComparison?.kiwi&&
+            r.rootComparison?.chosen&&r.classification!=='agreement');
+          const mean=(f)=>paired.length?paired.reduce((s,r)=>s+f(r),0)/paired.length:null;
+          const gapByTerm={};
+          for(const key of Object.keys(paired[0]?.rootComparison?.chosen?.terms??{})){
+            gapByTerm[key]=mean(r=>
+              r.rootComparison.chosen.terms[key]-r.rootComparison.kiwi.terms[key]);
+          }
+          const report={format:'rook-kiwi-shared-position-diagnostic/2',
             matchSeeds:[67020,67023],positions:rows.length,categories,
             same:rows.filter(r=>r.classification==='agreement').length,
+            decomposedPositions:paired.length,
+            meanChosenMinusKiwiScore:mean(r=>r.rootComparison.scoreGap),
+            meanChosenMinusKiwiBoard:mean(r=>
+              r.rootComparison.chosen.discountedBoard-
+              r.rootComparison.kiwi.discountedBoard),
+            meanChosenMinusKiwiCumulativeRewards:mean(r=>
+              r.rootComparison.chosen.rewards-r.rootComparison.kiwi.rewards),
+            meanBoardTermGap:gapByTerm,
             mismatch:rows.filter(r=>r.classification!=='agreement').length,
             games:matches.map(m=>({seed:m.seed,order:m.order,termination:m.termination,
               winner:m.winner,locks:m.lockSteps})),

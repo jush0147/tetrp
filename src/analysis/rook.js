@@ -250,6 +250,42 @@ function evaluateBoard(board,ctx){
     +Math.min(10,ctx.btb)*.75 +Math.min(5,ctx.combo)*.43;
 }
 
+// Explainability path only; the hot-path evaluator above is unchanged.
+// Independently reconstruct all board-score components for each finalist.
+export function explainBoardEvaluation(board,ctx){
+  const a=surface(board),danger=ctx.pending>0?1+Math.min(1.5,ctx.pending/9):1;
+  const urgency=Math.max(0,a.max-(board.height+board.buffer-18));
+  const recovery=ctx.recoveryActive
+    ?recoveryBoardPenalty(a,{pending:ctx.pending,weight:ctx.recoveryWeight})
+    :0;
+  const terms={
+    recovery:-recovery,
+    holes:-a.holes*8.6*danger,
+    covered:-a.covered*.27*danger,
+    height:-a.max*1.05,
+    roughness:-a.rough*.42,
+    transitions:-a.transitions*.16,
+    highStack:-Math.max(0,a.max-12)*.35*danger,
+    urgency:-urgency*urgency*2.5*danger,
+    well:Math.min(5,a.well)*.38,
+    tSpots:Math.min(4,a.tspots)*.85,
+    tetrisReady:a.tetrisReady*a.tetrisReady*.55,
+    tetrisConstruction:a.tetrisConstruction*4.2,
+    garbage:-a.garbage*.04,
+    btb:Math.min(10,ctx.btb)*.75,
+    combo:Math.min(5,ctx.combo)*.43,
+  };
+  const boardValue=evaluateBoard(board,ctx);
+  const reconstructed=Object.values(terms).reduce((sum,v)=>sum+v,0);
+  return {boardValue,reconstructed,reconstructionError:reconstructed-boardValue,
+    features:{height:a.max,holes:a.holes,covered:a.covered,
+      rough:a.rough,transitions:a.transitions,tSpots:a.tspots,
+      tetrisReady:a.tetrisReady,tetrisConstruction:a.tetrisConstruction,
+      garbage:a.garbage,btb:ctx.btb,combo:ctx.combo,
+      pending:ctx.pending,danger},
+    terms};
+}
+
 function applyPlacement(node,placement,rules){
   const board=copyBoard(node.board);
   if(!B.legal(board,placement.piece))return null;
@@ -337,7 +373,7 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
   futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
-  traceRootSurvival=false,beamRootReserve=null,offenseWeight=4.8,
+  traceRootSurvival=false,traceRootScores=false,beamRootReserve=null,offenseWeight=4.8,
   includeHoldPlan=false,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
@@ -566,6 +602,15 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             unresolvedGarbage:p.unresolvedGarbage,forecastTank:p.forecastTank,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
             rootHoldPlan:node.rootHoldPlan??(ply===0&&option.hold?planned:null),
+            ...(traceRootScores?{
+              rootPly:ply+1,
+              rootFirst:node.rootFirst??(ply===0?{
+                reward:p.reward,sent:p.offensive,cancelled:p.defensive,
+                generated:p.generated,lines:p.lines,spin:p.spin,
+                allClear:p.allClear,forecastTank:p.forecastTank,
+                valueAtPlyOne:null,
+              }:null),
+            }:{}),
             tacticalGoal:node.tacticalGoal??null,
             recoveryActive:node.recoveryActive,
             recoveryWeight:node.recoveryWeight,
@@ -749,6 +794,26 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(includeHoldPlan&&result.kind==='hold')
     result.holdPlan=best.rootHoldPlan??null;
+  if(traceRootScores){
+    const byRoot=new Map();
+    for(const node of beam){
+      const key=JSON.stringify(node.rootAction);
+      const prior=byRoot.get(key);
+      if(prior&&prior.leaf.total>=node.evalScore)continue;
+      const board=explainBoardEvaluation(node.board,node);
+      const discount=Math.pow(.88,node.rootPly??clamp);
+      byRoot.set(key,{action:node.rootAction,
+        rootScore:rootChoices.get(key)?.value??null,
+        first:node.rootFirst??null,
+        leaf:{total:node.evalScore,cumulativeReward:node.score,
+          boardDiscount:discount,
+          discountedBoardValue:board.boardValue*discount,
+          valueReconstructionError:node.evalScore-
+            (node.score+board.boardValue*discount),
+          ply:node.rootPly??clamp,board}});
+    }
+    result.rootScores=[...byRoot.values()].sort((a,b)=>b.leaf.total-a.leaf.total);
+  }
   if(traceRootSurvival)result.rootSurvival=rootSurvival;
   if(includeRanked){
     const bestKey=JSON.stringify(best.rootAction);
