@@ -190,3 +190,36 @@ policy/value 網路學葉節點價值。目標是提高
 `rook-session.js` 的 Hold 可見邊界和
 `scripts/rook-vs-kiwi.js` 的真實同場 KO 評測。
 **不要把這份待辦文件誤說成已完成的核心升級。**
+
+
+## 2026-10-09 延續實作：前向時鐘與未知垃圾情境（尚未完成 P0/P1）
+
+- `src/analysis/rook.js`: public NEXT future plies 有限額分配 SRS+ 正向
+  `enumerateReachable`，不限 T 或 Spin。仍採 Hard Drop 備援，**並非完全枚舉**。
+  `tsdTacticalProbes` 預設 0，特定戰術須主動 opt-in。
+- `src/analysis/rook-combat.js`: 每次假想鎖定前按 atomic battle cadence
+  推進 24 frame，依公開 `activeFrame` 啟動已知 packets，
+  依引擎次序計算 garbage multiplier；`projectCombat` 仍呼叫官方
+  `resolveAttack`，並回傳 blocking。預測入場量不讀取隱藏洞。
+- `src/analysis/rook.js`: 當鎖定會引發未得知洞位的 tank 時，
+  目前將該搜尋分支標記為 `unresolvedGarbage` 並停止假想後續。
+  **這是防止錯誤規則模擬的保護，不是合理的最終對戰策略**；
+  垃圾可能成為挖掘／反擊機會，絕不可永久將其當成失敗或
+  自動放棄 T-Spin。
+- `src/analysis/rook-garbage.js`: 新增不讀取隱藏 RNG 的「**條件式**
+  垃圾情境列舉」。給一個或兩個可入場 packet，列出所有可能
+  hole-column 組合，條件盤面由 Tetrp 的 `tank` 和 `pushLine`
+  運算，能核對真實權威在該洞位的盤面／封包變化。多 packet 情境
+  超出計算上限會明確報錯，不假裝完整；目前**尚未接入通用 beam
+  的 belief-state value**，所以不是勝率提升。
+- `test/rook-clock.test.js`、`test/rook-garbage.test.js`、
+  `test/rook-future-reachable.test.js`：公開資訊、24f/倍數與
+  packet activation、single-lock 對戰結算、隱藏洞位的
+  conditional authority parity、future-ply 预算與 ablation。
+
+下一個必要步驟：讓 beam 對**每個公開資訊相容的垃圾情境**評估，
+而非假設某個隱藏洞位；依真實權威做多 lock 的
+board/attack/clock/packet differential rollouts，然後再比較
+同 seed / swapped KO 與 CPU。ARE／continuous garbage、
+高情境數的預算裁剪、多包垃圾的 belief 權重尚未完整驗收。
+**不要把目前的 rollout cutoff 說成已完成垃圾攻防。**
