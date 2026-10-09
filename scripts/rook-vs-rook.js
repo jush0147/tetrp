@@ -14,18 +14,24 @@ const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
 const expertOpen=process.env.EXPERT_OPEN!=='0';
 const expertRecovery=process.env.EXPERT_RECOVERY==='1';
 const expertBelief=process.env.EXPERT_BELIEF==='1';
+const expertFuture=process.env.EXPERT_FUTURE==='1';
+const futureProbes=Number(process.env.EXPERT_FUTURE_PROBES??24);
+const futureStates=Number(process.env.EXPERT_FUTURE_STATES??800);
 const beliefProbes=Number(process.env.BELIEF_PROBES??3);
 const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
 const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
-  expertBelief?'belief':null].filter(Boolean).join('+')||'baseline';
+  expertBelief?'belief':null,expertFuture?'future-srs':null]
+  .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
 if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isSafeInteger(budget)||budget<1||
   !Number.isSafeInteger(openTiles)||openTiles<1||
   !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4||
   !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
-  !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100)
+  !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100||
+  !Number.isInteger(futureProbes)||futureProbes<0||futureProbes>100||
+  !Number.isInteger(futureStates)||futureStates<1||futureStates>10000)
   throw Error('Invalid ROOK self-play configuration');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
@@ -37,7 +43,8 @@ const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,
     may20g:true,irs:'off',ihs:'off'}}),{placementMode:'atomic'});
 
 function select(demo,open){
-  const stats={nodes:0,holds:0,ms:0,rejections:0,offers:0,selections:0};
+  const stats={nodes:0,holds:0,ms:0,rejections:0,offers:0,
+    selections:0,forwardProbes:0,forwardMoves:0};
   for(let turn=0;turn<2;turn++){
     const view=demo.view();
     if(view.visible.next.length!==5)throw Error('Visible NEXT5 contract violated');
@@ -47,11 +54,15 @@ function select(demo,open){
       garbageRecovery:open&&expertRecovery,
       garbageRecoveryWeight:recoveryWeight,
       garbageBelief:open&&expertBelief,
+      futureReachableProbes:open&&expertFuture?futureProbes:9,
+      futureReachableStates:open&&expertFuture?futureStates:800,
       beliefProbes,beliefMaxOutcomes});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
     stats.offers+=report.diagnostics.reversePlans;
     stats.selections+=Number(report.diagnostics.reverseSelectedGoal!==null);
+    stats.forwardProbes+=report.diagnostics.futureProbes;
+    stats.forwardMoves+=report.diagnostics.futureMoves;
     let lastError=null,didHold=false;
     for(const a of report.ranked){
       const request=a.kind==='hold'
@@ -109,7 +120,8 @@ function pairedGame(seed,swap){
   assertMatchingOpening(demos);
   const original=demos.map(d=>d.engine.serialize());
   const totals=Array.from({length:2},()=>({nodes:0,holds:0,ms:0,
-    rejections:0,offers:0,selections:0,tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
+    rejections:0,offers:0,selections:0,forwardProbes:0,forwardMoves:0,
+    tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
   try{
     while(turns<limit&&demos.every(d=>d.engine.state.playing)){
@@ -156,7 +168,8 @@ function pairedGame(seed,swap){
   return {format:'rook-paired-tetrp-ko/2',seed,seeds:[seed,seed],swap,kinds,
     sameSeed:true,simultaneousLocks:true,pps:2.5,
     nodeBudget:budget,extraOpenerCPU:expertOpen,expertLabel,
-    expertOpen,expertRecovery,expertBelief,
+    expertOpen,expertRecovery,expertBelief,expertFuture,
+    futureProbes,futureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
