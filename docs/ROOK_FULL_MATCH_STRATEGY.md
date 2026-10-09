@@ -223,3 +223,30 @@ board/attack/clock/packet differential rollouts，然後再比較
 同 seed / swapped KO 與 CPU。ARE／continuous garbage、
 高情境數的預算裁剪、多包垃圾的 belief 權重尚未完整驗收。
 **不要把目前的 rollout cutoff 說成已完成垃圾攻防。**
+
+
+### 下一個實作增量：垃圾的條件式 NEXT 再規劃（實驗旗標，未通過強度驗收）
+
+- `src/analysis/rook-belief.js`: `evaluatePublicTankBelief` 對公開資訊
+  相容的所有洞位情境取加權平均與最差情況，`beliefRiskWeight`
+  設定風險折衷，輸出 `topoutProbability`。目前以列舉洞位等權
+  作為未知道路的**模型假設**，並未知道權威隱藏 RNG。
+- `src/analysis/rook.js`: `garbageBelief: true` 時，對有限數量的
+  `unresolvedGarbage` beam 候選，依每個可能洞位重新列舉公開
+  NEXT 落點、評估下一手的最佳權威攻擊投影和盤面。
+  這是**一層 conditional replanning**，不是多回合完整 belief
+  tree；高維情境超預算會明確記錄 `beliefOverBudget` 並回退。
+  `beliefAttempts`、`beliefEvaluations`、`beliefOutcomes`
+  可用於追查實際花費。為免在沒有 KO 證據時降低已知 baseline，
+  **正式預設仍為 `garbageBelief:false`**。
+- `test/rook-belief.test.js`: 檢查所有洞位權重、風險取值、
+  無隱藏資訊的決策一致性、原始 checkpoint 不變，以及 Tetrp
+  root placement 證明。已納入 ROOK CI。
+- `scripts/rook-vs-rook.js` 新增 `EXPERT_BELIEF=1`，
+  配合 `EXPERT_OPEN=0 EXPERT_RECOVERY=0` 可讓對戰雙方
+  只差 belief 旗標。另有 `.github/workflows/rook-belief-ablation.yml`
+  的同種子交換先後、短場 KO smoke；capped 場不列勝。
+- 此搜尋的局限：二次進場的 packet 隱藏洞位關聯、累積
+  opponent pressure、不同隱藏後續、multi-packet > 預算、
+  有 ARE 的完整 state transition、root 排序穩定性與
+  同量 wall-clock CPU 均未解。不可稱已擊敗 Kiwi。
