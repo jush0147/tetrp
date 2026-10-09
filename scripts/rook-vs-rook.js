@@ -9,10 +9,15 @@ const limit=Number(process.env.MAX_LOCKS??160);
 const budget=Number(process.env.ROOK_NODES??6000);
 const seeds=[Number(process.env.SEED_A??1),Number(process.env.SEED_B??8)];
 const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
+const expertOpen=process.env.EXPERT_OPEN!=='0';
+const expertRecovery=process.env.EXPERT_RECOVERY==='1';
+const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
+const expertLabel=expertRecovery?(expertOpen?'opener+recovery':'recovery-only'):'opener-only';
 if(!seeds.every(Number.isSafeInteger)||seeds[0]===seeds[1]||
   !Number.isSafeInteger(limit)||limit<1||limit>1000||
   !Number.isSafeInteger(budget)||budget<1||
-  !Number.isSafeInteger(openTiles)||openTiles<1)
+  !Number.isSafeInteger(openTiles)||openTiles<1||
+  !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4)
   throw Error('Invalid ROOK self-play configuration');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
@@ -29,7 +34,10 @@ function select(demo,open){
     const view=demo.view();
     if(view.visible.next.length!==5)throw Error('Visible NEXT5 contract violated');
     const started=performance.now();
-    const report=chooseMove(view.visible,{...base,reversePlanner:open});
+    const report=chooseMove(view.visible,{...base,
+      reversePlanner:open&&expertOpen,
+      garbageRecovery:open&&expertRecovery,
+      garbageRecoveryWeight:recoveryWeight});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
     stats.offers+=report.diagnostics.reversePlans;
@@ -128,7 +136,9 @@ function pairedGame(swap){
   const alive=demos.map(d=>d.engine.state.playing);
   const scored=!error&&turns<limit&&alive[0]!==alive[1];
   return {format:'rook-paired-tetrp-ko/1',swap,kinds,seeds,pps:2.5,
-    nodeBudget:budget,extraOpenerCPU:true,turns,cap:limit,scored,
+    nodeBudget:budget,extraOpenerCPU:expertOpen,expertLabel,
+    expertOpen,expertRecovery,recoveryWeight,
+    turns,cap:limit,scored,
     termination:error?'invalid-match':scored?'KO':turns>=limit?'capped':'unresolved',
     error,winner:scored?kinds[alive[0]?0:1]:null,
     checkpoints,slots:demos.map((d,i)=>summary(d,kinds[i],totals[i]))};
