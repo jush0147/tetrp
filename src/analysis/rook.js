@@ -271,7 +271,8 @@ const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').jo
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
-  reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12}={}){
+  reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
+  reverseOnlyOpen=false}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -313,6 +314,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     ?searchOpenTSD(visible,{maxGoals:reverseOpenMaxGoals,
       maxTileNodes:reverseOpenMaxTileNodes,maxProofs:reverseOpenMaxProofs,
       maxStates:Math.max(1800,maxStates),maxPlans:reverseMaxPlans})
+    :reverseOnlyOpen
+    ?{plans:[],stats:{goals:0,setupCandidates:0,forwardProofs:0,budgetExceeded:false}}
     :firstT<=2
     ?searchReverseAttacks(visible,{
       targets:['TSS','TSD','TST'],maxGoals:reverseMaxGoals,
