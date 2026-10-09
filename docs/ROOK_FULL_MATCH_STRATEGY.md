@@ -463,3 +463,58 @@ ROOK 原有的 round-robin 根多樣性會將 `beamWidth=24`
 不是在偷偷抬高 Hold 優先度。若該 A/B 沒有改善，下一步
 量化 root valuation 各 feature 對 Kiwi/Bot 分歧的貢獻，
 避免盲猜新的固定權重。
+
+
+## 2026-10-09 23:00 研究延續：Hold 計畫效率與可解釋根評分
+
+### 完成的 Hold 計畫 KO 驗收
+
+[GitHub Actions #37933085621](https://github.com/jush0147/tetrp/actions/runs/37933085621)：
+4 個獨立 seed（1/8/16/23）各換位置；8 場同 seed、同步落子，
+2000 鎖安全上限，全部真 KO。Hold 計畫 4 勝、原版 4 勝，
+即獨立 seed 2:2。實驗版搜尋耗時 1,249,219ms，原版
+1,650,970ms，省約 24.3%，但 Sent 2284 vs 2282，
+**不能宣稱實際對戰強度改善**。實驗版 1446 次預定
+Hold 後落點全部通過 Tetrp 合法性／旋轉證明；
+原版 1548 次重搜有 1352 次選相同、196 次改選，
+顯示 Hold 後策略不連續的比例約 12.7%。
+
+**不應一律懲罰 Hold 次數**，因為 Kiwi 也經常 Hold 且仍更強；
+保留 `includeHoldPlan` 作可選效率實驗，但正式預設仍不變。
+
+### 新根候選評分拆解（不改搜尋策略）
+
+- `src/analysis/rook.js` 新增只供診斷的
+  `explainBoardEvaluation(board,ctx)`，逐項重建原版 Board 評價：
+  recovery、holes、covered、height、roughness、transitions、
+  highStack、urgency、well、T spots、Tetris-ready、
+  Tetris-construction、garbage、B2B、combo。
+  `reconstructionError` 必須接近零；熱路徑
+  `evaluateBoard` 保持原樣。
+- `chooseMove(...,{traceRootScores:true})` 僅在實驗下回傳
+  最終 beam 每個 root 的最佳後續路線，包含當下落子後
+  真實預估的 attack sent/cancelled/reward、累計折扣攻擊
+  收益、終點 Board heuristic 與 `.88^ply` 折扣、
+  root score 和重建誤差。絕不傳入未公開 NEXT6、
+  隱藏垃圾洞位或對手的未來行動。
+- `scripts/rook-choice-diagnostics.js` 讓 ROOK 與 Kiwi
+  對**同一個玩家當下的公開盤面**評估，對比雙方
+  最佳根候選的 raw/reward、盤面各項分數及差距；
+  Kiwi 合法動作仍須經 Tetrp authority 檢查。
+- `ROOK_DIAG_SNAPSHOTS_PATH` 額外輸出每個抽樣盤面的
+  **只含可見資料** `visibleState`，便於後續不重跑
+  整場對局即可重現不同 ROOK 搜尋版本。
+  CI 明確拒絕輸出私有 `bag` 和 `holes`。
+- `test/rook-root-scores.test.js` 及 ROOK acceptance
+  確保診斷開關不改原始選棋、各 root total
+  等於累計 reward 加上折扣 board value、所有 Board
+  分數項能還原、輸入公開狀態不被更動。
+- `.github/workflows/rook-choice-diagnostics.yml`
+  仍用 seed 67020/67023、Kiwi 200000 nodes 與
+  ROOK 6000 evaluations，抽 22 個當前局面；
+  這是**價值模型定位實驗**，不是算力相同的 KO 提升證據。
+
+下一步在新報表出來後，必須檢查「Kiwi 位置輸給 ROOK
+選擇」究竟是過高的 Tetris 準備獎勵、洞/高度成本、
+現有 attacking reward，或缺乏長期 T-Spin 連鎖預測。
+只有有數據支持的結構性修正才進入另一輪完整 KO A/B。
