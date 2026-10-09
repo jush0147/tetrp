@@ -43,3 +43,19 @@ test('unknown future pieces and invalid BFS budgets are rejected',()=>{
   const reached=enumerateReachable(v.board,v.current,v.rules,{maxStates:350});
   assert.ok(reached.some(m=>m.path.at(-1)==='hardDrop'));
 });
+
+test('opt-in root survival trace includes final chosen root without changing the policy',()=>{
+  const e=new Engine({mode:'tl',seed:77,rules:{g:0}});
+  e.state.hold.locked=true;
+  const visible=visibleState(e.state);
+  const cfg={...search,depth:4,beamWidth:8,maxNodes:1000};
+  const baseline=chooseMove(visible,cfg);
+  const traced=chooseMove(visible,{...cfg,traceRootSurvival:true});
+  const {rootSurvival,...withoutTrace}=traced;
+  assert.deepEqual(withoutTrace,baseline);
+  assert.ok(rootSurvival.length>=1);
+  assert.ok(rootSurvival.every(x=>x.roots.length<=cfg.beamWidth));
+  const chosen=JSON.stringify({kind:traced.kind,move:traced.move,execution:traced.execution});
+  // Search rootAction is constructed in exactly this public format.
+  assert.ok(rootSurvival.at(-1).roots.includes(chosen));
+});
