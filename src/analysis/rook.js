@@ -582,7 +582,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           cache.set(key,moves);
         }
         for(const move of moves){
-          if(evaluated++>=reverseBudget)break;
+          // Do not increment the accounting counter for an unevaluated
+          // candidate when the configured bound is already exhausted.
+          if(evaluated>=reverseBudget)break;
+          evaluated++;
           const p=applyPlacement(node,move,visible.rules);
           if(!p||p.topout)continue;
           if(p.unresolvedGarbage)unresolvedTankNodes++;

@@ -113,3 +113,37 @@
 - 下一步：跑相同公開盤面 6K/12K/24K/48K 的
   actual evaluations／best action／depth／ms profile，
   再做不同 budget 的同 seed/slot-swap 完整 KO。
+
+
+## 2026-10-09 新實作交接：獨立預算與第一輪真正 maxNodes scaling（尚未有結果）
+
+- `scripts/rook-vs-rook.js` 支援 `ROOK_CANDIDATE_NODES` 與
+  `ROOK_BASELINE_NODES` 各自設定；兩者未指定時繼續沿用
+  `ROOK_NODES` 共用預算，舊 workflow 可維持相同語意。
+  新增 `BUDGET_SCALING=1` 專用標籤 `budget-scale`，
+  禁止同時啟用戰術／Hold／offense 等其它 expert，以保證
+  第一輪只有 maxNodes 不同。輸出 per-slot configuredNodeBudget、
+  evaluated、searches、budgetReached、searchMs、Sent APP。
+  候選與基線不同預算時，舊欄位 `nodeBudget` 設為 null，
+  **不可假稱兩側搜尋預算相同**。
+- 修正 `src/analysis/rook.js` 的 `evaluated++` 超額計數：
+  當已達搜尋預算，不應再計入沒有評估的候選；
+  `test/rook-budget-protocol.test.js` 驗證不超限，
+  且選棋只讀公開資訊。
+- `scripts/rook-budget-profile.js` 在獨立 Tetrp authority
+  生成的**同一批公開局面**比較 6K/12K/24K/48K，
+  記錄真 evaluated、是否達上限、各層 beam 根數、
+  選棋是否改變、執行時間。這不是 KO，也不提供
+  隱藏 bag、洞位或 authority checkpoint。
+- `.github/workflows/rook-budget-scaling.yml`：
+  首先量測 seed 1/8/16/23 各固定局面，若 12K
+  的真實 evaluated **沒有高過 6K**，就跳過
+  無意義的 12K 對 6K KO，轉為調整 beam/depth。
+  有真正搜尋增量才跑完整 4 個獨立 seed x slot swap，
+  雙方同初始 seed 同步鎖定，每場 KO-first
+  最多 2000 鎖；後續要擴到更多獨立 seed 才能得出
+  強度結論。工作流程的結果必須再確認，不能在排隊
+  或執行中就宣稱提高算力會贏。
+
+本次工作只建立**可重現且誠實計算預算**的實驗平台，
+未經 KO/CPU 結果不可升級任何正式搜尋預設。

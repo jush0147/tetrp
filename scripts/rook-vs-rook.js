@@ -11,6 +11,7 @@ const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
 const budget=Number(process.env.ROOK_NODES??6000);
 const candidateBudget=Number(process.env.ROOK_CANDIDATE_NODES??budget);
 const baselineBudget=Number(process.env.ROOK_BASELINE_NODES??budget);
+const budgetScaling=process.env.BUDGET_SCALING==='1';
 // SEED_A / SEED_B now designate two independent, matched-seed trials.
 const seeds=parseMatchSeeds();
 const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
@@ -32,7 +33,7 @@ const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBelief?'belief':null,expertFuture?'future-srs':null,
   expertBeam?'focused-beam':null,expertOffense?'offense-weight':null,
-  expertHoldPlan?'hold-plan':null]
+  expertHoldPlan?'hold-plan':null,budgetScaling?'budget-scale':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
 if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
@@ -48,6 +49,9 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(beamRootReserve)||beamRootReserve<1||beamRootReserve>24||
   !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24)
   throw Error('Invalid ROOK self-play configuration');
+if(budgetScaling&&(expertOpen||expertRecovery||expertBelief||expertFuture||
+  expertBeam||expertOffense||expertHoldPlan))
+  throw Error('Budget scaling must isolate maxNodes; disable EXPERT_*');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
   reverseOpenMaxTileNodes:openTiles,reverseOpenMaxGoals:8,
@@ -229,7 +233,9 @@ function pairedGame(seed,swap){
   const result=scoreKO({alive,rounds:turns,cap:limit,error});
   return {format:'rook-paired-tetrp-ko/2',seed,seeds:[seed,seed],swap,kinds,
     sameSeed:true,simultaneousLocks:true,pps:2.5,
-    nodeBudget:budget,candidateNodeBudget:candidateBudget,
+    // Preserve old nodeBudget only when both sides share the same cap.
+    nodeBudget:candidateBudget===baselineBudget?budget:null,
+    budgetScaling,candidateNodeBudget:candidateBudget,
     baselineNodeBudget:baselineBudget,
     budgetsByKind:{[expertKind]:candidateBudget,baseline:baselineBudget},
     extraOpenerCPU:expertOpen,expertLabel,
