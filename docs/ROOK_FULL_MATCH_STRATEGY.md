@@ -250,3 +250,43 @@ board/attack/clock/packet differential rollouts，然後再比較
   opponent pressure、不同隱藏後續、multi-packet > 預算、
   有 ARE 的完整 state transition、root 排序穩定性與
   同量 wall-clock CPU 均未解。不可稱已擊敗 Kiwi。
+
+
+## 2026-10-09 整局 KO 驗收契約修正：雙方同 seed、同步鎖定、打到有結果
+
+**使用者指示：禁止把 8／24 顆 capped smoke 當強度證據。**
+要正式比較 Bot 強度，每場雙方使用**完全相同的初始 seven-bag seed**，
+在各自真實、公開的盤面資訊下做決策，兩邊都提出合法 placement 後，
+由 Tetrp atomic authority 同時推進相同的 24-frame 戰場時間。
+實作採先準備雙方動作、再依序提交至彼此隔離的引擎、
+**最後**才交換本回合產生的垃圾封包，因此一方不能偷看到對手本回合落點。
+在提交前後都檢查兩個引擎的 frame 相同；Hold 仍需由權威獨立執行。
+
+一個 seed 是一場**雙方同 seed**的比賽，不再以 `SEED_A`/
+`SEED_B` 當作兩名玩家不同的方塊序列。
+`SEEDS` 或 `SEED_A,SEED_B` 表示**多個獨立對照 seed**；
+每個 seed 都會交換雙方 slot 再打一場。
+Hold 與實際垃圾／消行會使雙方後續可見序列與盤面分歧，這是正常的實戰結果。
+
+- `scripts/rook-ko-protocol.js`：共享的 seed 列表、同一 frame
+  與初始 NEXT5 驗證、KO／double-KO／capped／invalid 分類。
+- `scripts/rook-vs-rook.js`：預設每場**最多 400 次雙方同步鎖定**；
+  ROOK opener、recovery、belief 實驗和 baseline 都使用同一協議。
+- `scripts/rook-vs-kiwi.js`：預設 400，正式 Kiwi workflow 設定
+  **500 次雙方同步鎖定上限**，兩邊初始 seed 一致，並交換先後位置。
+  Kiwi 與 ROOK 的 node 計量不等價，仍需看每決策 CPU。
+- 計分**優先於 cap**：即使恰好最後一回合發生單方 KO，
+  仍算有效 KO；雙方同時陣亡只算 `double-KO`；
+  截止仍未分勝負為 `capped`，絕不給任一方虛構勝利。
+- `test/rook-ko-protocol.test.js` 驗證上述重點，包括在安全
+  上限當回合的 KO。配對 workflow 驗證兩名玩家 piece count
+  和公開 clock 一致、不讓 2 場同 seed 的 slot swap 漏跑。
+- `rook-belief-ablation.yml` 用 400 鎖；`rook-selfplay.yml`
+  和 `rook-recovery-ko.yml` 用 400 鎖；
+  `rook-ko.yml` 以 4 個不同 seed（每場雙方相同 seed、交換位置）
+  各自打到 KO 或 500 鎖。以前的小 smoke 不能聲稱強度驗收。
+
+仍需保留 `scoredKO`、`capped`、`doubleKO`、generated/sent APP、
+收到/抵銷/坦掉的垃圾、KO 原因、CPU／牆上時間等。**沒有 KO 時，
+結論是尚無勝率證據，不是勝率 50% 或實驗通過。**
+最後判強度仍須大量不同 seed、swap 和算力比較，不能單次 KO 就升級。
