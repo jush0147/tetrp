@@ -466,7 +466,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let evaluatedFast=0,spinProbes=0,forecastedSpinClears=0;
   let futureProbes=0,futureMoves=0,futureSpinClears=0;
   let unresolvedTankNodes=0;
-  let beliefEvaluations=0,beliefOutcomes=0,beliefOverBudget=0;
+  let beliefAttempts=0,beliefEvaluations=0,beliefOutcomes=0,beliefOverBudget=0;
   const futureReachableByPly=Array(depth+1).fill(0);
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
   // Known T may be the fifth NEXT piece; six placements are publicly
@@ -591,16 +591,17 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     candidates.push(...transposed.values());
     if(!candidates.length)break;
     candidates.sort((a,b)=>b.evalScore-a.evalScore);
-    if(garbageBelief&&beliefEvaluations<beliefProbes){
+    if(garbageBelief&&beliefAttempts<beliefProbes){
       // Re-rank root-diverse uncertain candidates under a shared public
       // hole distribution. Exact enumeration, not a lucky-hole sample.
       const probedRoots=new Set();
       for(const candidate of candidates){
-        if(beliefEvaluations>=beliefProbes)break;
+        if(beliefAttempts>=beliefProbes)break;
         if(!candidate.unresolvedGarbage)continue;
         const root=JSON.stringify(candidate.rootAction);
         if(probedRoots.has(root))continue;
         probedRoots.add(root);
+        beliefAttempts++;
         try{
           const belief=beliefContinuationValue(candidate,visible.rules,ply,{
             maxOutcomes:beliefMaxOutcomes,riskWeight:beliefRiskWeight,
@@ -693,7 +694,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,
     forecastedSpinClears,futureProbes,futureMoves,futureSpinClears,
     futureReachableByPly,unresolvedTankNodes,
-    beliefEvaluations,beliefOutcomes,beliefOverBudget,
+    beliefAttempts,beliefEvaluations,beliefOutcomes,beliefOverBudget,
     selectedBelief:best.belief??null,
     selectedUnresolvedGarbage:best.unresolvedGarbage,
     selectedForecastTank:best.forecastTank,selectedFrame:best.frame,
