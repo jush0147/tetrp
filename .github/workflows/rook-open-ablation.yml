@@ -1,0 +1,115 @@
+name: ROOK public seven-bag Full TSD opener A-B
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - src/analysis/rook.js
+      - src/analysis/rook-open-slot.js
+      - scripts/rook-open-cohort.js
+      - scripts/rook-strength-screen.js
+      - .github/workflows/rook-open-ablation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  six-lock-cohort:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Precommit earliest 12 naturally seeded NEXT5-T openings, then compare
+        run: |
+          node scripts/rook-open-cohort.js | tee rook-open-cohort.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('rook-open-cohort.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          const summary=rows.at(-1);
+          if(rows.length!==13||summary.size!==12||
+            rows.slice(0,-1).some(r=>r.ordinary.pieces!==6||
+              r.reverse.pieces!==6||!r.ordinary.sourceUnchanged||
+              !r.reverse.sourceUnchanged))
+            throw Error('Invalid paired Tetrp opening cohort; no fabricated results');
+          console.log(JSON.stringify(summary));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-public-open-six-lock-cohort
+          path: rook-open-cohort.jsonl
+          retention-days: 30
+  full-game:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        seed: [1, 8]
+        expert: ['0', '1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Same seed, original 120-piece ROOK vs isolated optional opening expert
+        env:
+          SEEDS: ${{ matrix.seed }}
+          PIECES: '120'
+          ROOK_NODES: '6000'
+          ROOK_REVERSE_PLANNER: ${{ matrix.expert }}
+          ROOK_REVERSE_OPEN_ONLY: '1'
+          ROOK_REVERSE_OPEN_GOALS: '8'
+          ROOK_REVERSE_OPEN_TILES: '1200'
+          ROOK_REVERSE_OPEN_PROOFS: '12'
+        run: |
+          node scripts/rook-strength-screen.js > rook-open-${{ matrix.seed }}-${{ matrix.expert }}.jsonl
+          cat rook-open-${{ matrix.seed }}-${{ matrix.expert }}.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-open-full-${{ matrix.seed }}-${{ matrix.expert }}
+          path: rook-open-${{ matrix.seed }}-${{ matrix.expert }}.jsonl
+          retention-days: 30
+  full-comparison:
+    needs: full-game
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-open-full-*
+          merge-multiple: true
+      - name: Preserve full-game TSD, APP, survival and incremental compute
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const pairs=[];
+          for(const seed of [1,8]){
+            const get=flag=>JSON.parse(readFileSync('rook-open-'+seed+'-'+flag+'.jsonl','utf8'));
+            const base=get('0'),expert=get('1');
+            if(base.seed!==seed||expert.seed!==seed||
+              !base.originalUnchanged||!expert.originalUnchanged||
+              base.options.maxNodes!==expert.options.maxNodes)
+              throw Error('Unmatched or invalid authority experiment');
+            pairs.push({seed,baseline:{pieces:base.pieces,tsd:base.tsd,
+                app:base.rawAPP,attack:base.generated,sent:base.sent,
+                stopped:base.stopped,decisionMs:base.meanDecisionMs},
+              opener:{pieces:expert.pieces,tsd:expert.tsd,
+                app:expert.rawAPP,attack:expert.generated,sent:expert.sent,
+                stopped:expert.stopped,decisionMs:expert.meanDecisionMs,
+                reversePlans:expert.reverseProposals,
+                reverseSelections:expert.reverseSelections}});
+          }
+          const report={kind:'rook-open-full-game-ablation',
+            protocol:'isolated public seven-bag opener, equal ordinary search, extra expert CPU',
+            matches:2,pairs,KO:false};
+          writeFileSync('rook-open-full-comparison.json',JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-open-full-comparison
+          path: rook-open-full-comparison.json
+          retention-days: 30
