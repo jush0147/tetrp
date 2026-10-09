@@ -145,3 +145,52 @@
 
 本次工作只建立**可重現且誠實計算預算**的實驗平台，
 未經 KO/CPU 結果不可升級任何正式搜尋預設。
+
+
+## 2026-10-10 最新接手狀態：6K–48K maxNodes 已確認飽和，改測搜尋寬度／深度
+
+**已完成的真實量測**：[GitHub Actions #37954922598](https://github.com/jush0147/tetrp/actions/runs/37954922598)，
+固定 4 個 seed（1、8、16、23）、各 0／4／12 手，共 12 個公開盤面：
+`maxNodes=6000/12000/24000/48000` 的真實 `evaluated`
+**全部平均 3288.17**，無任何樣本碰上限，任一較大預算
+對 6K 的第一手選擇 **0/12** 次不同，執行時間並未顯著改變。
+因此 CI **正確跳過** 12K vs 6K 完整 KO；這證明的是固定
+4-ply、24-beam frontier 飽和，**不是額外算力一定無效**。
+
+**已提交的新容量實驗（完整 CI 與 KO 結果仍待確認）：**
+- `scripts/rook-vs-rook.js` 現在也支援
+  `ROOK_CANDIDATE_DEPTH`/`ROOK_BASELINE_DEPTH`、
+  `ROOK_CANDIDATE_BEAM`/`ROOK_BASELINE_BEAM`，
+  預設仍 4 層／24 beam；和獨立 maxNodes 一樣，
+  必須隨 Bot 身份交換 slot，不能混用。
+- `test/rook-budget-config.test.js` 對交換位置後的
+  depth、beam 與 maxNodes 進行權威對戰煙霧驗收，
+  也檢查非法設定值拒絕。
+- `scripts/rook-capacity-profile.js` 在同一組只含
+  NEXT5 的公開盤面對比：
+  1. 4-ply／beam 24／maxNodes 6000（原版）；
+  2. 4-ply／beam 48／maxNodes 12000（只加寬）；
+  3. 5-ply／beam 24／maxNodes 12000（只加深）；
+  4. 5-ply／beam 48／maxNodes 24000（寬深皆增）；
+  5. 5-ply／beam 96／maxNodes 48000（更大上限）。
+  記錄每筆真實 evaluated、每層 root 存活數、
+  選棋變化、延遲與是否碰 budget。這些不是勝率測試。
+- `.github/workflows/rook-capacity-ablation.yml`：
+  **只有** 5x48/24K 在相同公開盤面上同時觀測到
+  `evaluated` 高於原版且選棋不同，才跑 4 個不同
+  seed 各交換位置的同步真 KO。A/B：
+  5-ply／48 beam／24K 對 4-ply／24 beam／6K，
+  同一場雙方同 seed、每名 Bot 最多 2000 次同步鎖定，
+  依原規則分 KO、capped、double-KO；量測實際 search
+  ms／eval 和攻擊量。此為**離線強度上限實驗**，
+  搜尋成本不等價，必須揭露。
+- 即使 KO 結果改善，也只是少量獨立 seed 的初步信號，
+  不能直接宣稱超越 Kiwi 或升級正式預設。
+
+**恢復工作的唯一下一步：**
+先讀 [ROOK search-capacity Actions](https://github.com/jush0147/tetrp/actions/workflows/rook-capacity-ablation.yml)
+中最新的 `profile` job log，確認實際 work growth、
+候選改選比例及 P95；若 KO 條件觸發則取 report 與
+每個 seed 的真 KO／Sent APP／CPU。若更多搜尋仍只
+帶來很小變化，應審查 transposition、多步評分與
+未知垃圾條件，而不是繼續單純加大上限。
