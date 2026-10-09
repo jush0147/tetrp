@@ -1,0 +1,174 @@
+name: ROOK setup-survival pruning full KO ablation
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - src/analysis/rook.js
+      - scripts/rook-vs-rook.js
+      - scripts/rook-pruning-profile.js
+      - test/rook-intermediate-pruning.test.js
+      - .github/workflows/rook-intermediate-pruning.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    outputs:
+      useful: ${{ steps.report.outputs.useful }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regression - terminal score and public information remain unchanged
+        run: node --test test/rook-intermediate-pruning.test.js
+      - name: Same Tetrp public positions; equal 5-ply x 48-beam x 24000 budget
+        env:
+          SEEDS: '1,8,16,23'
+          SAMPLE_TURNS: '0,4,12'
+        run: node scripts/rook-pruning-profile.js > rook-pruning-profile.jsonl
+      - name: Analyze root decision changes and CPU before KO pilot
+        id: report
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('rook-pruning-profile.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          if(rows.length!==12||rows.some(r=>
+            r.format!=='rook-setup-survival-position-response/1'||
+            r.samples.length!==2||
+            r.samples[0].variant!=='original-pruning'||
+            r.samples[1].variant!=='setup-survival'||
+            r.samples.some(s=>s.depth!==5||s.beamWidth!==48||
+              s.budget!==24000||s.evaluated<1||s.evaluated>24000||!s.choice||
+              !Number.isFinite(s.ms)||s.ms<0)))
+            throw Error('Mismatched public-state pruning ablation');
+          const changes=rows.filter(r=>r.samples[0].choice!==r.samples[1].choice);
+          const mean=(i,k)=>rows.reduce((a,r)=>a+r.samples[i][k],0)/rows.length;
+          const summary={format:'rook-intermediate-pruning-profile/1',
+            independentSeeds:4,publicPositions:rows.length,actionChanges:changes.length,
+            baselineEvaluated:mean(0,'evaluated'),experimentalEvaluated:mean(1,'evaluated'),
+            baselineMeanMs:mean(0,'ms'),experimentalMeanMs:mean(1,'ms'),
+            note:'Only pruning rank changed; terminal board, attack reward, SRS+ and budget unchanged. A change of choice does not imply increased strength.'};
+          writeFileSync('rook-pruning-summary.json',JSON.stringify(summary,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,
+            'useful='+(changes.length>0?'true':'false')+'\n');
+          console.log(JSON.stringify(summary));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-pruning-public-position-profile
+          path: |
+            rook-pruning-profile.jsonl
+            rook-pruning-summary.json
+          retention-days: 30
+  paired-ko:
+    needs: profile
+    if: needs.profile.outputs.useful == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        seed: [1,8,16,23]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Real Tetrp KO at equal 5x48/24K capacity
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          ROOK_NODES: '24000'
+          ROOK_CANDIDATE_DEPTH: '5'
+          ROOK_BASELINE_DEPTH: '5'
+          ROOK_CANDIDATE_BEAM: '48'
+          ROOK_BASELINE_BEAM: '48'
+          BUDGET_SCALING: '0'
+          EXPERT_OPEN: '0'
+          EXPERT_RECOVERY: '0'
+          EXPERT_BELIEF: '0'
+          EXPERT_FUTURE: '0'
+          EXPERT_BEAM: '0'
+          EXPERT_OFFENSE: '0'
+          EXPERT_HOLD_PLAN: '0'
+          EXPERT_PRUNING: '1'
+          EXPERT_PRUNING_HOLE_RELIEF: '0.65'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > "rook-pruning-ko-${{ matrix.seed }}.jsonl"
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const seed=Number('${{ matrix.seed }}');
+          const rows=readFileSync('rook-pruning-ko-'+seed+'.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].swap!==false||rows[1].swap!==true||
+            rows.some(r=>r.seed!==seed||r.error||!r.sameSeed||
+              !r.simultaneousLocks||r.seeds[0]!==r.seeds[1]||
+              r.nodeBudget!==24000||r.candidateNodeBudget!==24000||
+              r.baselineNodeBudget!==24000||r.candidateDepth!==5||
+              r.baselineDepth!==5||r.candidateBeamWidth!==48||
+              r.baselineBeamWidth!==48||r.cap!==2000||
+              !r.expertPruning||r.expertLabel!=='setup-survival'||
+              r.expertOpen||r.expertRecovery||r.expertBelief||r.expertFuture||
+              r.expertBeam||r.expertOffense||r.expertHoldPlan||
+              r.scored!==(r.termination==='KO')||
+              r.slots.some(s=>s.pieces!==r.turns||
+                s.configuredNodeBudget!==24000||s.configuredDepth!==5||
+                s.configuredBeamWidth!==48||!Number.isFinite(s.ms)||
+                s.nodes>s.searches*24000)))
+            throw Error('Invalid equal capacity full KO setup-survival pilot');
+          console.log(JSON.stringify(rows.map(r=>({seed,swap:r.swap,
+            turns:r.turns,winner:r.winner,termination:r.termination,
+            slots:r.slots.map(s=>({kind:s.kind,sentAPP:s.sentAPP,nodes:s.nodes,ms:s.ms}))}))));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-pruning-ko-${{ matrix.seed }}
+          path: rook-pruning-ko-${{ matrix.seed }}.jsonl
+          retention-days: 30
+  report:
+    needs: [profile,paired-ko]
+    if: needs.paired-ko.result == 'success'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-pruning-ko-*
+          merge-multiple: true
+      - name: Genuine-KO and additional CPU summary
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seeds=[1,8,16,23];
+          const games=seeds.flatMap(seed=>readFileSync('rook-pruning-ko-'+seed+'.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse));
+          if(games.length!==8||games.some(r=>r.error))throw Error('Missing paired KO games');
+          const ko=games.filter(r=>r.scored);
+          const sum=(kind,key)=>games.reduce((v,r)=>v+
+            (r.slots.find(s=>s.kind===kind)?.[key]??0),0);
+          const summary={format:'rook-setup-survival-KO-pilot/1',
+            independentSeeds:seeds.length,games:games.length,cap:2000,
+            scoredKO:ko.length,experimentWins:ko.filter(r=>r.winner==='setup-survival').length,
+            baselineWins:ko.filter(r=>r.winner==='baseline').length,
+            capped:games.filter(r=>r.termination==='capped').length,
+            doubleKO:games.filter(r=>r.termination==='double-KO').length,
+            experimentalMs:sum('setup-survival','ms'),
+            baselineMs:sum('baseline','ms'),
+            experimentalEvaluated:sum('setup-survival','nodes'),
+            baselineEvaluated:sum('baseline','nodes'),
+            experimentalSent:sum('setup-survival','sent'),
+            baselineSent:sum('baseline','sent'),gamesDetail:games};
+          writeFileSync('rook-pruning-KO-summary.json',JSON.stringify(summary,null,2)+'\n');
+          console.log(JSON.stringify({...summary,gamesDetail:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-pruning-KO-summary
+          path: rook-pruning-KO-summary.json
+          retention-days: 30
