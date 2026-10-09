@@ -272,7 +272,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,tsdTacticalProbes=12,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
-  reverseOnlyOpen=false}={}){
+  reverseOnlyOpen=false,reversePressureGuard=true}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -280,6 +280,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   // checkpoint, replay, RNG stream, opponent, or future bag tail.
   const safe={
     board:visible.board,current:visible.current,hold:visible.hold,
+    frame:visible.frame,
     next:Array.isArray(visible.next)?visible.next.slice(0,5):null,
     rules:visible.rules,playing:visible.playing,
     attack:visible.attack?{
@@ -307,8 +308,19 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   // This experimental module stays opt-in until APP and KO improve.
   // Optional tactical CPU is tracked separately from the ordinary beam budget.
   const firstT=queue.indexOf('t');
-  const reverseEligible=reversePlanner&&depth>=2&&firstT>=1&&firstT<=5&&
-    Number.isInteger(reverseMaxCandidates)&&reverseMaxCandidates>0;
+  // The public packet activation clock can invalidate a speculative
+  // no-clear setup BEFORE its final TSD. Do not pretend the board remains
+  // untouched while real Tetrp would already be tanking garbage.
+  const spinDeadline=Number.isFinite(visible.frame)?
+    visible.frame+Math.max(0,firstT)*24:null;
+  const reverseThreat=firstT>0?(visible.attack?.pending??[]).reduce((sum,p)=>
+    sum+(p.amt>0&&(p.active===true||
+      (spinDeadline!==null&&Number.isFinite(p.activeFrame)&&
+       p.activeFrame<=spinDeadline))?p.amt:0),0):0;
+  const reverseSkippedPressure=reversePlanner&&reversePressureGuard&&reverseThreat>0;
+  const reverseEligible=reversePlanner&&!reverseSkippedPressure&&depth>=2&&
+    firstT>=1&&firstT<=5&&Number.isInteger(reverseMaxCandidates)&&
+    reverseMaxCandidates>0;
   // Exact-cover openers are for non-garbage low stacks. Keep the existing
   // inverse Full TSS/TSD/TST experts on garbage and overhang puzzles, and
   // fall back to them when the opener finds no legal TSD continuation.
@@ -398,7 +410,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
               forecastedSpinClears+=spins.length;
               // Forecast spin paths are SRS+-reachable but not accepted as
               // root actions. The next real piece is always revalidated by
-              // the Tetrp time-limited placement authority.
+              // the Tetrp atomic legal-placement authority.
               moves.push(...spins);
             }
             evaluatedFast+=moves.length;
@@ -537,6 +549,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseProbes:reverseReport.stats.forwardProofs,
     reverseSelectedGoal:best.tacticalGoal??null,reverseBudget,
     reverseBudgetExceeded:reverseReport.stats.budgetExceeded,
+    reverseSkippedPressure,reverseThreat,
     effectiveDepth:clamp,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(includeRanked){
