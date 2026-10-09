@@ -58,3 +58,38 @@ test('budget configuration rejects invalid candidate/base quantities',()=>{
     assert.match(out.stderr,/Invalid ROOK self-play configuration/);
   }
 });
+
+test('search capacity follows bot identities, not slots, and rejects invalid width/depth',()=>{
+  const changed=run({BUDGET_SCALING:'1',ROOK_CANDIDATE_NODES:'1200',
+    ROOK_BASELINE_NODES:'600',ROOK_CANDIDATE_DEPTH:'5',
+    ROOK_BASELINE_DEPTH:'4',ROOK_CANDIDATE_BEAM:'48',
+    ROOK_BASELINE_BEAM:'24'});
+  assert.equal(changed.status,0,changed.stderr);
+  const rows=changed.stdout.trim().split('\n').map(JSON.parse);
+  assert.equal(rows.length,2);
+  for(const [i,r] of rows.entries()){
+    assert.equal(r.nodeBudget,null);
+    assert.equal(r.budgetScaling,true);
+    assert.equal(r.expertLabel,'budget-scale');
+    assert.deepEqual(r.kinds,i?['baseline','budget-scale']:['budget-scale','baseline']);
+    for(const s of r.slots){
+      if(s.kind==='budget-scale'){
+        assert.equal(s.configuredNodeBudget,1200);
+        assert.equal(s.configuredDepth,5);
+        assert.equal(s.configuredBeamWidth,48);
+      }else{
+        assert.equal(s.configuredNodeBudget,600);
+        assert.equal(s.configuredDepth,4);
+        assert.equal(s.configuredBeamWidth,24);
+      }
+      assert.ok(s.nodes<=s.configuredNodeBudget*s.searches);
+    }
+  }
+  for(const bad of [{ROOK_CANDIDATE_DEPTH:'6'},
+    {ROOK_BASELINE_DEPTH:'0'},{ROOK_CANDIDATE_BEAM:'0'},
+    {ROOK_BASELINE_BEAM:'129'}]){
+    const result=run(bad);
+    assert.notEqual(result.status,0);
+    assert.match(result.stderr,/Invalid ROOK self-play configuration/);
+  }
+});
