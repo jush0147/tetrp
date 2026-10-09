@@ -1,24 +1,25 @@
-name: ROOK public-garbage belief paired KO smoke
+name: ROOK public-garbage belief full KO
 on:
   push:
     branches: [feat/rook-independent-bot]
     paths:
       - scripts/rook-vs-rook.js
+      - scripts/rook-ko-protocol.js
       - src/analysis/rook-belief.js
       - .github/workflows/rook-belief-ablation.yml
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  smoke:
+  matched-ko:
     runs-on: ubuntu-22.04
-    timeout-minutes: 12
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Paired same-seed swapped-role belief vs baseline
+      - name: Same seed per side, simultaneous 24f placements, swapped roles, KO until safety cap
         env:
           EXPERT_OPEN: '0'
           EXPERT_RECOVERY: '0'
@@ -26,16 +27,32 @@ jobs:
           BELIEF_PROBES: '2'
           BELIEF_MAX_OUTCOMES: '10'
           ROOK_NODES: '900'
-          MAX_LOCKS: '24'
-          SEED_A: '67000'
-          SEED_B: '67001'
+          MAX_LOCKS: '400'
+          SEEDS: '67000,67001'
         run: |
-          node scripts/rook-vs-rook.js > rook-belief-paired.jsonl
-          cat rook-belief-paired.jsonl
-          node --input-type=module -e "import fs from 'node:fs'; const x=fs.readFileSync('rook-belief-paired.jsonl','utf8').trim().split('\n').map(JSON.parse); if(x.length!==2 || x.some(v=>v.error || v.termination==='invalid-match'))process.exit(1);"
+          node scripts/rook-vs-rook.js > rook-belief-full-ko.jsonl
+          cat rook-belief-full-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('rook-belief-full-ko.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          if(rows.length!==4 || rows.some(r=>r.error||!r.sameSeed||
+             !r.simultaneousLocks||r.seeds[0]!==r.seeds[1]||r.cap!==400||
+             r.slots.some(s=>s.pieces!==r.turns)||r.scored!==(r.termination==='KO')))
+            throw Error('Invalid full-KO same-seed synchronization protocol');
+          for(const seed of [67000,67001]){
+            const pair=rows.filter(r=>r.seed===seed);
+            if(pair.length!==2||pair[0].swap||!pair[1].swap)
+              throw Error('Missing swapped-role games for seed '+seed);
+          }
+          const ko=rows.filter(r=>r.scored);
+          console.log(JSON.stringify({scored:ko.length,beliefWins:ko.filter(r=>r.winner==='belief').length,
+            baselineWins:ko.filter(r=>r.winner==='baseline').length,
+            capped:rows.filter(r=>r.termination==='capped').length,
+            doubleKO:rows.filter(r=>r.termination==='double-KO').length}));
+          JS
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: rook-public-belief-paired-smoke
-          path: rook-belief-paired.jsonl
-          retention-days: 15
+          name: rook-public-belief-full-ko
+          path: rook-belief-full-ko.jsonl
+          retention-days: 30
