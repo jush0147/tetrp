@@ -1,0 +1,82 @@
+name: ROOK fifth-ply near-CPU public-state calibration
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-cpu-control-public-screen.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  calibrated:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download pinned PUBLIC snapshots only
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-kiwi-shared-position-diagnostic
+          repository: jush0147/tetrp
+          run-id: 37949389406
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compare relative search CPU on identical 22 public positions
+        env:
+          ROOK_CPU_PUBLIC_SNAPSHOTS: rook-public-observations.jsonl
+          ROOK_CPU_PREVIOUS_DIFF: rook-choice-diff.jsonl
+          ROOK_CPU_OUTPUT: rook-cpu-control-public-report.json
+        run: |
+          set -eu
+          node scripts/rook-cpu-control-public-screen.js > rook-cpu-control-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const report=JSON.parse(readFileSync('rook-cpu-control-public-report.json','utf8'));
+          if(report.format!=='rook-near-cpu-control-public-screen/1'||
+            report.observations!==22||report.independentSeeds!==2||
+            report.rows.length!==22||!Number.isFinite(report.ratio)||
+            report.ratio<=0||report.rows.some(r=>r.options.length!==2||
+              r.options.some(o=>!Number.isFinite(o.ms)||o.ms<=0||
+                !Number.isInteger(o.evaluated)||o.evaluated<=0)))
+            throw Error('Invalid CPU calibration report');
+          const body=[
+            '### ROOK fifth-ply nearer-CPU public-state calibration (NOT KO)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Source SHA: '+process.env.GITHUB_SHA,
+            'Observations: 22 from ONLY 2 distinct source seeds; observations overlap.',
+            'Fifth-ply 4x24/6K+5K exact: mean '+report.candidate.meanMs+
+              'ms, total '+report.candidate.totalMs+'ms, extra SRS evaluations '+
+              report.candidate.extraEvaluated,
+            'Depth-5 Beam-128 / 120K up to 15 future full SRS proofs: mean '+
+              report.deeper.meanMs+'ms, total '+report.deeper.totalMs+'ms.',
+            'Observed aggregate fifth/deeper CPU ratio: '+report.ratio+
+              ' (not a strict per-turn CPU equalizer).',
+            'The two methods disagree on first root in '+report.differentRoot+
+              ' / 22 positions. This does not show which root is stronger.',
+            'Real 2000-lock KO-first outcomes on new seeds are the strength gate,',
+            'and actual per-match CPU may differ substantially from this screen.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-cpu-control-public-summary.md',body);
+          console.log(body);
+          JS
+      - name: Record reproducible CPU-control calibration
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-cpu-control-public-summary.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-near-cpu-public-calibration
+          path: |
+            rook-cpu-control-public-report.json
+            rook-cpu-control-summary.json
+            rook-cpu-control-public-summary.md
+          retention-days: 30
