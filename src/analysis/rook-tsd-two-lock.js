@@ -14,12 +14,15 @@ const spawn=(type,board)=>({type,x:Math.ceil(board.width/2)-1,
   softDropped:false,forceLock:false});
 
 export function findPublicTwoLockTsd(visible,{
-  firstStates=1200,secondStates=2400,maxSteps=70,maxPlans=8
+  firstStates=1200,secondStates=2400,maxSteps=70,maxPlans=8,
+  geometryPrescreen=true,secondProofCap=60
 }={}){
   if(visible?.next?.length!==5||!visible.board||!visible.current||
     !visible.rules||'bag' in visible||'holes' in visible||'rng' in visible)
     throw Error('Requires exactly player-visible Current/Hold/NEXT5');
-  if(![firstStates,secondStates,maxSteps,maxPlans].every(Number.isInteger)||
+  if(typeof geometryPrescreen!=='boolean'||
+    !Number.isInteger(secondProofCap)||secondProofCap<1||secondProofCap>300||
+    ![firstStates,secondStates,maxSteps,maxPlans].every(Number.isInteger)||
     firstStates<1||firstStates>10000||secondStates<1||
     secondStates>10000||maxSteps<1||maxSteps>150||
     maxPlans<1||maxPlans>100)throw new RangeError('Invalid two-lock TSD budget');
@@ -30,7 +33,7 @@ export function findPublicTwoLockTsd(visible,{
   const result={format:'public-two-lock-full-tsd/1',
     firstMoves:0,geometricReady:0,secondProofCalls:0,plans:[],
     nextT:hasNextT,heldT:!!heldT,requiresNoNewGarbage:true,
-    truncated:false};
+    truncated:false,geometryPrescreen,secondProofCap};
   if(!types.length)return result;
   const first=enumerateReachable(visible.board,visible.current,visible.rules,{
     maxStates:firstStates,maxSteps});
@@ -43,9 +46,16 @@ export function findPublicTwoLockTsd(visible,{
     B.removeLines(board,cleared);
     // Cheap exact geometric pre-filter, not attack credit. A second SRS+
     // proof below remains mandatory even when this geometry looks perfect.
-    if(!tsdScaffolds(board,visible.rules,{maxMissing:0})
-      .some(x=>x.fullSpinGeometry))continue;
-    result.geometricReady++;
+    const geometric=tsdScaffolds(board,visible.rules,{maxMissing:0})
+      .some(x=>x.fullSpinGeometry);
+    if(geometric)result.geometricReady++;
+    // Prescreening is a CPU shortcut, never an exhaustive SRS+ theorem.
+    // Kick-based or vertical TSDs can evade this geometry-only template.
+    if(geometryPrescreen&&!geometric)continue;
+    if(result.secondProofCalls>=secondProofCap){
+      result.truncated=true;
+      return result;
+    }
     const piece=spawn('t',board);
     if(!B.legal(board,piece))continue;
     result.secondProofCalls++;
