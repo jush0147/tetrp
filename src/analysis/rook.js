@@ -361,9 +361,11 @@ const boardKey=rookBoardKey;
 // 'verified' refers solely to combat already projected by Tetrp authority.
 // Caller supplies candidates sorted by the ordinary beam objective.
 export function reservePublicOptionFrontier(candidates,baseline,{
-  slots=0,maxScoreGap=70
+  slots=0,maxScoreGap=70,lanes='all'
 }={}){
   if(!Number.isInteger(slots)||slots<0||slots>128||
+    !['all','no-spin','no-quad','no-combat','combat','quad','spin']
+      .includes(lanes)||
     !Number.isFinite(maxScoreGap)||maxScoreGap<0||maxScoreGap>1000)
     throw new RangeError('Invalid option-frontier portfolio budget');
   const result=baseline.slice(),details={considered:0,inserted:0,
@@ -389,7 +391,8 @@ export function reservePublicOptionFrontier(candidates,baseline,{
     {key:'combat',signal:n=>n.optionSignals.realCombat},
     {key:'quad',signal:n=>n.optionSignals.quadReadiness},
     {key:'spin',signal:n=>n.optionSignals.spinReadiness}
-  ];
+  ].filter(mode=>lanes==='all'||lanes===mode.key||
+    (lanes.startsWith('no-')&&lanes.slice(3)!==mode.key));
   // Protect the top-rated half of the regular beam and make portfolio slots
   // only from its weaker tail. No duplicated candidate or hidden lookahead.
   const maximum=Math.min(slots,Math.floor(result.length/2));
@@ -652,7 +655,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   traceRootSurvival=false,traceRootScores=false,beamRootReserve=null,offenseWeight=4.8,
   intermediateHoleRelief=0,includeHoldPlan=false,
   optionFrontierSlots=0,optionFrontierMaxScoreGap=70,
-  optionFrontierRiskGuard=false,
+  optionFrontierRiskGuard=false,optionFrontierLanes='all',
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
@@ -710,6 +713,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isInteger(optionFrontierSlots)||optionFrontierSlots<0||
     optionFrontierSlots>=beamWidth||
     typeof optionFrontierRiskGuard!=='boolean'||
+    !['all','no-spin','no-quad','no-combat','combat','quad','spin']
+      .includes(optionFrontierLanes)||
     !Number.isFinite(optionFrontierMaxScoreGap)||
     optionFrontierMaxScoreGap<0||optionFrontierMaxScoreGap>1000)
     throw Error('invalid search budget');
@@ -1156,7 +1161,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     // Tetrp-combat reward and safety evaluator, NOT any proxy points.
     if(effectiveFrontierSlots>0&&ply+1<clamp){
       const portfolio=reservePublicOptionFrontier(candidates,beam,{
-        slots:effectiveFrontierSlots,maxScoreGap:optionFrontierMaxScoreGap});
+        slots:effectiveFrontierSlots,maxScoreGap:optionFrontierMaxScoreGap,
+        lanes:optionFrontierLanes});
       beam=portfolio.beam;
       optionFrontierStats.considered+=portfolio.details.considered;
       optionFrontierStats.inserted+=portfolio.details.inserted;
@@ -1272,6 +1278,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
     ...(optionFrontierSlots>0?{optionFrontierSlots,
       optionFrontierMaxScoreGap,optionFrontierStats,
+      ...(optionFrontierLanes!=='all'?{optionFrontierLanes}:{}),
       ...(optionFrontierRiskGuard?{
         effectiveFrontierSlots,optionFrontierRiskGuard,frontierSuppressed
       }:{})}:{}),
