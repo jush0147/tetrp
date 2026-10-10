@@ -553,3 +553,17 @@ PR 事件觸發。對 main 的 push 與非 Draft PR，
 **SECOND CONTROLLED STRESS RUN SUBMITTED**: increase only conditional budget to 900 evaluations per scenario and beam=2, retaining ordinary 4x24/6K and the same archived public positions. New CI asserts the total cost envelope and posts abort causes, per-position time and decisions to Issue #8 on success. Commits c732494, 99c4a9a, d97d697, d875997, afb79e5, 2587652, ee127a3 and follow-up CI fixes.
 
 **Next P0 gate:** read the second run's abort counts by cause and whether any complete scenario made a different decision. If still all abort, stop increasing budget blindly and work on the public-conditional search architecture. If it completes and changes moves, use 2,000-lock full-KO ROOK self-play on fresh independent seeds; only test against Kiwi after a genuine strength gain. No opt-in policy promotion, APP claim or KO claim without scored evidence.
+
+
+### 2026-10-10 P0 capacity result: complete common-horizon, no decision benefit
+
+[Real-public stress CI #38021157031](https://github.com/jush0147/tetrp/actions/runs/38021157031) **SUCCESS**, artifact rook-real-ko-public-stress-diagnosis retained. Exact head 2587652. Same 22 public snapshots from only 2 independent seeds; 3 pending-garbage positions. The experimental conditional continuation uses up to 900 evaluated placements per scenario and beam 2, with 3 probed roots per pressured position.
+
+- All 9 conditional root revaluations completed: 0 budget abort, 0 additional unknown garbage abort, 0 exhausted NEXT abort, 0 scenario-limit rejection.
+- Conditional evaluations **15,786 EXTRA** on top of original ROOK node budget. First-choice decisions changed **0 / 3** relative to baseline and **0 / 3** vs prior one-step belief. Agreement with Kiwi stayed **0 / 3**.
+- Per-position runtime from retained JSON artifact (ms):
+  - seed 67020 turn 8: baseline 89, legacy belief 388, common horizon 1550 (**17.4x baseline**), 4686 extra evaluated.
+  - seed 67020 turn 20: baseline 137, legacy 393, common horizon 1416 (**10.3x**), 5380 extra.
+  - seed 67023 turn 8: baseline 135, legacy 445, common horizon 1649 (**12.2x**), 5720 extra.
+- This is a controlled LOCAL public-position measurement, not a scored KO trial. Only 3 pending-garbage positions and 2 seeds: no population-level inference. Nonetheless, the result DOES reject promotion of the expensive opt-in common-horizon configuration and does NOT justify a full-KO 900-node variant benchmark. Existing baseline defaults remain.
+- **Next P0**: shift focus from the isolated hidden-hole continuation hypothesis to structural attack/B2B/survival valuation and tactical search. Prior observed public 22-position disagreement and scored full KO 0:8 remain the real problem. Use traceRootScores, attack/survival decomposition and independent unseen-seed real 2000-lock A/B once a genuinely different decision policy exists. No arbitrary weight sweeps or more common-horizon budget increase.
