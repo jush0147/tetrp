@@ -492,3 +492,37 @@ acceptance 是否成功。若 belief 的期望值在多種未知垃圾情境
 仍無法帶來好決策，再研究長期攻擊、B2B、T-Spin
 策略的 valuation，不再盲目增加搜索寬度或 tweak holes。
 PR #6 保持 Draft，main 未合併。
+
+### 同日補充：修復後 belief 在真實公開垃圾局面並未改選
+
+[Action #38015275950](https://github.com/jush0147/tetrp/actions/runs/38015275950)
+已成功執行（commit c5e6b4d），其 22 個真實玩家公開局面
+中只有 **3 個** pending > 0。
+修正後 garbageBelief=true 在這三局都實際完成了
+3 次 belief 評估，**沒有情境超出上限，
+但第一手 0/3 改變，0/3 與 Kiwi 同手**。
+
+細節：
+- seed 67020 / turn 8：pending=4、holes=0，
+  仍選擇 occupied Hold，且
+  selectedUnresolvedGarbage=true。
+- seed 67020 / turn 20：pending=2、holes=7，
+  仍選擇 T Full-Spin 擺法，非 Kiwi 同手。
+- seed 67023 / turn 8：pending=1、holes=1，
+  仍選擇 occupied Hold，非 Kiwi 同手。
+
+新增追蹤未完成搜尋葉片的指標也確認：
+在 22 個位置中，4×24 與 5×48
+**各有 3 個** final beam 含未達目標深度的根；
+其中一個局面的最終選擇確實落在提早停止的節點。
+因此下一個核心假說更明確：
+**不是多估一次未知垃圾機率就能補足不同 horizon
+的路線評價**。需調查在 hidden-hole
+資訊邊界處採用玩家公開可觀察到未來後重新計畫的
+條件式 continuation/expectimax，而非單純固定
+beliefRiskWeight；並正式以足夠獨立 seed
+的完整權威 KO 驗證。
+
+此結果僅 3 個公開受壓局面，且來自 2 個 seed，
+不能據以宣稱 belief 策略對所有局面無效；
+目前尚無能採納的勝率證據。
