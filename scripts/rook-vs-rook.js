@@ -4,6 +4,7 @@ import {writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
+import {chooseMoveWithPublicTStock} from '../src/analysis/rook-t-stock.js';
 import {publicPlanStillApplicable,proveForecastPlacement,plannedHold} from '../src/analysis/rook-plan.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 
@@ -35,6 +36,8 @@ const expertHoldPlan=process.env.EXPERT_HOLD_PLAN==='1';
 const expertPruning=process.env.EXPERT_PRUNING==='1';
 const expertSticky=process.env.EXPERT_STICKY==='1';
 const expertExactLeaf=process.env.EXPERT_EXACT_LEAF==='1';
+const expertTStock=process.env.EXPERT_T_STOCK==='1';
+const tStockMargin=Number(process.env.T_STOCK_MARGIN??1);
 const leafExtensionBudget=Number(process.env.LEAF_EXTENSION_BUDGET??5000);
 const leafExtensionStates=Number(process.env.LEAF_EXTENSION_STATES??800);
 const intermediateHoleRelief=Number(process.env.EXPERT_PRUNING_HOLE_RELIEF??0.65);
@@ -57,6 +60,7 @@ const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertHoldPlan?'hold-plan':null,expertPruning?'setup-survival':null,
   expertSticky?'sticky-continuation':null,
   expertExactLeaf?'verified-fifth-ply':null,
+  expertTStock?'public-t-stock':null,
   budgetScaling?'budget-scale':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
@@ -83,10 +87,12 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(leafExtensionBudget)||leafExtensionBudget<1||leafExtensionBudget>100000||
   !Number.isInteger(leafExtensionStates)||leafExtensionStates<1||leafExtensionStates>10000||
   !Number.isFinite(intermediateHoleRelief)||
-  intermediateHoleRelief<0||intermediateHoleRelief>1)
+  intermediateHoleRelief<0||intermediateHoleRelief>1||
+  !Number.isFinite(tStockMargin)||tStockMargin<0||tStockMargin>100000)
   throw Error('Invalid ROOK self-play configuration');
 if(budgetScaling&&(expertOpen||expertRecovery||expertBelief||expertFuture||
-  expertBeam||expertOffense||expertHoldPlan||expertPruning||expertSticky||expertExactLeaf))
+  expertBeam||expertOffense||expertHoldPlan||expertPruning||expertSticky||
+  expertExactLeaf||expertTStock))
   throw Error('Budget scaling must isolate maxNodes; disable EXPERT_*');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
@@ -111,6 +117,7 @@ function select(demo,open){
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
+    tStockOffers:0,tStockChoices:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
     stickyHoldSkipped:0,leafExtensionAttempts:0,leafExtensionApplied:0,
     leafExtensionAborts:0,leafExtensionChanges:0,leafExtensionWork:0};
@@ -163,7 +170,7 @@ function select(demo,open){
     const searchBudget=open?candidateBudget:baselineBudget;
     const searchDepth=open?candidateDepth:baselineDepth;
     const searchBeam=open?candidateBeamWidth:baselineBeamWidth;
-    const report=chooseMove(view.visible,{...base,maxNodes:searchBudget,
+    const searchOptions={...base,maxNodes:searchBudget,
       depth:searchDepth,beamWidth:searchBeam,
       reversePlanner:open&&expertOpen,
       garbageRecovery:open&&expertRecovery,
@@ -179,9 +186,17 @@ function select(demo,open){
       includeHoldPlan:(open&&expertHoldPlan)||auditHoldPlan,
       includeForecastPlan:open&&expertSticky,
       exactLeafExtension:open&&expertExactLeaf,leafExtensionBudget,leafExtensionStates,
-      beliefProbes,beliefMaxOutcomes});
+      beliefProbes,beliefMaxOutcomes};
+    const report=open&&expertTStock
+      ?chooseMoveWithPublicTStock(view.visible,{...searchOptions,
+        minValueMargin:tStockMargin,planMaxStates:950,planMaxSteps:70,
+        maxProofCalls:85,maxPlacementEvaluations:2500,planBeamWidth:16,
+        maxPlans:4})
+      :chooseMove(view.visible,searchOptions);
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
+    stats.tStockOffers+=report.diagnostics.tStock?.inspected??0;
+    stats.tStockChoices+=Number(report.diagnostics.tStock?.selected);
     stats.searches++;
     stats.budgetReached+=Number(report.diagnostics.evaluated>=searchBudget);
     stats.searchDepthLimit=Math.max(stats.searchDepthLimit,report.diagnostics.effectiveDepth);
