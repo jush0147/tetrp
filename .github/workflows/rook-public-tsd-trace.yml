@@ -1,0 +1,96 @@
+name: ROOK public Kiwi TSD construction trace
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-public-tsd-trace.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  issues: write
+jobs:
+  trace:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: TSD trace and canonical SRS smoke
+        run: node --test test/rook-kiwi-fifth.test.js test/rook-bfs-parent.test.js
+      - name: Replay one existing pinned Kiwi victory using only public histories
+        env:
+          SEEDS: '67131'
+          SWAP_ROLES: '0'
+          KIWI_NODES: '200000'
+          ROOK_NODES: '6000'
+          ROOK_EXACT_LEAF: '1'
+          ROOK_LEAF_BUDGET: '5000'
+          ROOK_LEAF_STATES: '800'
+          MAX_LOCKS: '2000'
+          ROOK_TSD_TRACE_PATH: rook-public-tsd-traces.jsonl
+        run: |
+          set -eu
+          node scripts/rook-vs-kiwi.js > rook-tsd-replay-match.jsonl
+          ROOK_TSD_TRACE_INPUT=rook-public-tsd-traces.jsonl \
+            ROOK_TSD_REPORT=rook-tsd-trajectory-report.json \
+            node scripts/rook-tsd-trajectory-audit.js > rook-tsd-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-tsd-replay-match.jsonl','utf8').trim());
+          const audit=JSON.parse(readFileSync('rook-tsd-trajectory-report.json','utf8'));
+          const rook=r.slots.find(x=>x.kind==='rook'),kiwi=r.slots.find(x=>x.kind==='kiwi');
+          const events=audit.byKind.rook.tsdEvents+audit.byKind.kiwi.tsdEvents;
+          if(r.seed!==67131||!r.sameSeed||!r.simultaneousLocks||
+            r.error||r.termination!=='KO'||r.winner!=='kiwi'||
+            r.nodeBudgets.kiwi!==200000||r.rookExactLeaf!==true||
+            !rook||!kiwi||kiwi.combatEvents.fullTsd<3||
+            audit.format!=='rook-public-tsd-trajectory-audit/1'||
+            audit.records!==events||
+            rook.combatEvents.fullTsd!==audit.byKind.rook.tsdEvents||
+            kiwi.combatEvents.fullTsd!==audit.byKind.kiwi.tsdEvents||
+            audit.events.some(e=>e.snapshots.at(-1).lag!==0||
+              e.snapshots.some(s=>s.lag<0||s.lag>5)))
+            throw Error('TSD history not aligned to actual engine Full TSD');
+          const summary=[
+            '### ROOK/Kiwi public-view reconstruction of real TSD setups (not a new KO benchmark)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Replay seed 67131, same bag and public NEXT5, actual KO winner='+r.winner+
+              ' in '+r.lockSteps+' synchronous locks.',
+            'True full TSD events: Kiwi='+audit.byKind.kiwi.tsdEvents+
+              ', ROOK='+audit.byKind.rook.tsdEvents+'.',
+            ...audit.signalByLag.map(l=>'At '+l.lag+' prior locks: '+
+              l.positive+'/'+l.samples+' had nonzero TSD scaffold geometry; '+
+              l.fullGeometry+' already had fully geometric TSD slots.'),
+            'Kiwi TSD with visible scaffold 2 locks beforehand: '+
+              audit.byKind.kiwi.lead2ScaffoldPositive,
+            'Kiwi TSD with visible scaffold 3 locks beforehand: '+
+              audit.byKind.kiwi.lead3ScaffoldPositive,
+            'Each JSONL history includes public-only board, Current, Hold, NEXT5,',
+            'B2B/Combo and incoming garbage. No private Kiwi engine search/bag/RNG.',
+            'Geometric scaffold potential is NOT proof a future SRS+ TSD will occur.',
+            'This is an explanatory replay; do not count it as an independent seed.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-public-tsd-trace-summary.md',summary);
+          console.log(summary);
+          JS
+      - name: Record public-only TSD build-up findings in Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-public-tsd-trace-summary.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-public-kiwi-tsd-trajectories
+          path: |
+            rook-tsd-replay-match.jsonl
+            rook-public-tsd-traces.jsonl
+            rook-tsd-trajectory-report.json
+            rook-tsd-summary.json
+            rook-public-tsd-trace-summary.md
+          retention-days: 30
