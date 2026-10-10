@@ -350,6 +350,91 @@ export const rookBoardKey=(b)=>b.rows.map(row=>row.map(v=>
   v===null?'.':v==='gb'?'g':v==='gbd'?'d':'#').join('')).join('');
 const boardKey=rookBoardKey;
 
+// Evaluate a separately proved, publicly visible multi-lock plan with EXACTLY
+// the same attack/defense rewards and final board evaluator as the normal ROOK
+// beam. This is an opt-in diagnostic, NOT an automatic policy promotion.
+// Hold exchanges consume no placement and cannot bypass the real Hold lock.
+export function evaluateVerifiedPublicPlan(visible,plan,{
+  maxStates=1200,maxSteps=70,offenseWeight=4.8,
+  garbageRecovery=false,garbageRecoveryWeight=1
+}={}){
+  if(!visible?.playing||!visible?.board||!visible?.current||
+    !Array.isArray(visible.next)||visible.next.length!==5||
+    !visible.rules||!Array.isArray(plan?.actions)||
+    !Array.isArray(plan?.witnesses)||
+    plan.witnesses.length<1||plan.witnesses.length>5)
+    throw new Error('Expected public NEXT5 and a proved 1-5-lock plan');
+  if(!Number.isInteger(maxStates)||maxStates<1||maxStates>10000||
+    !Number.isInteger(maxSteps)||maxSteps<1||maxSteps>150||
+    !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24||
+    !Number.isFinite(garbageRecoveryWeight)||garbageRecoveryWeight<0||
+    garbageRecoveryWeight>4)
+    throw new RangeError('Invalid public plan scoring budget');
+  const pending=[...(visible.attack?.are??[]),
+    ...(visible.attack?.pending??[])].reduce((n,p)=>n+(p.amt??0),0);
+  const recoveryActive=garbageRecovery&&(pending>0||
+    visible.board.rows.some(row=>row.includes('gb')||row.includes('gbd')));
+  let node={board:visible.board,combat:visibleCombat(visible),
+    frame:visible.frame,pending,combo:visible.attack?.combo??0,
+    btb:visible.attack?.btb??0,offenseWeight,recoveryActive,
+    recoveryWeight:garbageRecoveryWeight,score:0};
+  let known=[visible.current.type,...visible.next];
+  let held=visible.hold?.piece??null,locked=!!visible.hold?.locked;
+  let locks=0,holdActions=0,proofCalls=0;
+  const fail=reason=>({comparable:false,reason,locks,holdActions,
+    proofCalls,score:null});
+  for(const request of plan.actions){
+    const action=request?.action;
+    if(action?.kind==='hold'){
+      if(!visible.rules.hold||locked||holdActions>=2||!known.length)
+        return fail('illegal-hold');
+      const old=known[0];
+      if(held===null){
+        if(action.mode!=='empty'||known.length<2)return fail('hold-mode');
+        held=old;known.shift();
+      }else{
+        if(action.mode!=='occupied')return fail('hold-mode');
+        known[0]=held;held=old;
+      }
+      holdActions++;locked=true;
+      continue;
+    }
+    if(action?.kind!=='place'||locks>=plan.witnesses.length||
+      !known.length)return fail('unmatched-actions');
+    const witness=plan.witnesses[locks];
+    if(witness.type!==known[0]||request.move?.piece!==known[0])
+      return fail('piece-order');
+    // Re-enumerate SRS+ from the true public Current at ply zero, or
+    // from the Tetrp standard spawn on subsequent/swap-out plies.
+    const start=locks===0&&holdActions===0?visible.current:
+      spawn(known[0],node.board);
+    proofCalls++;
+    const landings=enumerateReachable(node.board,start,visible.rules,
+      {maxStates,maxSteps});
+    const claimedCells=witness.cells.map(([x,y])=>x+','+y).sort().join(';');
+    const legal=landings.find(m=>m.piece.type===witness.type&&
+      m.piece.x===witness.x&&Math.ceil(m.piece.y)===witness.y&&
+      m.piece.r===witness.rotation&&m.spin===witness.spin&&
+      fmtCells(m.piece)===claimedCells&&
+      JSON.stringify(m.path)===JSON.stringify(witness.path));
+    if(!legal)return fail('srs-witness-not-reproducible');
+    const p=applyPlacement(node,legal,visible.rules);
+    if(!p||p.topout)return fail('topout-or-illegal');
+    if(p.unresolvedGarbage)return fail('unknown-garbage-hole');
+    node={...node,board:p.board,combat:p.combat,frame:p.frame,
+      pending:p.pending,combo:p.combo,btb:p.btb,
+      score:node.score+p.reward*Math.pow(.94,locks)};
+    locks++;known.shift();locked=false;
+  }
+  if(locks!==plan.witnesses.length||plan.planLength!==locks)
+    return fail('incomplete-lock-horizon');
+  const boardValue=evaluateBoard(node.board,node);
+  const score=node.score+boardValue*Math.pow(.88,locks);
+  return {comparable:true,reason:null,locks,holdActions,proofCalls,
+    cumulativeReward:node.score,boardValue,score,finalBtb:node.btb,
+    finalCombo:node.combo,finalPending:node.pending,finalFrame:node.frame};
+}
+
 // An unknown garbage hole forces conditional evaluation of potential boards.
 // Since beam pruning may include an intermediate-only shaping bonus, both
 // scores must move together when the expected value changes. Changing only
