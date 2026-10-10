@@ -24,7 +24,7 @@ test('offline features are public NEXT5 only, stable and typed',()=>{
   assert.deepEqual(publicBoardFeatures(polluted),a);
   assert.deepEqual(v,unchanged);
   assert.throws(()=>publicBoardFeatures({...v,next:[...v.next,'i']}),
-    /publicly visible/);
+    /player-visible/);
   const occupied=structuredClone(v);
   const H=occupied.board.rows.length;
   occupied.board.rows[H-3][3]='t';
@@ -34,7 +34,10 @@ test('offline features are public NEXT5 only, stable and typed',()=>{
 });
 test('horizon labels are actual POST-authority counter deltas; tail is censored',()=>{
   const traces=[...Array.from({length:10},(_,i)=>lock(67610,0,i)),
-    ...Array.from({length:10},(_,i)=>lock(67611,1,i))];
+    ...Array.from({length:10},(_,i)=>({
+      ...lock(67611,1,i),
+      outcome:{alive:true,combatTotals:totals(i+1)}
+    }))];
   const ds=buildRealizedWindows(traces,{
     horizon:3,matchCaps:new Map([[67610,'KO'],[67611,'capped']])});
   assert.equal(ds.independentSeeds,2);
