@@ -93,7 +93,7 @@ function prepareUntilPlace(demo,kind){
   throw Error('post-Hold search did not Place');
 }
 
-function asStats(demo,kind,searchNodes,holdMoves,searchMs){
+function asStats(demo,kind,searchNodes,holdMoves,searchMs,combatEvents=null){
   const s=demo.engine.state,a=s.attack;
   return {kind,playing:s.playing,reason:s.reason,pieces:s.stats.pieces,frame:s.frame,
     generated:a.totals.generated,sent:a.totals.sent,cancelled:a.totals.cancelled,
@@ -101,7 +101,8 @@ function asStats(demo,kind,searchNodes,holdMoves,searchMs){
     searchMs:Math.round(searchMs),msPerPiece:s.stats.pieces?
       Number((searchMs/s.stats.pieces).toFixed(3)):0,
     rawApp:s.stats.pieces?a.totals.generated/s.stats.pieces:0,
-    sentApp:s.stats.pieces?a.totals.sent/s.stats.pieces:0};
+    sentApp:s.stats.pieces?a.totals.sent/s.stats.pieces:0,
+    ...(combatEvents?{combatEvents}: {})};
 }
 // Persist only the same allowlisted public snapshots the policies receive.
 const publicDiagnosticSnapshots=[];
@@ -112,6 +113,10 @@ function runPair(seed,order){
   const original=demos.map(d=>d.view().visible);
   let transfers=[],lockSteps=0,searchNodes=[0,0],
     holdMoves=[0,0],searchMs=[0,0],error=null,diagnostics=[];
+  // Authority outcomes ONLY; never used as search inputs by either bot.
+  const combatEvents=Array.from({length:2},()=>({fullTss:0,fullTsd:0,
+    fullTst:0,miniClears:0,quads:0,ordinarySingles:0,ordinaryDoubles:0,
+    ordinaryTriples:0,allClears:0,maxBtb:0}));
   try{
     while(lockSteps<limit&&demos.every(d=>d.engine.state.playing)){
       // No side sees the other side's future move or its unrevealed garbage.
@@ -147,7 +152,22 @@ function runPair(seed,order){
       // Both decisions are prepared before either placement commits.
       if(assertSimultaneousPair(demos)!==turnFrame)
         throw Error('Decision mutated the synchronous match clock');
-      for(let i=0;i<2;i++)demos[i].commit(plans[i].revision);
+      for(let i=0;i<2;i++){
+        const outcome=demos[i].commit(plans[i].revision);
+        const lock=outcome.lastPlacement;
+        const stats=combatEvents[i];
+        const fullT=lock.piece==='t'&&lock.spin==='full';
+        if(fullT&&lock.lines===1)stats.fullTss++;
+        if(fullT&&lock.lines===2)stats.fullTsd++;
+        if(fullT&&lock.lines===3)stats.fullTst++;
+        if(lock.spin==='mini'&&lock.lines>0)stats.miniClears++;
+        if(lock.lines===4)stats.quads++;
+        if(lock.allClear)stats.allClears++;
+        if(lock.spin==='none'&&lock.lines===1)stats.ordinarySingles++;
+        if(lock.spin==='none'&&lock.lines===2)stats.ordinaryDoubles++;
+        if(lock.spin==='none'&&lock.lines===3)stats.ordinaryTriples++;
+        stats.maxBtb=Math.max(stats.maxBtb,demos[i].engine.state.attack.btb);
+      }
       assertSimultaneousPair(demos);
       for(let from=0;from<2;from++){
         for(const x of demos[from].engine.state.attack.outbox.splice(0))
@@ -155,7 +175,7 @@ function runPair(seed,order){
       }
       lockSteps++;
       if(lockSteps%25===0)process.stderr.write(JSON.stringify({
-        game:order,lockSteps,stats:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i]))})+'\n');
+        game:order,lockSteps,stats:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i],combatEvents[i]))})+'\n');
     }
   }catch(e){error=e instanceof Error?e.message:String(e)}
   const alive=demos.map(d=>d.engine.state.playing);
@@ -167,7 +187,7 @@ function runPair(seed,order){
     scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
     winner:result.scored?kinds[result.winnerSlot]:null,
-    slots:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i])),
+    slots:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i],combatEvents[i])),
     initialVisibleNext:original.map(v=>v.next),
     ...(diagnosticsEnabled?{diagnostics}: {})};
 }
