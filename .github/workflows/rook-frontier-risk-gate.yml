@@ -1,0 +1,130 @@
+name: ROOK public danger-aware frontier policy gate
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-frontier-risk-gate.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  risk-choice:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    outputs:
+      changed: ${{ steps.gate.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test public risk only and unchanged default decisions
+        run: node --test test/rook-option-frontier.test.js test/rook-beam.test.js
+      - name: Non-scoring behavioral check on prior known seeds
+        env:
+          SEEDS: 67312,67313
+          MAX_LOCKS: '180'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_FRONTIER: '1'
+          FRONTIER_RISK_GUARD: '1'
+          FRONTIER_GUARD_SHADOW: '1'
+          FRONTIER_SHADOW: '0'
+          FRONTIER_SLOTS: '3'
+          FRONTIER_SCORE_GAP: '70'
+        run: node scripts/rook-vs-rook.js > guarded-frontier-short.jsonl
+      - name: Require actual public root-action guard changes
+        id: gate
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('guarded-frontier-short.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==2||rows.some(r=>r.error||
+            r.sameSeed!==true||r.cap!==180||
+            r.swapRoles!=='0'||r.slots?.length!==2))
+            throw Error('Invalid Tetrp public guard screen');
+          const active=rows.map(r=>r.slots.find(s=>
+            s.kind==='risk-guarded-frontier'));
+          if(active.some(x=>!x||x.searches!==x.frontierGuardShadowChecks))
+            throw Error('Incomplete same-public-snapshot unguarded comparison');
+          const sum=k=>active.reduce((n,x)=>n+(x[k]??0),0);
+          const out={format:'rook-frontier-guard-short-unscored/1',
+            independentSeeds:2,cap:180,
+            guardActivations:sum('frontierRiskSuppressed'),
+            rootActionChangesVsUnguarded:sum('frontierGuardShadowChanges'),
+            checked:sum('frontierGuardShadowChecks'),
+            guardShadowCPU:sum('frontierGuardShadowMs'),
+            alternativeInserted:sum('frontierInserted')};
+          writeFileSync('guarded-frontier-gate.json',
+            JSON.stringify(out,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,
+            'changed='+(out.rootActionChangesVsUnguarded>0?'true':'false')+'\n');
+          console.log(JSON.stringify(out));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: guarded-frontier-short-screen
+          path: |
+            guarded-frontier-short.jsonl
+            guarded-frontier-gate.json
+          retention-days: 30
+  new-seed-ko:
+    needs: risk-choice
+    if: needs.risk-choice.outputs.changed == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        seed: [67324,67325]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full 2000-lock genuine Tetrp KO versus unchanged ROOK
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_FRONTIER: '1'
+          FRONTIER_RISK_GUARD: '1'
+          FRONTIER_GUARD_SHADOW: '0'
+          FRONTIER_SHADOW: '0'
+          FRONTIER_SLOTS: '3'
+          FRONTIER_SCORE_GAP: '70'
+        run: |
+          node scripts/rook-vs-rook.js > guarded-frontier-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const lines=readFileSync('guarded-frontier-ko.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(lines.length!==1)throw Error('Expected one true independent seed');
+          const r=lines[0];
+          const trial=r.slots.find(x=>x.kind==='risk-guarded-frontier');
+          const baseline=r.slots.find(x=>x.kind==='baseline');
+          if(r.error||r.cap!==2000||r.sameSeed!==true||
+            r.swapRoles!=='0'||r.seed!==Number(process.env.SEEDS)||
+            !trial||!baseline)throw Error('Invalid public KO protocol');
+          console.log(JSON.stringify({seed:r.seed,termination:r.termination,
+            scored:r.scored,winner:r.winner,turns:r.turns,
+            challengerSent:trial.sent,baselineSent:baseline.sent,
+            challengerCPU:trial.ms,baselineCPU:baseline.ms,
+            suppressed:trial.frontierRiskSuppressed,
+            frontierInserted:trial.frontierInserted}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: guarded-frontier-ko-${{ matrix.seed }}
+          path: guarded-frontier-ko.jsonl
+          retention-days: 30
