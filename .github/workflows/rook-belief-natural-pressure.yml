@@ -1,0 +1,55 @@
+name: ROOK historical Kiwi KO public pressure belief parity
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-belief-natural-pressure.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  historical:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download actual ROOK vs pinned Kiwi authority public NEXT5 states
+        uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 37949389406
+          name: rook-kiwi-shared-position-diagnostic
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Score only real public pending-garbage pressure snapshots
+        run: node scripts/rook-belief-natural-pressure.js > organic-pressure.json
+      - name: Verify exact historical cohort and show no fake KO
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const j=JSON.parse(readFileSync('organic-pressure.json','utf8'));
+          if(j.scored!==false||j.knockouts!==0||
+            j.sourceRun!==37949389406||j.naturalIndependentGameSeeds!==2||
+            j.inspectedCorrelatedPublicStates!==3||
+            j.snapshots.some(x=>x.publiclyPending<=0||
+              x.reports.length!==2))
+            throw Error('Historical pressure cohort not correctly paired');
+          console.log(JSON.stringify({format:j.format,
+            organicPublicStates:j.inspectedCorrelatedPublicStates,
+            naturalGameSeeds:j.naturalIndependentGameSeeds,
+            changedFirstActions:j.changes,legacyAttempts:j.legacyAttempts,
+            commonAttempts:j.commonAttempts,
+            completedCommonHorizon:j.commonCompleted,
+            discardedIncompleteHorizon:j.commonAborted,
+            conditionalNodes:j.commonConditionalNodes,
+            scenarioLimit:j.commonExhausted,
+            note:j.note},null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: real-kiwi-ko-public-belief-positions
+          path: organic-pressure.json
+          retention-days: 30
