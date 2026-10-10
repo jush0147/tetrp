@@ -25,6 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      # Capped rows stay alive; only a genuine engine KO supplies a death label.
       - name: Check offline label boundaries and public-state invariants
         run: node --test test/rook-realized-value-data.test.js
       - name: Genuine full Tetrp KO until real result or 2000 lock cap
