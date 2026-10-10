@@ -468,7 +468,7 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
 }
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
-  maxStates=1200,maxSteps=42,includeRanked=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
+  maxStates=1200,maxSteps=42,includeRanked=false,includeForecastPlan=false,spinForecast=true,spinForecastPly=2,spinForecastStates=1400,spinForecastProbes=8,
   futureReachable=true,futureReachablePly=5,futureReachableProbes=9,futureReachableStates=800,
   futureProofSpread='legacy',
   traceRootSurvival=false,traceRootScores=false,beamRootReserve=null,offenseWeight=4.8,
@@ -725,6 +725,14 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             unresolvedGarbage:p.unresolvedGarbage,forecastTank:p.forecastTank,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
             rootHoldPlan:node.rootHoldPlan??(ply===0&&option.hold?planned:null),
+            ...(includeForecastPlan?{forecastPlan:[...(node.forecastPlan??[]),{
+              preBoardKey:boardKey(node.board),preCurrent:node.queue[0],
+              preHold:node.hold,prePending:node.pending,
+              preBtb:node.btb,preCombo:node.combo,
+              useHold:option.hold,piece:move.piece.type,
+              spin:move.spin,
+              cells:B.cells(move.piece).map(([x,y])=>[x,Math.ceil(y)])
+            }]}:{}),
             ...(traceRootScores?{
               forecastLocks:[...(node.forecastLocks??[]),{
                 piece:move.piece.type,lines:p.lines,spin:p.spin,
@@ -951,6 +959,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
     futureProofSpread,
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
+  if(includeForecastPlan)result.forecastPlan=best.forecastPlan??[];
   if(includeHoldPlan&&result.kind==='hold')
     result.holdPlan=best.rootHoldPlan??null;
   if(traceRootScores){
