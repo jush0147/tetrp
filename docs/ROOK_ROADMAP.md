@@ -1038,3 +1038,47 @@ attack scoring was unchanged either way. The lane now named
 Do not attribute the older gate's changed-action count or
 potential KO outcome to the corrected revision without
 a separate real public-state comparison.
+
+
+### 2026-10-10 first scored structural-strategy KO (EARLY exploratory revision)
+
+[Actions #38060342791](https://github.com/jush0147/tetrp/actions/runs/38060342791),
+independent seed **67312** under the ORIGINAL experimental
+`generated + cancelled` preservation-lane revision `5dcadae`,
+was a **real Tetrp engine-authorized single KO at synchronous lock 281,
+winner `option-frontier`**. Both sides received identical seven-bag
+seed and 24 frames per locked piece, with 2000-lock safety cap.
+Baseline was actually knocked out due to `garbagesmash`:
+frontier alive / baseline dead. Both locked exactly 281 pieces.
+No errors; not a capped or double-KO game.
+
+Detailed totals (candidate vs original ROOK):
+- True generated attack: **153 vs 143**; truly sent: **128 vs 124**;
+  cancelled: **25 vs 19**; tanked: **49 vs 59**; received:
+  **36 vs 37**.
+- Full TSD: **1 vs 0**; TSS: **2 vs 1**; minis: **6 vs 10**;
+  quads: **14 vs 16**; observed maximum B2B: **5 vs 5**.
+- Measured challenger search CPU wall clock: **98,624 ms**;
+  baseline **80,090 ms** (about **23.1% extra search time**).
+  The two sides had equal configured 6000 maxNodes, but not equal
+  actual evaluation counts, compute, or CPU. This KO is NOT
+  evidence of CPU-adjusted improvement.
+- These are **ONE new independent seed** and one historical
+  experimental revision. Do not announce ROOK generally superior;
+  the strategy remains opt-in and not pinned Kiwi-tested.
+
+At the same time the corrected `sent + cancelled` lane revision
+`158f638` [Actions #38060561936](https://github.com/jush0147/tetrp/actions/runs/38060561936)
+passed 8/8 regression tests and repeated the two-seed 32-lock
+UNSCORED screen: again **80 shadow decisions, 5 changed first
+actions, 452 alternative survivor insertions**. It still sent
+**14** lines across those two truncated short trials versus
+baseline **24**, so it has no established early APP benefit.
+Its **genuine KO test results were pending at this write-up**.
+The two policy revisions must not be conflated.
+
+Other older-version seed 67313 results were also pending.
+Because same-seed slot swaps are correlated, true confirmatory
+testing requires many fresh independent seeds (and optional
+opposite slot as symmetry control), transparent CPU accounting,
+then the real pinned Kiwi.
