@@ -616,6 +616,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   const rootSurvival=[];
   let beliefAttempts=0,beliefEvaluations=0,beliefOutcomes=0,beliefOverBudget=0;
   let beliefHorizonEvaluated=0,beliefHorizonAborted=0;
+  const beliefHorizonAbortReasons={budget:0,secondGarbage:0,publicNext:0};
   const futureReachableByPly=Array(depth+1).fill(0);
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
   // Known T may be the fifth NEXT piece; six placements are publicly
@@ -811,6 +812,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           if(beliefCommonHorizon&&
             /public NEXT exhausted|another unresolved public garbage|conditional horizon node budget/.test(error.message)){
             beliefHorizonAborted++;
+            const reason=/node budget/.test(error.message)?'budget':
+              /another unresolved/.test(error.message)?'secondGarbage':'publicNext';
+            beliefHorizonAbortReasons[reason]++;
             continue; // keep original rank if continuation is not comparable
           }
           throw error;
@@ -914,7 +918,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     futureReachableByPly,unresolvedTankNodes,
     beliefAttempts,beliefEvaluations,beliefOutcomes,beliefOverBudget,
     ...(beliefCommonHorizon?{beliefCommonHorizon,beliefHorizonEvaluated,
-      beliefHorizonAborted,beliefHorizonNodes,beliefHorizonBeam}:{}),
+      beliefHorizonAborted,beliefHorizonAbortReasons,
+      beliefHorizonNodes,beliefHorizonBeam}:{}),
     selectedBelief:best.belief??null,
     selectedUnresolvedGarbage:best.unresolvedGarbage,
     selectedForecastTank:best.forecastTank,selectedFrame:best.frame,
