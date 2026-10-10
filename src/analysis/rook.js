@@ -50,39 +50,54 @@ function land(board,p){
   return q;
 }
 
+// Execute genuine SRS+ with FIFO order preserved. Queue entries keep a
+// parent pointer instead of copying the entire input sequence per edge.
+// Paths are materialized only when a new reachable landing is recorded.
 export function enumerateReachable(board,piece,rules,{maxStates=1200,maxSteps=42}={}){
   if(!B.legal(board,piece))return [];
-  const fifo=[{p:{...piece},path:[]}],seen=new Set(),results=new Map();
+  const fifo=[{p:{...piece},parent:-1,act:null,count:0,depth:0,down:0}];
+  const seen=new Set(),results=new Map();
+  const reconstruct=index=>{
+    const chunks=[];
+    for(let i=index;i>=0;i=fifo[i].parent){
+      const node=fifo[i];
+      if(node.count>0)chunks.push(node);
+    }
+    const path=[];
+    for(let i=chunks.length-1;i>=0;i--)
+      for(let n=0;n<chunks[i].count;n++)path.push(chunks[i].act);
+    return path;
+  };
   for(let head=0;head<fifo.length&&seen.size<maxStates;head++){
-    const {p,path}=fifo[head],key=poseKey(p);
+    const {p,depth,down}=fifo[head],key=poseKey(p);
     if(seen.has(key))continue;
     seen.add(key);
     const end=land(board,p),signature=fmtCells(end)+'|'+end.spin;
     const earlier=results.get(signature);
-    if(!earlier||path.length<earlier.path.length){
-      results.set(signature,{piece:end,path:[...path,'hardDrop'],
-        spin:end.spin,softdrop:path.filter(m=>m==='down').length});
+    // Keep the legacy replacement/tie behavior exactly intact here.
+    // A separate functional change must not be smuggled into a CPU refactor.
+    if(!earlier||depth<earlier.path.length){
+      results.set(signature,{piece:end,path:[...reconstruct(head),'hardDrop'],
+        spin:end.spin,softdrop:down});
     }
-    if(path.length>=maxSteps)continue;
+    if(depth>=maxSteps)continue;
     for(const act of ACTIONS){
       if(act!=='down'){
         const next=step(board,p,act,rules);
-        if(next&&!seen.has(poseKey(next)))fifo.push({p:next,path:[...path,act]});
+        if(next&&!seen.has(poseKey(next)))fifo.push({p:next,parent:head,
+          act,count:1,depth:depth+1,down});
         continue;
       }
-      // T-spin slots can be twenty rows below spawn. A single-row BFS with
-      // a short path bound silently excludes them. Explore legal vertical
-      // corridors with macro drops; the executable witness still contains
-      // every individual down input and Tetrp must validate its timing.
       for(const count of [1,4,8,16,24]){
-        if(path.length+count>maxSteps)continue;
+        if(depth+count>maxSteps)continue;
         let dropped=p,legal=true;
         for(let i=0;i<count;i++){
           dropped=step(board,dropped,'down',rules);
-          if(!dropped){legal=false;break}
+          if(!dropped){legal=false;break;}
         }
         if(legal&&!seen.has(poseKey(dropped)))
-          fifo.push({p:dropped,path:[...path,...Array(count).fill('down')]});
+          fifo.push({p:dropped,parent:head,act:'down',count,
+            depth:depth+count,down:down+count});
       }
     }
   }
