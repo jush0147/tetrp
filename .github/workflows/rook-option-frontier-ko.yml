@@ -6,7 +6,7 @@ on:
       - .github/workflows/rook-option-frontier-ko.yml
   workflow_dispatch:
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-sent-cancelled-v2
   cancel-in-progress: true
 permissions:
   contents: read
@@ -23,6 +23,7 @@ jobs:
           node-version: '22'
       - name: Test true legal roots and exact legacy opt-out policy
         run: node --test test/rook-option-frontier.test.js test/rook-beam.test.js test/rook-root-scores.test.js
+      # Version v2 uses Tetrp's actual sent + cancelled combat, not generated.
       - name: Screen public same-seed genuine engine decisions
         env:
           SEEDS: 67310,67311
