@@ -29,6 +29,10 @@ const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
 const expertOpen=process.env.EXPERT_OPEN!=='0';
 const expertRecovery=process.env.EXPERT_RECOVERY==='1';
 const expertBelief=process.env.EXPERT_BELIEF==='1';
+const expertBeliefCommonHorizon=process.env.EXPERT_BELIEF_COMMON_HORIZON==='1';
+const compareLegacyBelief=process.env.COMPARE_LEGACY_BELIEF==='1';
+const beliefHorizonNodes=Number(process.env.BELIEF_HORIZON_NODES??70);
+const beliefHorizonBeam=Number(process.env.BELIEF_HORIZON_BEAM??2);
 const expertFuture=process.env.EXPERT_FUTURE==='1';
 const expertBeam=process.env.EXPERT_BEAM==='1';
 const expertOffense=process.env.EXPERT_OFFENSE==='1';
@@ -66,7 +70,7 @@ const beliefProbes=Number(process.env.BELIEF_PROBES??3);
 const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
 const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
-  expertBelief?'belief':null,expertFuture?'future-srs':null,
+  expertBelief?(expertBeliefCommonHorizon?'common-horizon-belief':'belief'):null,expertFuture?'future-srs':null,
   expertBeam?'focused-beam':null,expertOffense?'offense-weight':null,
   expertHoldPlan?'hold-plan':null,expertPruning?'setup-survival':null,
   expertSticky?'sticky-continuation':null,
@@ -88,6 +92,10 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isSafeInteger(openTiles)||openTiles<1||
   !Number.isFinite(recoveryWeight)||recoveryWeight<0||recoveryWeight>4||
   !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
+  !Number.isInteger(beliefHorizonNodes)||beliefHorizonNodes<1||
+  beliefHorizonNodes>5000||
+  !Number.isInteger(beliefHorizonBeam)||beliefHorizonBeam<1||
+  beliefHorizonBeam>24||
   !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100||
   !Number.isInteger(futureProbes)||futureProbes<0||futureProbes>100||
   !Number.isInteger(baselineFutureProbes)||baselineFutureProbes<0||baselineFutureProbes>100||
@@ -107,6 +115,10 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(frontierSlots)||frontierSlots<1||frontierSlots>32||
   !Number.isFinite(frontierGap)||frontierGap<0||frontierGap>1000)
   throw Error('Invalid ROOK self-play configuration');
+if((expertBeliefCommonHorizon&&!expertBelief)||
+  (compareLegacyBelief&&(!expertBeliefCommonHorizon||!expertBelief||
+    expertFrontier||expertOpen||budgetScaling||expertTStock)))
+  throw Error('Common-horizon comparison requires isolated public belief');
 if(compareUnguardedFrontier&&(!expertFrontier||!frontierRiskGuard||
   expertOpen||expertTStock||budgetScaling||compareAllFrontier))
   throw Error('Unguarded comparator requires only the guarded frontier expert');
@@ -148,6 +160,9 @@ function select(demo,open){
     frontierSpinInserted:0,frontierChanged:0,
     frontierShadowChecks:0,frontierShadowMs:0,
     frontierRiskSuppressed:0,
+    beliefCommonAttempts:0,beliefCommonEvaluated:0,
+    beliefCommonAborted:0,beliefCommonChanged:0,
+    beliefCommonShadowMs:0,
     frontierAllShadowChecks:0,frontierAllShadowChanges:0,
     frontierAllShadowMs:0,
     frontierGuardShadowChecks:0,
@@ -211,7 +226,9 @@ function select(demo,open){
       reversePlanner:open&&expertOpen,
       garbageRecovery:open&&expertRecovery,
       garbageRecoveryWeight:recoveryWeight,
-      garbageBelief:open&&expertBelief,
+      garbageBelief:expertBelief&&(open||compareLegacyBelief),
+      beliefCommonHorizon:open&&expertBeliefCommonHorizon,
+      beliefHorizonNodes,beliefHorizonBeam,
       futureReachableProbes:open?(expertFuture?futureProbes:candidateFutureProbes):
         baselineFutureProbes,
       futureReachableStates:open?(expertFuture?futureStates:candidateFutureStates):
@@ -242,6 +259,17 @@ function select(demo,open){
     stats.frontierCombatInserted+=report.diagnostics.optionFrontierStats?.modes.combat??0;
     stats.frontierQuadInserted+=report.diagnostics.optionFrontierStats?.modes.quad??0;
     stats.frontierSpinInserted+=report.diagnostics.optionFrontierStats?.modes.spin??0;
+    if(open&&compareLegacyBelief){
+      const shadowStart=performance.now();
+      const legacy=chooseMove(view.visible,{...searchOptions,
+        beliefCommonHorizon:false});
+      stats.beliefCommonShadowMs+=performance.now()-shadowStart;
+      const signature=a=>a.kind==='hold'?'hold:'+a.mode:
+        'place:'+a.move.piece+':'+a.execution.spin+':'+
+          a.move.cells.map(([x,y])=>x+','+y).sort().join(';');
+      stats.beliefCommonChanged+=Number(
+        signature(report)!==signature(legacy));
+    }
     if(open&&expertFrontier&&frontierAllShadow){
       const shadowStart=performance.now();
       const full=chooseMove(view.visible,{...searchOptions,
@@ -280,6 +308,9 @@ function select(demo,open){
           a.move.cells.map(([x,y])=>x+','+y).sort().join(';');
       stats.frontierChanged+=Number(signature(report)!==signature(shadow));
     }
+    stats.beliefCommonAttempts+=report.diagnostics.beliefAttempts??0;
+    stats.beliefCommonEvaluated+=report.diagnostics.beliefHorizonEvaluated??0;
+    stats.beliefCommonAborted+=report.diagnostics.beliefHorizonAborted??0;
     stats.tStockEligible+=Number((report.diagnostics.tStock?.eligibleModes??0)>0);
     stats.tStockOffers+=report.diagnostics.tStock?.inspected??0;
     stats.tStockVerified+=report.diagnostics.tStock?.verified??0;
@@ -378,7 +409,8 @@ function health(demo){
     received:s.attack.totals.received,tanked:s.attack.totals.tanked};
 }
 function pairedGame(seed,swap){
-  const comparatorKind=compareUnguardedFrontier||compareAllFrontier
+  const comparatorKind=compareLegacyBelief?'belief':
+    compareUnguardedFrontier||compareAllFrontier
     ?'option-frontier':'baseline';
   const kinds=swap?[comparatorKind,expertKind]:[expertKind,comparatorKind];
   // Both players receive the IDENTICAL seven-bag seed in this match.
@@ -398,6 +430,9 @@ function pairedGame(seed,swap){
     frontierSpinInserted:0,frontierChanged:0,
     frontierShadowChecks:0,frontierShadowMs:0,
     frontierRiskSuppressed:0,
+    beliefCommonAttempts:0,beliefCommonEvaluated:0,
+    beliefCommonAborted:0,beliefCommonChanged:0,
+    beliefCommonShadowMs:0,
     frontierAllShadowChecks:0,frontierAllShadowChanges:0,
     frontierAllShadowMs:0,
     frontierGuardShadowChecks:0,
@@ -464,6 +499,8 @@ function pairedGame(seed,swap){
     expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
     expertFrontier,frontierSlots,frontierGap,frontierShadow,
     compareUnguardedFrontier,compareAllFrontier,frontierLanes,
+    compareLegacyBelief,expertBeliefCommonHorizon,
+    beliefHorizonNodes,beliefHorizonBeam,
     frontierAllShadow,
     frontierRiskGuard,frontierGuardShadow,
     leafExtensionBudget,leafExtensionStates,intermediateHoleRelief,
