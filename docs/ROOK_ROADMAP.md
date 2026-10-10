@@ -1313,3 +1313,85 @@ asymmetry checks). Otherwise discontinue that ablation
 and investigate a more general reward policy / long-term
 garbage-downstack objective instead of tweaking
 geometry to force more T-Spins.
+
+
+### 2026-10-11: causal safety + no-spin KO outcomes are NEUTRAL; pivot to comparable public-garbage horizon
+
+The completed direct guard-ablation
+[Actions #38062899756](https://github.com/jush0147/tetrp/actions/runs/38062899756)
+explicitly compared the SAME Frontier with public risk guard on/off:
+- Previously inspected **67324**: **unguarded wins true KO at 746 locks**;
+  guarded vs unguarded sent 420 vs 476 lines, CPU 286418 vs
+  291437 ms.
+- Previously inspected **67325**: **CAPPED at 2000**, neither wins;
+  both sent exactly 2064, CPU 920838 vs 920307 ms.
+- Predeclared previously unseen **67326**: **CAPPED at 2000**,
+  neither wins; both sent exactly 2253, CPU 946510 vs
+  945965 ms.
+- Predeclared previously unseen **67327**: **guarded wins
+  true KO at 370 locks**; guarded vs unguarded sent 184 vs
+  163, CPU 166210 vs 163260 ms.
+Thus among only **two actual KO outcomes**, guard 1W and
+unguarded 1W; two capped/undecided games are NOT counted as
+wins, losses or scoreless Bernoulli trials. The observed
+overhead, frequent suppression and rare decision changes
+do not justify promoting the fixed stack/holes/pending guard.
+Do NOT attribute guard's opposite-baseline cohort results
+to this direct comparison.
+
+The finished no-spin lane-ablation
+[Actions #38064467723](https://github.com/jush0147/tetrp/actions/runs/38064467723)
+compared otherwise identical full 3-lane Frontier vs the
+Frontier with only speculative three-corner spin-survivor
+retention disabled, ALL genuine T-Spins and B2B still legal:
+- New independent **67332**: FULL Frontier wins true KO
+  at 725 locks; no-spin vs full sent 401 vs 430, CPU
+  206334 vs 214019 ms.
+- New independent **67333**: NO-SPIN Frontier wins true KO
+  at 414 locks; no-spin vs full sent 205 vs 207, CPU
+  158727 vs 153957 ms.
+Thus **1W-1L** from two truly scored KOs,
+no reliable improvement. In the preceding tiny two-seed
+UNSCORED public-action screens: no-combat 0/80
+changed, no-quad 1/77, no-spin 2/77; these
+correlated actions cannot estimate population win rates.
+No new Frontier geometry feature warrants promotion.
+
+**Next discriminating mechanism, not arbitrary surface geometry:**
+Normal ROOK beam stops expansion as soon as publicly forecast
+garbage enters with UNKNOWN hidden hole column. That correctly
+prevents inventing a future board, but means some candidates
+are represented by a shallower leaf than other candidates,
+which may distort final rankings. A former, opt-in
+`garbageBelief:true` enumerated public-information-compatible
+hidden hole scenarios and could replan 1 further NEXT lock.
+The preexisting tested `beliefCommonHorizon:true` instead
+attempts each entire public conditional continuation to a
+common horizon (abort when ANY second unknown garbage event,
+NEXT5 exhaustion or search cap blocks a valid comparison).
+This avoids treating a partial conditional trace as a
+comparable deep rollout. All garbage-hole probabilities
+are a **model assumption** (usually uniform), not hidden
+authority state. Invalid/aborted scenarios never become
+certified win evidence. Full combat/board evaluator remains.
+
+New match-harness experimental
+`EXPERT_BELIEF=1 EXPERT_BELIEF_COMMON_HORIZON=1
+COMPARE_LEGACY_BELIEF=1` compares the common-horizon
+policy directly against the SAME legacy garbage-belief policy,
+both with the same public engine state and configured base
+search budget. Additional conditional CPU explicitly
+counted; no claim of CPU equality.
+[Harness `111a32b`](https://github.com/jush0147/tetrp/commit/111a32ba2071a833782d83100daaeac77241f9f8);
+[CI `b4e3408`](https://github.com/jush0147/tetrp/commit/b4e34084c0f1c9c3ffcaf5ebd00eb94924f59735).
+[Gate #38070336623](https://github.com/jush0147/tetrp/actions/runs/38070336623):
+new independent seeds **67410/67411**, two 48-lock
+UNSCORED authority-decision screens and real public
+conditioned-node/abort counts; only on nonzero changed
+legal first moves would fresh independent **67412/67413**
+run true KO or a 2000-lock CAP. At this handoff the
+workflow had just queued, so all experimental outcomes
+PENDING, not wins. Distinguish one-step reachable
+prediction, bounded stochastic scenario enumeration and
+fully validated authoritative combat.
+PR #6 still Draft, main and Kiwi unchanged.
