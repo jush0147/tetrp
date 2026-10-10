@@ -1,0 +1,119 @@
+name: ROOK hole-penalty ablation genuine KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-hole-penalty-ko.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-screen:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    outputs:
+      changed: ${{ steps.gate.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test exact old ROOK parity and isolated hole score correctness
+        run: node --test test/rook-hole-penalty.test.js test/rook-root-scores.test.js test/rook-beam.test.js
+      - name: Unscored public-state real engine choice screen
+        env:
+          SEEDS: 67520,67521
+          MAX_LOCKS: '36'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_HOLE_SCALE: '1'
+          HOLE_PENALTY_SCALE: '0.5'
+          HOLE_SCALE_SHADOW: '1'
+        run: node scripts/rook-vs-rook.js > hole-screen.jsonl
+      - name: Require real differing legal first actions
+        id: gate
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('hole-screen.jsonl','utf8').trim()
+            .split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==2||rows.some(r=>r.error||r.cap!==36||
+            !r.sameSeed||r.swapRoles!=='0'||r.slots?.length!==2||
+            !r.expertHoleScale||r.holePenaltyScale!==0.5))
+            throw Error('Not a valid PUBLIC short choice screen');
+          const ch=rows.map(r=>r.slots.find(s=>s.kind==='hole-penalty'));
+          const bas=rows.map(r=>r.slots.find(s=>s.kind==='baseline'));
+          if(ch.some(s=>!s||s.searches!==s.holeScaleShadowChecks)||
+            bas.some(s=>!s))throw Error('Missing same-public-state shadow');
+          const sum=k=>ch.reduce((n,s)=>n+(s[k]??0),0);
+          const output={phase:'UNSCORED short behavior only',
+            independentSeeds:2,cap:36,
+            comparisons:sum('holeScaleShadowChecks'),
+            firstActionChanges:sum('holeScaleChanged'),
+            shadowExtraCpuMs:sum('holeScaleShadowMs'),
+            // Two sides' short-game combat is descriptive, NOT a win score.
+            challengerSent:ch.reduce((n,x)=>n+x.sent,0),
+            baselineSent:bas.reduce((n,x)=>n+x.sent,0)};
+          writeFileSync('hole-gate.json',JSON.stringify(output,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,
+            'changed='+(output.firstActionChanges>0?'true':'false')+'\n');
+          console.log(JSON.stringify(output));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-hole-penalty-screen
+          path: |
+            hole-screen.jsonl
+            hole-gate.json
+          retention-days: 30
+  ko:
+    needs: public-screen
+    if: needs.public-screen.outputs.changed == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        seed: [67522,67523]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: TRUE Tetrp KO, synchronous 24f, public NEXT5, at most 2000 locks
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_HOLE_SCALE: '1'
+          HOLE_PENALTY_SCALE: '0.5'
+          HOLE_SCALE_SHADOW: '0'
+        run: |
+          node scripts/rook-vs-rook.js > hole-real-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('hole-real-ko.jsonl','utf8').trim()
+            .split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Expected exactly one independent game');
+          const r=rows[0],trial=r.slots.find(s=>s.kind==='hole-penalty'),
+            baseline=r.slots.find(s=>s.kind==='baseline');
+          if(r.error||r.cap!==2000||!r.sameSeed||r.swapRoles!=='0'||
+            r.seed!==Number(process.env.SEEDS)||!trial||!baseline||
+            trial.configuredNodeBudget!==baseline.configuredNodeBudget)
+            throw Error('Invalid real KO protocol');
+          console.log(JSON.stringify({seed:r.seed,scored:r.scored,
+            termination:r.termination,turns:r.turns,winner:r.winner,
+            trialSent:trial.sent,baselineSent:baseline.sent,
+            trialCPUms:trial.ms,baselineCPUms:baseline.ms,
+            trialNodes:trial.nodes,baselineNodes:baseline.nodes}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-hole-penalty-ko-${{ matrix.seed }}
+          path: hole-real-ko.jsonl
+          retention-days: 30
