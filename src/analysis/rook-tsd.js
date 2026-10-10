@@ -13,6 +13,9 @@ export function tsdScaffolds(board,rules,{maxMissing=5}={}){
       const touched=r===0?[y-1,y]:[y,y+1];
       if(touched.some(row=>row<board.buffer-2||row>=H))continue;
       if(touched.some(row=>board.rows[row].filter(c=>c!==null).length<3))continue;
+      // Permanent garbage cannot form a clearable Full TSD pair. Never give
+      // tactical construction credit to a physically impossible target.
+      if(touched.some(row=>board.rows[row].includes('gbd')))continue;
       for(let x=1;x<W-1;x++){
         const piece={type:'t',x,y:y-.04,r,kick:0,rotated:true};
         if(!B.legal(board,piece))continue;
