@@ -1395,3 +1395,75 @@ PENDING, not wins. Distinguish one-step reachable
 prediction, bounded stochastic scenario enumeration and
 fully validated authoritative combat.
 PR #6 still Draft, main and Kiwi unchanged.
+
+
+### 2026-10-11: common-horizon public garbage FAILED unpressured screen; authority-stress and real Kiwi pressure both verified
+
+**Why the previous public match screen could not answer its own
+question:** [Actions #38070336623](https://github.com/jush0147/tetrp/actions/runs/38070336623)
+completed successfully, but its two fresh 48-lock independent
+seed 67410/67411 **UNSCORED** tests yielded
+**ZERO garbage-belief attempts, ZERO conditional nodes,
+ZERO aborted common-horizon simulations, ZERO changed
+first actions**. 11/11 associated public-garbage tests passed.
+Because there was no relevant public garbage, this is an
+**unexercised-feature test**, not a negative KO result;
+fresh KO job correctly skipped.
+
+**Corrected coverage fixture:** Authentic Tetrp `Engine` plus
+`BotDemo` first place real SRS+-verified pieces, then use the
+authority's `receive/confirm` pathway to inject clearly
+**controlled** incoming opponent packets, exposing only
+`visibleState` to both variants. This is NOT an organic
+Kiwi-vs-ROOK match or a scored outcome, and no secret
+hole column is given to the bot. Independent initial seeds
+67420–67423, two correlated snapshots per seed, 8
+pressured public boards in all.
+[Actions #38077976437](https://github.com/jush0147/tetrp/actions/runs/38077976437)
+passed 14/14 garbage/clock tests and verified:
+**24 legacy belief attempts, 24 common-horizon attempts,
+24 common-horizon completions, 0 aborted,
+32520 separately counted conditional nodes, 1
+different legal first action across 8 snapshots**. This is
+mechanism coverage, NOT improved survival or KO evidence.
+Code [`9291ed4`](https://github.com/jush0147/tetrp/commit/9291ed492ba21dc706ad0d2109c224077fbfc174),
+workflow [`6d08832`](https://github.com/jush0147/tetrp/commit/6d0883263436a184c225099cff8d3789f41fc348).
+
+**Organic public snapshots from GENUINE pinned Kiwi-vs-ROOK KO:**
+The exact archive from
+[Actions #37949389406](https://github.com/jush0147/tetrp/actions/runs/37949389406)
+had 22 public observations from **two original match seeds**;
+exactly THREE contained publicly pending garbage. Compare
+unchanged player-visible CURRENT/HOLD/NEXT5, rules, board,
+clock, public packets under otherwise identical ROOK 4x24
+search, both `garbageBelief:true`:
+legacy one-step conditional and experimental
+`beliefCommonHorizon:true` at 900 conditional-node
+budget. [Actions #38078089289](https://github.com/jush0147/tetrp/actions/runs/38078089289)
+finished successfully: **3 correlated organic pressure
+snapshots; 9 legacy and 9 common belief attempts;
+all 9 complete, 0 aborted, 15786 EXTRA conditional
+nodes, 0 changed first moves, 0 scenario-limit
+exhaustions**. Action and real SRS+ path are verified;
+private checkpoint, hidden RNG or opponent future were
+never passed. These are **correlated positions from
+two historical matches**, not fresh independent KO games.
+Code [`45cf530`](https://github.com/jush0147/tetrp/commit/45cf53053b573c9d50a503b81e98d46d477b321f),
+workflow [`4dfb8d1`](https://github.com/jush0147/tetrp/commit/4dfb8d1291065441c3f13639230ee0c6ebf8fd50).
+
+**Decision:** The depth-comparable conditional garbage
+mechanism is sound enough to investigate, and may change
+moves under externally controlled pressure. It has NOT
+changed a selected move in the only three historical
+natural pinned-Kiwi pressure snapshots, despite substantial
+extra compute. The initial 48-lock seed test was not
+informative, and now there is no justification to promote
+the common-horizon or increase its conditional-node cap
+without broader organic independent-seed pressure coverage.
+Historical matches already have existing public-stress
+instrumentation and genuine full-KO rule parity; future
+effort should target measurable long-horizon action
+value/realized offensive efficiency and actual KO
+outcomes rather than inventing a TSD bonus or
+reporting short-capped screens as wins.
+PR #6 Draft; `main` and pinned Kiwi untouched.
