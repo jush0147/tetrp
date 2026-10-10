@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  issues: write
 jobs:
   source:
     runs-on: ubuntu-latest
@@ -22,3 +23,8 @@ jobs:
           name: rook-exact-source
           path: rook-source.zip
           retention-days: 7
+      - name: Record source run ID
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment 8 --repo jush0147/tetrp --body "ROOK lightweight local test source snapshot: https://github.com/jush0147/tetrp/actions/runs/$GITHUB_RUN_ID (commit $GITHUB_SHA). This archives committed source only; no benchmark or KO was run."
