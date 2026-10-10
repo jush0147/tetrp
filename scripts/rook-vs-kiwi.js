@@ -12,6 +12,9 @@ import {diagnosePublicChoice} from './rook-choice-diagnostics.js';
 
 const kiwiBudget=Number(process.env.KIWI_NODES??200000);
 const rookBudget=Number(process.env.ROOK_NODES??6000);
+const rookExactLeaf=process.env.ROOK_EXACT_LEAF==='1';
+const rookLeafBudget=Number(process.env.ROOK_LEAF_BUDGET??5000);
+const rookLeafStates=Number(process.env.ROOK_LEAF_STATES??800);
 const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
 const swapRoles=process.env.SWAP_ROLES??'1';
 if(!['0','1'].includes(swapRoles))throw Error('Invalid SWAP_ROLES (expected 0 or 1)');
@@ -22,6 +25,8 @@ const diagnosticSet=new Set(diagnosticTurns);
 const seeds=parseMatchSeeds({...process.env,
   SEED_A:process.env.SEED_A??'67000',SEED_B:process.env.SEED_B??'67001'});
 if(!Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000||
+  !Number.isInteger(rookLeafBudget)||rookLeafBudget<1||rookLeafBudget>100000||
+  !Number.isInteger(rookLeafStates)||rookLeafStates<1||rookLeafStates>10000||
   !Number.isSafeInteger(rookBudget)||rookBudget<1||
   !Number.isSafeInteger(limit)||limit<1||limit>10000||
   diagnosticTurns.some(n=>!Number.isSafeInteger(n)||n<0)||
@@ -30,7 +35,9 @@ if(!Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000||
 
 await init({module_or_path:readFileSync(new URL('../vendor/kiwi-v1/pkg/cold_clear_2_bg.wasm',import.meta.url))});
 
-const botOptions={depth:4,beamWidth:24,maxNodes:rookBudget,maxStates:1200,maxSteps:42};
+const botOptions={depth:4,beamWidth:24,maxNodes:rookBudget,maxStates:1200,maxSteps:42,
+  exactLeafExtension:rookExactLeaf,leafExtensionBudget:rookLeafBudget,
+  leafExtensionStates:rookLeafStates};
 const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,rules:{g:0,gincrease:0,b2bcharge_base:3},
   handling:{arr:0,das:1,dcd:0,sdf:20,safelock:false,cancel:false,may20g:true,irs:'off',ihs:'off'}}),{placementMode:'atomic'});
 
@@ -39,6 +46,9 @@ function candidates(kind,visible){
   if(kind==='rook'){
     const report=chooseMove(visible,{...botOptions,includeRanked:true});
     return {nodes:report.diagnostics.evaluated,limit:rookBudget,
+      extraEvaluated:report.diagnostics.leafExtensionEvaluated??0,
+      leafApplied:Number(!!report.diagnostics.leafExtensionApplied),
+      leafAborted:Number(!!report.diagnostics.leafExtensionAbort),
       count:report.ranked.length,
       at(index){
         const x=report.ranked[index];
@@ -60,13 +70,16 @@ function candidates(kind,visible){
 }
 
 function prepareUntilPlace(demo,kind){
-  let nodes=0,holdCount=0,searchMs=0;
+  let nodes=0,holdCount=0,searchMs=0,leafExtra=0,leafApplied=0,leafAborted=0;
   for(let decision=0;decision<2;decision++){
     const view=demo.view();
     const start=performance.now();
     const search=candidates(kind,view.visible);
     searchMs+=performance.now()-start;
     nodes+=search.nodes;
+    leafExtra+=search.extraEvaluated??0;
+    leafApplied+=search.leafApplied??0;
+    leafAborted+=search.leafAborted??0;
     let lastError=null;
     for(let i=0;i<search.count;){
       let result;
@@ -81,7 +94,8 @@ function prepareUntilPlace(demo,kind){
           if(!next.visible.hold.locked)throw Error('Hold lock not set');
           holdCount++;break;
         }
-        return {revision:view.revision,nodes,holdCount,searchMs,placement:result.move};
+        return {revision:view.revision,nodes,holdCount,searchMs,placement:result.move,
+          leafExtra,leafApplied,leafAborted};
       }catch(error){
         lastError=error;
         i=(result.candidateIndex??i)+1;
@@ -113,6 +127,7 @@ function runPair(seed,order){
   const original=demos.map(d=>d.view().visible);
   let transfers=[],lockSteps=0,searchNodes=[0,0],
     holdMoves=[0,0],searchMs=[0,0],error=null,diagnostics=[];
+  const leafExtra=[0,0],leafApplied=[0,0],leafAborted=[0,0];
   // Authority outcomes ONLY; never used as search inputs by either bot.
   const combatEvents=Array.from({length:2},()=>({fullTss:0,fullTsd:0,
     fullTst:0,miniClears:0,quads:0,ordinarySingles:0,ordinaryDoubles:0,
@@ -148,6 +163,8 @@ function runPair(seed,order){
         const plan=prepareUntilPlace(demos[i],kinds[i]);
         plans.push(plan);searchNodes[i]+=plan.nodes;holdMoves[i]+=plan.holdCount;
         searchMs[i]+=plan.searchMs;
+        leafExtra[i]+=plan.leafExtra;leafApplied[i]+=plan.leafApplied;
+        leafAborted[i]+=plan.leafAborted;
       }
       // Both decisions are prepared before either placement commits.
       if(assertSimultaneousPair(demos)!==turnFrame)
@@ -183,11 +200,15 @@ function runPair(seed,order){
   return {format:'tetrp-visible-ko/2',order,seed,seeds:[seed,seed],kinds,
     sameSeed:true,simultaneousLocks:true,pps:2.5,
     source:'Tetrp TL authority with source RNG private, no replay future',
-    nodeBudgets:{rook:rookBudget,kiwi:kiwiBudget},lockSteps,cap:limit,
+    nodeBudgets:{rook:rookBudget,kiwi:kiwiBudget},
+    ...(rookExactLeaf?{rookExactLeaf,rookLeafBudget,rookLeafStates}:{}),
+    lockSteps,cap:limit,
     scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
     winner:result.scored?kinds[result.winnerSlot]:null,
-    slots:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i],combatEvents[i])),
+    slots:demos.map((d,i)=>({...asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i],combatEvents[i]),
+      ...(kinds[i]==='rook'&&rookExactLeaf?{leafExtraEvaluated:leafExtra[i],
+        leafApplied:leafApplied[i],leafAborted:leafAborted[i]}:{})})),
     initialVisibleNext:original.map(v=>v.next),
     ...(diagnosticsEnabled?{diagnostics}: {})};
 }
