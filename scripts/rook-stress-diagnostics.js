@@ -46,7 +46,7 @@ for(let i=0;i<records.length;i++){
   const opts=[];
   for(const variant of configs){
     const start=performance.now();
-    const out=chooseMove(v,{...options,...variant.settings});
+    const out=chooseMove(v,{...options,...variant.settings,traceRootScores:true});
     const elapsed=performance.now()-start;
     const key=actionSignature(out);
     if(JSON.stringify(v)!==frozen)throw Error('Public snapshot was mutated');
@@ -63,6 +63,16 @@ for(let i=0;i<records.length;i++){
       forecastSpinClears:out.diagnostics.forecastedSpinClears,
       futureMoves:out.diagnostics.futureMoves,
       unresolvedGarbageBranches:out.diagnostics.unresolvedTankNodes,
+      // A public garbage insertion can stop a path early, so a 2-ply
+      // terminal score might compete directly with a 4/5-ply future score.
+      // Track this without touching the actual bot's policy.
+      selectedUnresolvedGarbage:out.diagnostics.selectedUnresolvedGarbage,
+      selectedForecastTank:out.diagnostics.selectedForecastTank,
+      selectedLeafPly:out.rootScores?.[0]?.leaf.ply??null,
+      finalRootCount:out.rootScores?.length??0,
+      finalRootsTerminatedEarly:out.rootScores?.filter(root=>
+        root.leaf.ply<out.diagnostics.effectiveDepth).length??0,
+      expectedDepth:out.diagnostics.effectiveDepth,
       matchesKiwi:key===ref.kiwi.key});
   }
   if(opts[0].key!==ref.rook.key)
@@ -88,6 +98,16 @@ const statistics=Object.fromEntries(kinds.map(name=>{
     balancedChangesVsDeep:subset.filter(r=>r.options[3].key!==r.options[1].key).length,
     meanHoles:subset.length?subset.reduce((n,r)=>n+r.holes,0)/subset.length:null,
     meanPending:subset.length?subset.reduce((n,r)=>n+r.pending,0)/subset.length:null,
+    unresolvedSelectedByVariant:configs.map((variant,i)=>({
+      variant:variant.id,
+      selected:subset.filter(r=>r.options[i].selectedUnresolvedGarbage).length,
+      earlyWinner:subset.filter(r=>
+        r.options[i].selectedLeafPly!==null&&
+        r.options[i].selectedLeafPly<r.options[i].expectedDepth).length,
+      anyShortRoots:subset.filter(r=>r.options[i].finalRootsTerminatedEarly>0).length,
+      meanShortRoots:subset.length?subset.reduce((n,r)=>
+        n+r.options[i].finalRootsTerminatedEarly,0)/subset.length:0
+    })),
     byVariant:configs.map((variant,i)=>({
       variant:variant.id,
       meanFutureProofsByPly:subset.length
