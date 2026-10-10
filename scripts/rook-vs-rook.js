@@ -117,7 +117,9 @@ function select(demo,open){
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
-    tStockOffers:0,tStockChoices:0,
+    tStockEligible:0,tStockOffers:0,tStockVerified:0,
+    tStockCapped:0,tStockProofCalls:0,tStockPlacementEvaluations:0,
+    tStockChoices:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
     stickyHoldSkipped:0,leafExtensionAttempts:0,leafExtensionApplied:0,
     leafExtensionAborts:0,leafExtensionChanges:0,leafExtensionWork:0};
@@ -195,7 +197,12 @@ function select(demo,open){
       :chooseMove(view.visible,searchOptions);
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
+    stats.tStockEligible+=Number((report.diagnostics.tStock?.eligibleModes??0)>0);
     stats.tStockOffers+=report.diagnostics.tStock?.inspected??0;
+    stats.tStockVerified+=report.diagnostics.tStock?.verified??0;
+    stats.tStockCapped+=report.diagnostics.tStock?.truncatedModes??0;
+    stats.tStockProofCalls+=report.diagnostics.tStock?.proofCalls??0;
+    stats.tStockPlacementEvaluations+=report.diagnostics.tStock?.placements??0;
     stats.tStockChoices+=Number(report.diagnostics.tStock?.selected);
     stats.searches++;
     stats.budgetReached+=Number(report.diagnostics.evaluated>=searchBudget);
@@ -298,7 +305,9 @@ function pairedGame(seed,swap){
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
-    tStockOffers:0,tStockChoices:0,
+    tStockEligible:0,tStockOffers:0,tStockVerified:0,
+    tStockCapped:0,tStockProofCalls:0,tStockPlacementEvaluations:0,
+    tStockChoices:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
     leafExtensionAttempts:0,leafExtensionApplied:0,leafExtensionAborts:0,
     leafExtensionChanges:0,leafExtensionWork:0,
