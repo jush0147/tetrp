@@ -30,6 +30,7 @@ export function auditPublicTStock(visible,{
     const candidates=found.plans.map(plan=>({
       ...evaluateVerifiedPublicPlan(visible,plan,{maxStates,maxSteps}),
       firstAction:plan.actions[0]?.action,
+      firstRequest:plan.actions[0],
       terminalSent:plan.evidence.terminalSent,
       terminalGenerated:plan.evidence.terminalGenerated,
       terminalBtb:plan.evidence.terminalBtb,
@@ -40,7 +41,7 @@ export function auditPublicTStock(visible,{
   // Use the identical horizon and value function; ordinary ROOK still has
   // approximate future reachability. The difference is a diagnostic only.
   const baseline=chooseMove(visible,{depth,beamWidth,maxNodes,
-    maxStates,maxSteps,traceRootScores:true});
+    maxStates,maxSteps,traceRootScores:true,includeRanked:true});
   const baselinePly=baseline.rootScores?.find(x=>
     JSON.stringify(x.action)===JSON.stringify({
       kind:baseline.kind,
@@ -58,8 +59,9 @@ export function auditPublicTStock(visible,{
     score:baseline.diagnostics.value,effectiveDepth:baselinePly??null,
     comparable:baselineComparable,
     reason:baselineComparable?null:'baseline-horizon-or-unknown-garbage'},
-    variants:reports,bestPlan:top?{
+    variants:reports,baselineDecision:baseline,bestPlan:top?{
       mode:top.mode,score:top.score,firstAction:top.firstAction,
+      firstRequest:top.firstRequest,
       // A higher score alone does NOT imply better real KO performance.
       deltaVsBaseline:baselineComparable?
         top.score-baseline.diagnostics.value:null,
@@ -67,4 +69,51 @@ export function auditPublicTStock(visible,{
     }:null,
     policyChanged:false,
     conclusion:'diagnostic only; require independent true-KO A/B before adoption'};
+}
+
+/**
+ * Experimental policy ONLY. Retains the standard ROOK decision unless a
+ * genuinely SRS-proven public attack plan beats the ordinary ROOK score on
+ * the same completed horizon by the configured margin. Fresh decisions are
+ * made after each actual lock: no forced future TSD or invisible commitment.
+ * Scores do not imply a KO gain. Benchmark total CPU separately.
+ */
+export function chooseMoveWithPublicTStock(visible,{
+  minValueMargin=1,...options
+}={}){
+  if(!Number.isFinite(minValueMargin)||minValueMargin<0||
+    minValueMargin>100000)throw new RangeError('Invalid T stock margin');
+  const audit=auditPublicTStock(visible,options);
+  const baseline=audit.baselineDecision;
+  const candidate=audit.bestPlan;
+  const eligible=!!candidate&&candidate.comparable&&
+    candidate.deltaVsBaseline>minValueMargin;
+  const first=candidate?.firstRequest;
+  const choice=eligible&&first?.action?.kind==='place'
+    ?{kind:'place',move:first.move,execution:first.execution}
+    :eligible&&first?.action?.kind==='hold'
+      ?{...first.action,requiresReanalysis:true}
+      :null;
+  const defaultChoice={kind:baseline.kind,
+    ...(baseline.kind==='place'?
+      {move:baseline.move,execution:baseline.execution}:
+      {mode:baseline.mode,samePiece:baseline.samePiece,
+        requiresReanalysis:baseline.requiresReanalysis})};
+  const different=choice&&JSON.stringify(choice)!==
+    JSON.stringify(defaultChoice);
+  const chosen=different?choice:defaultChoice;
+  const totalOffers=audit.variants.reduce((n,r)=>n+r.candidates.length,0);
+  const validOffers=audit.variants.reduce((n,r)=>n+
+    r.candidates.filter(c=>c.comparable).length,0);
+  const diagnostics={...baseline.diagnostics,tStock:{
+    inspected:totalOffers,verified:validOffers,
+    modes:audit.variants.map(r=>r.kind),selected:!!different,
+    valueDelta:candidate?.deltaVsBaseline??null,
+    baselineComparable:audit.baseline.comparable,
+    selectedMode:different?candidate.mode:null
+  }};
+  const ranked=different?[chosen,...(baseline.ranked??[]).filter(x=>
+    JSON.stringify(x)!==JSON.stringify(chosen))]:
+    (baseline.ranked??[defaultChoice]);
+  return {...chosen,diagnostics,ranked};
 }
