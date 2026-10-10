@@ -1,0 +1,160 @@
+name: ROOK verified fifth-ply KO-first gate
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-fifth-ply-ko.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  screen:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify only player-visible fifth-ply continuation and KO runner
+        run: node --test test/rook-leaf-extension.test.js test/rook-budget-config.test.js test/rook-ko-protocol.test.js
+      - name: Load pinned real public Tetrp positions from previous Kiwi KO
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-kiwi-shared-position-diagnostic
+          repository: jush0147/tetrp
+          run-id: 37949389406
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check additional work and decision changes without extra Kiwi calls
+        env:
+          ROOK_PUBLIC_SNAPSHOTS: rook-public-observations.jsonl
+          ROOK_PREVIOUS_DIFF: rook-choice-diff.jsonl
+          ROOK_LEAF_OUTPUT: rook-fifth-ply-real-public-report.json
+        run: |
+          set -eu
+          node scripts/rook-leaf-extension-diagnostics.js > rook-fifth-ply-screen-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-fifth-ply-real-public-report.json','utf8'));
+          if(r.format!=='rook-fifth-ply-real-public-screen/1'||
+            r.records!==22||r.independentSeeds!==2||
+            r.completed+r.aborted!==22||r.completed<15||
+            r.changed<1||r.changed>22||
+            r.rows.some(x=>x.leafExtensionEvaluated>5000||
+              x.leafExtensionEvaluated<0||x.extendedMs<0||x.baselineMs<0))
+            throw Error('Not a valid real-public fifth-ply screen');
+          const text=[
+            '### ROOK bounded SRS+-verified fifth-ply screen (NOT KO)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Commit: '+process.env.GITHUB_SHA,
+            '- 22 player-visible public positions, ONLY 2 independent seeds.',
+            '- Comparable fifth-ply leaves: '+r.completed+' / 22; aborted: '+r.aborted,
+            '- First actions changed: '+r.changed+' / 22.',
+            '- Kiwi agreement diagnostic: old='+r.baselineAgreesKiwi+
+              ', experimental='+r.extensionAgreesKiwi+' (NOT strength evidence).',
+            '- EXTRA candidate evaluations beyond baseline maxNodes: '+r.additionalEvaluations,
+            '- Abort reasons: '+JSON.stringify(r.abortReasons),
+            '- Experimental extra CPU is NOT an equal-resource opponent comparison.',
+            ''
+          ].join('\n');
+          writeFileSync('rook-fifth-screen.md',text);
+          console.log(text);
+          JS
+      - name: Preserve research screen in Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-fifth-screen.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-fifth-public-screen
+          path: |
+            rook-fifth-ply-real-public-report.json
+            rook-fifth-ply-screen-summary.json
+            rook-fifth-screen.md
+          retention-days: 30
+  ko:
+    needs: screen
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        seed: [67111, 67112]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Full KO-first match, new independent seed, no mirrored duplicate
+        id: match
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          EXPERT_OPEN: '0'
+          EXPERT_EXACT_LEAF: '1'
+          ROOK_NODES: '6000'
+          ROOK_CANDIDATE_NODES: '6000'
+          ROOK_BASELINE_NODES: '6000'
+          LEAF_EXTENSION_BUDGET: '5000'
+          LEAF_EXTENSION_STATES: '800'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > fifth-ko-${{ matrix.seed }}.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seed=Number(process.env.SEEDS);
+          const rows=readFileSync('fifth-ko-'+seed+'.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(rows.length!==1)throw Error('Unexpected mirrored or missing match');
+          const r=rows[0],candidate=r.slots?.find(x=>x.kind==='verified-fifth-ply');
+          const baseline=r.slots?.find(x=>x.kind==='baseline');
+          if(r.seed!==seed||!r.sameSeed||!r.simultaneousLocks||
+            r.cap!==2000||r.error||!candidate||!baseline||
+            r.expertLabel!=='verified-fifth-ply'||r.scored!==(r.termination==='KO')||
+            candidate.leafExtensionAttempts<1||
+            candidate.leafExtensionWork<0)
+            throw Error('Invalid Tetrp KO or fifth-ply policy protocol');
+          const text=[
+            '### ROOK SRS+-verified fifth-ply genuine KO result',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Independent seed: '+seed+' (identical bag seed on both sides)',
+            'Synchronized placements: '+r.turns+' / 2000 safety cap.',
+            'Termination: '+r.termination+'; winner: '+(r.winner??'NONE (not scored)'),
+            'Extra candidate evaluations: '+candidate.leafExtensionWork+
+              ', successful extended reranks: '+candidate.leafExtensionApplied+
+              ', changed decisions: '+candidate.leafExtensionChanges+
+              ', abandoned reranks: '+candidate.leafExtensionAborts,
+            'Candidate sent='+candidate.sent+' (sent APP='+candidate.sentAPP+
+              '); baseline sent='+baseline.sent+' (sent APP='+baseline.sentAPP+').',
+            'CPU ms candidate='+candidate.ms+' vs baseline='+baseline.ms+
+              ' (NOT equal CPU).',
+            '',
+            'One seed is not a strength proof. No cap or double KO counts as win.',
+            'Experimental policy stays OFF by default; main and pinned Kiwi unchanged.'
+          ].join('\n')+'\n';
+          writeFileSync('fifth-ko-summary-'+seed+'.md',text);
+          console.log(text);
+          JS
+      - name: Record scored result and CPU in Issue 8
+        if: steps.match.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file fifth-ko-summary-${{ matrix.seed }}.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-fifth-ko-${{ matrix.seed }}
+          path: |
+            fifth-ko-${{ matrix.seed }}.jsonl
+            fifth-ko-summary-${{ matrix.seed }}.md
+          retention-days: 30
