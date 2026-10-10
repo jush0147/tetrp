@@ -1,0 +1,87 @@
+name: ROOK beam coverage of genuine public Kiwi TSD setups
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-tsd-root-coverage.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  coverage:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read ONLY recorded public TSD setup histories, no Kiwi recomputation
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-public-kiwi-tsd-trajectories
+          repository: jush0147/tetrp
+          run-id: 38037975841
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Audit exact ROOK four-ply surviving branches on all TSD precursors
+        env:
+          ROOK_TSD_POSITIVES: rook-public-tsd-traces.jsonl
+          ROOK_TSD_ROOT_OUTPUT: rook-tsd-beam-coverage.json
+        run: |
+          set -eu
+          node scripts/rook-tsd-root-coverage.js > rook-tsd-coverage-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-tsd-beam-coverage.json','utf8'));
+          if(r.format!=='rook-kiwi-public-tsd-root-coverage/1'||
+            r.sourceEvents!==7||r.positions!==21||r.independentSeeds!==1||
+            r.byLead.length!==3||r.byLead.some(l=>l.samples!==7||
+              l.selectedFinalistFullTsd>l.anyFinalistFullTsd||
+              l.withSrsTsdWitness>l.anyFinalistFullTsd)||
+            r.rows.some(x=>x.ms<0||!Number.isFinite(x.ms)||
+              x.lags.length!==1||x.finalRootCount<1))
+            throw Error('Incomplete or non-public ROOK TSD future beam audit');
+          const lines=[
+            '### ROOK final-beam TSD coverage on true Kiwi precursor boards (NOT KO)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'One PREVIOUSLY SCORED seed 67131, seven real Kiwi TSDs.',
+            '21 unique Kiwi public predecessor boards sampled at 1, 2, or 3 locks before those real TSD events.',
+            'All 21 boards are success-selected, not random match controls.',
+            ...r.byLead.map(l=>'Lead '+l.lag+' lock(s): positive geometric scaffolds '+
+              l.scaffoldPositive+'/'+l.samples+
+              ', predicted TSD among surviving root finalists '+
+              l.anyFinalistFullTsd+'/'+l.samples+
+              ', in best final root '+l.selectedFinalistFullTsd+'/'+l.samples+
+              ', SRS witness for hypothetical TSD '+l.withSrsTsdWitness+'/'+l.samples+'.'),
+            'Predicted Full TSD in '+r.seenByAnyRoot+'/'+r.positions+
+              ' such boards; best final root in '+r.seenInBestRoot+'/'+r.positions+'.',
+            'Of sampled boards with a TSD predicted in the selected candidate, '+
+              r.bestRootIncludesUnverifiedPriorPly+
+              ' include earlier geometry-only hypothetical moves before that TSD.',
+            '',
+            'Do not interpret this as 21 future KO wins, verified multi-ply TSD routes,',
+            'or a measured true-positive rate in ordinary boards. TSD slot construction,',
+            'SRS reachability, beam survival and leaf valuation remain separate questions.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-tsd-root-coverage.md',lines);
+          console.log(lines);
+          JS
+      - name: Document grounded beam findings on Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-tsd-root-coverage.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-tsd-root-coverage
+          path: |
+            rook-tsd-beam-coverage.json
+            rook-tsd-coverage-summary.json
+            rook-tsd-root-coverage.md
+          retention-days: 30
