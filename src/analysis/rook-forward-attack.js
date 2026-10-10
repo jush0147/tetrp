@@ -57,13 +57,13 @@ export function searchPublicForwardTsd(visible,{
   minSetupPieces=2,maxSetupPieces=4,beamWidth=16,
   maxPlacementEvaluations=2500,maxProofCalls=100,
   maxStates=950,maxSteps=70,maxPlans=4,
-  heldTFinish=false,heldTSetupPieces=3
+  heldTFinish=false,heldTSetupPieces=3,storeCurrentT=false
 }={}){
   if(!visible?.playing||!visible.current||!visible.board||!visible.rules||
     !Array.isArray(visible.next)||visible.next.length!==5||
     'bag' in visible||'rng' in visible||'holes' in visible)
     throw Error('Only player-visible Current/Hold/NEXT5 allowed');
-  if(typeof heldTFinish!=='boolean'||
+  if(typeof heldTFinish!=='boolean'||typeof storeCurrentT!=='boolean'||
     !Number.isInteger(heldTSetupPieces)||heldTSetupPieces<2||
     heldTSetupPieces>5||
     ![minSetupPieces,maxSetupPieces,beamWidth,maxPlacementEvaluations,
@@ -74,15 +74,23 @@ export function searchPublicForwardTsd(visible,{
     maxStates<1||maxStates>10000||maxSteps<1||maxSteps>150||
     maxPlans<1||maxPlans>100)
     throw new RangeError('Invalid public forward TSD search budget');
-  const known=[visible.current.type,...visible.next];
-  const viaHeldT=heldTFinish&&visible.hold?.piece==='t'&&
-    visible.rules.hold===true;
+  // Empty Hold may bank the currently visible T, exposing the already public
+  // NEXT[0]. The empty exchange costs zero locks/frames. The later occupied
+  // exchange also costs zero locks, but requires an intervening placement.
+  // No NEXT6 is consumed by this speculative route.
+  const storingT=storeCurrentT&&heldTFinish&&visible.rules.hold===true&&
+    visible.current.type==='t'&&visible.hold?.piece==null&&
+    visible.hold?.locked===false;
+  const known=storingT?[...visible.next]:[visible.current.type,...visible.next];
+  const viaHeldT=heldTFinish&&visible.rules.hold===true&&
+    (visible.hold?.piece==='t'||storingT);
   const targetIndex=viaHeldT?heldTSetupPieces:known.indexOf('t');
-  const stats={targetIndex,viaHeldT,stageSizes:[],proofCalls:0,placements:0,
-    candidateTerminals:0,garbageAborts:0,pruned:0,truncated:false};
-  if(targetIndex<minSetupPieces||targetIndex>maxSetupPieces||
-    (viaHeldT&&known[0]==='t'))
-    return {plans:[],stats,scope:'only first publicly known T, no Hold'};
+  const stats={targetIndex,viaHeldT,storingT,stageSizes:[],proofCalls:0,
+    placements:0,candidateTerminals:0,garbageAborts:0,
+    pruned:0,truncated:false};
+  if((storeCurrentT&&!storingT)||targetIndex<minSetupPieces||
+    targetIndex>maxSetupPieces||(viaHeldT&&known[0]==='t'))
+    return {plans:[],stats,scope:'public T/Hold route not available'};
   let beam=[{board:clone(visible.board),combat:visibleCombat(visible),
     frame:visible.frame,firstKey:null,history:[],score:0,
     totalSent:0,totalGenerated:0}];
@@ -91,7 +99,7 @@ export function searchPublicForwardTsd(visible,{
     for(const node of beam){
       if(stats.proofCalls>=maxProofCalls||
         stats.placements>=maxPlacementEvaluations){stats.truncated=true;break;}
-      const piece=ply===0?visible.current:spawn(known[ply],node.board);
+      const piece=ply===0&&!storingT?visible.current:spawn(known[ply],node.board);
       if(!B.legal(node.board,piece))continue;
       stats.proofCalls++;
       const options=enumerateReachable(node.board,piece,visible.rules,
@@ -154,13 +162,14 @@ export function searchPublicForwardTsd(visible,{
       const witnesses=[...node.history,moveRecord(move)];
       const actions=witnesses.map(asAction);
       if(viaHeldT)actions.splice(-1,0,{action:{kind:'hold',mode:'occupied'}});
+      if(storingT)actions.unshift({action:{kind:'hold',mode:'empty'}});
       plans.push({witnesses,actions,
         evidence:{allMovesSrsWitnessed:true,terminalFullTsd:true,
           terminalLines:2,terminalGenerated:projected.generated,
           terminalSent:projected.sent,preTGenerated:node.totalGenerated,
           preTSent:node.totalSent,terminalBtb:projected.btb,
           publicNoNewGarbageAssumption:true,
-          terminalUsesHeldT:viaHeldT},
+          terminalUsesHeldT:viaHeldT,initialStoresT:storingT},
         planLength:targetIndex+1,setupScore:node.score});
       if(plans.length>=maxPlans){stats.truncated=true;break;}
     }
@@ -169,6 +178,7 @@ export function searchPublicForwardTsd(visible,{
   plans.sort((a,b)=>b.evidence.terminalSent-a.evidence.terminalSent||
     b.evidence.preTSent-a.evidence.preTSent||b.setupScore-a.setupScore);
   return {plans,stats,
-    scope:viaHeldT?'public fixed known setup then occupied Hold T full spin':
+    scope:storingT?'bank current T in empty Hold, known setup, real TSD':
+      viaHeldT?'public fixed known setup then occupied Hold T full spin':
       'public fixed known order, no Hold, bounded all-SRS+ forward portfolio'};
 }
