@@ -1,0 +1,79 @@
+name: ROOK TSD geometry-template miss versus direct SRS
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-tsd-template-coverage.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Forward two-lock authority fixtures, bounds, and private state protection
+        run: node --test test/rook-tsd-two-lock.test.js test/rook-tsd.test.js
+      - name: Load existing player-visible full-lock observations only
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-public-tsd-negative-controls
+          repository: jush0147/tetrp
+          run-id: 38055352753
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Remove the TSD geometry prescreen on ROOK-made public boards
+        env:
+          ROOK_PUBLIC_LOCKS: rook-all-public-locks.jsonl
+          ROOK_TWO_LOCK_GEOMETRY_OUTPUT: rook-tsd-direct-SRS-comparison.json
+        run: |
+          set -eu
+          node scripts/rook-tsd-template-coverage.js > rook-tsd-direct-SRS-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-tsd-direct-SRS-comparison.json','utf8'));
+          if(r.format!=='rook-two-lock-geometry-free-srs-control/1'||
+            r.independentSeeds!==1||r.publicRootStates!==12||
+            r.rows.length!==12||
+            r.rows.some(x=>x.directProofs>36||x.templateProofs>120||
+              x.directMs<0||x.templateMs<0)||
+            r.newlyFoundWithoutTemplate>r.directFound||
+            r.directFound>r.publicRootStates)
+            throw Error('Invalid public geometry-free TSD comparison');
+          const report=[
+            '### ROOK TSD construction: template-only versus geometry-free SRS proof',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Replay only 12 existing ROOK-owned public states with known NEXT/Hold T from seed 67131.',
+            'A strict genuine 2-lock Full TSD SRS+ path must be found; no bonus for template-only geometry.',
+            'Existing geometry prescreen: TSD plan in '+r.templateFound+'/12.',
+            'Direct SRS+ without prescreen (up to 36 T proof calls per board): plans in '+
+              r.directFound+'/12; new plans missed by template '+r.newlyFoundWithoutTemplate+'.',
+            'Direct search capped in '+r.directTruncated+'/12 states. Nonexistence is NOT proven by a capped result.',
+            'This is not a fair full-match KO, nor an exhaustive unbounded planner.',
+            'Next: if geometry-free finds more, improve generator coverage; otherwise focus earlier multi-piece board construction.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-tsd-direct-SRS-issue.md',report);
+          console.log(report);
+          JS
+      - name: Record public generator coverage in Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-tsd-direct-SRS-issue.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-tsd-no-template-SRS
+          path: |
+            rook-tsd-direct-SRS-comparison.json
+            rook-tsd-direct-SRS-summary.json
+            rook-tsd-direct-SRS-issue.md
+          retention-days: 30
