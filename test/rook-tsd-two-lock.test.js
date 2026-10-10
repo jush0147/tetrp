@@ -73,4 +73,16 @@ test('two-lock TSD refuses unknown NEXT, permanent garbage, and private RNG',()=
     /exactly player-visible/);
   assert.throws(()=>findPublicTwoLockTsd(v,{...options,secondStates:0}),
     /Invalid two-lock TSD budget/);
+  const noPrescreen=findPublicTwoLockTsd(v,{...options,
+    geometryPrescreen:false,secondProofCap:3});
+  assert.equal(noPrescreen.geometryPrescreen,false);
+  assert.ok(noPrescreen.secondProofCalls<=3);
+  assert.ok(noPrescreen.firstMoves>=noPrescreen.secondProofCalls);
+  assert.equal(noPrescreen.truncated,true,
+    'all-root forward SRS proof attempts must obey the explicit call cap');
+  assert.deepEqual(findPublicTwoLockTsd(v,{...options,
+    geometryPrescreen:true}),verified);
+  assert.throws(()=>findPublicTwoLockTsd(v,{...options,
+    secondProofCap:0}),/Invalid two-lock TSD budget/);
 });
+
