@@ -37,6 +37,10 @@ const expertPruning=process.env.EXPERT_PRUNING==='1';
 const expertSticky=process.env.EXPERT_STICKY==='1';
 const expertExactLeaf=process.env.EXPERT_EXACT_LEAF==='1';
 const expertTStock=process.env.EXPERT_T_STOCK==='1';
+const expertFrontier=process.env.EXPERT_FRONTIER==='1';
+const frontierShadow=process.env.FRONTIER_SHADOW==='1';
+const frontierSlots=Number(process.env.FRONTIER_SLOTS??3);
+const frontierGap=Number(process.env.FRONTIER_SCORE_GAP??70);
 const tStockMargin=Number(process.env.T_STOCK_MARGIN??1);
 const leafExtensionBudget=Number(process.env.LEAF_EXTENSION_BUDGET??5000);
 const leafExtensionStates=Number(process.env.LEAF_EXTENSION_STATES??800);
@@ -61,6 +65,7 @@ const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertSticky?'sticky-continuation':null,
   expertExactLeaf?'verified-fifth-ply':null,
   expertTStock?'public-t-stock':null,
+  expertFrontier?'option-frontier':null,
   budgetScaling?'budget-scale':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
@@ -88,11 +93,13 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(leafExtensionStates)||leafExtensionStates<1||leafExtensionStates>10000||
   !Number.isFinite(intermediateHoleRelief)||
   intermediateHoleRelief<0||intermediateHoleRelief>1||
-  !Number.isFinite(tStockMargin)||tStockMargin<0||tStockMargin>100000)
+  !Number.isFinite(tStockMargin)||tStockMargin<0||tStockMargin>100000||
+  !Number.isInteger(frontierSlots)||frontierSlots<1||frontierSlots>32||
+  !Number.isFinite(frontierGap)||frontierGap<0||frontierGap>1000)
   throw Error('Invalid ROOK self-play configuration');
 if(budgetScaling&&(expertOpen||expertRecovery||expertBelief||expertFuture||
   expertBeam||expertOffense||expertHoldPlan||expertPruning||expertSticky||
-  expertExactLeaf||expertTStock))
+  expertExactLeaf||expertTStock||expertFrontier))
   throw Error('Budget scaling must isolate maxNodes; disable EXPERT_*');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
@@ -120,6 +127,8 @@ function select(demo,open){
     tStockEligible:0,tStockOffers:0,tStockVerified:0,
     tStockCapped:0,tStockProofCalls:0,tStockPlacementEvaluations:0,
     tStockChoices:0,
+    frontierConsidered:0,frontierInserted:0,frontierChanged:0,
+    frontierShadowChecks:0,frontierShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
     stickyHoldSkipped:0,leafExtensionAttempts:0,leafExtensionApplied:0,
     leafExtensionAborts:0,leafExtensionChanges:0,leafExtensionWork:0};
@@ -188,7 +197,9 @@ function select(demo,open){
       includeHoldPlan:(open&&expertHoldPlan)||auditHoldPlan,
       includeForecastPlan:open&&expertSticky,
       exactLeafExtension:open&&expertExactLeaf,leafExtensionBudget,leafExtensionStates,
-      beliefProbes,beliefMaxOutcomes};
+      beliefProbes,beliefMaxOutcomes,
+      optionFrontierSlots:open&&expertFrontier?Math.min(frontierSlots,searchBeam-1):0,
+      optionFrontierMaxScoreGap:frontierGap};
     const report=open&&expertTStock
       ?chooseMoveWithPublicTStock(view.visible,{...searchOptions,
         minValueMargin:tStockMargin,planMaxStates:950,planMaxSteps:70,
@@ -197,6 +208,22 @@ function select(demo,open){
       :chooseMove(view.visible,searchOptions);
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
+    stats.frontierConsidered+=report.diagnostics.optionFrontierStats?.considered??0;
+    stats.frontierInserted+=report.diagnostics.optionFrontierStats?.inserted??0;
+    if(open&&expertFrontier&&frontierShadow){
+      const shadowStart=performance.now();
+      const shadow=chooseMove(view.visible,{...searchOptions,
+        optionFrontierSlots:0});
+      stats.frontierShadowMs+=performance.now()-shadowStart;
+      stats.frontierShadowChecks++;
+      // Compare actual action semantics, not execution path string
+      // or diagnostics, both of which may differ for equivalent actions.
+      const signature=a=>a.kind==='hold'
+        ?'hold:'+a.mode
+        :'place:'+a.move.piece+':'+a.execution.spin+':'+
+          a.move.cells.map(([x,y])=>x+','+y).sort().join(';');
+      stats.frontierChanged+=Number(signature(report)!==signature(shadow));
+    }
     stats.tStockEligible+=Number((report.diagnostics.tStock?.eligibleModes??0)>0);
     stats.tStockOffers+=report.diagnostics.tStock?.inspected??0;
     stats.tStockVerified+=report.diagnostics.tStock?.verified??0;
@@ -308,6 +335,8 @@ function pairedGame(seed,swap){
     tStockEligible:0,tStockOffers:0,tStockVerified:0,
     tStockCapped:0,tStockProofCalls:0,tStockPlacementEvaluations:0,
     tStockChoices:0,
+    frontierConsidered:0,frontierInserted:0,frontierChanged:0,
+    frontierShadowChecks:0,frontierShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
     leafExtensionAttempts:0,leafExtensionApplied:0,leafExtensionAborts:0,
     leafExtensionChanges:0,leafExtensionWork:0,
@@ -368,6 +397,7 @@ function pairedGame(seed,swap){
     extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
     expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
+    expertFrontier,frontierSlots,frontierGap,frontierShadow,
     leafExtensionBudget,leafExtensionStates,intermediateHoleRelief,
     auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
     baselineFutureProbes,baselineFutureStates,candidateFutureProbes,
