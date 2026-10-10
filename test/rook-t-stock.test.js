@@ -4,7 +4,7 @@ import {Engine} from '../src/engine.js';
 import {visibleState} from '../src/analysis/visible-state.js';
 import {searchPublicForwardTsd} from '../src/analysis/rook-forward-attack.js';
 import {evaluateVerifiedPublicPlan} from '../src/analysis/rook.js';
-import {auditPublicTStock} from '../src/analysis/rook-t-stock.js';
+import {auditPublicTStock,chooseMoveWithPublicTStock} from '../src/analysis/rook-t-stock.js';
 
 function testState(){
   const e=new Engine({seed:31,mode:'tl',rules:{
@@ -69,4 +69,26 @@ test('T stock audit compares plans to ordinary ROOK but never changes policy',()
   assert.equal(report.bestPlan.mode,'bank-current-t');
   assert.equal(report.bestPlan.firstAction.kind,'hold');
   assert.ok(report.conclusion.includes('true-KO'));
+});
+
+test('opt-in T stock chooser keeps a legal ranked fallback and opt-out margin',()=>{
+  const visible=testState(),immutable=structuredClone(visible);
+  const opts={depth:4,beamWidth:12,maxNodes:1800,
+    planBeamWidth:30,maxPlacementEvaluations:8000,
+    maxProofCalls:210,maxPlans:4,maxStates:1000,maxSteps:70};
+  const choice=chooseMoveWithPublicTStock(visible,{
+    ...opts,minValueMargin:100000});
+  assert.equal(choice.diagnostics.tStock.selected,false);
+  assert.ok(choice.diagnostics.tStock.verified>0);
+  assert.ok(['hold','place'].includes(choice.kind));
+  assert.equal(choice.ranked[0].kind,choice.kind);
+  const exploratory=chooseMoveWithPublicTStock(visible,{
+    ...opts,minValueMargin:0});
+  assert.ok(['hold','place'].includes(exploratory.kind));
+  assert.ok(Array.isArray(exploratory.ranked));
+  assert.ok(exploratory.ranked.length>0);
+  assert.equal(typeof exploratory.diagnostics.tStock.selected,'boolean');
+  assert.deepEqual(visible,immutable);
+  assert.throws(()=>chooseMoveWithPublicTStock(visible,{
+    ...opts,minValueMargin:-1}),/Invalid T stock margin/);
 });
