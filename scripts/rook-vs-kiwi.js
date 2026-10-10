@@ -178,7 +178,12 @@ function runPair(seed,order){
           const allowlisted={playing:v.playing,board:v.board,current:v.current,
             hold:v.hold,next:v.next,attack:v.attack,frame:v.frame,
             piecesPlaced:v.piecesPlaced,rules:v.rules};
-          const snapshot={turn:lockSteps,visible:structuredClone(allowlisted)};
+          const snapshot={turn:lockSteps,visible:structuredClone(allowlisted),
+            // Offline supervision metadata, not included in 'visible' and
+            // never passed to either candidate-selection function.
+            authorityBeforeTotals:Object.fromEntries(
+              ['generated','sent','cancelled','tanked','received'].map(key=>
+                [key,demos[i].engine.state.attack.totals[key]]))};
           if(traceAllPublicLocks)beforePublicLock[i]=snapshot;
           if(traceTsd){
             recentPublicViews[i].push(snapshot);
