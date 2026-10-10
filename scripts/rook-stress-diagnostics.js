@@ -81,7 +81,7 @@ for(let i=0;i<records.length;i++){
     throw Error('Pinned 6K baseline no longer matches archived baseline; comparison invalid');
   // Only the rare truly pressure-bearing snapshots run the corrected
   // conditional-belief variant. Never treat Kiwi agreement as a KO outcome.
-  let pressureBelief=null;
+  let pressureBelief=null,pressureHorizon=null;
   if(publicPending>0){
     const t0=performance.now();
     const choice=chooseMove(v,{...options,garbageBelief:true,
@@ -98,10 +98,33 @@ for(let i=0;i<records.length;i++){
       selectedUnresolvedGarbage:choice.diagnostics.selectedUnresolvedGarbage};
     if(JSON.stringify(v)!==frozen)
       throw Error('Public belief variant mutated a player-visible snapshot');
+    // Compare against the SAME 4-ply search horizon with unknown holes
+    // explicitly branched. A bounded or unknowable continuation remains a
+    // diagnostic failure, never an invented future attack or KO result.
+    const h0=performance.now();
+    const horizon=chooseMove(v,{...options,garbageBelief:true,
+      beliefProbes:3,beliefMaxOutcomes:10,beliefRiskWeight:.2,
+      beliefReachableStates:300,beliefCommonHorizon:true,
+      beliefHorizonNodes:140,beliefHorizonBeam:3});
+    const horizonKey=actionSignature(horizon);
+    pressureHorizon={key:horizonKey,
+      matchesKiwi:horizonKey===ref.kiwi.key,
+      changesFromBaseline:horizonKey!==opts[0].key,
+      changesFromLegacyBelief:horizonKey!==pressureBelief.key,
+      evaluated:horizon.diagnostics.evaluated,
+      ms:Math.round(performance.now()-h0),
+      beliefAttempts:horizon.diagnostics.beliefAttempts,
+      beliefEvaluations:horizon.diagnostics.beliefEvaluations,
+      beliefOverBudget:horizon.diagnostics.beliefOverBudget,
+      horizonEvaluated:horizon.diagnostics.beliefHorizonEvaluated,
+      horizonAborted:horizon.diagnostics.beliefHorizonAborted,
+      selectedUnresolvedGarbage:horizon.diagnostics.selectedUnresolvedGarbage};
+    if(JSON.stringify(v)!==frozen)
+      throw Error('Common-horizon variant mutated a public snapshot');
   }
   rows.push({seed:record.seed,turn:record.turn,owner:record.owner,
     pending:publicPending,...boardFeatures(v.board),
-    kiwiKey:ref.kiwi.key,options:opts,pressureBelief});
+    kiwiKey:ref.kiwi.key,options:opts,pressureBelief,pressureHorizon});
 }
 const kinds=['all','pending','garbage','holes','late'];
 const categories={all:()=>true,pending:r=>r.pending>0,garbage:r=>r.garbage>0,
@@ -156,6 +179,18 @@ const result={format:'rook-real-kiwi-public-stress-triage/1',
     details:rows.filter(r=>r.pressureBelief!==null).map(r=>({
       seed:r.seed,turn:r.turn,owner:r.owner,
       pending:r.pending,holes:r.holes,...r.pressureBelief}))},
+  pressureHorizonSummary:{
+    sampled:rows.filter(r=>r.pressureHorizon!==null).length,
+    evaluated:rows.filter(r=>r.pressureHorizon?.beliefEvaluations>0).length,
+    decisionChanged:rows.filter(r=>r.pressureHorizon?.changesFromBaseline).length,
+    differsFromLegacyBelief:rows.filter(r=>r.pressureHorizon?.changesFromLegacyBelief).length,
+    agreesWithKiwi:rows.filter(r=>r.pressureHorizon?.matchesKiwi).length,
+    horizonAborted:rows.reduce((n,r)=>n+(r.pressureHorizon?.horizonAborted??0),0),
+    extraEvaluated:rows.reduce((n,r)=>n+(r.pressureHorizon?.horizonEvaluated??0),0),
+    scenariosOverBudget:rows.reduce((n,r)=>n+(r.pressureHorizon?.beliefOverBudget??0),0),
+    details:rows.filter(r=>r.pressureHorizon!==null).map(r=>({
+      seed:r.seed,turn:r.turn,owner:r.owner,
+      pending:r.pending,holes:r.holes,...r.pressureHorizon}))},
   rows,
   warning:'Agreement with Kiwi is not a strength benchmark; search time / KO still required'};
 if(process.env.ROOK_STRESS_OUTPUT)
