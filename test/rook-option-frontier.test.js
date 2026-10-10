@@ -73,3 +73,27 @@ test('frontier strategy is opt-in, public-only and authority-reachable',()=>{
   assert.throws(()=>chooseMove(v,{...opts,optionFrontierSlots:14}),
     /invalid search budget/);
 });
+
+test('frontier active evaluator diagnostics preserve scored board reconstruction',()=>{
+  const e=new Engine({mode:'tl',seed:67310,rules:{g:0}});
+  const v=visibleState(e.state);
+  const config={depth:4,beamWidth:12,maxNodes:1600,
+    maxStates:480,maxSteps:42,spinForecast:false,
+    futureReachableProbes:2,includeRanked:true,traceRootScores:true};
+  const normal=chooseMove(v,config);
+  const active=chooseMove(v,{...config,optionFrontierSlots:3});
+  // Structural readiness only changes which nodes SURVIVE, not the value
+  // computed for a surviving state. Every selected leaf still uses the
+  // original Tetrp-combat reward and evaluator with zero reconstruction error.
+  for(const report of [normal,active]){
+    assert.ok(report.rootScores.length>0);
+    for(const root of report.rootScores){
+      assert.ok(Math.abs(root.leaf.valueReconstructionError)<1e-8);
+      assert.ok(Math.abs(root.leaf.board.reconstructionError)<1e-8);
+      assert.ok(Number.isFinite(root.leaf.total));
+    }
+  }
+  assert.equal(active.diagnostics.offenseWeight,normal.diagnostics.offenseWeight);
+  assert.equal(active.diagnostics.intermediateHoleRelief,
+    normal.diagnostics.intermediateHoleRelief);
+});
