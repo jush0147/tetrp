@@ -1258,3 +1258,58 @@ This is a falsifiable deletion test for a **unproved**
 T-Spin readiness feature, not a claim removing it will
 improve play. Fair CPU and meaningful statistics still
 required before promotion.
+
+
+### 2026-10-10 verified lane ablation screens (behavior only, NOT KO strength)
+
+The three opt-in Frontier lane-removal policies were actually
+run head-to-head against **full Frontier** using same Tetrp
+seven-bag seeds and a shadow chooser on the *same PUBLIC player
+observation* so behavior differences do not conflate position
+divergence. Seeds 67310 and 67311; match cap **32 LOCKS**,
+strictly UNSCORED, no win/loss interpretations.
+
+1. `no-combat`: **0 changed first actions across 80
+   same-public-state shadow decisions**. Its survivor log showed
+   zero preserved combat-lane nodes (by construction),
+   371 Quad, 211 Spin. This does NOT mean real attacks were
+   disabled: combat remains in ordinary ROOK scoring.
+2. `no-quad`: **1 changed first action across 77 shadow
+   decisions**. Its survivor log showed 104 Combat,
+   zero Quad (by construction), 422 Spin.
+3. `no-spin`: **2 changed first actions across 77 shadow
+   decisions**; 98 Combat, 431 Quad, zero Spin (by
+   construction). This does NOT disable real Full T-Spin,
+   Mini, B2B, SRS+ or the ordinary board-value tspots
+   term; ONLY the separate Spin survivor lane is removed.
+
+Source CI, all success:
+[`no-combat` and `no-quad` #38064570896](https://github.com/jush0147/tetrp/actions/runs/38064570896);
+[`no-spin` #38064467723](https://github.com/jush0147/tetrp/actions/runs/38064467723)
+passed 11 dedicated legal-state/default-parity tests.
+Their numbers are not apples-to-apples action counts across identical
+later trajectories once experimental agents diverge: each candidate
+can visit different states; additionally the 77–80 observations
+per mode are **correlated within two seeds**. Do not treat
+2/77 as an independent Bernoulli improvement probability.
+Each ablation changes *policy* on at most two sampled
+states, while no-combat had none in this particular screen.
+
+**Conditional real-KO test accepted for no-spin:** because
+nonzero action differences were observed,
+[#38064467723](https://github.com/jush0147/tetrp/actions/runs/38064467723)
+automatically scheduled two new INDEPENDENT never-before-used
+seed 67332 and seed 67333 genuine Tetrp KO-first
+2000-lock safety-cap matches, no-spin vs FULL
+three-lane Frontier. At this update these KO results
+were still running or queued. Do not claim the
+no-spin candidate is better, worse, or has beaten Kiwi
+before checking actual artifacts, CPU, and combat.
+
+**Next evidence-driven go/no-go:** If the no-spin version
+improves KO outcomes on fresh seeds, expand matched-CPU
+trials (including multiple independent seeds, roles/side
+asymmetry checks). Otherwise discontinue that ablation
+and investigate a more general reward policy / long-term
+garbage-downstack objective instead of tweaking
+geometry to force more T-Spins.
