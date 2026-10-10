@@ -607,6 +607,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
         rootAction:plan.actions[0],tacticalGoal:plan.goal.kind,
         ...(traceRootScores?{forecastLocks:[...(node.forecastLocks??[]),{
           piece:plan.witnesses[ply].piece.type,lines:p.lines,spin:p.spin,
+          proof:plan.witnesses[ply].path?.at(-1)==='hardDrop'?'srs':'geometry',
           generated:p.generated,sent:p.offensive,cancelled:p.defensive,
           btb:p.btb,combo:p.combo}]}:{}),
         recoveryActive:node.recoveryActive,recoveryWeight:node.recoveryWeight};
@@ -727,6 +728,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             ...(traceRootScores?{
               forecastLocks:[...(node.forecastLocks??[]),{
                 piece:move.piece.type,lines:p.lines,spin:p.spin,
+                proof:move.path?.at(-1)==='hardDrop'?'srs':'geometry',
                 generated:p.generated,sent:p.offensive,cancelled:p.defensive,
                 btb:p.btb,combo:p.combo}],
               rootPly:ply+1,
