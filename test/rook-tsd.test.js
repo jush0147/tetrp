@@ -58,3 +58,23 @@ test('the TSD builder never uses a hidden sixth preview',()=>{
   assert.deepEqual(chooseMove(injected,options),original);
   assert.throws(()=>chooseMove({...v,next:[...v.next,'t']},options),/exactly five/);
 });
+
+
+test('TSD scaffold never credits uncleareable permanent garbage in either target row',()=>{
+  const e=setup(),board=e.state.board,rules=e.state.rules;
+  const options=tsdScaffolds(board,rules,{maxMissing:5});
+  const candidate=options.find(x=>x.rows.includes(37)&&x.rows.includes(38));
+  assert.ok(candidate,'original geometry must include the supported target row pair');
+  for(const row of candidate.rows){
+    const impossible=structuredClone(board);
+    impossible.rows[row][0]='gbd';
+    const after=tsdScaffolds(impossible,rules,{maxMissing:5});
+    assert.ok(!after.some(x=>x.rows[0]===candidate.rows[0]&&
+      x.rows[1]===candidate.rows[1]),
+    'a permanently blocked line cannot become a genuine two-row TSD slot');
+  }
+  const clearable=structuredClone(board);
+  clearable.rows[candidate.rows[0]][0]='gb';
+  assert.ok(tsdScaffolds(clearable,rules,{maxMissing:5}).some(x=>
+    x.rows[0]===candidate.rows[0]&&x.rows[1]===candidate.rows[1]));
+});
