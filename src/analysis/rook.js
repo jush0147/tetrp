@@ -202,7 +202,7 @@ function surface(board){
     let streak=0;
     for(let y=H-1;y>=Math.max(0,H-10);y--){
       const row=board.rows[y];
-      if(row[x]!==null||row.some((v,i)=>i!==x&&v===null))break;
+      if(row[x]!==null||row.includes('gbd')||row.some((v,i)=>i!==x&&v===null))break;
       streak++;tetrisReady=Math.max(tetrisReady,Math.min(4,streak));
     }
   }
@@ -211,7 +211,8 @@ function surface(board){
     let support=0;
     for(let y=H-1;y>=Math.max(0,H-7);y--){
       const row=board.rows[y];
-      if(row[x]!==null)break;
+      // An uncleareable line is never progress toward a four-line attack.
+      if(row[x]!==null||row.includes('gbd'))break;
       let filled=0;
       for(let z=0;z<W;z++)if(z!==x&&row[z]!==null)filled++;
       if(filled<3)break;
@@ -328,7 +329,11 @@ function applyPlacement(node,placement,rules){
     unresolvedGarbage:tank.amount>0,forecastTank:tank.amount,
     reward,topout:lockout,lines:full.length,spin:placement.spin,allClear};
 }
-const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
+// A permanent garbage cell (gbd) prevents line clears. Collapsing it into
+// ordinary occupancy silently transposes states with different physics.
+export const rookBoardKey=(b)=>b.rows.map(row=>row.map(v=>
+  v===null?'.':v==='gb'?'g':v==='gbd'?'d':'#').join('')).join('');
+const boardKey=rookBoardKey;
 
 // An unknown garbage hole forces conditional evaluation of potential boards.
 // Since beam pruning may include an intermediate-only shaping bonus, both
@@ -600,6 +605,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
         frame:p.frame,unresolvedGarbage:p.unresolvedGarbage,forecastTank:p.forecastTank,
         score:node.score+p.reward*Math.pow(.94,ply),
         rootAction:plan.actions[0],tacticalGoal:plan.goal.kind,
+        ...(traceRootScores?{forecastLocks:[...(node.forecastLocks??[]),{
+          piece:plan.witnesses[ply].piece.type,lines:p.lines,spin:p.spin,
+          generated:p.generated,sent:p.offensive,cancelled:p.defensive,
+          btb:p.btb,combo:p.combo}]}:{}),
         recoveryActive:node.recoveryActive,recoveryWeight:node.recoveryWeight};
       next.evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
       if(!tacticalPrefixes.has(ply))tacticalPrefixes.set(ply,[]);
@@ -716,6 +725,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
             rootHoldPlan:node.rootHoldPlan??(ply===0&&option.hold?planned:null),
             ...(traceRootScores?{
+              forecastLocks:[...(node.forecastLocks??[]),{
+                piece:move.piece.type,lines:p.lines,spin:p.spin,
+                generated:p.generated,sent:p.offensive,cancelled:p.defensive,
+                btb:p.btb,combo:p.combo}],
               rootPly:ply+1,
               rootFirst:node.rootFirst??(ply===0?{
                 reward:p.reward,sent:p.offensive,cancelled:p.defensive,
@@ -954,7 +967,11 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           discountedBoardValue:board.boardValue*discount,
           valueReconstructionError:node.evalScore-
             (node.score+board.boardValue*discount),
-          ply:node.rootPly??clamp,board}});
+          ply:node.rootPly??clamp,board,
+           // Diagnostic-only prediction of the selected beam continuation.
+           // The bot may replan after every real lock; this is NOT guaranteed
+           // future output and contains only publicly visible piece types.
+           forecastLocks:node.forecastLocks??[]}});
     }
     result.rootScores=[...byRoot.values()].sort((a,b)=>b.leaf.total-a.leaf.total);
   }
