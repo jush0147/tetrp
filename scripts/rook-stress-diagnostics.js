@@ -43,6 +43,8 @@ for(let i=0;i<records.length;i++){
     'checkpoint' in v||'rng' in v)
     throw Error('Snapshot identity or NEXT5 privacy invariant violated');
   const frozen=JSON.stringify(v);
+  const publicPending=[...(v.attack?.pending??[]),...(v.attack?.are??[])]
+    .reduce((n,p)=>n+(p.amt??0),0);
   const opts=[];
   for(const variant of configs){
     const start=performance.now();
@@ -77,11 +79,29 @@ for(let i=0;i<records.length;i++){
   }
   if(opts[0].key!==ref.rook.key)
     throw Error('Pinned 6K baseline no longer matches archived baseline; comparison invalid');
-  const publicPending=[...(v.attack?.pending??[]),...(v.attack?.are??[])]
-    .reduce((n,p)=>n+(p.amt??0),0);
+  // Only the rare truly pressure-bearing snapshots run the corrected
+  // conditional-belief variant. Never treat Kiwi agreement as a KO outcome.
+  let pressureBelief=null;
+  if(publicPending>0){
+    const t0=performance.now();
+    const choice=chooseMove(v,{...options,garbageBelief:true,
+      beliefProbes:3,beliefMaxOutcomes:10,beliefRiskWeight:.2,
+      beliefReachableStates:300});
+    pressureBelief={key:actionSignature(choice),matchesKiwi:
+      actionSignature(choice)===ref.kiwi.key,
+      changesFromBaseline:actionSignature(choice)!==opts[0].key,
+      evaluated:choice.diagnostics.evaluated,
+      ms:Math.round(performance.now()-t0),
+      beliefAttempts:choice.diagnostics.beliefAttempts,
+      beliefEvaluations:choice.diagnostics.beliefEvaluations,
+      beliefOverBudget:choice.diagnostics.beliefOverBudget,
+      selectedUnresolvedGarbage:choice.diagnostics.selectedUnresolvedGarbage};
+    if(JSON.stringify(v)!==frozen)
+      throw Error('Public belief variant mutated a player-visible snapshot');
+  }
   rows.push({seed:record.seed,turn:record.turn,owner:record.owner,
     pending:publicPending,...boardFeatures(v.board),
-    kiwiKey:ref.kiwi.key,options:opts});
+    kiwiKey:ref.kiwi.key,options:opts,pressureBelief});
 }
 const kinds=['all','pending','garbage','holes','late'];
 const categories={all:()=>true,pending:r=>r.pending>0,garbage:r=>r.garbage>0,
@@ -127,7 +147,16 @@ const result={format:'rook-real-kiwi-public-stress-triage/1',
   source:'same public Tetrp snapshots in pinned Kiwi-vs-ROOK full KO',
   matchSeeds:[...new Set(rows.map(r=>r.seed))],
   configurations:configs.map(c=>({id:c.id,...c.settings})),
-  statistics,rows,
+  statistics,pressureBeliefSummary:{
+    sampled:rows.filter(r=>r.pressureBelief!==null).length,
+    evaluated:rows.filter(r=>r.pressureBelief?.beliefEvaluations>0).length,
+    decisionChanged:rows.filter(r=>r.pressureBelief?.changesFromBaseline).length,
+    agreesWithKiwi:rows.filter(r=>r.pressureBelief?.matchesKiwi).length,
+    scenariosOverBudget:rows.reduce((s,r)=>s+(r.pressureBelief?.beliefOverBudget??0),0),
+    details:rows.filter(r=>r.pressureBelief!==null).map(r=>({
+      seed:r.seed,turn:r.turn,owner:r.owner,
+      pending:r.pending,holes:r.holes,...r.pressureBelief}))},
+  rows,
   warning:'Agreement with Kiwi is not a strength benchmark; search time / KO still required'};
 if(process.env.ROOK_STRESS_OUTPUT)
   writeFileSync(process.env.ROOK_STRESS_OUTPUT,JSON.stringify(result,null,2)+'\n');

@@ -48,6 +48,9 @@ jobs:
             report.rows.some(r=>r.options.some(o=>
               !Array.isArray(o.futureProofsByPly)||
               !Number.isInteger(o.actualFutureSpinClears)))||
+            report.pressureBeliefSummary.sampled!==3||
+            report.pressureBeliefSummary.details.some(v=>
+              !Number.isFinite(v.ms)||v.beliefEvaluations>3)||
             report.rows.some(r=>r.options.length!==4||
               r.options.some(o=>!Number.isFinite(o.ms)||o.ms<0||
                 !Number.isFinite(o.evaluated)||o.evaluated<=0)))
