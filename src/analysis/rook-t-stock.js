@@ -6,13 +6,14 @@ import {searchPublicForwardTsd} from './rook-forward-attack.js';
 export function auditPublicTStock(visible,{
   depth=4,beamWidth=24,maxNodes=6000,
   planBeamWidth=16,maxProofCalls=85,maxPlacementEvaluations=2500,
-  maxPlans=4,maxStates=950,maxSteps=70
+  maxPlans=4,maxStates=1200,maxSteps=42,
+  planMaxStates=950,planMaxSteps=70
 }={}){
   if(!Number.isInteger(depth)||depth<2||depth>5)
     throw new RangeError('T stock comparison depth must be 2..5');
   const planner={minSetupPieces:depth-1,maxSetupPieces:depth-1,
     beamWidth:planBeamWidth,maxProofCalls,maxPlacementEvaluations,
-    maxPlans,maxStates,maxSteps};
+    maxPlans,maxStates:planMaxStates,maxSteps:planMaxSteps};
   const variants=[];
   const tInHold=visible.hold?.piece==='t';
   const canBank=visible.current?.type==='t'&&
@@ -28,7 +29,8 @@ export function auditPublicTStock(visible,{
   for(const variant of variants){
     const found=searchPublicForwardTsd(visible,variant.options);
     const candidates=found.plans.map(plan=>({
-      ...evaluateVerifiedPublicPlan(visible,plan,{maxStates,maxSteps}),
+      ...evaluateVerifiedPublicPlan(visible,plan,{
+        maxStates:planMaxStates,maxSteps:planMaxSteps}),
       firstAction:plan.actions[0]?.action,
       firstRequest:plan.actions[0],
       terminalSent:plan.evidence.terminalSent,
