@@ -845,3 +845,21 @@ board states earlier, not simply setting a larger TSD bonus,
 forcing every T into Hold, or increasing beam limits.
 Only after a candidate changes real root actions in distinct seeds
 should another 2,000-lock genuine KO be scheduled. PR #6 remains Draft.
+
+
+### 2026-10-10 follow-up: instrument WHY T-stock produced zero offers
+
+The first two-seed 48-lock screen yielded zero proved offers and therefore
+could not distinguish missing T access from failed bounded construction.
+A new diagnostics-only update
+[`9bec2cd`](https://github.com/jush0147/tetrp/commit/9bec2cddc55ebcbb0d680d1648d62bb343ae2d5b)
+and [`4a652df`](https://github.com/jush0147/tetrp/commit/4a652dfd67ade0845a0056670ea5c16abed84199)
+now records separately: positions with ANY publicly eligible
+current-T-bank / already-held-T / naturally-known NEXT T plan mode,
+full SRS+ proof calls, candidate placement evaluations, search-cap
+truncation, verified candidate plans, and actual first-choice changes.
+The unchanged short-screen seeds 67201/67202 are rerun by
+[Actions #38059026591](https://github.com/jush0147/tetrp/actions/runs/38059026591)
+after workflow update [`16f9973`](https://github.com/jush0147/tetrp/commit/16f99734afd615183710b96aee184a804a886d5d).
+At this handoff, no new result from that rerun is established.
+Do not infer actual KIWI or even ROOK KO strength from this telemetry.
