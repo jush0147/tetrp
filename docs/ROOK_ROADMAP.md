@@ -1202,3 +1202,59 @@ direct head-to-head, stop threshold tweaking. Instead focus on
 recovering from garbage, maintaining B2B and measurable delivered
 attack, not cosmetic T-slot promises. Default `chooseMove`,
 `main`, and pinned Kiwi unchanged. PR #6 Draft.
+
+
+### 2026-10-10: direct guard ablation, and three-lane experimental decomposition
+
+The **correct** question is whether the fixed public-risk guard helps
+the *same Frontier policy*, not whether a package of Frontier+guard
+can beat ordinary ROOK. New
+[causal true KO Actions #38062899756](https://github.com/jush0147/tetrp/actions/runs/38062899756)
+use `COMPARE_UNGUARDED_FRONTIER=1` and identical Tetrp
+seven-bag seeds, frames and configured search limits.
+The first completed RETROSPECTIVE seed **67324** is a
+**KO at 746 locks won by UNGUARDED Frontier**; guarded
+vs unguarded actually sent 420 vs 476 garbage;
+search CPU 286418 vs 291437 ms; guard fired in
+327 selected-player decisions. This is a genuine KO, but one
+known seed is not evidence of population causality.
+At handoff seeds 67325 (retrospective), 67326/67327
+(predeclared previously unseen) were still running or queued.
+DO NOT invent outcomes or promote this guard.
+
+Because the most prominent missing Full TSD planned routes had
+zero verified natural board coverage, the optional Frontier's
+`spinReadiness` (a shallow 3-corner geometric proxy) is
+especially suspicious as an actual long-game utility feature:
+it gives NO genuine SRS+ reachability or sent attack guarantee.
+Instead of arbitrarily changing threshold weights, make the
+original 3-lane portfolio **causally ablatable**.
+New `optionFrontierLanes` policy parameter supports
+`all` (exact compatibility default), `combat`, `quad`,
+`spin`, `no-combat`, `no-quad`, `no-spin`. Each
+option ONLY controls intermediate candidate-survivor lanes;
+the exact real Tetrp attack/defense/downstack/survival
+value and authority placement validation are unchanged.
+`all` remains the original policy and both
+`optionFrontierSlots=0` and `main` remain untouched.
+[Core `0c770c0`](https://github.com/jush0147/tetrp/commit/0c770c00f3b298ea9be3942c02c23c1e021f7f59);
+[match harness `5caee42`](https://github.com/jush0147/tetrp/commit/5caee42b67c33dbfebfeadcf5ede5d04f2c50cc4);
+[tests `ce31ae3`](https://github.com/jush0147/tetrp/commit/ce31ae3ab3f3c59eb65734abfa6c38e4211d1bae).
+
+`COMPARE_ALL_FRONTIER=1` sets challenger lane policy
+against the **otherwise identical full three-lane Frontier**
+on same seven-bag Tetrp matches, while
+`FRONTIER_ALL_SHADOW=1` directly measures actual
+changed first moves from the *same public snapshot*.
+This avoids conflating search trace differences
+or two diverged boards as policy disagreement.
+[No-spin isolation Actions #38064467723](https://github.com/jush0147/tetrp/actions/runs/38064467723)
+first runs two unscored, 32-lock screens on seeds
+67310/67311, and only if action changes really occur runs
+new independent 67332/67333 true-KO (or 2000-lock cap)
+head-to-head matches of no-spin vs full Frontier.
+At handoff the workflow was running; all outcomes pending.
+This is a falsifiable deletion test for a **unproved**
+T-Spin readiness feature, not a claim removing it will
+improve play. Fair CPU and meaningful statistics still
+required before promotion.
