@@ -97,3 +97,48 @@ test('frontier active evaluator diagnostics preserve scored board reconstruction
   assert.equal(active.diagnostics.intermediateHoleRelief,
     normal.diagnostics.intermediateHoleRelief);
 });
+
+test('opt-in danger gate restores ordinary ROOK under publicly high stack',()=>{
+  const e=new Engine({mode:'tl',seed:67313,rules:{g:0}});
+  // A legitimate-looking, physically occupiable 12-cell-high surface.
+  // No hidden hole / NEXT6 is introduced, and the root spawn remains legal.
+  for(let y=e.state.board.rows.length-12;y<e.state.board.rows.length;y++)
+    e.state.board.rows[y][0]='i';
+  const v=visibleState(e.state),unchanged=structuredClone(v);
+  const config={depth:3,beamWidth:12,maxNodes:1200,maxStates:420,
+    maxSteps:42,spinForecast:false,futureReachableProbes:2,
+    includeRanked:true};
+  const baseline=chooseMove(v,config);
+  const guarded=chooseMove(v,{...config,optionFrontierSlots:3,
+    optionFrontierRiskGuard:true});
+  assert.equal(guarded.diagnostics.optionFrontierRiskGuard,true);
+  assert.equal(guarded.diagnostics.frontierSuppressed,true);
+  assert.equal(guarded.diagnostics.effectiveFrontierSlots,0);
+  assert.equal(guarded.diagnostics.optionFrontierStats.inserted,0);
+  assert.equal(guarded.kind,baseline.kind);
+  if(baseline.kind==='place'){
+    assert.deepEqual(guarded.move,baseline.move);
+    assert.deepEqual(guarded.execution,baseline.execution);
+  }else assert.equal(guarded.mode,baseline.mode);
+  assert.equal(guarded.diagnostics.value,baseline.diagnostics.value);
+  assert.deepEqual(v,unchanged);
+});
+test('safe public boards retain full frontier under optional danger guard',()=>{
+  const v=visibleState(new Engine({mode:'tl',seed:67310,
+    rules:{g:0}}).state);
+  const config={depth:3,beamWidth:12,maxNodes:1200,maxStates:420,
+    maxSteps:42,spinForecast:false,futureReachableProbes:2};
+  const exposed=chooseMove(v,{...config,optionFrontierSlots:3,
+    optionFrontierRiskGuard:false});
+  const guarded=chooseMove(v,{...config,optionFrontierSlots:3,
+    optionFrontierRiskGuard:true});
+  assert.equal(guarded.diagnostics.frontierSuppressed,false);
+  assert.equal(guarded.diagnostics.effectiveFrontierSlots,3);
+  // Apart from explicit guard diagnostics, safe policies are identical.
+  assert.equal(guarded.kind,exposed.kind);
+  assert.equal(guarded.diagnostics.value,exposed.diagnostics.value);
+  assert.deepEqual(guarded.diagnostics.optionFrontierStats,
+    exposed.diagnostics.optionFrontierStats);
+  assert.throws(()=>chooseMove(v,{...config,optionFrontierRiskGuard:1}),
+    /invalid search budget/);
+});
