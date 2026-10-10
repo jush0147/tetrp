@@ -863,3 +863,54 @@ The unchanged short-screen seeds 67201/67202 are rerun by
 after workflow update [`16f9973`](https://github.com/jush0147/tetrp/commit/16f99734afd615183710b96aee184a804a886d5d).
 At this handoff, no new result from that rerun is established.
 Do not infer actual KIWI or even ROOK KO strength from this telemetry.
+
+
+### 2026-10-10 P0 extension: empty-Hold bank of UPCOMING public T
+
+**Root cause now measured, not presumed:** The prior
+[#38059026591](https://github.com/jush0147/tetrp/actions/runs/38059026591)
+genuine-public-decision screen over only seeds 67201 and 67202,
+48 locks per match, had **22 eligible T-stock decisions, 1064
+actual SRS enumeration calls, 27652 placement evaluations,
+0 truncated modes, 0 proven offer, 0 changed first move**.
+Therefore bounded proof work *did occur* and did NOT hit its caps;
+the absence of a plan was not merely absence of a visible T. This
+small correlated set of boards cannot establish general TSD
+impossibility or any scored KO inference. Full KO correctly skipped.
+
+**New missing policy route implemented:** At a current public snapshot,
+when a T is visible in NEXT[0] or NEXT[1] and Hold is empty,
+the forward planner can now first lock the genuinely preceding
+piece(s), then bank the T by an *empty* Hold at its actual turn,
+then lock remaining known setup pieces, then swap the saved T out of
+occupied Hold and execute a proved Full TSD. No invisible NEXT6,
+no private bag, no speculative zero-frame earlier Hold, no double Hold
+without an intervening lock; full SRS+ witness and intermediate
+line clears remain mandatory. The existing Current-T banking and
+Held-T spending modes are unchanged. Commit:
+[`7d9eb17`](https://github.com/jush0147/tetrp/commit/7d9eb173ea323ddc2d30564d6c2e486e4763e738).
+
+The audit's identical-horizon option portfolio now includes the
+`bank-upcoming-t` option (NEXT T appears before the final T lock).
+The candidate first action can be an ordinary placement followed by a
+later Hold; genuine authority re-evaluates each new public board.
+[`01a64c1`](https://github.com/jush0147/tetrp/commit/01a64c1cc03cb24361db595c519b2a6fc28abd79).
+
+Dedicated tests replay synthetic witness plans for NEXT T at indices
+1 and 2 through the real `BotDemo` authority, checking both Hold
+exchanges, exactly four 24-frame locks and a true Full TSD. The audit
+also checks reproducible future-T scorer output:
+[`bcd94dc`](https://github.com/jush0147/tetrp/commit/bcd94dca189bf086abf2696d09ebb4e29b7ee743),
+[`4ce6e48`](https://github.com/jush0147/tetrp/commit/4ce6e485b345fa67e2fd71a83dd364d5536453a8).
+
+**Actual same-seed screen:**
+[Actions #38059465725](https://github.com/jush0147/tetrp/actions/runs/38059465725),
+which includes the new authentic SRS+/Hold tests, then the
+unchanged distinct-seed 67201/67202 48-lock decision-change gate.
+At time of this handoff the synthetic tests had passed, but the
+natural-match screen was still running; no new KO or model-strength
+claim can be made. If it again finds no real candidate, the task
+moves to constructing offensive future boards across bags and
+competing Tetris/Mini/B2B/downstack opportunities, not inflating
+TSD weights. The default ROOK `chooseMove`, main branch, and
+Kiwi pinned policy remain unchanged.
