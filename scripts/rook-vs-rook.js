@@ -39,6 +39,8 @@ const expertExactLeaf=process.env.EXPERT_EXACT_LEAF==='1';
 const expertTStock=process.env.EXPERT_T_STOCK==='1';
 const expertFrontier=process.env.EXPERT_FRONTIER==='1';
 const frontierShadow=process.env.FRONTIER_SHADOW==='1';
+const frontierRiskGuard=process.env.FRONTIER_RISK_GUARD==='1';
+const frontierGuardShadow=process.env.FRONTIER_GUARD_SHADOW==='1';
 const frontierSlots=Number(process.env.FRONTIER_SLOTS??3);
 const frontierGap=Number(process.env.FRONTIER_SCORE_GAP??70);
 const tStockMargin=Number(process.env.T_STOCK_MARGIN??1);
@@ -65,7 +67,8 @@ const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertSticky?'sticky-continuation':null,
   expertExactLeaf?'verified-fifth-ply':null,
   expertTStock?'public-t-stock':null,
-  expertFrontier?'option-frontier':null,
+  expertFrontier?(frontierRiskGuard?'risk-guarded-frontier':
+    'option-frontier'):null,
   budgetScaling?'budget-scale':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
@@ -131,6 +134,8 @@ function select(demo,open){
     frontierCombatInserted:0,frontierQuadInserted:0,
     frontierSpinInserted:0,frontierChanged:0,
     frontierShadowChecks:0,frontierShadowMs:0,
+    frontierRiskSuppressed:0,frontierGuardShadowChecks:0,
+    frontierGuardShadowChanges:0,frontierGuardShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
     stickyHoldSkipped:0,leafExtensionAttempts:0,leafExtensionApplied:0,
     leafExtensionAborts:0,leafExtensionChanges:0,leafExtensionWork:0};
@@ -201,7 +206,8 @@ function select(demo,open){
       exactLeafExtension:open&&expertExactLeaf,leafExtensionBudget,leafExtensionStates,
       beliefProbes,beliefMaxOutcomes,
       optionFrontierSlots:open&&expertFrontier?Math.min(frontierSlots,searchBeam-1):0,
-      optionFrontierMaxScoreGap:frontierGap};
+      optionFrontierMaxScoreGap:frontierGap,
+      optionFrontierRiskGuard:open&&expertFrontier&&frontierRiskGuard};
     const report=open&&expertTStock
       ?chooseMoveWithPublicTStock(view.visible,{...searchOptions,
         minValueMargin:tStockMargin,planMaxStates:950,planMaxSteps:70,
@@ -212,9 +218,23 @@ function select(demo,open){
     stats.nodes+=report.diagnostics.evaluated;
     stats.frontierConsidered+=report.diagnostics.optionFrontierStats?.considered??0;
     stats.frontierInserted+=report.diagnostics.optionFrontierStats?.inserted??0;
+    stats.frontierRiskSuppressed+=Number(
+      report.diagnostics.frontierSuppressed===true);
     stats.frontierCombatInserted+=report.diagnostics.optionFrontierStats?.modes.combat??0;
     stats.frontierQuadInserted+=report.diagnostics.optionFrontierStats?.modes.quad??0;
     stats.frontierSpinInserted+=report.diagnostics.optionFrontierStats?.modes.spin??0;
+    if(open&&expertFrontier&&frontierGuardShadow){
+      const guardStart=performance.now();
+      const unguarded=chooseMove(view.visible,{...searchOptions,
+        optionFrontierRiskGuard:false});
+      stats.frontierGuardShadowMs+=performance.now()-guardStart;
+      stats.frontierGuardShadowChecks++;
+      const signature=a=>a.kind==='hold'?'hold:'+a.mode:
+        'place:'+a.move.piece+':'+a.execution.spin+':'+
+          a.move.cells.map(([x,y])=>x+','+y).sort().join(';');
+      stats.frontierGuardShadowChanges+=Number(
+        signature(report)!==signature(unguarded));
+    }
     if(open&&expertFrontier&&frontierShadow){
       const shadowStart=performance.now();
       const shadow=chooseMove(view.visible,{...searchOptions,
@@ -344,6 +364,8 @@ function pairedGame(seed,swap){
     frontierCombatInserted:0,frontierQuadInserted:0,
     frontierSpinInserted:0,frontierChanged:0,
     frontierShadowChecks:0,frontierShadowMs:0,
+    frontierRiskSuppressed:0,frontierGuardShadowChecks:0,
+    frontierGuardShadowChanges:0,frontierGuardShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
     leafExtensionAttempts:0,leafExtensionApplied:0,leafExtensionAborts:0,
     leafExtensionChanges:0,leafExtensionWork:0,
@@ -405,6 +427,7 @@ function pairedGame(seed,swap){
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
     expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
     expertFrontier,frontierSlots,frontierGap,frontierShadow,
+    frontierRiskGuard,frontierGuardShadow,
     leafExtensionBudget,leafExtensionStates,intermediateHoleRelief,
     auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
     baselineFutureProbes,baselineFutureStates,candidateFutureProbes,
