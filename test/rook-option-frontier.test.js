@@ -22,7 +22,7 @@ test('frontier reserves bounded scored survivors from weaker tail',()=>{
   const picked=reservePublicOptionFrontier(all,base,{slots:2,maxScoreGap:8});
   assert.equal(picked.beam.length,4);
   assert.equal(picked.details.inserted,2);
-  assert.equal(picked.details.modes.delivered,1);
+  assert.equal(picked.details.modes.combat,1);
   assert.equal(picked.details.modes.quad,1);
   assert.ok(picked.beam.includes(x));
   assert.ok(picked.beam.includes(y));
