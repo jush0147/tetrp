@@ -1,0 +1,105 @@
+name: ROOK genuine authority paired-root counterfactual KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-root-counterfactual.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  clone-contract-smoke:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify original SRS+ / Hold / KO contracts
+        run: node --test test/rook-beam.test.js test/rook-ko-protocol.test.js
+      - name: Unscored causal fork smoke on identical private RNG snapshots
+        env:
+          SEED: '67620'
+          FORK_TURN: '6'
+          MAX_LOCKS: '18'
+          ROOK_NODES: '1500'
+        run: node scripts/rook-paired-root-fork.js > fork-smoke.json
+      - name: Verify independent fork invariants, not scored win assertions
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('fork-smoke.json','utf8'));
+          if(x.format!=='rook-authority-paired-root-counterfactual/1'||
+            x.independentSeed!==67620||x.forkTurn!==6||x.cap!==18||
+            x.originalPublicNextCount!==5||
+            !x.identicalAuthorityCheckpoint||
+            !x.opaqueHiddenFutureToBots||!x.distinctRootActions||
+            x.results?.length!==2||
+            x.results.some(r=>r.error||r.authorityStartFrame!==6*24||
+              !['KO','capped','double-KO'].includes(r.termination))||
+            x.results[0].rootSignature===x.results[1].rootSignature)
+            throw Error('Invalid complete real authority branch clone contract');
+          console.log(JSON.stringify({format:x.format,
+            seed:x.independentSeed,rootActions:x.results.map(r=>r.rootSignature),
+            postForkResults:x.results.map(r=>({termination:r.termination,
+              actualSent:r.finalCombat[0].sent,
+              horizon:r.firstHorizon})),
+            note:'Short cap is a branch semantics diagnostic, NEVER a win-rate proxy.'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-root-authority-fork-smoke
+          path: fork-smoke.json
+          retention-days: 30
+  full-ko:
+    needs: clone-contract-smoke
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67624,67625]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: TWO separate full continuation matches, each with real KO-first
+        env:
+          SEED: ${{ matrix.seed }}
+          FORK_TURN: '12'
+          MAX_LOCKS: '2000'
+          ROOK_NODES: '6000'
+        run: |
+          node scripts/rook-paired-root-fork.js > fork-full-ko.json
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('fork-full-ko.json','utf8'));
+          if(r.independentSeed!==Number(process.env.SEED)||
+            r.forkTurn!==12||r.cap!==2000||
+            !r.identicalAuthorityCheckpoint||
+            !r.opaqueHiddenFutureToBots||
+            r.correlatedForksPerOriginalSeed!==2||
+            r.results.length!==2||
+            r.results.some(x=>x.error||
+              !['KO','capped','double-KO'].includes(x.termination)||
+              (x.scored!==(x.termination==='KO'))))
+            throw Error('Not two authentic authority KO-first continuations');
+          console.log(JSON.stringify({seed:r.independentSeed,
+            independentTrialCount:1,
+            forcedCandidateRank:r.results.map(x=>x.rootRankAmongAll),
+            rootActions:r.results.map(x=>x.rootSignature),
+            trueKOonly:r.results.map(x=>({
+              termination:x.termination,scored:x.scored,winner:x.winner,
+              lockCount:x.locked,first8Locks:x.firstHorizon,
+              totalCpu:x.researchCpuMs,realCombat:x.finalCombat})),
+            warning:r.caution}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-root-true-ko-${{ matrix.seed }}
+          path: fork-full-ko.json
+          retention-days: 30
