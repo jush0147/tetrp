@@ -1,0 +1,88 @@
+name: ROOK forward multi-lock real-SRS TSD discovery
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-forward-tsd-public.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  public-cohort:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Real Tetrp authority and strict public NEXT5 regression
+        run: node --test test/rook-forward-attack.test.js test/rook-long-planner.test.js test/rook-tsd.test.js
+      - name: Load pre-existing public only Kiwi/ROOK boards
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-public-tsd-negative-controls
+          repository: jush0147/tetrp
+          run-id: 38055352753
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Evaluate known-public-piece SRS+ multi-lock setup portfolio
+        env:
+          ROOK_PUBLIC_LOCK_TRACE: rook-all-public-locks.jsonl
+          ROOK_FORWARD_TSD_REPORT: rook-forward-public-results.json
+        run: |
+          set -eu
+          node scripts/rook-forward-tsd-cohort.js > rook-forward-public-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-forward-public-results.json','utf8'));
+          if(r.format!=='rook-public-multipiece-forward-tsd-cohort/1'||
+            r.independentSeeds!==1||r.inputPublicLocks!==132||
+            r.plansOnlyWithKnownPublicT!==true||r.groups.length!==2||
+            r.rows.length!==r.groups.reduce((n,x)=>n+x.eligiblePublicStates,0)||
+            r.groups.some(x=>x.eligiblePublicStates<10||
+              x.foundAtLeastOnePlan>x.eligiblePublicStates)||
+            r.rows.some(x=>x.proofCalls>85||x.evaluated>2500||
+              x.targetPly<3||x.targetPly>5))
+            throw Error('Unverified public bounded SRS+ multi-ply result');
+          const summary=[
+            '### ROOK forward all-SRS+ multi-lock TSD candidate search (NOT KO)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Source revision: '+process.env.GITHUB_SHA,
+            'Historical public-only match: seed 67131, NOT a new independent game.',
+            'Target: first T visibly known 2-4 setup pieces from Current/NEXT5.',
+            'Every placement has a real SRS+ witness; intermediate line clears allowed.',
+            'Per-position budget: 16 beam, 85 full SRS enumeration calls, 2500 candidate placements.',
+            ...r.groups.map(g=>'**'+g.owner.toUpperCase()+'-produced boards**: '+
+              g.foundAtLeastOnePlan+'/'+g.eligiblePublicStates+
+              ' found a conditional proved Full TSD portfolio; '+
+              g.truncated+' cases hit plan/resource caps; '+g.placementEvaluations+
+              ' evaluated placements and '+g.totalMs+'ms measured CPU wall-clock.'),
+            '',
+            'These are highly correlated within ONE actual played seed.',
+            'No Hold swapping, no unrevealed pieces, and no unknown garbage-hole guessing.',
+            'A multi-lock STATIC continuation can be interrupted by opponent garbage.',
+            'Presence of a TSD plan is not evidence it should be preferred in real KO.',
+            'No policy change, no new KO result, no main merge.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-forward-public-issue.md',summary);
+          console.log(summary);
+          JS
+      - name: Append verified diagnostic to Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-forward-public-issue.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-forward-tsd-public-portfolio
+          path: |
+            rook-forward-public-results.json
+            rook-forward-public-summary.json
+            rook-forward-public-issue.md
+          retention-days: 30
