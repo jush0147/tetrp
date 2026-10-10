@@ -351,7 +351,7 @@ export const rookBoardKey=(b)=>b.rows.map(row=>row.map(v=>
 const boardKey=rookBoardKey;
 
 
-// A PARETO SURVIVOR portfolio, not an attack reward. Keep a few alternative
+// A multi-objective SURVIVOR portfolio, not an attack reward. Keep a few alternative
 // board-building continuations alive while normal ROOK compares all final
 // leaves under the unchanged full-rule value function. The readiness
 // features are geometrical PROXIES only, never generated or sent garbage.
@@ -364,7 +364,7 @@ export function reservePublicOptionFrontier(candidates,baseline,{
     !Number.isFinite(maxScoreGap)||maxScoreGap<0||maxScoreGap>1000)
     throw new RangeError('Invalid option-frontier portfolio budget');
   const result=baseline.slice(),details={considered:0,inserted:0,
-    modes:{delivered:0,quad:0,spin:0}};
+    modes:{combat:0,quad:0,spin:0}};
   if(!slots||result.length<2||!candidates.length)
     return {beam:result,details};
   const key=node=>JSON.stringify(node.rootAction);
@@ -376,7 +376,7 @@ export function reservePublicOptionFrontier(candidates,baseline,{
     return node.evalScore>=candidates[0].evalScore-maxScoreGap;
   });
   const modes=[
-    {key:'delivered',signal:n=>n.optionSignals.realCombat},
+    {key:'combat',signal:n=>n.optionSignals.realCombat},
     {key:'quad',signal:n=>n.optionSignals.quadReadiness},
     {key:'spin',signal:n=>n.optionSignals.spinReadiness}
   ];
@@ -798,7 +798,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let unresolvedTankNodes=0;
   const rootSurvival=[];
   const optionFrontierStats={considered:0,inserted:0,
-    modes:{delivered:0,quad:0,spin:0}};
+    modes:{combat:0,quad:0,spin:0}};
   let beliefAttempts=0,beliefEvaluations=0,beliefOutcomes=0,beliefOverBudget=0;
   let beliefHorizonEvaluated=0,beliefHorizonAborted=0;
   const beliefHorizonAbortReasons={budget:0,secondGarbage:0,publicNext:0};
@@ -929,7 +929,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
                 const boardShape=surface(p.board);
                 return {
                   realCombat:(node.optionSignals?.realCombat??0)+
-                    p.generated+p.defensive,
+                    p.offensive+p.defensive,
                   quadReadiness:Math.max(0,boardShape.tetrisReady)+
                     boardShape.tetrisConstruction,
                   spinReadiness:Math.min(4,boardShape.tspots)
