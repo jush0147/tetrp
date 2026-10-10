@@ -16,11 +16,17 @@ export function auditPublicTStock(visible,{
     maxPlans,maxStates:planMaxStates,maxSteps:planMaxSteps};
   const variants=[];
   const tInHold=visible.hold?.piece==='t';
-  const canBank=visible.current?.type==='t'&&
-    visible.hold?.piece==null&&visible.hold?.locked===false;
+  const tIndex=[visible.current?.type,...(visible.next??[])].indexOf('t');
+  const emptyHold=visible.hold?.piece==null&&
+    visible.hold?.locked===false&&visible.rules?.hold===true;
+  const canBank=emptyHold&&tIndex===0;
   if(canBank)variants.push({kind:'bank-current-t',
     options:{...planner,heldTFinish:true,storeCurrentT:true,
       heldTSetupPieces:depth-1}});
+  if(emptyHold&&tIndex>0&&tIndex<depth-1)
+    variants.push({kind:'bank-upcoming-t',
+      options:{...planner,heldTFinish:true,storeUpcomingT:true,
+        heldTSetupPieces:depth-1}});
   if(tInHold)variants.push({kind:'spend-held-t',
     options:{...planner,heldTFinish:true,heldTSetupPieces:depth-1}});
   if([visible.current?.type,...(visible.next??[])].indexOf('t')===
