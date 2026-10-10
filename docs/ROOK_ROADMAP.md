@@ -1082,3 +1082,72 @@ Because same-seed slot swaps are correlated, true confirmatory
 testing requires many fresh independent seeds (and optional
 opposite slot as symmetry control), transparent CPU accounting,
 then the real pinned Kiwi.
+
+
+### 2026-10-10 P0: verified TWO true KOs = 1-1; optimize and risk-gate before further claims
+
+**Completed scored battles:** The original `generated+cancelled`
+frontier [Actions #38060342791](https://github.com/jush0147/tetrp/actions/runs/38060342791)
+and the corrected `sent+cancelled` frontier
+[Actions #38060561936](https://github.com/jush0147/tetrp/actions/runs/38060561936)
+had the SAME outcomes on independent fresh seeds:
+- seed **67312**: genuine Tetrp KO at simultaneous lock **281**;
+  **option-frontier wins**; finalist packets **128 vs 124 sent**.
+- seed **67313**: genuine Tetrp KO at simultaneous lock **678**;
+  **baseline ROOK wins**; finalist packets **348 vs 389 sent**.
+- Corrected revision's measured search CPU vs baseline: seed
+  67312 **110269ms vs 88424ms**, seed 67313 **299153ms
+  vs 249470ms** (about +25% and +20%). Actual evaluated
+  candidate nodes and number of searches also differ despite
+  equal configured 6000 maximum per search. **Not equal CPU,
+  not evidence of increased win rate or Kiwi superiority.**
+- At seed 67313 public checkpoint 600, the challenger was at
+  **height 10, 6 holes, 63 occupied garbage cells and 155
+  tanked lines**; baseline height **4, 0 holes, 0 occupied
+  garbage, 139 tanked**. This is a particularly instructive
+  late-game risk pattern, not proof that high stack alone
+  caused the loss.
+
+**Verified performance-only optimization:** Previously each
+intermediate candidate performed two expensive entire-board surface
+scans: once to obtain offensive readiness signals and again for the
+real board evaluator. Refactored to compute those from ONE existing
+surface evaluation and cache repeated beam-frontier root signatures
+and per-root maxima. Commits
+[`ff7500c`](https://github.com/jush0147/tetrp/commit/ff7500c46c225f399aa6722ce141556108e60fad),
+[`a44f70c`](https://github.com/jush0147/tetrp/commit/a44f70c59392485e8a33a7fd7cff10e3ff4fff9d).
+[Latest strict before/after parity #38061823342](https://github.com/jush0147/tetrp/actions/runs/38061823342):
+**11 regression tests passed; 24/24 identical complete
+search reports**, comparing prior independent Git checkout
+`062af59` against the current code on SAME authority-generated
+public board states from 4 initial independent seeds. On that
+small sample, opt-in frontier 12-state summed search CPU
+**1785.45ms → 1582.63ms** (ratio 0.886), while disabled
+ordinary ROOK **1447.02ms → 1460.76ms** (ratio 1.009).
+These are noisy one-run microbenchmarks; do NOT project the
+11% to full match strength. The prior parity CI briefly failed
+due to three new diagnostic-only fields when the guard was off;
+[`e8dea65`](https://github.com/jush0147/tetrp/commit/e8dea65fdfde1775de0ad87777269fa5cdf3d975)
+restored bit-for-bit OFF-state diagnostics, after which CI passed.
+
+**New risk hypothesis, separately opt-in, not validated for KO:**
+`optionFrontierRiskGuard:true` disables speculative
+alternative-beam reservations when the CURRENT PUBLIC board
+has stack height >=10 or >=4 buried holes, or public incoming
+packet total >=5. In those situations the ordinary complete
+Tetrp-combat survival beam is used instead. There is NO
+hidden-opponent/bag/garbage-hole leakage. Guarded and unguarded
+frontier are compared on the identical public input by
+`FRONTIER_GUARD_SHADOW=1` in full authority battle harness;
+actual original full-KO root choices remain ranked and legal.
+Implementation and tests [`9c38dee`](https://github.com/jush0147/tetrp/commit/9c38dee067d417509f63f97a19502e31b5fc1793),
+[`2874966`](https://github.com/jush0147/tetrp/commit/287496602431f838dc04566f26a3d08fa863e190).
+[Safety gate #38061796104](https://github.com/jush0147/tetrp/actions/runs/38061796104):
+existing historical seeds 67312 and 67313 are a
+**180-lock UNSCORED behavioral screen only**; only if
+guard-versus-unguarded public first-action choices actually
+differ will previously unseen seed 67324 and 67325 be sent
+to 2000-lock *real KO* tests. At this write-up these gate
+outcomes are **not yet established**. Never count this
+short screen as win/loss. Guarded mode and all performance
+tweaks remain OFF by default, PR #6 Draft, `main` untouched.
