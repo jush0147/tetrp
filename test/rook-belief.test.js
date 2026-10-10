@@ -125,6 +125,11 @@ test('aborted same-horizon scenarios count their CPU work and do not become beli
   const out=chooseMove(v,cfg);
   assert.ok(out.diagnostics.beliefAttempts>0);
   assert.ok(out.diagnostics.beliefHorizonAborted>0);
+  assert.equal(Object.values(out.diagnostics.beliefHorizonAbortReasons)
+    .reduce((sum,n)=>sum+n,0),out.diagnostics.beliefHorizonAborted);
+  assert.ok(out.diagnostics.beliefHorizonAbortReasons.budget>0||
+    out.diagnostics.beliefHorizonAbortReasons.secondGarbage>0||
+    out.diagnostics.beliefHorizonAbortReasons.publicNext>0);
   assert.ok(out.diagnostics.beliefHorizonEvaluated>0,
     'discarded conditional rollouts still consume compute');
   assert.ok(out.diagnostics.beliefHorizonEvaluated<=
