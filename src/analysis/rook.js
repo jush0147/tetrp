@@ -1271,8 +1271,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
     ...(optionFrontierSlots>0?{optionFrontierSlots,
-      effectiveFrontierSlots,optionFrontierRiskGuard,frontierSuppressed,
-      optionFrontierMaxScoreGap,optionFrontierStats}:{}),
+      optionFrontierMaxScoreGap,optionFrontierStats,
+      ...(optionFrontierRiskGuard?{
+        effectiveFrontierSlots,optionFrontierRiskGuard,frontierSuppressed
+      }:{})}:{}),
     futureProofSpread,
     ...(futureProofSpread==='root-diverse'?{futureProofNodeIndices}:{}),
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
