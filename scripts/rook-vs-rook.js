@@ -41,6 +41,8 @@ const expertFrontier=process.env.EXPERT_FRONTIER==='1';
 const frontierShadow=process.env.FRONTIER_SHADOW==='1';
 const frontierRiskGuard=process.env.FRONTIER_RISK_GUARD==='1';
 const frontierGuardShadow=process.env.FRONTIER_GUARD_SHADOW==='1';
+// Causal comparator: guarded vs UNGUARDED frontier, rather than vs ROOK.
+const compareUnguardedFrontier=process.env.COMPARE_UNGUARDED_FRONTIER==='1';
 const frontierSlots=Number(process.env.FRONTIER_SLOTS??3);
 const frontierGap=Number(process.env.FRONTIER_SCORE_GAP??70);
 const tStockMargin=Number(process.env.T_STOCK_MARGIN??1);
@@ -100,6 +102,9 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(frontierSlots)||frontierSlots<1||frontierSlots>32||
   !Number.isFinite(frontierGap)||frontierGap<0||frontierGap>1000)
   throw Error('Invalid ROOK self-play configuration');
+if(compareUnguardedFrontier&&(!expertFrontier||!frontierRiskGuard||
+  expertOpen||expertTStock||budgetScaling))
+  throw Error('Unguarded comparator requires only the guarded frontier expert');
 if(budgetScaling&&(expertOpen||expertRecovery||expertBelief||expertFuture||
   expertBeam||expertOffense||expertHoldPlan||expertPruning||expertSticky||
   expertExactLeaf||expertTStock||expertFrontier))
@@ -188,6 +193,8 @@ function select(demo,open){
     const searchBudget=open?candidateBudget:baselineBudget;
     const searchDepth=open?candidateDepth:baselineDepth;
     const searchBeam=open?candidateBeamWidth:baselineBeamWidth;
+    const useFrontier=expertFrontier&&
+      (open||compareUnguardedFrontier);
     const searchOptions={...base,maxNodes:searchBudget,
       depth:searchDepth,beamWidth:searchBeam,
       reversePlanner:open&&expertOpen,
@@ -205,7 +212,7 @@ function select(demo,open){
       includeForecastPlan:open&&expertSticky,
       exactLeafExtension:open&&expertExactLeaf,leafExtensionBudget,leafExtensionStates,
       beliefProbes,beliefMaxOutcomes,
-      optionFrontierSlots:open&&expertFrontier?Math.min(frontierSlots,searchBeam-1):0,
+      optionFrontierSlots:useFrontier?Math.min(frontierSlots,searchBeam-1):0,
       optionFrontierMaxScoreGap:frontierGap,
       optionFrontierRiskGuard:open&&expertFrontier&&frontierRiskGuard};
     const report=open&&expertTStock
@@ -347,7 +354,8 @@ function health(demo){
     received:s.attack.totals.received,tanked:s.attack.totals.tanked};
 }
 function pairedGame(seed,swap){
-  const kinds=swap?['baseline',expertKind]:[expertKind,'baseline'];
+  const comparatorKind=compareUnguardedFrontier?'option-frontier':'baseline';
+  const kinds=swap?[comparatorKind,expertKind]:[expertKind,comparatorKind];
   // Both players receive the IDENTICAL seven-bag seed in this match.
   const demos=[makeDemo(seed),makeDemo(seed)];
   assertMatchingOpening(demos);
@@ -427,6 +435,7 @@ function pairedGame(seed,swap){
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
     expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
     expertFrontier,frontierSlots,frontierGap,frontierShadow,
+    compareUnguardedFrontier,
     frontierRiskGuard,frontierGuardShadow,
     leafExtensionBudget,leafExtensionStates,intermediateHoleRelief,
     auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
