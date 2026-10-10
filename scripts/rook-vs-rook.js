@@ -34,6 +34,9 @@ const expertOffense=process.env.EXPERT_OFFENSE==='1';
 const expertHoldPlan=process.env.EXPERT_HOLD_PLAN==='1';
 const expertPruning=process.env.EXPERT_PRUNING==='1';
 const expertSticky=process.env.EXPERT_STICKY==='1';
+const expertExactLeaf=process.env.EXPERT_EXACT_LEAF==='1';
+const leafExtensionBudget=Number(process.env.LEAF_EXTENSION_BUDGET??5000);
+const leafExtensionStates=Number(process.env.LEAF_EXTENSION_STATES??800);
 const intermediateHoleRelief=Number(process.env.EXPERT_PRUNING_HOLE_RELIEF??0.65);
 const auditHoldPlan=process.env.HOLD_AUDIT==='1';
 const offenseWeight=Number(process.env.EXPERT_OFFENSE_WEIGHT??7.2);
@@ -48,6 +51,7 @@ const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBeam?'focused-beam':null,expertOffense?'offense-weight':null,
   expertHoldPlan?'hold-plan':null,expertPruning?'setup-survival':null,
   expertSticky?'sticky-continuation':null,
+  expertExactLeaf?'verified-fifth-ply':null,
   budgetScaling?'budget-scale':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
@@ -67,11 +71,13 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(futureStates)||futureStates<1||futureStates>10000||
   !Number.isInteger(beamRootReserve)||beamRootReserve<1||beamRootReserve>24||
   !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24||
+  !Number.isInteger(leafExtensionBudget)||leafExtensionBudget<1||leafExtensionBudget>100000||
+  !Number.isInteger(leafExtensionStates)||leafExtensionStates<1||leafExtensionStates>10000||
   !Number.isFinite(intermediateHoleRelief)||
   intermediateHoleRelief<0||intermediateHoleRelief>1)
   throw Error('Invalid ROOK self-play configuration');
 if(budgetScaling&&(expertOpen||expertRecovery||expertBelief||expertFuture||
-  expertBeam||expertOffense||expertHoldPlan||expertPruning||expertSticky))
+  expertBeam||expertOffense||expertHoldPlan||expertPruning||expertSticky||expertExactLeaf))
   throw Error('Budget scaling must isolate maxNodes; disable EXPERT_*');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
@@ -97,7 +103,8 @@ function select(demo,open){
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
-    stickyHoldSkipped:0};
+    stickyHoldSkipped:0,leafExtensionAttempts:0,leafExtensionApplied:0,
+    leafExtensionAborts:0,leafExtensionChanges:0,leafExtensionWork:0};
   let expectedAfterHold=null,usedStickyHold=false;
   if(open&&expertSticky){
     const next=rememberedPlans.get(demo)?.[0];
@@ -160,6 +167,7 @@ function select(demo,open){
       intermediateHoleRelief:open&&expertPruning?intermediateHoleRelief:0,
       includeHoldPlan:(open&&expertHoldPlan)||auditHoldPlan,
       includeForecastPlan:open&&expertSticky,
+      exactLeafExtension:open&&expertExactLeaf,leafExtensionBudget,leafExtensionStates,
       beliefProbes,beliefMaxOutcomes});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
@@ -170,6 +178,13 @@ function select(demo,open){
     stats.selections+=Number(report.diagnostics.reverseSelectedGoal!==null);
     stats.forwardProbes+=report.diagnostics.futureProbes;
     stats.forwardMoves+=report.diagnostics.futureMoves;
+    if(open&&expertExactLeaf){
+      stats.leafExtensionAttempts++;
+      stats.leafExtensionApplied+=Number(report.diagnostics.leafExtensionApplied);
+      stats.leafExtensionAborts+=Number(!!report.diagnostics.leafExtensionAbort);
+      stats.leafExtensionChanges+=Number(report.diagnostics.leafExtensionChangesRoot);
+      stats.leafExtensionWork+=report.diagnostics.leafExtensionEvaluated;
+    }
     let lastError=null,didHold=false;
     for(const a of report.ranked){
       const request=a.kind==='hold'
@@ -258,6 +273,8 @@ function pairedGame(seed,swap){
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
+    leafExtensionAttempts:0,leafExtensionApplied:0,leafExtensionAborts:0,
+    leafExtensionChanges:0,leafExtensionWork:0,
     tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
   try{
@@ -314,7 +331,8 @@ function pairedGame(seed,swap){
     budgetsByKind:{[expertKind]:candidateBudget,baseline:baselineBudget},
     extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
-    expertHoldPlan,expertPruning,expertSticky,intermediateHoleRelief,
+    expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
+    leafExtensionBudget,leafExtensionStates,intermediateHoleRelief,
     auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored:result.scored,termination:result.termination,
