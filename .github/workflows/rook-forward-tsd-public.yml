@@ -40,10 +40,21 @@ jobs:
           ROOK_PUBLIC_LOCK_TRACE=rook-all-public-locks.jsonl \
             ROOK_T_ECONOMY_OUTPUT=rook-public-t-economy.json \
             node scripts/rook-public-t-economy.js > rook-public-t-economy-summary.json
+          ROOK_PUBLIC_LOCK_TRACE=rook-all-public-locks.jsonl \
+            ROOK_HELD_T_REPORT=rook-held-t-portfolio.json \
+            node scripts/rook-held-t-forward-cohort.js > rook-held-t-portfolio-summary.json
           node --input-type=module <<'JS'
           import {readFileSync,writeFileSync} from 'node:fs';
           const r=JSON.parse(readFileSync('rook-forward-public-results.json','utf8'));
           const t=JSON.parse(readFileSync('rook-public-t-economy.json','utf8'));
+          const h=JSON.parse(readFileSync('rook-held-t-portfolio.json','utf8'));
+          if(h.format!=='rook-public-held-T-forward-portfolio/1'||
+            h.independentSeeds!==1||h.sourcePublicLocks!==132||
+            h.groups.length!==2||h.groups.some(x=>
+              x.witnessedHeldTFullTsdPlan>x.heldTObservedPublicStates||
+              x.heldTObservedPublicStates<1)||
+            h.results.some(x=>x.proofCalls>85||x.evaluations>2500))
+            throw Error('Invalid visible held-T full SRS-plus portfolio');
           if(t.format!=='rook-public-T-resource-lifecycle/1'||
             t.independentSeeds!==1||t.groups.length!==2||
             t.groups.some(x=>x.publicLocks!==66||
@@ -84,6 +95,12 @@ jobs:
               ', public Hold-contained-T observations '+x.holdTViewCount+
               ' across '+x.holdTEpisodes+' contiguous episodes.'),
             'Hold counts are correlated frames, not independent decisions.',
+            'MULTI-PIECE HELD-T PROOF (3 known setup placements, occupied Hold, full TSD):',
+            ...h.groups.map(x=>'**'+x.owner.toUpperCase()+'**: '+
+              x.witnessedHeldTFullTsdPlan+'/'+x.heldTObservedPublicStates+
+              ' T-in-Hold public views have at least one legal conditional Full TSD route, '+
+              x.truncated+' capped and '+x.actualSrsCalls+' SRS enumeration calls.'),
+            'These are separate static conditional plans, NOT realized attacks or guaranteed KO.',
             'A multi-lock STATIC continuation can be interrupted by opponent garbage.',
             'Presence of a TSD plan is not evidence it should be preferred in real KO.',
             'No policy change, no new KO result, no main merge.'
@@ -103,6 +120,8 @@ jobs:
             rook-forward-public-results.json
             rook-public-t-economy.json
             rook-public-t-economy-summary.json
+            rook-held-t-portfolio.json
+            rook-held-t-portfolio-summary.json
             rook-forward-public-summary.json
             rook-forward-public-issue.md
           retention-days: 30
