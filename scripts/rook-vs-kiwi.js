@@ -203,7 +203,14 @@ function runPair(seed,order){
           // strictly for offline evaluation, NEVER passed to chooseMove.
           outcome:{piece:lock.piece,spin:lock.spin,lines:lock.lines,
             fullTsd:fullT&&lock.lines===2,
-            btb:demos[i].engine.state.attack.btb}
+            btb:demos[i].engine.state.attack.btb,
+            // Post-authority-lock OBSERVED LABELS ONLY. Never passed back
+            // to either policy. These totals identify realized future attack
+            // under the ACTUAL behavioral policy, not hypothetical futures.
+            combatTotals:Object.fromEntries(
+              ['generated','sent','cancelled','tanked','received'].map(key=>
+                [key,demos[i].engine.state.attack.totals[key]])),
+            alive:demos[i].engine.state.playing}
         });
         if(fullT&&lock.lines===1)stats.fullTss++;
         if(fullT&&lock.lines===2){
