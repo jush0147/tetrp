@@ -4,6 +4,7 @@ import {writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
+import {publicPlanStillApplicable,proveForecastPlacement} from '../src/analysis/rook-plan.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 
 const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
@@ -32,6 +33,7 @@ const expertBeam=process.env.EXPERT_BEAM==='1';
 const expertOffense=process.env.EXPERT_OFFENSE==='1';
 const expertHoldPlan=process.env.EXPERT_HOLD_PLAN==='1';
 const expertPruning=process.env.EXPERT_PRUNING==='1';
+const expertSticky=process.env.EXPERT_STICKY==='1';
 const intermediateHoleRelief=Number(process.env.EXPERT_PRUNING_HOLE_RELIEF??0.65);
 const auditHoldPlan=process.env.HOLD_AUDIT==='1';
 const offenseWeight=Number(process.env.EXPERT_OFFENSE_WEIGHT??7.2);
@@ -45,6 +47,7 @@ const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBelief?'belief':null,expertFuture?'future-srs':null,
   expertBeam?'focused-beam':null,expertOffense?'offense-weight':null,
   expertHoldPlan?'hold-plan':null,expertPruning?'setup-survival':null,
+  expertSticky?'sticky-continuation':null,
   budgetScaling?'budget-scale':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
@@ -68,7 +71,7 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   intermediateHoleRelief<0||intermediateHoleRelief>1)
   throw Error('Invalid ROOK self-play configuration');
 if(budgetScaling&&(expertOpen||expertRecovery||expertBelief||expertFuture||
-  expertBeam||expertOffense||expertHoldPlan||expertPruning))
+  expertBeam||expertOffense||expertHoldPlan||expertPruning||expertSticky))
   throw Error('Budget scaling must isolate maxNodes; disable EXPERT_*');
 const base={depth:4,beamWidth:24,maxNodes:budget,maxStates:1200,
   maxSteps:42,includeRanked:true,reverseOnlyOpen:true,
@@ -86,13 +89,37 @@ const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,
   handling:{arr:0,das:1,dcd:0,sdf:20,safelock:false,cancel:false,
     may20g:true,irs:'off',ihs:'off'}}),{placementMode:'atomic'});
 
+const rememberedPlans=new WeakMap();
 function select(demo,open){
   const stats={nodes:0,holds:0,ms:0,rejections:0,offers:0,
     selections:0,forwardProbes:0,forwardMoves:0,
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
-    searches:0,budgetReached:0,searchDepthLimit:0};
+    searches:0,budgetReached:0,searchDepthLimit:0,
+    stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
+    stickyHoldSkipped:0};
   let expectedAfterHold=null;
+  if(open&&expertSticky){
+    const next=rememberedPlans.get(demo)?.[0];
+    if(next){
+      stats.stickyAttempts++;
+      const visible=demo.view().visible;
+      if(!next.useHold&&publicPlanStillApplicable(visible,next)){
+        const request=proveForecastPlacement(visible,next,{maxStates:1200,maxSteps:42});
+        if(request){
+          const view=demo.view();
+          try{
+            demo.prepare(request,view.revision);
+            rememberedPlans.set(demo,rememberedPlans.get(demo).slice(1));
+            stats.stickyAccepted++;
+            return {revision:view.revision,...stats};
+          }catch(error){stats.stickyRejected++;}
+        }else stats.stickyRejected++;
+      }else if(next.useHold)stats.stickyHoldSkipped++;
+      else stats.stickyRejected++;
+      rememberedPlans.delete(demo);
+    }
+  }
   for(let turn=0;turn<2;turn++){
     const view=demo.view();
     if(view.visible.next.length!==5)throw Error('Visible NEXT5 contract violated');
@@ -112,6 +139,7 @@ function select(demo,open){
       offenseWeight:open&&expertOffense?offenseWeight:4.8,
       intermediateHoleRelief:open&&expertPruning?intermediateHoleRelief:0,
       includeHoldPlan:(open&&expertHoldPlan)||auditHoldPlan,
+      includeForecastPlan:open&&expertSticky,
       beliefProbes,beliefMaxOutcomes});
     stats.ms+=performance.now()-started;
     stats.nodes+=report.diagnostics.evaluated;
@@ -157,6 +185,8 @@ function select(demo,open){
           if(samePlacement(expectedAfterHold,a))stats.holdPlanMatched++;
           else stats.holdPlanDiverged++;
         }
+        if(open&&expertSticky)rememberedPlans.set(demo,
+          a===report.ranked[0]?(report.forecastPlan??[]).slice(1):[]);
         return {revision:view.revision,...stats};
       }catch(e){lastError=e;stats.rejections++}
     }
@@ -207,6 +237,7 @@ function pairedGame(seed,swap){
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
+    stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
     tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
   try{
@@ -263,7 +294,7 @@ function pairedGame(seed,swap){
     budgetsByKind:{[expertKind]:candidateBudget,baseline:baselineBudget},
     extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
-    expertHoldPlan,expertPruning,intermediateHoleRelief,
+    expertHoldPlan,expertPruning,expertSticky,intermediateHoleRelief,
     auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored:result.scored,termination:result.termination,
