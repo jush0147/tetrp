@@ -56,13 +56,17 @@ function legalTransition(node,move,visible){
 export function searchPublicForwardTsd(visible,{
   minSetupPieces=2,maxSetupPieces=4,beamWidth=16,
   maxPlacementEvaluations=2500,maxProofCalls=100,
-  maxStates=950,maxSteps=70,maxPlans=4
+  maxStates=950,maxSteps=70,maxPlans=4,
+  heldTFinish=false,heldTSetupPieces=3
 }={}){
   if(!visible?.playing||!visible.current||!visible.board||!visible.rules||
     !Array.isArray(visible.next)||visible.next.length!==5||
     'bag' in visible||'rng' in visible||'holes' in visible)
     throw Error('Only player-visible Current/Hold/NEXT5 allowed');
-  if(![minSetupPieces,maxSetupPieces,beamWidth,maxPlacementEvaluations,
+  if(typeof heldTFinish!=='boolean'||
+    !Number.isInteger(heldTSetupPieces)||heldTSetupPieces<2||
+    heldTSetupPieces>5||
+    ![minSetupPieces,maxSetupPieces,beamWidth,maxPlacementEvaluations,
     maxProofCalls,maxStates,maxSteps,maxPlans].every(Number.isInteger)||
     minSetupPieces<1||maxSetupPieces<minSetupPieces||maxSetupPieces>5||
     beamWidth<1||beamWidth>128||maxPlacementEvaluations<1||
@@ -71,10 +75,13 @@ export function searchPublicForwardTsd(visible,{
     maxPlans<1||maxPlans>100)
     throw new RangeError('Invalid public forward TSD search budget');
   const known=[visible.current.type,...visible.next];
-  const targetIndex=known.indexOf('t');
-  const stats={targetIndex,stageSizes:[],proofCalls:0,placements:0,
+  const viaHeldT=heldTFinish&&visible.hold?.piece==='t'&&
+    visible.rules.hold===true;
+  const targetIndex=viaHeldT?heldTSetupPieces:known.indexOf('t');
+  const stats={targetIndex,viaHeldT,stageSizes:[],proofCalls:0,placements:0,
     candidateTerminals:0,garbageAborts:0,pruned:0,truncated:false};
-  if(targetIndex<minSetupPieces||targetIndex>maxSetupPieces)
+  if(targetIndex<minSetupPieces||targetIndex>maxSetupPieces||
+    (viaHeldT&&known[0]==='t'))
     return {plans:[],stats,scope:'only first publicly known T, no Hold'};
   let beam=[{board:clone(visible.board),combat:visibleCombat(visible),
     frame:visible.frame,firstKey:null,history:[],score:0,
@@ -145,12 +152,15 @@ export function searchPublicForwardTsd(visible,{
       if(!projected||projected.lines!==2)continue;
       stats.candidateTerminals++;
       const witnesses=[...node.history,moveRecord(move)];
-      plans.push({witnesses,actions:witnesses.map(asAction),
+      const actions=witnesses.map(asAction);
+      if(viaHeldT)actions.splice(-1,0,{action:{kind:'hold',mode:'occupied'}});
+      plans.push({witnesses,actions,
         evidence:{allMovesSrsWitnessed:true,terminalFullTsd:true,
           terminalLines:2,terminalGenerated:projected.generated,
           terminalSent:projected.sent,preTGenerated:node.totalGenerated,
           preTSent:node.totalSent,terminalBtb:projected.btb,
-          publicNoNewGarbageAssumption:true},
+          publicNoNewGarbageAssumption:true,
+          terminalUsesHeldT:viaHeldT},
         planLength:targetIndex+1,setupScore:node.score});
       if(plans.length>=maxPlans){stats.truncated=true;break;}
     }
@@ -159,5 +169,6 @@ export function searchPublicForwardTsd(visible,{
   plans.sort((a,b)=>b.evidence.terminalSent-a.evidence.terminalSent||
     b.evidence.preTSent-a.evidence.preTSent||b.setupScore-a.setupScore);
   return {plans,stats,
-    scope:'public fixed known order, no Hold, bounded all-SRS+ forward portfolio'};
+    scope:viaHeldT?'public fixed known setup then occupied Hold T full spin':
+      'public fixed known order, no Hold, bounded all-SRS+ forward portfolio'};
 }
