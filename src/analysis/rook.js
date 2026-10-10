@@ -346,8 +346,74 @@ export function revalueBeliefCandidate(candidate,beliefValue){
 // Counterfactual NEXT decisions, conditional on observing each possible hole.
 // Every hypothetical continuation is re-planned after that outcome is known,
 // never selected by cherry-picking the one best hidden RNG result.
-function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxStates,maxSteps}){
-  return evaluatePublicTankBelief(node.board,node.combat,rules,{
+// Prototype: conditionally re-plan to the SAME final ply as an ordinary
+// beam leaf. Every enumerated public-hole outcome uses its own legal SRS+
+// continuation. No private hole column or unseen bag piece is sampled.
+function conditionalGarbageHorizon(state,rules,firstPly,horizon,{
+  maxStates,maxSteps,maxNodes,beamWidth,onEvaluate
+}){
+  let beam=[state],evaluated=0;
+  for(let ply=firstPly;ply<horizon;ply++){
+    const candidates=[];
+    for(const node of beam){
+      if(!node.queue.length)
+        throw new RangeError('public NEXT exhausted before horizon');
+      const options=[{type:node.queue[0],hold:node.hold,
+        rest:node.queue.slice(1)}];
+      if(!node.holdLocked&&rules.hold){
+        const empty=node.hold===null,chosen=empty?node.queue[1]:node.hold;
+        if(chosen)options.push({type:chosen,hold:node.queue[0],
+          rest:node.queue.slice(empty?2:1)});
+      }
+      for(const option of options){
+        const moves=enumerateReachable(node.board,spawn(option.type,node.board),
+          rules,{maxStates,maxSteps});
+        for(const move of moves){
+          if(evaluated>=maxNodes)break;
+          evaluated++;onEvaluate();
+          const p=applyPlacement(node,move,rules);
+          if(!p||p.topout)continue;
+          // A second hidden hole needs another probability tree. Abort the
+          // ranking change rather than valuing a fabricated future board.
+          if(p.unresolvedGarbage)
+            throw new RangeError('another unresolved public garbage event');
+          const next={...node,board:p.board,queue:option.rest,hold:option.hold,
+            holdLocked:false,combat:p.combat,pending:p.pending,combo:p.combo,
+            btb:p.btb,frame:p.frame,unresolvedGarbage:false,forecastTank:0,
+            score:node.score+p.reward*Math.pow(.94,ply)};
+          next.evalScore=next.score+
+            evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
+          candidates.push(next);
+        }
+        if(evaluated>=maxNodes)break;
+      }
+      if(evaluated>=maxNodes)break;
+    }
+    if(!candidates.length){
+      if(evaluated>=maxNodes)
+        throw new RangeError('conditional horizon node budget exhausted');
+      return -100000;
+    }
+    candidates.sort((a,b)=>b.evalScore-a.evalScore);
+    const distinct=new Set();
+    beam=[];
+    for(const candidate of candidates){
+      const key=boardKey(candidate.board)+'|'+candidate.queue.join('')+
+        '|'+candidate.hold+'|'+JSON.stringify(candidate.combat);
+      if(distinct.has(key))continue;
+      distinct.add(key);beam.push(candidate);
+      if(beam.length>=beamWidth)break;
+    }
+    if(evaluated>=maxNodes&&ply<horizon-1)
+      throw new RangeError('conditional horizon node budget exhausted');
+  }
+  return beam[0].evalScore;
+}
+
+function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxStates,maxSteps,
+  commonHorizon=false,horizon=ply+2,horizonNodes=140,horizonBeam=3}){
+  let conditionalEvaluated=0;
+  const belief=evaluatePublicTankBelief(node.board,node.combat,rules,{
     maxOutcomes,riskWeight,score:outcome=>{
       const pending=[...outcome.combat.pending,...outcome.combat.are]
         .reduce((total,p)=>total+p.amt,0);
@@ -355,6 +421,13 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
         pending,unresolvedGarbage:false,forecastTank:0};
       const terminal=()=>node.score+
         evaluateBoard(state.board,state)*Math.pow(.88,ply+1);
+      if(commonHorizon){
+        if(ply+1>=horizon)return terminal();
+        return conditionalGarbageHorizon(state,rules,ply+1,horizon,{
+          maxStates,maxSteps,maxNodes:horizonNodes,beamWidth:horizonBeam,
+          onEvaluate:()=>{conditionalEvaluated++;}
+        });
+      }
       if(!node.queue.length)return terminal();
       // Canonical Engine.spawn checks blockout before a new Hold is allowed.
       // A fortunate held piece cannot revive an already blocked spawn.
@@ -384,6 +457,7 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
       return Number.isFinite(best)?best:-100000;
     }
   });
+  return {...belief,conditionalEvaluated};
 }
 
 export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
@@ -398,7 +472,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   reverseOnlyOpen=false,reversePressureGuard=true,
   garbageRecovery=false,garbageRecoveryWeight=1,
   garbageBelief=false,beliefProbes=3,beliefMaxOutcomes=10,
-  beliefRiskWeight=.2,beliefReachableStates=300}={}){
+  beliefRiskWeight=.2,beliefReachableStates=300,
+  beliefCommonHorizon=false,beliefHorizonNodes=140,beliefHorizonBeam=3}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -433,6 +508,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100||
     !Number.isFinite(beliefRiskWeight)||beliefRiskWeight<0||beliefRiskWeight>1||
     !Number.isInteger(beliefReachableStates)||beliefReachableStates<1||
+    typeof beliefCommonHorizon!=='boolean'||
+    !Number.isInteger(beliefHorizonNodes)||beliefHorizonNodes<1||beliefHorizonNodes>5000||
+    !Number.isInteger(beliefHorizonBeam)||beliefHorizonBeam<1||beliefHorizonBeam>24||
     (beamRootReserve!==null&&(!Number.isInteger(beamRootReserve)||
       beamRootReserve<1||beamRootReserve>beamWidth))||
     !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24||
@@ -535,6 +613,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let unresolvedTankNodes=0;
   const rootSurvival=[];
   let beliefAttempts=0,beliefEvaluations=0,beliefOutcomes=0,beliefOverBudget=0;
+  let beliefHorizonEvaluated=0,beliefHorizonAborted=0;
   const futureReachableByPly=Array(depth+1).fill(0);
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
   // Known T may be the fifth NEXT piece; six placements are publicly
@@ -712,8 +791,11 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
         try{
           const belief=beliefContinuationValue(candidate,visible.rules,ply,{
             maxOutcomes:beliefMaxOutcomes,riskWeight:beliefRiskWeight,
-            maxStates:beliefReachableStates,maxSteps});
+            maxStates:beliefReachableStates,maxSteps,
+            commonHorizon:beliefCommonHorizon,horizon:clamp,
+            horizonNodes:beliefHorizonNodes,horizonBeam:beliefHorizonBeam});
           beliefEvaluations++;beliefOutcomes+=belief.outcomes;
+          beliefHorizonEvaluated+=belief.conditionalEvaluated;
           revalueBeliefCandidate(candidate,belief.value);
           candidate.belief={expected:belief.expected,worst:belief.worst,
             topoutProbability:belief.topoutProbability,
@@ -721,9 +803,14 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           if(ply===0)rootChoices.set(root,{action:candidate.rootAction,
             value:candidate.evalScore});
         }catch(error){
-          if(!(error instanceof RangeError&&
-            /scenario limit/.test(error.message)))throw error;
-          beliefOverBudget++;
+          if(!(error instanceof RangeError))throw error;
+          if(/scenario limit/.test(error.message)){beliefOverBudget++;continue;}
+          if(beliefCommonHorizon&&
+            /public NEXT exhausted|another unresolved public garbage|conditional horizon node budget/.test(error.message)){
+            beliefHorizonAborted++;
+            continue; // keep original rank if continuation is not comparable
+          }
+          throw error;
         }
       }
       candidates.sort((a,b)=>(b.beamScore??b.evalScore)-
@@ -823,6 +910,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     forecastedSpinClears,futureProbes,futureMoves,futureSpinClears,
     futureReachableByPly,unresolvedTankNodes,
     beliefAttempts,beliefEvaluations,beliefOutcomes,beliefOverBudget,
+    ...(beliefCommonHorizon?{beliefCommonHorizon,beliefHorizonEvaluated,
+      beliefHorizonAborted,beliefHorizonNodes,beliefHorizonBeam}:{}),
     selectedBelief:best.belief??null,
     selectedUnresolvedGarbage:best.unresolvedGarbage,
     selectedForecastTank:best.forecastTank,selectedFrame:best.frame,
