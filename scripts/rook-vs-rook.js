@@ -127,7 +127,9 @@ function select(demo,open){
     tStockEligible:0,tStockOffers:0,tStockVerified:0,
     tStockCapped:0,tStockProofCalls:0,tStockPlacementEvaluations:0,
     tStockChoices:0,
-    frontierConsidered:0,frontierInserted:0,frontierChanged:0,
+    frontierConsidered:0,frontierInserted:0,
+    frontierCombatInserted:0,frontierQuadInserted:0,
+    frontierSpinInserted:0,frontierChanged:0,
     frontierShadowChecks:0,frontierShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
     stickyHoldSkipped:0,leafExtensionAttempts:0,leafExtensionApplied:0,
@@ -210,6 +212,9 @@ function select(demo,open){
     stats.nodes+=report.diagnostics.evaluated;
     stats.frontierConsidered+=report.diagnostics.optionFrontierStats?.considered??0;
     stats.frontierInserted+=report.diagnostics.optionFrontierStats?.inserted??0;
+    stats.frontierCombatInserted+=report.diagnostics.optionFrontierStats?.modes.combat??0;
+    stats.frontierQuadInserted+=report.diagnostics.optionFrontierStats?.modes.quad??0;
+    stats.frontierSpinInserted+=report.diagnostics.optionFrontierStats?.modes.spin??0;
     if(open&&expertFrontier&&frontierShadow){
       const shadowStart=performance.now();
       const shadow=chooseMove(view.visible,{...searchOptions,
@@ -230,7 +235,7 @@ function select(demo,open){
     stats.tStockCapped+=report.diagnostics.tStock?.truncatedModes??0;
     stats.tStockProofCalls+=report.diagnostics.tStock?.proofCalls??0;
     stats.tStockPlacementEvaluations+=report.diagnostics.tStock?.placements??0;
-    stats.tStockChoices+=Number(report.diagnostics.tStock?.selected);
+    stats.tStockChoices+=Number(report.diagnostics.tStock?.selected===true);
     stats.searches++;
     stats.budgetReached+=Number(report.diagnostics.evaluated>=searchBudget);
     stats.searchDepthLimit=Math.max(stats.searchDepthLimit,report.diagnostics.effectiveDepth);
@@ -335,7 +340,9 @@ function pairedGame(seed,swap){
     tStockEligible:0,tStockOffers:0,tStockVerified:0,
     tStockCapped:0,tStockProofCalls:0,tStockPlacementEvaluations:0,
     tStockChoices:0,
-    frontierConsidered:0,frontierInserted:0,frontierChanged:0,
+    frontierConsidered:0,frontierInserted:0,
+    frontierCombatInserted:0,frontierQuadInserted:0,
+    frontierSpinInserted:0,frontierChanged:0,
     frontierShadowChecks:0,frontierShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
     leafExtensionAttempts:0,leafExtensionApplied:0,leafExtensionAborts:0,
