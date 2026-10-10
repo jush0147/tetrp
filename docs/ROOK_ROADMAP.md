@@ -441,3 +441,54 @@ B2B 和可延續 Spin 戰術的評估與搜尋；
 [ROOK vs pinned Kiwi 單場/種子正式對戰工作流程](https://github.com/jush0147/tetrp/actions/workflows/rook-ko.yml)
 已設定 `SWAP_ROLES=0` 和 8 個不同 seed；
 結果排隊期間不得宣稱新版打敗 Kiwi。
+
+## 2026-10-10 最新 P0 交接：CI 清理、8 個 Kiwi 種子、垃圾 Belief 排名修復
+
+**CI：** 上輪曾達 81 queued / 7 in progress。縮減已完成的消融
+workflow 的 push 路徑、避免 feature branch 上 Phase 1
+重複 push+PR、加上 concurrency 與來源篩選後，
+最新查詢已是 **0 queued**，不過新的測試可能仍在執行。
+主要修正為 a72e1a9、2a7f868。舊任務大多是由
+GitHub 完成／取消，不是我們逐一手動取消。
+後續只在必要實驗時啟用昂貴的矩陣，不要每次修改核心
+程式又重跑十多個已完成的消融。
+
+**Kiwi 新基準驗收通過：**
+https://github.com/jush0147/tetrp/actions/runs/38002025362
+8 個不同 seed (67020 至 67027)，每 seed 只打一次，
+真實同步 KO-first、2000 鎖 safety cap。
+**ROOK 0 勝、Kiwi 8 勝**，全部真 KO，0 capped。
+這是獨立種子擴張，不是新版 ROOK 強度提升；
+兩側 Kiwi 200K nodes 與 ROOK 6K eval 不等 CPU。
+
+**有關未知垃圾的深度錯配：** 在保存的 22 個 Kiwi KO
+公開局面中（只有 2 個不同 seed），用舊版程式重播：
+4×24 和 5×48 各有 3 個盤面的 final beam 包含提前
+停止的根候選，其中 1 個真的選中有 unresolvedGarbage
+的較淺路線（seed 67020, turn 8, forecastTank=2，
+第 2 層停止，而搜尋原定 4 層）。
+真實原因是未公開的垃圾洞位不能猜測；但不同深度的
+總分直接比較仍可能造成價值偏差。
+be6240f 在壓力診斷加入 selectedLeafPly、
+finalRootsTerminatedEarly、selectedUnresolvedGarbage 以重驗。
+22 個局面並非 22 場獨立對戰。
+
+**一項真正的程式排序 bug：** 在 opt-in
+garbageBelief=true 模式中，信念預測重新寫入 evalScore，
+但 beam 實際按照舊的 beamScore 排序。066ba4e
+修正兩者同步更新，保留既有 intermediate shaping delta，
+並新增測試驗證差的 belief score 真的會讓候選排名下降。
+正式預設垃圾 belief 仍是 false，並未證明強度上升。
+
+**最新實測任務：** c5e6b4d 在真實
+https://github.com/jush0147/tetrp/actions/workflows/rook-real-ko-public-stress.yml
+加入 3 個 pending>0 公開局面的 opt-in belief A/B：
+統計 beliefEvaluations、overBudget、選棋是否改變、
+搜尋 CPU 及與 Kiwi 決策差異。這不是 KO 強度證據。
+結果須確認 CI 完成後才可解讀。
+
+**下一個唯一 P0：** 查看最新公開壓力診斷和 ROOK
+acceptance 是否成功。若 belief 的期望值在多種未知垃圾情境
+仍無法帶來好決策，再研究長期攻擊、B2B、T-Spin
+策略的 valuation，不再盲目增加搜索寬度或 tweak holes。
+PR #6 保持 Draft，main 未合併。
