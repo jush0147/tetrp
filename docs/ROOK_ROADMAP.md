@@ -1752,3 +1752,92 @@ Avoid a false claim that a positive score on observational
 future-label regression is an action-value model.
 `main`, Kiwi pinned policy, and default ROOK unchanged;
 Draft PR #6 remains in progress.
+
+
+### 2026-10-11: real paired first-action authority fork IMPLEMENTED and clone gate PASSED
+
+Previous four actual Kiwi-vs-ROOK full-KO games
+[#38079234687](https://github.com/jush0147/tetrp/actions/runs/38079234687)
+established an observational eight-lock future sent/tanked
+training stream, but the honestly stronger
+[#38083461326 policy-stratified test](https://github.com/jush0147/tetrp/actions/runs/38083461326)
+showed the fitted ridge model WORSE than trivial per-policy
+train-seed mean on aggregate sent and tanked MSE, and
+especially poor on ROOK sent, Kiwi tanked, and PUBLIC
+incoming-garbage pressure subsets. We did **not**
+insert its coefficients into `chooseMove`.
+
+**New causally interpretable root-action research rig**:
+[`scripts/rook-paired-root-fork.js`](../scripts/rook-paired-root-fork.js)
+builds an authentic synchronized ROOK-vs-ROOK Tetrp
+match, takes a genuine authority checkpoint after N
+legal 24-frame-per-lock moves, and obtains
+ROOK-ranked PUBLIC CURRENT/HOLD/NEXT5 root moves.
+Two different SRS+-proved **place** actions on
+CURRENT (Hold root actions are deliberately excluded in
+this first experiment, not falsely converted to placements)
+are FORCED separately at the same fork point. Each
+branch keeps two exact `AtomicBranchEngine` copies
+of the original current player/opponent authoritative
+state including identical private random future. Only
+the authority retains private bag/garbage RNG, never the
+choosing policies. The two forks are one correlated
+matched-pair treatment within ONE original seed,
+not separate independent wins.
+
+**Important bug found and fixed in CI:** Unlike a new
+BotDemo constructor, cloning an existing
+`BotDemo` through its constructor re-seeds hole RNG;
+the rig now clones via its actual
+`EngineType.restore(engine.serialize())` and
+asserts byte-for-byte identity with original
+checkpoint **before** any fork root, never
+re-seeding private future. The initial smoke also
+exposed an ordinary ROOK Hold recommendation rejected
+by the real authority; the rig now uses the SAME
+ranked-candidate legal fallback as the main
+ROOK-vs-Kiwi runner, but deliberately NEVER
+allows fallback for a FORCED root action. No
+covert change of the treatment is permitted.
+Source commits
+[`f46b222`](https://github.com/jush0147/tetrp/commit/f46b222aba36dfa94420d9b00a67e15d32fe9322),
+[`12091ca`](https://github.com/jush0147/tetrp/commit/12091ca16fa36fc231d3dc3fdb72696d242b837d),
+[`6813639`](https://github.com/jush0147/tetrp/commit/6813639e26404f88ee43db4957a1a1ea75693ab0).
+
+[Counterfactual workflow #38083748395](https://github.com/jush0147/tetrp/actions/runs/38083748395)
+passed five public-rule/KO tests and authority-fork smoke:
+initial seed 67620, split at 6, two different legal S
+piece landings, each 18-lock UNSCORED cap,
+and BOTH tested first-8-lock observation horizons
+completed with ZERO sent/tanked for those early
+cold-start states. This is only proof of correct
+authority clone and legal treatment, NOT
+long-horizon causal advantage, nor a scored win.
+FULL 2000-lock cap, real KO-first future-branch
+comparisons were started on independent seed
+**67624 and 67625**, splitting at lock **12**
+and comparing top TWO ranked legal CURRENT
+placement actions, then continuing both
+candidate and fixed opponent with the ordinary
+ROOK policy. Each paired seed yields two
+correlated real-game KO/cap outcomes and actual
+8-lock sent/tanked labels, with per-branch
+search CPU tracked. At the time this line was
+written these two full KO jobs had begun but
+NO outcomes had been retrieved. They are
+diagnostic causal ROOT-action experiments
+against ORIGINAL ROOK opponents, NOT pinned
+Kiwi wins or a learned agent promotion.
+
+**Research gate:** Confirm the root-fork experiment
+can measure real differences on legitimate
+pressure-producing continuations. Only if it
+does should we scale to many independently seeded
+paired roots, diverse board pressure/hold modes,
+measure variance and train a preference/ranking
+model with seed-level train/heldout split. A
+single opening fork or a high APP first eight
+pieces cannot substitute for full KO. Avoid
+counting two forks or overlapping windows as
+independent trials. No modification to default
+ROOK, `main` or pinned Kiwi; PR #6 stays Draft.
