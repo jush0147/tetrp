@@ -350,6 +350,70 @@ export const rookBoardKey=(b)=>b.rows.map(row=>row.map(v=>
   v===null?'.':v==='gb'?'g':v==='gbd'?'d':'#').join('')).join('');
 const boardKey=rookBoardKey;
 
+
+// A PARETO SURVIVOR portfolio, not an attack reward. Keep a few alternative
+// board-building continuations alive while normal ROOK compares all final
+// leaves under the unchanged full-rule value function. The readiness
+// features are geometrical PROXIES only, never generated or sent garbage.
+// 'verified' refers solely to combat already projected by Tetrp authority.
+// Caller supplies candidates sorted by the ordinary beam objective.
+export function reservePublicOptionFrontier(candidates,baseline,{
+  slots=0,maxScoreGap=70
+}={}){
+  if(!Number.isInteger(slots)||slots<0||slots>128||
+    !Number.isFinite(maxScoreGap)||maxScoreGap<0||maxScoreGap>1000)
+    throw new RangeError('Invalid option-frontier portfolio budget');
+  const result=baseline.slice(),details={considered:0,inserted:0,
+    modes:{delivered:0,quad:0,spin:0}};
+  if(!slots||result.length<2||!candidates.length)
+    return {beam:result,details};
+  const key=node=>JSON.stringify(node.rootAction);
+  const selected=new Set(result);
+  const eligible=candidates.filter(node=>{
+    if(!node.optionSignals||selected.has(node)||node.unresolvedGarbage||
+      !Number.isFinite(node.evalScore))return false;
+    details.considered++;
+    return node.evalScore>=candidates[0].evalScore-maxScoreGap;
+  });
+  const modes=[
+    {key:'delivered',signal:n=>n.optionSignals.realCombat},
+    {key:'quad',signal:n=>n.optionSignals.quadReadiness},
+    {key:'spin',signal:n=>n.optionSignals.spinReadiness}
+  ];
+  // Protect the top-rated half of the regular beam and make portfolio slots
+  // only from its weaker tail. No duplicated candidate or hidden lookahead.
+  const maximum=Math.min(slots,Math.floor(result.length/2));
+  let replaced=0;
+  for(let cycle=0;replaced<maximum;cycle++){
+    let changed=false;
+    for(const mode of modes){
+      if(replaced>=maximum)break;
+      let winner=null,highest=0;
+      const rootsAlready=new Set(result.slice(0,result.length-replaced)
+        .map(key));
+      for(const candidate of eligible){
+        const value=mode.signal(candidate);
+        if(selected.has(candidate)||value<=highest)continue;
+        // Preserve some root-action diversity across reserved strategies.
+        // Multiple continuations of the same root are allowed only when
+        // that root already survived ordinary ROOK beam selection.
+        if(rootsAlready.has(key(candidate))&&
+          result.some(n=>key(n)===key(candidate)&&
+            mode.signal(n)>=value))continue;
+        winner=candidate;highest=value;
+      }
+      if(!winner)continue;
+      result[result.length-1-replaced]=winner;
+      selected.add(winner);replaced++;changed=true;
+      details.inserted++;details.modes[mode.key]++;
+    }
+    if(!changed||cycle>=slots)break;
+  }
+  result.sort((a,b)=>(b.beamScore??b.evalScore)-
+    (a.beamScore??a.evalScore));
+  return {beam:result,details};
+}
+
 // Evaluate a separately proved, publicly visible multi-lock plan with EXACTLY
 // the same attack/defense rewards and final board evaluator as the normal ROOK
 // beam. This is an opt-in diagnostic, NOT an automatic policy promotion.
@@ -573,6 +637,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   futureProofSpread='legacy',
   traceRootSurvival=false,traceRootScores=false,beamRootReserve=null,offenseWeight=4.8,
   intermediateHoleRelief=0,includeHoldPlan=false,
+  optionFrontierSlots=0,optionFrontierMaxScoreGap=70,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
@@ -626,7 +691,11 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
       beamRootReserve<1||beamRootReserve>beamWidth))||
     !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24||
     !Number.isFinite(intermediateHoleRelief)||
-    intermediateHoleRelief<0||intermediateHoleRelief>1)
+    intermediateHoleRelief<0||intermediateHoleRelief>1||
+    !Number.isInteger(optionFrontierSlots)||optionFrontierSlots<0||
+    optionFrontierSlots>=beamWidth||
+    !Number.isFinite(optionFrontierMaxScoreGap)||
+    optionFrontierMaxScoreGap<0||optionFrontierMaxScoreGap>1000)
     throw Error('invalid search budget');
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+(p.amt??0),0);
@@ -728,6 +797,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let futureProbes=0,futureMoves=0,futureSpinClears=0;
   let unresolvedTankNodes=0;
   const rootSurvival=[];
+  const optionFrontierStats={considered:0,inserted:0,
+    modes:{delivered:0,quad:0,spin:0}};
   let beliefAttempts=0,beliefEvaluations=0,beliefOutcomes=0,beliefOverBudget=0;
   let beliefHorizonEvaluated=0,beliefHorizonAborted=0;
   const beliefHorizonAbortReasons={budget:0,secondGarbage:0,publicNext:0};
@@ -853,6 +924,18 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             pending:p.pending,combat:p.combat,frame:p.frame,
             unresolvedGarbage:p.unresolvedGarbage,forecastTank:p.forecastTank,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
+            ...(optionFrontierSlots>0?{
+              optionSignals:(()=>{
+                const boardShape=surface(p.board);
+                return {
+                  realCombat:(node.optionSignals?.realCombat??0)+
+                    p.generated+p.defensive,
+                  quadReadiness:Math.max(0,boardShape.tetrisReady)+
+                    boardShape.tetrisConstruction,
+                  spinReadiness:Math.min(4,boardShape.tspots)
+                };
+              })()
+            }:{}),
             rootHoldPlan:node.rootHoldPlan??(ply===0&&option.hold?planned:null),
             ...(includeForecastPlan?{forecastPlan:[...(node.forecastPlan??[]),{
               preBoardKey:boardKey(node.board),preCurrent:node.queue[0],
@@ -1043,6 +1126,18 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
         }
       }
     }
+    // Only intermediate survivor selection uses public structural option
+    // proxies. The actual final action still maximizes the unchanged
+    // Tetrp-combat reward and safety evaluator, NOT any proxy points.
+    if(optionFrontierSlots>0&&ply+1<clamp){
+      const portfolio=reservePublicOptionFrontier(candidates,beam,{
+        slots:optionFrontierSlots,maxScoreGap:optionFrontierMaxScoreGap});
+      beam=portfolio.beam;
+      optionFrontierStats.considered+=portfolio.details.considered;
+      optionFrontierStats.inserted+=portfolio.details.inserted;
+      for(const mode of Object.keys(optionFrontierStats.modes))
+        optionFrontierStats.modes[mode]+=portfolio.details.modes[mode];
+    }
     // Preserve a small independent tactical portfolio through temporary
     // ugly setup boards. Ordinary survival/downstack owns other beam slots.
     const reserve=Math.min(Math.max(0,reverseReserve),Math.max(0,beamWidth-1));
@@ -1150,6 +1245,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseSkippedPressure,reverseThreat,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
+    ...(optionFrontierSlots>0?{optionFrontierSlots,
+      optionFrontierMaxScoreGap,optionFrontierStats}:{}),
     futureProofSpread,
     ...(futureProofSpread==='root-diverse'?{futureProofNodeIndices}:{}),
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
