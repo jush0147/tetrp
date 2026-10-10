@@ -31,6 +31,20 @@ test('opt-in root-score explanations preserve original ROOK policy and public in
     assert.ok(Math.abs(leaf.total-(leaf.cumulativeReward+
       leaf.discountedBoardValue))<1e-8);
     assert.ok(leaf.ply>=1&&leaf.ply<=opts.depth);
+    // Forecast telemetry is attached to the selected public search path,
+    // not injected into the policy evaluator or derived from hidden NEXT.
+    assert.equal(leaf.forecastLocks.length,leaf.ply);
+    for(const lock of leaf.forecastLocks){
+      assert.ok(['none','mini','full'].includes(lock.spin));
+      assert.ok(['i','j','l','o','s','t','z'].includes(lock.piece));
+      assert.ok(['generated','sent','cancelled','btb','combo','lines']
+        .every(key=>Number.isFinite(lock[key])));
+    }
+    if(row.first){
+      assert.equal(row.first.generated,leaf.forecastLocks[0].generated);
+      assert.equal(row.first.sent,leaf.forecastLocks[0].sent);
+      assert.equal(row.first.cancelled,leaf.forecastLocks[0].cancelled);
+    }
     assert.equal(leaf.board.features.pending>=0,true);
     assert.ok(Object.values(leaf.board.terms).every(Number.isFinite));
   }
