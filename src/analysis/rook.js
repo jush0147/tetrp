@@ -330,6 +330,19 @@ function applyPlacement(node,placement,rules){
 }
 const boardKey=(b)=>b.rows.map(row=>row.map(v=>v===null?'.':v==='gb'?'g':'#').join('')).join('');
 
+// An unknown garbage hole forces conditional evaluation of potential boards.
+// Since beam pruning may include an intermediate-only shaping bonus, both
+// scores must move together when the expected value changes. Changing only
+// evalScore caused beam selection to keep using a stale, pre-belief rank.
+export function revalueBeliefCandidate(candidate,beliefValue){
+  if(!Number.isFinite(beliefValue)||!Number.isFinite(candidate.evalScore))
+    throw new TypeError('invalid belief revaluation');
+  const shapeDelta=(candidate.beamScore??candidate.evalScore)-candidate.evalScore;
+  candidate.evalScore=beliefValue;
+  candidate.beamScore=beliefValue+shapeDelta;
+  return candidate;
+}
+
 // Counterfactual NEXT decisions, conditional on observing each possible hole.
 // Every hypothetical continuation is re-planned after that outcome is known,
 // never selected by cherry-picking the one best hidden RNG result.
@@ -701,7 +714,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             maxOutcomes:beliefMaxOutcomes,riskWeight:beliefRiskWeight,
             maxStates:beliefReachableStates,maxSteps});
           beliefEvaluations++;beliefOutcomes+=belief.outcomes;
-          candidate.evalScore=belief.value;
+          revalueBeliefCandidate(candidate,belief.value);
           candidate.belief={expected:belief.expected,worst:belief.worst,
             topoutProbability:belief.topoutProbability,
             outcomes:belief.outcomes};

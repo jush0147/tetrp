@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Engine} from '../src/engine.js';
 import {visibleState} from '../src/analysis/visible-state.js';
-import {chooseMove} from '../src/analysis/rook.js';
+import {chooseMove,revalueBeliefCandidate} from '../src/analysis/rook.js';
 import {visibleCombat} from '../src/analysis/rook-combat.js';
 import {evaluatePublicTankBelief} from '../src/analysis/rook-belief.js';
 import {validatePlacement} from '../src/analysis/placement-authority.js';
@@ -62,4 +62,21 @@ test('belief evaluator rejects invalid probability policy and never accepts hidd
     riskWeight:-.1,score:()=>0}),/invalid public belief evaluator/);
   assert.throws(()=>evaluatePublicTankBelief(v.board,combat,v.rules,{
     score:()=>Number.NaN}),/non-finite belief value/);
+});
+
+test('public-garbage belief value actually changes beam rank, preserving intermediate-only shaping',()=>{
+  const control={evalScore:20,beamScore:23};
+  const other={evalScore:15,beamScore:15};
+  assert.ok(control.beamScore>other.beamScore);
+  assert.equal(revalueBeliefCandidate(control,-5),control);
+  assert.equal(control.evalScore,-5);
+  assert.equal(control.beamScore,-2,'keep +3 shaping, not stale +23 rank');
+  assert.ok(control.beamScore<other.beamScore);
+  const noShaping={evalScore:2,beamScore:2};
+  revalueBeliefCandidate(noShaping,9);
+  assert.deepEqual(noShaping,{evalScore:9,beamScore:9});
+  const fallback={evalScore:7};
+  revalueBeliefCandidate(fallback,11);
+  assert.deepEqual(fallback,{evalScore:11,beamScore:11});
+  assert.throws(()=>revalueBeliefCandidate(control,Infinity),/invalid belief revaluation/);
 });
