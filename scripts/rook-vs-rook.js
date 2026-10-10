@@ -298,6 +298,7 @@ function pairedGame(seed,swap){
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
+    tStockOffers:0,tStockChoices:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
     leafExtensionAttempts:0,leafExtensionApplied:0,leafExtensionAborts:0,
     leafExtensionChanges:0,leafExtensionWork:0,
