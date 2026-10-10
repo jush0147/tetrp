@@ -1467,3 +1467,87 @@ value/realized offensive efficiency and actual KO
 outcomes rather than inventing a TSD bonus or
 reporting short-capped screens as wins.
 PR #6 Draft; `main` and pinned Kiwi untouched.
+
+
+### 2026-10-11 root cause gate: hole penalty is NOT sufficient to explain missing Kiwi choices
+
+Original preexisting
+[actual Kiwi-vs-ROOK shared public snapshot #37949389406](https://github.com/jush0147/tetrp/actions/runs/37949389406)
+contained 22 correlated observations from TWO independent
+full-KO game seeds. Eight first actions agreed. All 14
+disagreements still had the Kiwi action among ROOK's
+root-ranked candidates; categories were 5
+`ranked-but-not-selected`, 5 `hold-ranked-not-selected`,
+and 4 `rook-prefers-hold`. Among the 14 discrepant
+finalist pairs, ROOK's mean chosen-minus-Kiwi model score
+was **+18.49**, with **+13.38** of raw board-term
+difference attributable to holes before leaf discount
+(other attack, hold, geometry, search continuation and
+board factors also apply). Crucially, a dominant
+EXPLANATORY score component need not be a sufficient
+CAUSAL action determinant.
+
+**Falsifiable opt-in experiment, OFF in production:**
+`chooseMove(...,{holePenaltyScale:0.5})` scales ONLY
+the explicit *holes* penalty, not covered cells, real
+Tetrp sent/cancelled attack, B2B, Mini, TSD, SRS+, or
+future bag visibility. Default `1` leaves existing
+source-scored choices and diagnostic object unchanged.
+The setting propagates to normal beam, bounded conditional
+garbage rollouts and opt-in tactical prefixes, and is
+checked by exact board-score reconstruction and public
+information invariance. Commits
+[`3a8dc03`](https://github.com/jush0147/tetrp/commit/3a8dc03d46fe9b7aa48bd41ee673750df2920402),
+[`aa4d2db`](https://github.com/jush0147/tetrp/commit/aa4d2dbf1b597ac5ccb8343b637cb9ea4942beee).
+No other policy knob was changed.
+
+- **Original Kiwi archive discovery only**:
+  [Actions #38078532889](https://github.com/jush0147/tetrp/actions/runs/38078532889)
+  ran original 22 public states with `scale=1` vs
+  `scale=0.5`, checking byte-for-byte old ROOK root
+  identities, SRS+ legal paths and hidden-field ignorance.
+  ROOK agreement with Kiwi stayed **8/22** and
+  **ZERO** of 22 first actions changed. This reuses
+  labels that motivated the hypothesis, NOT held-out
+  evidence or an imitation win.
+- **Predeclared fresh same-public-state choice screen**:
+  [Actions #38078490325](https://github.com/jush0147/tetrp/actions/runs/38078490325)
+  passes **7/7** regression tests, genuinely
+  rechecks original ROOK on the **same public snapshots**
+  across independent seed **67520/67521**, each with a
+  36-lock UNSCORED screen. Out of **101 public
+  action comparisons ZERO** differ; both players
+  each sent **29** lines in these short games.
+  Consequently **fresh 2000-lock true-KO matrix
+  was correctly SKIPPED**, not awarded as 0-0 wins
+  or losses.
+- **Frozen finalist score counterfactual bound**:
+  [Actions #38078637263](https://github.com/jush0147/tetrp/actions/runs/38078637263)
+  reuses the original 14 mismatched finalist pairs,
+  computes each leaf's discounted hole term EXACTLY,
+  and holds all other original scored path data
+  constant. Halving hole penalty reverses **0/14**
+  selected-vs-Kiwi finalist rankings; deleting
+  ALL hole penalties reverses only **1/14**.
+  This is NOT a new beam search with weight zero,
+  not an ethical/safe competitive policy, and not a
+  scored KO. Commits
+  [`2803733`](https://github.com/jush0147/tetrp/commit/28037338bce707e62d39707d4687ec2c73b8549b),
+  [`8992dfa`](https://github.com/jush0147/tetrp/commit/8992dfadc052a0e7fbb06e448e497fd56d5665f2),
+  [`40d6996`](https://github.com/jush0147/tetrp/commit/40d69969ff81b84ee73f299698337d8cf282f448).
+
+**Decision:** Do NOT promote or further hand-tune a hole
+penalty. This fairly specific long-game valuation hypothesis
+did not change real public choices, and 13/14 original
+mismatch finalist rankings would remain preferred by ROOK
+even if holes carried no penalty AT ALL and original
+searched paths remained frozen. Kiwi agreement is only a
+diagnostic, not the objective. The true P0 problem is the
+joint evaluation of long-horizon, actively created attack
+and board risk, including predictive plausibility of
+continuations; no single discovered board penalty has
+delivered an independent KO increase or closed the pinned
+Kiwi gap. Next iteration should propose a qualitatively
+different, measurable search/learning objective rather than
+arbitrary score subtraction. `main`, Kiwi and ordinary
+ROOK default unchanged; PR #6 Draft.
