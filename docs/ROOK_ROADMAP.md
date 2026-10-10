@@ -1649,3 +1649,106 @@ Default ROOK, pinned Kiwi and `main` unchanged,
 PR #6 Draft; long-term sole target remains genuine
 full-match KO rate at comparable CPU and public
 information.
+
+
+### 2026-10-11: verified four independent genuine Kiwi KOs and negative *policy-stratified* long-horizon value gate
+
+**Four authentic new, non-mirrored Tetrp TL KO games**:
+[Actions #38079234687](https://github.com/jush0147/tetrp/actions/runs/38079234687)
+COMPLETED SUCCESS, all wins by pinned Kiwi:
+- TRAIN 67610 Kiwi true KO at **57 synchronous locks**,
+  114 public pre-lock/player + post-authority-label rows;
+- TRAIN 67611 Kiwi true KO at **55 locks**, 110 rows;
+- PREDECLARED HELD-OUT 67612 Kiwi true KO at **115 locks**,
+  230 rows;
+- PREDECLARED HELD-OUT 67613 Kiwi true KO at **126 locks**,
+  252 rows.
+All four were actual KOs, not time-limited proxy wins.
+Total **706** two-side public locks. Adjacent 8-lock
+future windows overlap, so this is **four whole game seeds**,
+not hundreds of independent examples.
+Pre-lock input is exactly public CURRENT/HOLD/NEXT5/board/
+rules/attack/clock; post-lock actual cumulative attack counters
+are OFFLINE labels and are NOT passed to any bot.
+Train seed 67610/67611 -> **196** complete future-eight-lock
+windows; test 67612/67613 -> **454** windows;
+**56** truncated tail windows correctly censored
+rather than assigned attack=0. Ridge lambda=10 fixed
+before evaluation, no validation-seed normalization.
+
+**Initial held-out observational regression**:
+- Future **sent** MAE **3.11776** vs unconditional train-average
+  MAE **3.24892**; MSE **15.00895 vs 15.96823**.
+- Future **tanked** MAE **2.55661 vs 2.62461**; MSE
+  **9.87574 vs 10.04715**.
+- Per seed, heldout 67612 future sent MSE **13.46590**
+  was WORSE than constant baseline **12.81673**,
+  unlike heldout 67613. These are tiny, highly
+  correlated observational measurements, *not* proof of
+  generalizable root-choice value or stronger play.
+
+**Critical follow-up: truly policy/seed/pressure-stratified
+audit of the SAME immutable frozen model**, without retraining,
+using the exact previous run's certified authority artifacts:
+[Actions #38083461326](https://github.com/jush0147/tetrp/actions/runs/38083461326),
+[code `rook-stratify-realized-value.js`](../scripts/rook-stratify-realized-value.js),
+[CI](../.github/workflows/rook-realized-value-stratify.yml).
+The independent unit remains **two held-out whole games**.
+Splitting windows by played agent, the model's actual **MSE**
+vs a *stronger but still trivial train-seed-only per-agent
+mean constant* was:
+- **ROOK sent: 14.25661 vs 12.09615** (model WORSE);
+- ROOK tanked: **12.68517 vs 13.64156** (model better);
+- Kiwi sent: **15.76129 vs 16.16723** (model slightly better);
+- **Kiwi tanked: 7.06631 vs 4.49319** (model MUCH worse).
+This per-agent constant uses only PREDECLARED training seed
+labels, never test labels; reporting it cannot cause
+holdout leakage. Combined across both agents, the model
+MSE for sent **15.00895** exceeded the per-agent constant
+**14.13169**; model MSE for tanked **9.87574**
+exceeded the per-agent constant **9.06738**.
+Thus the apparent gain over the **unconditional**
+mean benchmark was largely an insufficient baseline,
+NOT demonstrated learned strength.
+
+**Public incoming-pressure validation subset** had 99
+highly correlated windows: sent model MSE **13.61914**
+vs per-agent constant **10.65945**; tanked model MSE
+**14.33871** vs per-agent constant **11.70148**.
+**8-lock non-overlap sensitivity check** left only 58
+windows: sent MSE 14.08724 vs policy mean 14.59387;
+tanked MSE 9.69042 vs policy mean 8.74315.
+They are not independent game-seed trials and cannot
+settle statistical significance. Specific weak-head patterns
+make policy promotion particularly unsound.
+
+**GO/NO-GO: NO PROMOTION.** Do NOT load learned weights into
+`chooseMove`, and do not chase a higher overfitted
+window-level MAE by adjusting lambda on just two held-out
+game seeds. The data labels are outcomes under ROOK's
+or Kiwi's CHOSEN behavioral trajectories, and are
+therefore confounded by (a) which policy played,
+(b) the opponent, and (c) the action taken. Predicting
+this future from board features does NOT estimate the
+counterfactual future value of alternative legal root moves.
+
+**Next substantive strategy method:** collect *paired legal
+root-action counterfactuals* by forking a SINGLE actual
+Tetrp authority snapshot (including identical immutable
+private future held by the **evaluation authority** only),
+force two different SRS+-proved root actions selected
+using identical PUBLIC CURRENT/HOLD/NEXT5, then continue
+both real games with identical fixed opponent policy,
+24 frames per piece, true incoming packets and KO-first.
+Private bag/holes must never be exposed to either choosing
+bot. Each **original seed** is one independent paired
+trial; forks are correlated and are not separate samples.
+The first experiment should diagnose differences in
+future attack, survival and CPU, and only after reliable
+counterfactual ranking is established try a SMALL
+opt-in trained/reranked ROOK policy, fresh unseen-seed
+2000-lock KO versus baseline and pinned Kiwi.
+Avoid a false claim that a positive score on observational
+future-label regression is an action-value model.
+`main`, Kiwi pinned policy, and default ROOK unchanged;
+Draft PR #6 remains in progress.
