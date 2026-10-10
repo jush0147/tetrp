@@ -352,12 +352,14 @@ export function revalueBeliefCandidate(candidate,beliefValue){
 function conditionalGarbageHorizon(state,rules,firstPly,horizon,{
   maxStates,maxSteps,maxNodes,beamWidth,onEvaluate
 }){
-  let beam=[state],evaluated=0;
+  let beam=[state],evaluated=0,budgetHit=false;
   for(let ply=firstPly;ply<horizon;ply++){
     const candidates=[];
     for(const node of beam){
       if(!node.queue.length)
         throw new RangeError('public NEXT exhausted before horizon');
+      // In TL an already blocked spawn is KO before Hold can rescue it.
+      if(!B.legal(node.board,spawn(node.queue[0],node.board)))continue;
       const options=[{type:node.queue[0],hold:node.hold,
         rest:node.queue.slice(1)}];
       if(!node.holdLocked&&rules.hold){
@@ -369,7 +371,7 @@ function conditionalGarbageHorizon(state,rules,firstPly,horizon,{
         const moves=enumerateReachable(node.board,spawn(option.type,node.board),
           rules,{maxStates,maxSteps});
         for(const move of moves){
-          if(evaluated>=maxNodes)break;
+          if(evaluated>=maxNodes){budgetHit=true;break;}
           evaluated++;onEvaluate();
           const p=applyPlacement(node,move,rules);
           if(!p||p.topout)continue;
@@ -385,13 +387,14 @@ function conditionalGarbageHorizon(state,rules,firstPly,horizon,{
             evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
           candidates.push(next);
         }
-        if(evaluated>=maxNodes)break;
+        if(budgetHit)break;
       }
-      if(evaluated>=maxNodes)break;
+      if(budgetHit)break;
     }
+    // A partially explored final ply is NOT a fair common-horizon value.
+    if(budgetHit)
+      throw new RangeError('conditional horizon node budget exhausted');
     if(!candidates.length){
-      if(evaluated>=maxNodes)
-        throw new RangeError('conditional horizon node budget exhausted');
       return -100000;
     }
     candidates.sort((a,b)=>b.evalScore-a.evalScore);
@@ -404,14 +407,13 @@ function conditionalGarbageHorizon(state,rules,firstPly,horizon,{
       distinct.add(key);beam.push(candidate);
       if(beam.length>=beamWidth)break;
     }
-    if(evaluated>=maxNodes&&ply<horizon-1)
-      throw new RangeError('conditional horizon node budget exhausted');
   }
   return beam[0].evalScore;
 }
 
 function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxStates,maxSteps,
-  commonHorizon=false,horizon=ply+2,horizonNodes=140,horizonBeam=3}){
+  commonHorizon=false,horizon=ply+2,horizonNodes=140,horizonBeam=3,
+  onConditionalEvaluate=()=>{}}){
   let conditionalEvaluated=0;
   const belief=evaluatePublicTankBelief(node.board,node.combat,rules,{
     maxOutcomes,riskWeight,score:outcome=>{
@@ -425,7 +427,7 @@ function beliefContinuationValue(node,rules,ply,{maxOutcomes,riskWeight,maxState
         if(ply+1>=horizon)return terminal();
         return conditionalGarbageHorizon(state,rules,ply+1,horizon,{
           maxStates,maxSteps,maxNodes:horizonNodes,beamWidth:horizonBeam,
-          onEvaluate:()=>{conditionalEvaluated++;}
+          onEvaluate:()=>{conditionalEvaluated++;onConditionalEvaluate();}
         });
       }
       if(!node.queue.length)return terminal();
@@ -793,9 +795,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             maxOutcomes:beliefMaxOutcomes,riskWeight:beliefRiskWeight,
             maxStates:beliefReachableStates,maxSteps,
             commonHorizon:beliefCommonHorizon,horizon:clamp,
-            horizonNodes:beliefHorizonNodes,horizonBeam:beliefHorizonBeam});
+            horizonNodes:beliefHorizonNodes,horizonBeam:beliefHorizonBeam,
+            onConditionalEvaluate:()=>{beliefHorizonEvaluated++;}});
           beliefEvaluations++;beliefOutcomes+=belief.outcomes;
-          beliefHorizonEvaluated+=belief.conditionalEvaluated;
+          // Accounted continuously, including abandoned conditional trees.
           revalueBeliefCandidate(candidate,belief.value);
           candidate.belief={expected:belief.expected,worst:belief.worst,
             topoutProbability:belief.topoutProbability,
