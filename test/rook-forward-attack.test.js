@@ -145,3 +145,48 @@ test('bank currently visible T in empty Hold, then four real locks produce TSD',
   assert.equal(disabled.stats.storingT,false);
   assert.equal(disabled.plans.length,0);
 });
+
+for(const tIndex of [1,2]){
+  test('bank a publicly upcoming T at index '+tIndex+' after real locks',()=>{
+    const e=fixture();
+    e.state.hold.piece=null;e.state.hold.locked=false;
+    // The original four placements i, i, o, t form the known full TSD.
+    // Current+NEXT are arranged so T is seen in advance but must be saved
+    // when it actually arrives. No invisible fifth- or sixth-piece peek.
+    e.state.piece.type='i';
+    e.state.bag.queue.splice(0,5,...(tIndex===1?
+      ['t','i','o','s','l']:['i','t','o','s','l']));
+    const v=visibleState(e.state),frozen=structuredClone(v);
+    const opts={...config,heldTFinish:true,storeUpcomingT:true,
+      heldTSetupPieces:3};
+    const out=searchPublicForwardTsd(v,opts);
+    assert.equal(out.stats.storingT,true);
+    assert.equal(out.stats.storeIndex,tIndex);
+    assert.ok(out.plans.length>0,
+      'available future T must be banked before genuine SRS+ TSD');
+    const plan=out.plans[0];
+    assert.equal(plan.evidence.storedUpcomingT,true);
+    assert.equal(plan.evidence.storedTAfterLocks,tIndex);
+    assert.deepEqual(plan.actions.map(a=>a.action.kind),
+      tIndex===1?['place','hold','place','place','hold','place']:
+        ['place','place','hold','place','hold','place']);
+    assert.deepEqual(plan.actions.filter(a=>a.move).map(a=>a.move.piece),
+      ['i','i','o','t']);
+    const demo=new BotDemo(e,{placementMode:'atomic'});
+    for(const request of plan.actions){
+      const view=demo.view();
+      demo.prepare(request,view.revision);
+      demo.commit(view.revision);
+    }
+    assert.equal(demo.view().lastPlacement.spin,'full');
+    assert.equal(demo.view().lastPlacement.lines,2);
+    assert.equal(demo.engine.state.frame,96);
+    assert.deepEqual(v,frozen);
+    const poisoned={...structuredClone(v),privateBag:['t','t'],
+      hiddenGarbageHoles:[1,2],next6:'t'};
+    assert.deepEqual(searchPublicForwardTsd(poisoned,opts),out);
+    const disabled=searchPublicForwardTsd(v,{
+      ...opts,storeUpcomingT:false});
+    assert.equal(disabled.stats.storingT,false);
+  });
+}
