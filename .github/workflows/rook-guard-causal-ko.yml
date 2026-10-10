@@ -1,0 +1,61 @@
+name: ROOK guard causal frontier-vs-frontier KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-guard-causal-ko.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  causal:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67324,67325,67326,67327]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Guarded frontier versus unguarded frontier, identical bag
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_FRONTIER: '1'
+          FRONTIER_RISK_GUARD: '1'
+          COMPARE_UNGUARDED_FRONTIER: '1'
+          FRONTIER_SLOTS: '3'
+          FRONTIER_SCORE_GAP: '70'
+        run: |
+          node scripts/rook-vs-rook.js > guard-causal-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('guard-causal-ko.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Expected exactly one match');
+          const r=rows[0],guarded=r.slots.find(x=>
+            x.kind==='risk-guarded-frontier'),plain=r.slots.find(x=>
+            x.kind==='option-frontier');
+          if(r.error||r.seed!==Number(process.env.SEEDS)||r.cap!==2000||
+            !r.sameSeed||r.swapRoles!=='0'||!r.compareUnguardedFrontier||
+            !guarded||!plain||
+            guarded.configuredNodeBudget!==plain.configuredNodeBudget)
+            throw Error('Not a valid controlled policy comparison');
+          console.log(JSON.stringify({seed:r.seed,termination:r.termination,
+            scored:r.scored,winner:r.winner,turns:r.turns,
+            guardedSent:guarded.sent,unguardedSent:plain.sent,
+            guardedCPU:guarded.ms,unguardedCPU:plain.ms,
+            guardActivations:guarded.frontierRiskSuppressed}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: guard-causal-seed-${{ matrix.seed }}
+          path: guard-causal-ko.jsonl
+          retention-days: 30
