@@ -914,3 +914,35 @@ moves to constructing offensive future boards across bags and
 competing Tetris/Mini/B2B/downstack opportunities, not inflating
 TSD weights. The default ROOK `chooseMove`, main branch, and
 Kiwi pinned policy remain unchanged.
+
+
+### 2026-10-10 verified follow-up: upcoming-T hold expansion still NO match advantage
+
+[GitHub Actions #38059465725](https://github.com/jush0147/tetrp/actions/runs/38059465725)
+has FINISHED successfully: **11/11 focused actual Tetrp SRS+/Hold
+regressions passed, 0 failed**. The two new-seed (67201,67202)
+48-lock **unscored** policy screens showed, with bank-upcoming-T
+enabled: **23 T-eligible decisions**, **1113 genuine SRS+
+enumeration calls**, **28765 candidate placement evaluations**,
+**0 search truncations**, **0 verified multi-lock Full TSD portfolio
+offers**, **0 first-action policy changes**. The previous
+same-seed, same 48-lock diagnostic without this extension
+had 22 eligible decisions, 1064 proofs, 27652 evaluations,
+0 offers, 0 changes. New action eligibility improved by one
+decision, but did not produce an attack plan on these ROOK
+boards. This is a small, nonindependent-position cohort and
+is **not** a KO win/loss or proof of generic TSD impossibility.
+
+The `full-ko` downstream job correctly **skipped** two additional
+seeds 67203 and 67204 because the new policy generated zero
+move changes. Report no new KO winner and no Kiwi comparison.
+
+**Next priority** must move beyond variations of when to bank T.
+Specifically compare longer-term board construction and maintaining
+future attack options, including Tetris, TSS/TSD/Mini and B2B,
+under the complete garbage/defense/downstack evaluation; broaden
+cross-bag knowledge only by replanning as pieces BECOME visible.
+No artificial Full TSD bonus, no secret next bag, and no claim that
+an unproved geometry is an actual attack. A new strategy deserves
+scored KO only when it makes legal different choices on multiple
+independent public boards. PR #6 Draft and main unchanged.
