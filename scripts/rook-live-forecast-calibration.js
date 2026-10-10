@@ -171,8 +171,16 @@ const slots=demos.map((demo,side)=>{
     sentMAE:errorMean(paired,'projectedSent','realizedSent'),
     generatedMAE:errorMean(paired,'projectedGenerated','realizedGenerated'),
     btbMismatch:paired.filter(x=>x.predictedEndBtb!==x.realizedEndBtb).length,
+    futureProofedLocks:paired.reduce((n,x)=>n+
+      rows[x.round].forecast.slice(1,horizon).filter(lock=>lock.proof==='srs').length,0),
+    futureGeometryOnlyLocks:paired.reduce((n,x)=>n+
+      rows[x.round].forecast.slice(1,horizon).filter(lock=>lock.proof==='geometry').length,0),
     exactFourPlyPlans:paired.filter(x=>x.firstDivergence===null).length,
     divergentPlans:paired.filter(x=>x.firstDivergence!==null).length,
+    firstDivergenceGeometry:paired.filter(x=>x.firstDivergence&&
+      rows[x.round].forecast[x.firstDivergence.ply-1]?.proof==='geometry').length,
+    firstDivergenceSrs:paired.filter(x=>x.firstDivergence&&
+      rows[x.round].forecast[x.firstDivergence.ply-1]?.proof==='srs').length,
     divergentUnderPressure:paired.filter(x=>pressure(x)&&x.firstDivergence!==null).length,
     divergentInCalm:paired.filter(x=>!pressure(x)&&x.firstDivergence!==null).length,
     divergenceFields:Object.fromEntries(['piece','spin','lines','generated','sent',
