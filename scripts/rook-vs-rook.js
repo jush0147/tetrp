@@ -43,6 +43,9 @@ const frontierRiskGuard=process.env.FRONTIER_RISK_GUARD==='1';
 const frontierGuardShadow=process.env.FRONTIER_GUARD_SHADOW==='1';
 // Causal comparator: guarded vs UNGUARDED frontier, rather than vs ROOK.
 const compareUnguardedFrontier=process.env.COMPARE_UNGUARDED_FRONTIER==='1';
+const compareAllFrontier=process.env.COMPARE_ALL_FRONTIER==='1';
+const frontierAllShadow=process.env.FRONTIER_ALL_SHADOW==='1';
+const frontierLanes=process.env.FRONTIER_LANES??'all';
 const frontierSlots=Number(process.env.FRONTIER_SLOTS??3);
 const frontierGap=Number(process.env.FRONTIER_SCORE_GAP??70);
 const tStockMargin=Number(process.env.T_STOCK_MARGIN??1);
@@ -69,8 +72,8 @@ const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertSticky?'sticky-continuation':null,
   expertExactLeaf?'verified-fifth-ply':null,
   expertTStock?'public-t-stock':null,
-  expertFrontier?(frontierRiskGuard?'risk-guarded-frontier':
-    'option-frontier'):null,
+  expertFrontier?((frontierRiskGuard?'risk-guarded-frontier':
+    'option-frontier')+(frontierLanes==='all'?'':'-'+frontierLanes)):null,
   budgetScaling?'budget-scale':null]
   .filter(Boolean).join('+')||'baseline';
 const expertKind=expertLabel==='baseline'?'candidate':expertLabel;
@@ -99,12 +102,17 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isFinite(intermediateHoleRelief)||
   intermediateHoleRelief<0||intermediateHoleRelief>1||
   !Number.isFinite(tStockMargin)||tStockMargin<0||tStockMargin>100000||
+  !['all','no-spin','no-quad','no-combat','combat','quad','spin']
+    .includes(frontierLanes)||
   !Number.isInteger(frontierSlots)||frontierSlots<1||frontierSlots>32||
   !Number.isFinite(frontierGap)||frontierGap<0||frontierGap>1000)
   throw Error('Invalid ROOK self-play configuration');
 if(compareUnguardedFrontier&&(!expertFrontier||!frontierRiskGuard||
-  expertOpen||expertTStock||budgetScaling))
+  expertOpen||expertTStock||budgetScaling||compareAllFrontier))
   throw Error('Unguarded comparator requires only the guarded frontier expert');
+if(compareAllFrontier&&(!expertFrontier||frontierRiskGuard||
+  frontierLanes==='all'||expertOpen||expertTStock||budgetScaling))
+  throw Error('All-lane comparator requires an isolated frontier ablation');
 if(budgetScaling&&(expertOpen||expertRecovery||expertBelief||expertFuture||
   expertBeam||expertOffense||expertHoldPlan||expertPruning||expertSticky||
   expertExactLeaf||expertTStock||expertFrontier))
@@ -139,7 +147,10 @@ function select(demo,open){
     frontierCombatInserted:0,frontierQuadInserted:0,
     frontierSpinInserted:0,frontierChanged:0,
     frontierShadowChecks:0,frontierShadowMs:0,
-    frontierRiskSuppressed:0,frontierGuardShadowChecks:0,
+    frontierRiskSuppressed:0,
+    frontierAllShadowChecks:0,frontierAllShadowChanges:0,
+    frontierAllShadowMs:0,
+    frontierGuardShadowChecks:0,
     frontierGuardShadowChanges:0,frontierGuardShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
     stickyHoldSkipped:0,leafExtensionAttempts:0,leafExtensionApplied:0,
@@ -194,7 +205,7 @@ function select(demo,open){
     const searchDepth=open?candidateDepth:baselineDepth;
     const searchBeam=open?candidateBeamWidth:baselineBeamWidth;
     const useFrontier=expertFrontier&&
-      (open||compareUnguardedFrontier);
+      (open||compareUnguardedFrontier||compareAllFrontier);
     const searchOptions={...base,maxNodes:searchBudget,
       depth:searchDepth,beamWidth:searchBeam,
       reversePlanner:open&&expertOpen,
@@ -214,7 +225,8 @@ function select(demo,open){
       beliefProbes,beliefMaxOutcomes,
       optionFrontierSlots:useFrontier?Math.min(frontierSlots,searchBeam-1):0,
       optionFrontierMaxScoreGap:frontierGap,
-      optionFrontierRiskGuard:open&&expertFrontier&&frontierRiskGuard};
+      optionFrontierRiskGuard:open&&expertFrontier&&frontierRiskGuard,
+      optionFrontierLanes:open?frontierLanes:'all'};
     const report=open&&expertTStock
       ?chooseMoveWithPublicTStock(view.visible,{...searchOptions,
         minValueMargin:tStockMargin,planMaxStates:950,planMaxSteps:70,
@@ -230,6 +242,18 @@ function select(demo,open){
     stats.frontierCombatInserted+=report.diagnostics.optionFrontierStats?.modes.combat??0;
     stats.frontierQuadInserted+=report.diagnostics.optionFrontierStats?.modes.quad??0;
     stats.frontierSpinInserted+=report.diagnostics.optionFrontierStats?.modes.spin??0;
+    if(open&&expertFrontier&&frontierAllShadow){
+      const shadowStart=performance.now();
+      const full=chooseMove(view.visible,{...searchOptions,
+        optionFrontierLanes:'all'});
+      stats.frontierAllShadowMs+=performance.now()-shadowStart;
+      stats.frontierAllShadowChecks++;
+      const signature=a=>a.kind==='hold'?'hold:'+a.mode:
+        'place:'+a.move.piece+':'+a.execution.spin+':'+
+          a.move.cells.map(([x,y])=>x+','+y).sort().join(';');
+      stats.frontierAllShadowChanges+=Number(
+        signature(report)!==signature(full));
+    }
     if(open&&expertFrontier&&frontierGuardShadow){
       const guardStart=performance.now();
       const unguarded=chooseMove(view.visible,{...searchOptions,
@@ -354,7 +378,8 @@ function health(demo){
     received:s.attack.totals.received,tanked:s.attack.totals.tanked};
 }
 function pairedGame(seed,swap){
-  const comparatorKind=compareUnguardedFrontier?'option-frontier':'baseline';
+  const comparatorKind=compareUnguardedFrontier||compareAllFrontier
+    ?'option-frontier':'baseline';
   const kinds=swap?[comparatorKind,expertKind]:[expertKind,comparatorKind];
   // Both players receive the IDENTICAL seven-bag seed in this match.
   const demos=[makeDemo(seed),makeDemo(seed)];
@@ -372,7 +397,10 @@ function pairedGame(seed,swap){
     frontierCombatInserted:0,frontierQuadInserted:0,
     frontierSpinInserted:0,frontierChanged:0,
     frontierShadowChecks:0,frontierShadowMs:0,
-    frontierRiskSuppressed:0,frontierGuardShadowChecks:0,
+    frontierRiskSuppressed:0,
+    frontierAllShadowChecks:0,frontierAllShadowChanges:0,
+    frontierAllShadowMs:0,
+    frontierGuardShadowChecks:0,
     frontierGuardShadowChanges:0,frontierGuardShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
     leafExtensionAttempts:0,leafExtensionApplied:0,leafExtensionAborts:0,
@@ -435,7 +463,8 @@ function pairedGame(seed,swap){
     expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
     expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
     expertFrontier,frontierSlots,frontierGap,frontierShadow,
-    compareUnguardedFrontier,
+    compareUnguardedFrontier,compareAllFrontier,frontierLanes,
+    frontierAllShadow,
     frontierRiskGuard,frontierGuardShadow,
     leafExtensionBudget,leafExtensionStates,intermediateHoleRelief,
     auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
