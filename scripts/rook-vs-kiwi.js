@@ -121,7 +121,9 @@ function asStats(demo,kind,searchNodes,holdMoves,searchMs,combatEvents=null){
 // Persist only the same allowlisted public snapshots the policies receive.
 const publicDiagnosticSnapshots=[];
 const publicTsdTraces=[];
+const publicLockTraces=[];
 const traceTsd=!!process.env.ROOK_TSD_TRACE_PATH;
+const traceAllPublicLocks=!!process.env.ROOK_PUBLIC_LOCK_TRACE_PATH;
 function runPair(seed,order){
   const kinds=order===0?['rook','kiwi']:['kiwi','rook'];
   const demos=[makeDemo(seed),makeDemo(seed)];
@@ -132,6 +134,7 @@ function runPair(seed,order){
   const leafExtra=[0,0],leafApplied=[0,0],leafAborted=[0,0];
   // Authority outcomes ONLY; never used as search inputs by either bot.
   const recentPublicViews=[[],[]];
+  const beforePublicLock=[null,null];
   const combatEvents=Array.from({length:2},()=>({fullTss:0,fullTsd:0,
     fullTst:0,miniClears:0,quads:0,ordinarySingles:0,ordinaryDoubles:0,
     ordinaryTriples:0,allClears:0,maxBtb:0}));
@@ -166,7 +169,7 @@ function runPair(seed,order){
         const plan=prepareUntilPlace(demos[i],kinds[i]);
         plans.push(plan);searchNodes[i]+=plan.nodes;holdMoves[i]+=plan.holdCount;
         searchMs[i]+=plan.searchMs;
-        if(traceTsd){
+        if(traceTsd||traceAllPublicLocks){
           // Only player-visible state AFTER optional Hold and BEFORE lock.
           // Never save authority-private bag/RNG or Kiwi search internals.
           const v=demos[i].view().visible;
@@ -175,8 +178,12 @@ function runPair(seed,order){
           const allowlisted={playing:v.playing,board:v.board,current:v.current,
             hold:v.hold,next:v.next,attack:v.attack,frame:v.frame,
             piecesPlaced:v.piecesPlaced,rules:v.rules};
-          recentPublicViews[i].push({turn:lockSteps,visible:structuredClone(allowlisted)});
-          if(recentPublicViews[i].length>6)recentPublicViews[i].shift();
+          const snapshot={turn:lockSteps,visible:structuredClone(allowlisted)};
+          if(traceAllPublicLocks)beforePublicLock[i]=snapshot;
+          if(traceTsd){
+            recentPublicViews[i].push(snapshot);
+            if(recentPublicViews[i].length>6)recentPublicViews[i].shift();
+          }
         }
         leafExtra[i]+=plan.leafExtra;leafApplied[i]+=plan.leafApplied;
         leafAborted[i]+=plan.leafAborted;
@@ -189,6 +196,15 @@ function runPair(seed,order){
         const lock=outcome.lastPlacement;
         const stats=combatEvents[i];
         const fullT=lock.piece==='t'&&lock.spin==='full';
+        if(traceAllPublicLocks)publicLockTraces.push({
+          seed,turn:lockSteps,slot:i,kind:kinds[i],
+          ...beforePublicLock[i],
+          // Label is written only AFTER the lock by the authority and is
+          // strictly for offline evaluation, NEVER passed to chooseMove.
+          outcome:{piece:lock.piece,spin:lock.spin,lines:lock.lines,
+            fullTsd:fullT&&lock.lines===2,
+            btb:demos[i].engine.state.attack.btb}
+        });
         if(fullT&&lock.lines===1)stats.fullTss++;
         if(fullT&&lock.lines===2){
           stats.fullTsd++;
@@ -246,5 +262,8 @@ if(diagnosticsEnabled&&process.env.ROOK_DIAG_SNAPSHOTS_PATH)
     publicDiagnosticSnapshots.map(r=>JSON.stringify(r)).join('\n')+'\n');
 if(process.env.ROOK_TSD_TRACE_PATH)writeFileSync(process.env.ROOK_TSD_TRACE_PATH,
   publicTsdTraces.map(r=>JSON.stringify(r)).join('\n')+'\n');
+if(process.env.ROOK_PUBLIC_LOCK_TRACE_PATH)
+  writeFileSync(process.env.ROOK_PUBLIC_LOCK_TRACE_PATH,
+    publicLockTraces.map(r=>JSON.stringify(r)).join('\n')+'\n');
 if(process.env.RESULTS_PATH)writeFileSync(process.env.RESULTS_PATH,JSON.stringify(results,null,2)+'\n');
 // No artificial winner. Invalid/capped games remain explicit and unscored.
