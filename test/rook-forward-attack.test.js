@@ -70,3 +70,37 @@ test('planner requires public T and rejects privacy leaks and unbounded budgets'
   assert.equal(capped.stats.truncated,true);
   assert.ok(capped.stats.proofCalls<=1);
 });
+
+
+test('public held T can finish a five-action route after three known setup locks',()=>{
+  const e=fixture();
+  e.state.hold.piece='t';e.state.hold.locked=false;
+  e.state.bag.queue.splice(0,5,'i','o','j','s','l');
+  const v=visibleState(e.state);
+  const baseline=searchPublicForwardTsd(v,config);
+  assert.equal(baseline.plans.length,0,'there is no public T in NEXT5');
+  const opts={...config,heldTFinish:true,heldTSetupPieces:3};
+  const out=searchPublicForwardTsd(v,opts);
+  assert.equal(out.stats.viaHeldT,true);
+  assert.ok(out.plans.length>0);
+  const plan=out.plans[0];
+  assert.deepEqual(plan.actions.map(a=>a.action.kind),
+    ['place','place','place','hold','place']);
+  assert.equal(plan.actions[3].action.mode,'occupied');
+  assert.deepEqual(plan.actions.filter(a=>a.action.kind==='place')
+    .map(a=>a.move.piece),['i','i','o','t']);
+  const demo=new BotDemo(e,{placementMode:'atomic'});
+  for(const action of plan.actions){
+    const view=demo.view();
+    demo.prepare(action,view.revision);
+    demo.commit(view.revision);
+  }
+  assert.equal(demo.view().lastPlacement.spin,'full');
+  assert.equal(demo.view().lastPlacement.lines,2);
+  assert.equal(demo.engine.state.frame,4*24,
+    'occupied Hold must not count as another locked piece');
+  assert.equal(demo.engine.state.attack.totals.generated,5);
+  const poisoned={...structuredClone(v),privateBag:['t','t'],
+    futureOpponentGarbageHole:6};
+  assert.deepEqual(searchPublicForwardTsd(poisoned,opts),out);
+});
