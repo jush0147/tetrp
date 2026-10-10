@@ -509,7 +509,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isInteger(maxNodes)||maxNodes<1||!Number.isInteger(futureReachablePly)||
     futureReachablePly<0||futureReachablePly>5||!Number.isInteger(futureReachableProbes)||
     futureReachableProbes<0||futureReachableProbes>100||
-    !['legacy','balanced'].includes(futureProofSpread)||
+    !['legacy','balanced','root-diverse'].includes(futureProofSpread)||
     !Number.isInteger(futureReachableStates)||futureReachableStates<1||
     !Number.isInteger(tsdTacticalProbes)||tsdTacticalProbes<0||
     !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
@@ -632,6 +632,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   let beliefHorizonEvaluated=0,beliefHorizonAborted=0;
   const beliefHorizonAbortReasons={budget:0,secondGarbage:0,publicNext:0};
   const futureReachableByPly=Array(depth+1).fill(0);
+  const futureProofNodeIndices=Array.from({length:depth+1},()=>[]);
   const tsdCandidates=[];let tsdProbes=0,tsdProven=0;
   // Known T may be the fifth NEXT piece; six placements are publicly
   // visible but only an actual proven tactical continuation expands ply six.
@@ -649,7 +650,25 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     const plyProofCap=futureProofSpread==='balanced'
       ?baseProofCap+Number(ply-1>=proofPlies-extraProofs)
       :Math.ceil(futureReachableProbes/Math.max(1,clamp-1));
-    for(const node of beam){
+    // Same SRS proof budget, different root coverage. Search order should not
+    // concentrate every future-spin witness on the first few beam roots.
+    const probeNodeIndices=new Set();
+    if(futureProofSpread==='root-diverse'&&ply>0&&plyProofCap>0){
+      const distinctRoots=new Map();
+      for(let i=0;i<beam.length;i++){
+        const root=JSON.stringify(beam[i].rootAction);
+        if(!distinctRoots.has(root))distinctRoots.set(root,i);
+      }
+      const rootSlots=[...distinctRoots.values()];
+      for(let i=0;i<Math.min(plyProofCap,rootSlots.length);i++){
+        const index=Math.floor(i*rootSlots.length/
+          Math.min(plyProofCap,rootSlots.length));
+        probeNodeIndices.add(rootSlots[index]);
+      }
+    }
+    const proofUsedNodes=new Set();
+    for(let nodeIndex=0;nodeIndex<beam.length;nodeIndex++){
+      const node=beam[nodeIndex];
       if(node.unresolvedGarbage){
         // Stop at the first hidden-hole insertion; no phantom future board.
         candidates.push(node);
@@ -677,9 +696,15 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             const fast=forecastHardDrops(node.board,option.type,visible.rules);
             const prove=futureReachable&&ply<=futureReachablePly&&
               futureProbes<futureReachableProbes&&
-              futureReachableByPly[ply]<plyProofCap;
+              futureReachableByPly[ply]<plyProofCap&&
+              (futureProofSpread!=='root-diverse'||
+                (probeNodeIndices.has(nodeIndex)&&!proofUsedNodes.has(nodeIndex)));
             if(prove){
               futureProbes++;futureReachableByPly[ply]++;
+              if(futureProofSpread==='root-diverse'){
+                proofUsedNodes.add(nodeIndex);
+                futureProofNodeIndices[ply].push(nodeIndex);
+              }
               const reached=enumerateReachable(node.board,option.piece,visible.rules,
                 {maxStates:futureReachableStates,maxSteps});
               futureMoves+=reached.length;
@@ -1026,6 +1051,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
     futureProofSpread,
+    ...(futureProofSpread==='root-diverse'?{futureProofNodeIndices}:{}),
     reason:'root-diverse beam + forward-proofed inverse attack portfolio'}};
   if(includeForecastPlan)result.forecastPlan=best.forecastPlan??[];
   if(includeHoldPlan&&result.kind==='hold')
