@@ -104,3 +104,44 @@ test('public held T can finish a five-action route after three known setup locks
     futureOpponentGarbageHole:6};
   assert.deepEqual(searchPublicForwardTsd(poisoned,opts),out);
 });
+
+test('bank currently visible T in empty Hold, then four real locks produce TSD',()=>{
+  const e=fixture(),before=e.serialize();
+  e.state.piece.type='t';e.state.hold.piece=null;e.state.hold.locked=false;
+  e.state.bag.queue.splice(0,5,'i','i','o','s','l');
+  const v=visibleState(e.state),frozen=structuredClone(v);
+  const opts={...config,heldTFinish:true,storeCurrentT:true,
+    heldTSetupPieces:3};
+  const output=searchPublicForwardTsd(v,opts);
+  assert.equal(output.stats.storingT,true);
+  assert.equal(output.stats.viaHeldT,true);
+  assert.ok(output.plans.length>0,'banked T can finish genuine Full TSD');
+  assert.deepEqual(v,frozen,'do not change source public snapshot');
+  const plan=output.plans[0];
+  assert.equal(plan.evidence.initialStoresT,true);
+  assert.deepEqual(plan.actions.map(a=>a.action.kind),
+    ['hold','place','place','place','hold','place']);
+  assert.deepEqual(plan.actions.filter(a=>a.move).map(a=>a.move.piece),
+    ['i','i','o','t']);
+  assert.equal(plan.planLength,4,'Hold actions do not count as locks');
+  const demo=new BotDemo(e,{placementMode:'atomic'});
+  for(const action of plan.actions){
+    const view=demo.view();
+    demo.prepare(action,view.revision);
+    demo.commit(view.revision);
+  }
+  assert.equal(demo.view().lastPlacement.spin,'full');
+  assert.equal(demo.view().lastPlacement.lines,2);
+  assert.equal(demo.engine.state.frame,96,'two Hold actions consume zero frames');
+  assert.ok(demo.engine.state.attack.totals.generated>=4);
+  const poisoned={...structuredClone(v),privateBag:['t','t'],
+    hiddenNext6:'t',futureGarbageHole:2};
+  assert.deepEqual(searchPublicForwardTsd(poisoned,opts),output);
+  const locked={...v,hold:{...v.hold,locked:true}};
+  assert.equal(searchPublicForwardTsd(locked,opts).plans.length,0);
+  const stock={...v,hold:{...v.hold,piece:'o'}};
+  assert.equal(searchPublicForwardTsd(stock,opts).plans.length,0);
+  const disabled=searchPublicForwardTsd(v,{...opts,storeCurrentT:false});
+  assert.equal(disabled.stats.storingT,false);
+  assert.equal(disabled.plans.length,0);
+});
