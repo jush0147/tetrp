@@ -4,7 +4,7 @@ import {writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
-import {publicPlanStillApplicable,proveForecastPlacement} from '../src/analysis/rook-plan.js';
+import {publicPlanStillApplicable,proveForecastPlacement,plannedHold} from '../src/analysis/rook-plan.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 
 const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
@@ -98,7 +98,7 @@ function select(demo,open){
     searches:0,budgetReached:0,searchDepthLimit:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
     stickyHoldSkipped:0};
-  let expectedAfterHold=null;
+  let expectedAfterHold=null,usedStickyHold=false;
   if(open&&expertSticky){
     const next=rememberedPlans.get(demo)?.[0];
     if(next){
@@ -115,12 +115,32 @@ function select(demo,open){
             return {revision:view.revision,...stats};
           }catch(error){stats.stickyRejected++;}
         }else stats.stickyRejected++;
+      }else if(next.useHold&&publicPlanStillApplicable(visible,next)){
+        const holdRequest=plannedHold(visible,next);
+        if(holdRequest){
+          try{
+            const before=demo.view();
+            demo.prepare(holdRequest,before.revision);
+            demo.commit(before.revision);stats.holds++;usedStickyHold=true;
+            const after=demo.view();
+            const request=proveForecastPlacement(after.visible,next,
+              {maxStates:1200,maxSteps:42});
+            if(request){
+              try{
+                demo.prepare(request,after.revision);
+                rememberedPlans.set(demo,rememberedPlans.get(demo).slice(1));
+                stats.stickyAccepted++;
+                return {revision:after.revision,...stats};
+              }catch(error){stats.stickyRejected++;}
+            }else stats.stickyRejected++;
+          }catch(error){stats.stickyRejected++;}
+        }else stats.stickyHoldSkipped++;
       }else if(next.useHold)stats.stickyHoldSkipped++;
       else stats.stickyRejected++;
       rememberedPlans.delete(demo);
     }
   }
-  for(let turn=0;turn<2;turn++){
+  for(let turn=usedStickyHold?1:0;turn<2;turn++){
     const view=demo.view();
     if(view.visible.next.length!==5)throw Error('Visible NEXT5 contract violated');
     const started=performance.now();
