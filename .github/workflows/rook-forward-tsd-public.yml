@@ -37,9 +37,19 @@ jobs:
         run: |
           set -eu
           node scripts/rook-forward-tsd-cohort.js > rook-forward-public-summary.json
+          ROOK_PUBLIC_LOCK_TRACE=rook-all-public-locks.jsonl \
+            ROOK_T_ECONOMY_OUTPUT=rook-public-t-economy.json \
+            node scripts/rook-public-t-economy.js > rook-public-t-economy-summary.json
           node --input-type=module <<'JS'
           import {readFileSync,writeFileSync} from 'node:fs';
           const r=JSON.parse(readFileSync('rook-forward-public-results.json','utf8'));
+          const t=JSON.parse(readFileSync('rook-public-t-economy.json','utf8'));
+          if(t.format!=='rook-public-T-resource-lifecycle/1'||
+            t.independentSeeds!==1||t.groups.length!==2||
+            t.groups.some(x=>x.publicLocks!==66||
+              x.fullTsd+x.tNoSpinNoClear+x.otherT!==x.actualTPlacements||
+              x.actualTPlacements<=0))
+            throw Error('Invalid authority T/Hold lifecycle audit');
           if(r.format!=='rook-public-multipiece-forward-tsd-cohort/1'||
             r.independentSeeds!==1||r.inputPublicLocks!==132||
             r.plansOnlyWithKnownPublicT!==true||r.groups.length!==2||
@@ -66,6 +76,14 @@ jobs:
             '',
             'These are highly correlated within ONE actual played seed.',
             'No Hold swapping, no unrevealed pieces, and no unknown garbage-hole guessing.',
+            '',
+            'AUTHORITY-OBSERVED T RESOURCE (not a forced-T tactic):',
+            ...t.groups.map(x=>'**'+x.kind.toUpperCase()+'**: actual T placements '+
+              x.actualTPlacements+', real Full TSD '+x.fullTsd+
+              ', T placed with no spin and no clear '+x.tNoSpinNoClear+
+              ', public Hold-contained-T observations '+x.holdTViewCount+
+              ' across '+x.holdTEpisodes+' contiguous episodes.'),
+            'Hold counts are correlated frames, not independent decisions.',
             'A multi-lock STATIC continuation can be interrupted by opponent garbage.',
             'Presence of a TSD plan is not evidence it should be preferred in real KO.',
             'No policy change, no new KO result, no main merge.'
@@ -83,6 +101,8 @@ jobs:
           name: rook-forward-tsd-public-portfolio
           path: |
             rook-forward-public-results.json
+            rook-public-t-economy.json
+            rook-public-t-economy-summary.json
             rook-forward-public-summary.json
             rook-forward-public-issue.md
           retention-days: 30
