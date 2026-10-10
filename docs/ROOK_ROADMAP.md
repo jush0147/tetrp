@@ -1151,3 +1151,54 @@ to 2000-lock *real KO* tests. At this write-up these gate
 outcomes are **not yet established**. Never count this
 short screen as win/loss. Guarded mode and all performance
 tweaks remain OFF by default, PR #6 Draft, `main` untouched.
+
+
+### 2026-10-10 Issue #8 P0: safety-guard gate closes at 1-1; causal experiment added
+
+[Risk-guard workflow #38061796104](https://github.com/jush0147/tetrp/actions/runs/38061796104)
+FINISHED successfully. The two previously known seed 67312/67313
+180-lock **UNSCORED** public-decision screens: **162 public risk
+suppression activations, only 1 action change in 487
+guard-versus-unguarded public-choice comparisons**, plus ~98.2 seconds
+of diagnostic shadow CPU (not candidate budget). Thus its fixed height
+>=10 / buried holes >=4 / incoming packet >=5 gate seldom influences
+the root choice despite being triggered frequently.
+
+Two FRESH independent seeds, genuine Tetrp KO-first authority matches,
+identical bag per side, 24 frames/lock, 2,000-lock safety cap, but
+**risk-guarded frontier vs ORIGINAL baseline** (not a guard ablation):
+- 67324: baseline **wins KO at 128 locks**; guarded candidate
+  sent **39** garbage vs baseline **66**, used 36651ms vs 40368ms
+  search CPU, guard suppressed 72 searches.
+- 67325: risk-guarded frontier **wins KO at 336 locks**;
+  candidate sent **182** vs baseline **157**, used 163292ms vs
+  148591ms, guard suppressed 95 searches.
+- Thus new cohort **1W-1L**, total 2 wins / 2 losses over four
+  DISTINCT scored baseline seeds when combined with 67312/67313
+  (but these are DIFFERENT policy versions and cannot be pooled as
+  one estimator!). No proof of general improvement or Kiwi strength.
+
+**Crucial inference limit:** Since both earlier genuine KO checks compare
+a variant to original ROOK, they cannot isolate whether an observed
+difference is due to the frontier itself or the public danger guard.
+For an ACTUAL causal guard ablation, new code
+[`40144ee`](https://github.com/jush0147/tetrp/commit/40144ee51802f2b61144c815d6cfeab4e1e146a8)
+introduces `COMPARE_UNGUARDED_FRONTIER=1` in the authentic-match
+harness, so its opponent is **exactly the same
+`EXPERT_FRONTIER` search but with risk guard OFF**, not ROOK baseline.
+All other limits, rule set and current public observation remain
+aligned; CPU and actual searched-node counts must still be reported.
+New [true-KO causal Actions #38062899756](https://github.com/jush0147/tetrp/actions/runs/38062899756)
+runs two previous-discovery seeds 67324/67325 AND two NEW
+independent seeds 67326/67327. Previously seen seeds are
+retrospective diagnostics, never treated as held-out confirmation;
+only 67326/67327 are held out. Each plays until **genuine KO or
+2,000 synchronized locks**, never a scored short surrogate.
+At this write-up the workflow had just queued: **no result yet**.
+
+Regardless of outcome, 4 seeds and unequal CPU do not prove superior
+win probability. If the guard seldom changes actions or loses the
+direct head-to-head, stop threshold tweaking. Instead focus on
+recovering from garbage, maintaining B2B and measurable delivered
+attack, not cosmetic T-slot promises. Default `chooseMove`,
+`main`, and pinned Kiwi unchanged. PR #6 Draft.
