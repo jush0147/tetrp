@@ -17,6 +17,7 @@ jobs:
           node-version: '22'
       - name: Verify original SRS+ / Hold / KO contracts
         run: node --test test/rook-beam.test.js test/rook-ko-protocol.test.js
+      # Reapply original KO runner's ranked authority-rejection fallback.
       - name: Unscored causal fork smoke on identical private RNG snapshots
         env:
           SEED: '67620'
