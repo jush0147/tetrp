@@ -526,3 +526,16 @@ beliefRiskWeight；並正式以足夠獨立 seed
 此結果僅 3 個公開受壓局面，且來自 2 個 seed，
 不能據以宣稱 belief 策略對所有局面無效；
 目前尚無能採納的勝率證據。
+
+### CI 成本控制再修正（2026-10-10）
+
+GitHub pull_request path filters 在同步提交時看整個 PR diff，
+因此即使新增的 commit 只有文件，也可能重新跑 Phase 1 和
+Viewer/Playwright，這是 81 筆排隊的殘餘成因。
+commit 10c6990 已為 engine-tests.yml 與 pages.yml
+加入 job-level draft-PR guard：當 pull_request.draft=true，
+不跑這兩套完整 build；同時把 ready_for_review 加入
+PR 事件觸發。對 main 的 push 與非 Draft PR，
+仍維持正式測試，ROOK acceptance 仍會在 feature branch
+上的 src/test/scripts 相關變動時自動驗收。
+此措施旨在降低重複 CI 成本，不取代正式測試。
