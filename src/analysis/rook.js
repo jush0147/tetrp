@@ -480,7 +480,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   garbageRecovery=false,garbageRecoveryWeight=1,
   garbageBelief=false,beliefProbes=3,beliefMaxOutcomes=10,
   beliefRiskWeight=.2,beliefReachableStates=300,
-  beliefCommonHorizon=false,beliefHorizonNodes=140,beliefHorizonBeam=3}={}){
+  beliefCommonHorizon=false,beliefHorizonNodes=140,beliefHorizonBeam=3,
+  exactLeafExtension=false,leafExtensionBudget=5000,leafExtensionStates=800}={}){
   if(!visible?.playing||!visible?.current||!visible?.board||!visible.rules)
     throw Error('ROOK requires Tetrp player-visible snapshot');
   // Enforce the product's information boundary even for direct API callers.
@@ -516,6 +517,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isFinite(beliefRiskWeight)||beliefRiskWeight<0||beliefRiskWeight>1||
     !Number.isInteger(beliefReachableStates)||beliefReachableStates<1||
     typeof beliefCommonHorizon!=='boolean'||
+    typeof exactLeafExtension!=='boolean'||
+    !Number.isInteger(leafExtensionBudget)||leafExtensionBudget<1||leafExtensionBudget>100000||
+    !Number.isInteger(leafExtensionStates)||leafExtensionStates<1||leafExtensionStates>10000||
     !Number.isInteger(beliefHorizonNodes)||beliefHorizonNodes<1||beliefHorizonNodes>5000||
     !Number.isInteger(beliefHorizonBeam)||beliefHorizonBeam<1||beliefHorizonBeam>24||
     (beamRootReserve!==null&&(!Number.isInteger(beamRootReserve)||
@@ -934,9 +938,73 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
         JSON.stringify(n.rootAction)))]});
     best=beam[0];
   }
+  // Opt-in tactical quiescence: the fifth lock is already inside publicly
+  // visible NEXT5. Re-evaluate EVERY surviving final leaf using a genuine
+  // SRS+ witness, including a legal Hold branch. This is a different policy,
+  // not a substitute for the original beam or a hidden bag lookahead.
+  let leafExtensionEvaluated=0,leafExtensionWitnesses=0;
+  let leafExtensionApplied=false,leafExtensionAbort=null,leafExtensionChangesRoot=false;
+  const defaultBest=best;
+  if(exactLeafExtension){
+    if(clamp!==4)leafExtensionAbort='depth-not-four';
+    else{
+      let work=0,aborted=false;
+      const extensions=[];
+      outer:for(const node of beam){
+        if(node.unresolvedGarbage){leafExtensionAbort='unknown-hole';break;}
+        if(!node.queue.length){leafExtensionAbort='public-next-exhausted';break;}
+        // Block-out is tested at spawn before Hold, as in the real Engine.
+        if(!B.legal(node.board,spawn(node.queue[0],node.board))){
+          extensions.push({node,value:-100000,witnesses:0});continue;
+        }
+        const options=[{piece:node.queue[0]}];
+        if(!node.holdLocked&&visible.rules.hold){
+          const chosen=node.hold===null?node.queue[1]:node.hold;
+          if(chosen)options.push({piece:chosen});
+        }
+        let bestScore=-100000,found=0;
+        for(const choice of options){
+          const moves=enumerateReachable(node.board,spawn(choice.piece,node.board),
+            visible.rules,{maxStates:leafExtensionStates,maxSteps});
+          for(const move of moves){
+            if(work>=leafExtensionBudget){
+              aborted=true;leafExtensionAbort='budget-exhausted';break outer;
+            }
+            work++;leafExtensionEvaluated++;
+            const projected=applyPlacement(node,move,visible.rules);
+            if(!projected||projected.topout)continue;
+            if(projected.unresolvedGarbage){
+              aborted=true;leafExtensionAbort='unknown-hole';break outer;
+            }
+            found++;leafExtensionWitnesses++;
+            const state={...node,board:projected.board,combat:projected.combat,
+              pending:projected.pending,btb:projected.btb,combo:projected.combo,
+              frame:projected.frame};
+            const score=node.score+projected.reward*Math.pow(.94,clamp)+
+              evaluateBoard(projected.board,state)*Math.pow(.88,clamp+1);
+            if(score>bestScore)bestScore=score;
+          }
+        }
+        extensions.push({node,value:bestScore,witnesses:found});
+      }
+      // If any root is partially expanded, DON'T compare unfair horizons.
+      if(!aborted&&!leafExtensionAbort&&extensions.length===beam.length){
+        leafExtensionApplied=true;
+        for(const x of extensions)x.node.leafExtendedScore=x.value;
+        beam.sort((a,b)=>b.leafExtendedScore-a.leafExtendedScore);
+        best=beam[0];
+        leafExtensionChangesRoot=JSON.stringify(best.rootAction)!==
+          JSON.stringify(defaultBest.rootAction);
+      }
+    }
+  }
   if(!best)throw Error('ROOK found no legal placement');
   const result={...best.rootAction,diagnostics:{evaluated,depth,beamWidth,
     value:Number(best.evalScore.toFixed(3)),pending,evaluatedFast,spinProbes,
+    ...(exactLeafExtension?{exactLeafExtension,leafExtensionEvaluated,
+      leafExtensionWitnesses,leafExtensionApplied,leafExtensionAbort,
+      leafExtensionChangesRoot,leafExtensionBudget,leafExtensionStates,
+      leafExtendedValue:leafExtensionApplied?Number(best.leafExtendedScore.toFixed(3)):null}:{}),
     forecastedSpinClears,futureProbes,futureMoves,futureSpinClears,
     futureReachableByPly,unresolvedTankNodes,
     beliefAttempts,beliefEvaluations,beliefOutcomes,beliefOverBudget,
@@ -967,7 +1035,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     for(const node of beam){
       const key=JSON.stringify(node.rootAction);
       const prior=byRoot.get(key);
-      if(prior&&prior.leaf.total>=node.evalScore)continue;
+      if(prior&&(leafExtensionApplied
+        ?prior.leaf.exactExtendedScore>=node.leafExtendedScore
+        :prior.leaf.total>=node.evalScore))continue;
       const board=explainBoardEvaluation(node.board,node);
       const discount=Math.pow(.88,node.rootPly??clamp);
       byRoot.set(key,{action:node.rootAction,
@@ -979,12 +1049,15 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           valueReconstructionError:node.evalScore-
             (node.score+board.boardValue*discount),
           ply:node.rootPly??clamp,board,
+          ...(leafExtensionApplied?{exactExtendedScore:node.leafExtendedScore}:{}),
            // Diagnostic-only prediction of the selected beam continuation.
            // The bot may replan after every real lock; this is NOT guaranteed
            // future output and contains only publicly visible piece types.
            forecastLocks:node.forecastLocks??[]}});
     }
-    result.rootScores=[...byRoot.values()].sort((a,b)=>b.leaf.total-a.leaf.total);
+    result.rootScores=[...byRoot.values()].sort((a,b)=>leafExtensionApplied
+      ?(b.leaf.exactExtendedScore??-Infinity)-(a.leaf.exactExtendedScore??-Infinity)
+      :b.leaf.total-a.leaf.total);
   }
   if(traceRootSurvival)result.rootSurvival=rootSurvival;
   if(includeRanked){
