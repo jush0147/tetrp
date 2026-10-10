@@ -92,3 +92,29 @@ test('opt-in T stock chooser keeps a legal ranked fallback and opt-out margin',(
   assert.throws(()=>chooseMoveWithPublicTStock(visible,{
     ...opts,minValueMargin:-1}),/Invalid T stock margin/);
 });
+
+test('future public T bank participates in same-horizon value portfolio',()=>{
+  const visible=testState();
+  visible.current.type='i';
+  visible.next=['t','i','o','s','l'];
+  const original=structuredClone(visible);
+  const opts={depth:4,beamWidth:12,maxNodes:1800,
+    planBeamWidth:30,maxPlacementEvaluations:8000,
+    maxProofCalls:210,maxPlans:4,maxStates:1000,maxSteps:70};
+  const audit=auditPublicTStock(visible,opts);
+  const future=audit.variants.find(x=>x.kind==='bank-upcoming-t');
+  assert.ok(future,'a T in NEXT[0] with empty Hold is an eligible option');
+  assert.ok(future.candidates.some(x=>x.comparable),
+    'an upcoming T has an authority-recheckable legal value');
+  assert.equal(future.stats.storeIndex,1);
+  const candidate=future.candidates.find(x=>x.comparable);
+  assert.equal(candidate.holdActions,2);
+  assert.equal(candidate.locks,4);
+  assert.equal(candidate.firstAction.kind,'place');
+  assert.ok(Number.isFinite(candidate.score));
+  assert.deepEqual(visible,original);
+  const hugeMargin=chooseMoveWithPublicTStock(visible,{
+    ...opts,minValueMargin:100000});
+  assert.equal(hugeMargin.diagnostics.tStock.selected,false);
+  assert.ok(hugeMargin.diagnostics.tStock.modes.includes('bank-upcoming-t'));
+});
