@@ -814,3 +814,34 @@ not statistical proof of beating original ROOK or Kiwi.
 no default promotion, no `main` merge. Distinguish “a TSD exists”
 from “selecting the route improves survival/attack value”; ensure
 fresh, honest KO results and compute accounting drive any adoption.
+
+
+### 2026-10-10 P0 T-stock gate result: 0 offers / 0 policy changes, full KO properly skipped
+
+[GitHub Actions #38058801139](https://github.com/jush0147/tetrp/actions/runs/38058801139)
+successfully completed its strict genuine SRS+/Hold regression suite
+(8 dedicated tests passed) and TWO new independent same-seed nonmirrored
+48-lock public match screens (67201,67202). The candidate with
+`EXPERT_T_STOCK=1` using at most 85 full SRS proof calls,
+2500 placement evaluations, 16 beam and up to 4 plans per position
+reported **0 proved T-stock proposals and 0 first-action changes**.
+These are short **unscored/capped decision diagnostics**; there was no
+KO winner, and no inference about long-run competitive strength.
+
+The `full-ko` job correctly **SKIPPED** fresh seeds 67203/67204
+because `changed=0`. Do not call this a KO loss or a win. This is
+also a meaningful *generation-coverage negative result*: simply
+comparing currently verifiable multi-lock Full TSD and stored T
+options does not change decisions on these natural ROOK-made
+48-lock public screens. It does not refute the synthetic legal
+Hold bank proof or imply no legal TSD exists under unbounded search.
+
+**Next P0:** Diagnose separately (A) whether qualifying T is publicly
+available, (B) the presence of a legal complete plan under current
+bounded proof, (C) whether that plan's first action differs from ROOK
+baseline and (D) whether it is truly better under long-run KO pressure.
+The currently empty portfolio points back to *creating* attack-ready
+board states earlier, not simply setting a larger TSD bonus,
+forcing every T into Hold, or increasing beam limits.
+Only after a candidate changes real root actions in distinct seeds
+should another 2,000-lock genuine KO be scheduled. PR #6 remains Draft.
