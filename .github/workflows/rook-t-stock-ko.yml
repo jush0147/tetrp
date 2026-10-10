@@ -47,8 +47,16 @@ jobs:
             n+(s.kind==='public-t-stock'?s.tStockOffers??0:0),0),0);
           const changed=rows.reduce((sum,r)=>sum+r.slots.reduce((n,s)=>
             n+(s.kind==='public-t-stock'?s.tStockChoices??0:0),0),0);
+          const candidate=rows.flatMap(r=>r.slots.filter(s=>
+            s.kind==='public-t-stock'));
+          const sum=field=>candidate.reduce((n,s)=>n+(s[field]??0),0);
           const result={phase:'screen-only-not-a-KO-result',
-            independentSeeds:2,locksLimit:48,offers:offered,changed};
+            independentSeeds:2,locksLimit:48,
+            eligibleDecisions:sum('tStockEligible'),
+            proofCalls:sum('tStockProofCalls'),
+            placementEvaluations:sum('tStockPlacementEvaluations'),
+            truncatedModes:sum('tStockCapped'),
+            verifiedOffers:sum('tStockVerified'),offers:offered,changed};
           writeFileSync('t-stock-gate.json',JSON.stringify(result,null,2)+'\n');
           appendFileSync(process.env.GITHUB_OUTPUT,
             'changed='+(changed>0?'true':'false')+'\n');
