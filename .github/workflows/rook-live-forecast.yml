@@ -1,0 +1,79 @@
+name: ROOK live public forecast parity
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-live-forecast-calibration.js
+      - test/rook-live-forecast-calibration.test.js
+      - .github/workflows/rook-live-forecast.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  issues: write
+jobs:
+  parity:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Lightweight synchronized smoke
+        run: node --test test/rook-live-forecast-calibration.test.js
+      - name: Genuine two-player real incoming garbage across independent seeds
+        env:
+          ROOK_NODES: '6000'
+          ROOK_BEAM: '24'
+          OPPONENT_OFFENSE_WEIGHT: '7.2'
+        run: |
+          set -eu
+          SEED=67020 MAX_LOCKS=30 node scripts/rook-live-forecast-calibration.js > live-67020.json
+          SEED=67023 MAX_LOCKS=36 node scripts/rook-live-forecast-calibration.js > live-67023.json
+          SEED=67027 MAX_LOCKS=36 node scripts/rook-live-forecast-calibration.js > live-67027.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const reports=[67020,67023,67027].map(seed=>
+            JSON.parse(readFileSync('live-'+seed+'.json','utf8')));
+          if(reports.some((r,i)=>r.seed!==[67020,67023,67027][i]||
+            r.error!==null||r.scored!==false||r.termination!=='capped'||
+            r.slots.length!==2||r.slots.some(s=>s.firstComparable<20||
+              s.firstMismatch!==0||s.pairedWindows<1)||
+            r.slots.every(s=>s.counters.received===0||s.counters.tanked===0)))
+            throw Error('Live forecast experiment had invalid authority coverage');
+          const slots=reports.flatMap(r=>r.slots);
+          const total=key=>slots.reduce((n,s)=>n+s[key],0);
+          const text=[
+            '### ROOK real two-player forecast calibration (NOT a KO benchmark)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Commit: '+process.env.GITHUB_SHA,
+            '- Independent seeds: 67020 (30 synchronous locks), 67023 (36), 67027 (36). Each game uses identical seed on both sides; both decide before locking, with real opponent garbage transfers.',
+            '- First lock parity (generated/sent/cancelled, line/spin, B2B, combo): '+
+              total('firstComparable')+' checked, '+total('firstMismatch')+' mismatches.',
+            '- Four-lock comparable forecast windows: '+total('pairedWindows')+
+              '; windows with first strategy deviation: '+total('divergentPlans')+
+              '; exact original plan: '+total('exactFourPlyPlans')+'.',
+            '- Windows with incoming/tanked garbage: '+total('pressureWindows')+'.',
+            '- This is a diagnosis, no scored KO. Do not infer Kiwi win rate from these counts.'
+          ].join('\n')+'\n';
+          writeFileSync('live-summary.md',text);
+          console.log(text);
+          JS
+      - name: Report CI-verified calibration on Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file live-summary.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-live-forecast-calibration
+          path: |
+            live-67020.json
+            live-67023.json
+            live-67027.json
+            live-summary.md
+          retention-days: 30
