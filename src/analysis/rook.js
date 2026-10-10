@@ -254,7 +254,10 @@ function evaluateBoard(board,ctx,details=null){
   const a=surface(board),danger=ctx.pending>0?1+Math.min(1.5,ctx.pending/9):1;
   // Optional out-parameter reuses the surface scan for experimental beam
   // ranking. In the default evaluator this allocates nothing extra.
-  if(details){details.holes=a.holes;details.danger=danger;}
+  if(details){details.holes=a.holes;details.danger=danger;
+    details.tetrisReady=a.tetrisReady;
+    details.tetrisConstruction=a.tetrisConstruction;
+    details.tSpots=a.tspots;}
   const urgency=Math.max(0,a.max-(board.height+board.buffer-18));
   const recovery=ctx.recoveryActive
     ?recoveryBoardPenalty(a,{pending:ctx.pending,weight:ctx.recoveryWeight})
@@ -924,18 +927,6 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             pending:p.pending,combat:p.combat,frame:p.frame,
             unresolvedGarbage:p.unresolvedGarbage,forecastTank:p.forecastTank,
             score:node.score+p.reward*Math.pow(.94,ply),rootAction,
-            ...(optionFrontierSlots>0?{
-              optionSignals:(()=>{
-                const boardShape=surface(p.board);
-                return {
-                  realCombat:(node.optionSignals?.realCombat??0)+
-                    p.offensive+p.defensive,
-                  quadReadiness:Math.max(0,boardShape.tetrisReady)+
-                    boardShape.tetrisConstruction,
-                  spinReadiness:Math.min(4,boardShape.tspots)
-                };
-              })()
-            }:{}),
             rootHoldPlan:node.rootHoldPlan??(ply===0&&option.hold?planned:null),
             ...(includeForecastPlan?{forecastPlan:[...(node.forecastPlan??[]),{
               preBoardKey:boardKey(node.board),preCurrent:node.queue[0],
@@ -965,15 +956,27 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             offenseWeight:node.offenseWeight
           };
           const discount=Math.pow(.88,ply+1);
-          const holeDetails=(intermediateHoleRelief>0&&ply+1<clamp)?{}:null;
+          const relaxHoles=intermediateHoleRelief>0&&ply+1<clamp;
+          // Reuse the board scan already required for its real score.
+          // Frontier geometry remains an opt-in survivor selection proxy,
+          // never additional scored attack or a second full board scan.
+          const boardDetails=(relaxHoles||optionFrontierSlots>0)?{}:null;
           const evalScore=next.score+
-            evaluateBoard(next.board,next,holeDetails)*discount;
+            evaluateBoard(next.board,next,boardDetails)*discount;
+          if(optionFrontierSlots>0)
+            next.optionSignals={
+              realCombat:(node.optionSignals?.realCombat??0)+
+                p.offensive+p.defensive,
+              quadReadiness:Math.max(0,boardDetails.tetrisReady)+
+                boardDetails.tetrisConstruction,
+              spinReadiness:Math.min(4,boardDetails.tSpots)
+            };
           // Relax temporary holes ONLY when deciding which intermediate
           // trajectories survive the beam. The final leaf always uses the
           // original uncompromised value function and all original rules.
-          const holeShaping=holeDetails
-            ?intermediateHoleRelief*holeDetails.holes*8.6*
-              holeDetails.danger*discount
+          const holeShaping=relaxHoles
+            ?intermediateHoleRelief*boardDetails.holes*8.6*
+              boardDetails.danger*discount
             :0;
           const beamScore=evalScore+holeShaping;
           if(ply===0&&tsdTacticalProbes>0&&rootAction.kind==='place'&&
