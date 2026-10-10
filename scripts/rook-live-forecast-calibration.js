@@ -173,6 +173,11 @@ const slots=demos.map((demo,side)=>{
     btbMismatch:paired.filter(x=>x.predictedEndBtb!==x.realizedEndBtb).length,
     exactFourPlyPlans:paired.filter(x=>x.firstDivergence===null).length,
     divergentPlans:paired.filter(x=>x.firstDivergence!==null).length,
+    divergentUnderPressure:paired.filter(x=>pressure(x)&&x.firstDivergence!==null).length,
+    divergentInCalm:paired.filter(x=>!pressure(x)&&x.firstDivergence!==null).length,
+    divergenceFields:Object.fromEntries(['piece','spin','lines','generated','sent',
+      'cancelled','btb','combo'].map(key=>[key,paired.filter(x=>
+      x.firstDivergence?.fields.includes(key)).length])),
     divergenceByPly:Object.fromEntries(Array.from({length:horizon},(_,i)=>
       [i+1,paired.filter(x=>x.firstDivergence?.ply===i+1).length])),
     pressureWindows:paired.filter(pressure).length,
