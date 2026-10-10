@@ -68,34 +68,18 @@ jobs:
           const markdown=[
             '### ROOK public-hole common-horizon diagnostic (automated, not KO)',
             '',
-            'Run: [${process.env.GITHUB_RUN_ID}](https://github.com/jush0147/tetrp/actions/runs/${process.env.GITHUB_RUN_ID})',
-            'Commit: ${process.env.GITHUB_SHA}',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Commit: '+process.env.GITHUB_SHA,
             '',
-            '- Public positions: ${report.rows.length} from ${report.matchSeeds.length} independent seeds.',
-            '- Positions with incoming pending garbage: ${n.sampled}.',
-            '- Legacy belief: ${b.decisionChanged} changed decisions vs baseline; ${b.agreesWithKiwi} match Kiwi.',
-            '- Common horizon: ${n.decisionChanged} changed vs baseline; ${n.differsFromLegacyBelief} changed vs legacy belief; ${n.agreesWithKiwi} match Kiwi.',
-            '- Additional SRS+ evaluations (separate from primary maxNodes): ${n.extraEvaluated}; aborted candidate revalues: ${n.horizonAborted}; scenario-limit rejections: ${n.scenariosOverBudget}.',
+            '- Public positions: '+report.rows.length+' from '+report.matchSeeds.length+' independent seeds.',
+            '- Pending-garbage positions: '+n.sampled,
+            '- Legacy belief: '+b.decisionChanged+' changed vs baseline; '+b.agreesWithKiwi+' match Kiwi.',
+            '- Common horizon: '+n.decisionChanged+' changed vs baseline; '+n.differsFromLegacyBelief+' changed vs legacy; '+n.agreesWithKiwi+' match Kiwi.',
+            '- Conditional evaluations (EXTRA): '+n.extraEvaluated+'; aborted candidate revalues: '+n.horizonAborted+'; scenario-limit rejections: '+n.scenariosOverBudget,
             '',
-            'This is a bounded opt-in stress diagnostic, **NOT** a win-rate, APP improvement, or a completed 2000-lock KO. Do not merge PR #6 based on these numbers.'
+            'No new KO or APP result. This is opt-in; PR #6 must remain Draft.'
           ];
-          // Build Markdown from trusted locally generated counters, no hidden state.
-          const body=markdown.map(line=>line.replace(/\\$\\{([^}]*)\\}/g,(_,k)=>{
-            const allowed={
-              'process.env.GITHUB_RUN_ID':process.env.GITHUB_RUN_ID,
-              'process.env.GITHUB_SHA':process.env.GITHUB_SHA,
-              'report.rows.length':report.rows.length,
-              'report.matchSeeds.length':report.matchSeeds.length,
-              'n.sampled':n.sampled,'b.decisionChanged':b.decisionChanged,
-              'b.agreesWithKiwi':b.agreesWithKiwi,
-              'n.decisionChanged':n.decisionChanged,
-              'n.differsFromLegacyBelief':n.differsFromLegacyBelief,
-              'n.agreesWithKiwi':n.agreesWithKiwi,'n.extraEvaluated':n.extraEvaluated,
-              'n.horizonAborted':n.horizonAborted,
-              'n.scenariosOverBudget':n.scenariosOverBudget};
-            if(!(k in allowed))throw Error('Unknown summary interpolation');
-            return String(allowed[k]);
-          })).join('\\n')+'\\n';
+          const body=markdown.join('\n')+'\n';
           writeFileSync('rook-stress-issue-comment.md',body);
           JS
       - name: Record public-state diagnosis in Issue 8
