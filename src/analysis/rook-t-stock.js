@@ -108,7 +108,12 @@ export function chooseMoveWithPublicTStock(visible,{
   const validOffers=audit.variants.reduce((n,r)=>n+
     r.candidates.filter(c=>c.comparable).length,0);
   const diagnostics={...baseline.diagnostics,tStock:{
+    eligibleModes:audit.variants.length,
     inspected:totalOffers,verified:validOffers,
+    proofCalls:audit.variants.reduce((n,r)=>n+(r.stats.proofCalls??0),0),
+    placements:audit.variants.reduce((n,r)=>n+(r.stats.placements??0),0),
+    truncatedModes:audit.variants.filter(r=>r.stats.truncated).length,
+    garbageAborts:audit.variants.reduce((n,r)=>n+(r.stats.garbageAborts??0),0),
     modes:audit.variants.map(r=>r.kind),selected:!!different,
     valueDelta:candidate?.deltaVsBaseline??null,
     baselineComparable:audit.baseline.comparable,
