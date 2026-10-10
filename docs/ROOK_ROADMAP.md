@@ -749,3 +749,68 @@ The candidate scoring heuristic uses geometry/holes/height only to order a diver
 
 
 **Confirmed GitHub acceptance**: [Actions #38057599430](https://github.com/jush0147/tetrp/actions/runs/38057599430) SUCCESS for the full public forward + T-resource + Held-T screen. Using 3 publicly known setup pieces, real occupied Hold, terminal Full TSD, max 85 SRS enumeration calls and 2500 tested placements per state: **ROOK-made 0/3** public states with a stored T produced a candidate; **Kiwi-made 16/21** stored-T public states did. Kiwi candidates hit caps in 12/21 (some capped after finding a legal plan), so this is neither an exhaustive opportunity rate nor a proven played policy. The T-resource lifecycle table was reverified in the same CI. Strongly motivates estimating the option value of storing/using T, with opponent pressure and safety included, before forcing any T save. All 132 snapshots remain from one previously scored KO game; no new KO played.
+
+
+### 2026-10-10 P0: public T-stock option value and opt-in matched-horizon selection
+
+**New validated capability (not a Kiwi win):** A current public T may be
+stored in an *empty* unlocked Hold, followed by 3 publicly visible setup
+locks, then exchanged out of occupied Hold for a genuine Tetrp-authorized
+Full TSD. Both Hold exchanges consume **zero lock frames** and no NEXT6
+is read. `storeCurrentT:true` is strictly opt-in and is distinct from the
+previous held-T-only forward constructor. Sources:
+[`23f1c2c`](https://github.com/jush0147/tetrp/commit/23f1c2c3da237e7e0d827e53dc3911d45c2c7db6),
+[`d66e5ee`](https://github.com/jush0147/tetrp/commit/d66e5eed71039ac8e9db0e3fe0212e68bf347bc6).
+
+**Same-horizon value audit:** `evaluateVerifiedPublicPlan` in
+`src/analysis/rook.js` re-enumerates every move's canonical SRS+ witness,
+enforces actual known public Current/NEXT5 and Hold legality, aborts
+unresolved hidden garbage holes, and evaluates a complete 1-5-lock plan
+using the existing `applyPlacement` attack/cancel/B2B/survival reward plus
+the identical discounted final `evaluateBoard`. The new
+`src/analysis/rook-t-stock.js` compares opt-in bank-current-T,
+spend-already-held-T, and naturally upcoming T portfolios to ordinary
+ROOK at **equal complete lock horizon**. Missing or insufficient
+baseline depth is marked noncomparable; candidate and normal search
+have separately accounted work and cannot be declared matched CPU.
+Sources:
+[`49514f9`](https://github.com/jush0147/tetrp/commit/49514f90936ac98516d5413a81a4dbe94405e216),
+[`e510fd5`](https://github.com/jush0147/tetrp/commit/e510fd52cf9d0271438ba4e6e4325c90f0ebd526).
+
+**Experimental selection, OFF by default:** `chooseMoveWithPublicTStock`
+can choose an SRS-verified plan's first Hold/Place action only if the
+baseline and plan share a complete horizon and its ROOK value beats the
+baseline by a nonnegative configurable margin. It replans after EVERY
+authority lock, never forces the later predicted TSD, and retains ordinary
+ROOK ranked fallbacks. `EXPERT_T_STOCK=1` on the isolated
+`scripts/rook-vs-rook.js` runner activates it for the candidate side
+only. `main`, `chooseMove` defaults, and pinned Kiwi remain unchanged.
+Commits [`a0dbd86`](https://github.com/jush0147/tetrp/commit/a0dbd86ad63ceba8a5d4162bf601d3e598807607),
+[`9a972c3`](https://github.com/jush0147/tetrp/commit/9a972c35ded13192dc5dd538b90274560888cd67),
+[`c09443a`](https://github.com/jush0147/tetrp/commit/c09443a1fbc849bd83f678de04cc5280f4b885ea).
+The dedicated test `test/rook-t-stock.test.js` covers real SRS
+witnesses, corrupted route rejection, rejected illegal Hold modes,
+unchanged visible input, opt-out policy, and a nonempty audited candidate.
+[Independent ROOK acceptance #38058692194](https://github.com/jush0147/tetrp/actions/runs/38058692194)
+passed both full Node/Tetrp and Chromium acceptance.
+
+**Real-KO gate submitted; NOT a result yet:**
+[`rook-t-stock-ko.yml`](https://github.com/jush0147/tetrp/actions/workflows/rook-t-stock-ko.yml)
+screens two new independent seeds (67201,67202) at 48 locks merely
+to verify that opt-in selection changes ANY true move. Screen caps
+are unscored. Only if changes occur does it schedule distinct fresh
+seeds 67203 and 67204, one nonmirrored same-seven-bag 24-frame
+synchronous match each, authentic authority single-KO winner only,
+2,000-lock safety cap. CPU, sent APP, selected-plan counts, capped,
+double-KO and invalid are separately labeled. The initial workflow
+file had a YAML spacing error, fixed by
+[`0454465`](https://github.com/jush0147/tetrp/commit/0454465e9403f87f9fcf082922133affd0c74053).
+Read the live run [#38058801139](https://github.com/jush0147/tetrp/actions/runs/38058801139)
+and its artifact **before** reporting selection counts or KO results.
+Even if this gate passes, two independent seeds are a smoke test,
+not statistical proof of beating original ROOK or Kiwi.
+
+**Current strategic checkpoint:** No new demonstrated Kiwi strength,
+no default promotion, no `main` merge. Distinguish “a TSD exists”
+from “selecting the route improves survival/attack value”; ensure
+fresh, honest KO results and compute accounting drive any adoption.
