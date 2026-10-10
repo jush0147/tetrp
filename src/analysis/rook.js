@@ -370,7 +370,14 @@ export function reservePublicOptionFrontier(candidates,baseline,{
     modes:{combat:0,quad:0,spin:0}};
   if(!slots||result.length<2||!candidates.length)
     return {beam:result,details};
-  const key=node=>JSON.stringify(node.rootAction);
+  // A candidate may be examined for three survivor goals. Memoize the
+  // root action once, instead of repeatedly serializing it for every scan.
+  const keys=new WeakMap();
+  const key=node=>{
+    let k=keys.get(node);
+    if(k===undefined){k=JSON.stringify(node.rootAction);keys.set(node,k);}
+    return k;
+  };
   const selected=new Set(result);
   const eligible=candidates.filter(node=>{
     if(!node.optionSignals||selected.has(node)||node.unresolvedGarbage||
@@ -394,15 +401,19 @@ export function reservePublicOptionFrontier(candidates,baseline,{
       let winner=null,highest=0;
       const rootsAlready=new Set(result.slice(0,result.length-replaced)
         .map(key));
+      const maxByRoot=new Map();
+      for(const existing of result){
+        const root=key(existing),value=mode.signal(existing);
+        const prev=maxByRoot.get(root);
+        if(prev===undefined||value>prev)maxByRoot.set(root,value);
+      }
       for(const candidate of eligible){
         const value=mode.signal(candidate);
         if(selected.has(candidate)||value<=highest)continue;
-        // Preserve some root-action diversity across reserved strategies.
-        // Multiple continuations of the same root are allowed only when
-        // that root already survived ordinary ROOK beam selection.
-        if(rootsAlready.has(key(candidate))&&
-          result.some(n=>key(n)===key(candidate)&&
-            mode.signal(n)>=value))continue;
+        // Equivalent to the original per-candidate result.some scan.
+        // Selected lower-tail states still count for scoring comparisons.
+        const root=key(candidate);
+        if(rootsAlready.has(root)&&maxByRoot.get(root)>=value)continue;
         winner=candidate;highest=value;
       }
       if(!winner)continue;
