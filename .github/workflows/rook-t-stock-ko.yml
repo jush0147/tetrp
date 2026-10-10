@@ -1,0 +1,111 @@
+name: ROOK T-stock option-value genuine KO gate
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-t-stock-ko.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  screen:
+    runs-on: ubuntu-22.04
+    timeout-minutes:35
+    outputs:
+      changed: ${{ steps.gate.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify real SRS+ and opt-in policy regressions
+        run: node --test test/rook-t-stock.test.js test/rook-forward-attack.test.js
+      - name: Screen public decisions without claiming capped games as KO
+        env:
+          SEEDS: 67201,67202
+          MAX_LOCKS: '48'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_T_STOCK: '1'
+          T_STOCK_MARGIN: '1'
+        run: node scripts/rook-vs-rook.js > t-stock-screen.jsonl
+      - name: Gate full KO on actual experimental move changes
+        id: gate
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('t-stock-screen.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==2||rows.some(r=>r.error||r.sameSeed!==true||
+            r.swapRoles!=='0'||r.turns>48||r.slots?.length!==2))
+            throw Error('Invalid public screen or hidden protocol error');
+          const offered=rows.reduce((sum,r)=>sum+r.slots.reduce((n,s)=>
+            n+(s.kind==='public-t-stock'?s.tStockOffers??0:0),0),0);
+          const changed=rows.reduce((sum,r)=>sum+r.slots.reduce((n,s)=>
+            n+(s.kind==='public-t-stock'?s.tStockChoices??0:0),0),0);
+          const result={phase:'screen-only-not-a-KO-result',
+            independentSeeds:2,locksLimit:48,offers:offered,changed};
+          writeFileSync('t-stock-gate.json',JSON.stringify(result,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,
+            'changed='+(changed>0?'true':'false')+'\n');
+          console.log(JSON.stringify(result));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t-stock-screen-diagnostics
+          path: |
+            t-stock-screen.jsonl
+            t-stock-gate.json
+          retention-days: 30
+  full-ko:
+    needs: screen
+    if: needs.screen.outputs.changed == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes:90
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        seed: [67203,67204]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fresh independent-seed T stock vs ROOK genuine 2000-lock KO
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_T_STOCK: '1'
+          T_STOCK_MARGIN: '1'
+        run: |
+          node scripts/rook-vs-rook.js > t-stock-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('t-stock-ko.jsonl','utf8').trim());
+          if(r.error||r.sameSeed!==true||r.swapRoles!=='0'||
+            r.seed!==Number(process.env.SEEDS)||r.cap!==2000||
+            r.slots.length!==2)throw Error('Invalid T stock KO protocol');
+          const candidate=r.slots.find(s=>s.kind==='public-t-stock');
+          const baseline=r.slots.find(s=>s.kind==='baseline');
+          if(!candidate||!baseline)throw Error('Missing comparator slots');
+          console.log(JSON.stringify({seed:r.seed,termination:r.termination,
+            scored:r.scored,winner:r.winner,turns:r.turns,
+            candidateSent:candidate.sent,baselineSent:baseline.sent,
+            candidateCPU:candidate.ms,baselineCPU:baseline.ms,
+            TStockOffers:candidate.tStockOffers,TStockChoices:candidate.tStockChoices}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t-stock-ko-${{ matrix.seed }}
+          path: t-stock-ko.jsonl
+          retention-days: 30
