@@ -652,6 +652,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   traceRootSurvival=false,traceRootScores=false,beamRootReserve=null,offenseWeight=4.8,
   intermediateHoleRelief=0,includeHoldPlan=false,
   optionFrontierSlots=0,optionFrontierMaxScoreGap=70,
+  optionFrontierRiskGuard=false,
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
   reverseLongMaxCandidates=600,reverseLongMaxGoals=15,reverseLongBeamWidth=10,
   reverseOpenMaxGoals=8,reverseOpenMaxTileNodes=1200,reverseOpenMaxProofs=12,
@@ -708,11 +709,21 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     intermediateHoleRelief<0||intermediateHoleRelief>1||
     !Number.isInteger(optionFrontierSlots)||optionFrontierSlots<0||
     optionFrontierSlots>=beamWidth||
+    typeof optionFrontierRiskGuard!=='boolean'||
     !Number.isFinite(optionFrontierMaxScoreGap)||
     optionFrontierMaxScoreGap<0||optionFrontierMaxScoreGap>1000)
     throw Error('invalid search budget');
   const pending=[...(visible.attack?.are??[]),...(visible.attack?.pending??[])]
     .reduce((n,p)=>n+(p.amt??0),0);
+  // Under public visible height/holes/incoming-attack pressure, prefer the
+  // original survival-oriented beam to uncertain geometric option keeping.
+  // This entirely disables the experimental frontier for that decision.
+  // It changes NO baseline decision unless explicitly enabled.
+  const risk=optionFrontierRiskGuard&&optionFrontierSlots>0
+    ?surface(visible.board):null;
+  const frontierSuppressed=!!risk&&(pending>=5||
+    risk.max>=10||risk.holes>=4);
+  const effectiveFrontierSlots=frontierSuppressed?0:optionFrontierSlots;
   if(!Number.isFinite(garbageRecoveryWeight)||garbageRecoveryWeight<0||
     garbageRecoveryWeight>4)throw Error('Invalid garbage recovery weight');
   // Risk-only experimental mode. Do not perturb clean openers, and never
@@ -971,10 +982,10 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           // Reuse the board scan already required for its real score.
           // Frontier geometry remains an opt-in survivor selection proxy,
           // never additional scored attack or a second full board scan.
-          const boardDetails=(relaxHoles||optionFrontierSlots>0)?{}:null;
+          const boardDetails=(relaxHoles||effectiveFrontierSlots>0)?{}:null;
           const evalScore=next.score+
             evaluateBoard(next.board,next,boardDetails)*discount;
-          if(optionFrontierSlots>0)
+          if(effectiveFrontierSlots>0)
             next.optionSignals={
               realCombat:(node.optionSignals?.realCombat??0)+
                 p.offensive+p.defensive,
@@ -1143,9 +1154,9 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     // Only intermediate survivor selection uses public structural option
     // proxies. The actual final action still maximizes the unchanged
     // Tetrp-combat reward and safety evaluator, NOT any proxy points.
-    if(optionFrontierSlots>0&&ply+1<clamp){
+    if(effectiveFrontierSlots>0&&ply+1<clamp){
       const portfolio=reservePublicOptionFrontier(candidates,beam,{
-        slots:optionFrontierSlots,maxScoreGap:optionFrontierMaxScoreGap});
+        slots:effectiveFrontierSlots,maxScoreGap:optionFrontierMaxScoreGap});
       beam=portfolio.beam;
       optionFrontierStats.considered+=portfolio.details.considered;
       optionFrontierStats.inserted+=portfolio.details.inserted;
@@ -1260,6 +1271,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
     ...(optionFrontierSlots>0?{optionFrontierSlots,
+      effectiveFrontierSlots,optionFrontierRiskGuard,frontierSuppressed,
       optionFrontierMaxScoreGap,optionFrontierStats}:{}),
     futureProofSpread,
     ...(futureProofSpread==='root-diverse'?{futureProofNodeIndices}:{}),
