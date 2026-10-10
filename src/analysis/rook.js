@@ -262,7 +262,7 @@ function evaluateBoard(board,ctx,details=null){
   const recovery=ctx.recoveryActive
     ?recoveryBoardPenalty(a,{pending:ctx.pending,weight:ctx.recoveryWeight})
     :0;
-  return -recovery-a.holes*8.6*danger-a.covered*.27*danger
+  return -recovery-a.holes*8.6*danger*(ctx.holePenaltyScale??1)-a.covered*.27*danger
     -a.max*1.05-a.rough*.42-a.transitions*.16
     -Math.max(0,a.max-12)*.35*danger-urgency*urgency*2.5*danger
     +Math.min(5,a.well)*.38 +Math.min(4,a.tspots)*.85
@@ -282,7 +282,7 @@ export function explainBoardEvaluation(board,ctx){
     :0;
   const terms={
     recovery:-recovery,
-    holes:-a.holes*8.6*danger,
+    holes:-a.holes*8.6*danger*(ctx.holePenaltyScale??1),
     covered:-a.covered*.27*danger,
     height:-a.max*1.05,
     roughness:-a.rough*.42,
@@ -654,6 +654,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
   futureProofSpread='legacy',
   traceRootSurvival=false,traceRootScores=false,beamRootReserve=null,offenseWeight=4.8,
   intermediateHoleRelief=0,includeHoldPlan=false,
+  holePenaltyScale=1,
   optionFrontierSlots=0,optionFrontierMaxScoreGap=70,
   optionFrontierRiskGuard=false,optionFrontierLanes='all',
   tsdTacticalProbes=0,tsdTacticalStates=2200,reversePlanner=false,reverseMaxCandidates=250,reverseMaxGoals=80,reverseMaxPlans=2,reverseReserve=2,
@@ -710,6 +711,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24||
     !Number.isFinite(intermediateHoleRelief)||
     intermediateHoleRelief<0||intermediateHoleRelief>1||
+    !Number.isFinite(holePenaltyScale)||holePenaltyScale<0||
+    holePenaltyScale>2||
     !Number.isInteger(optionFrontierSlots)||optionFrontierSlots<0||
     optionFrontierSlots>=beamWidth||
     typeof optionFrontierRiskGuard!=='boolean'||
@@ -742,7 +745,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     pending,combat:visibleCombat(visible),frame:visible.frame,
     unresolvedGarbage:false,forecastTank:0,score:0,rootAction:null,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
-    offenseWeight};
+    offenseWeight,holePenaltyScale};
   // M1 inverse attack goal portfolio: only verified SRS+ continuations.
   // This experimental module stays opt-in until APP and KO improve.
   // Optional tactical CPU is tracked separately from the ordinary beam budget.
@@ -813,7 +816,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
           proof:plan.witnesses[ply].path?.at(-1)==='hardDrop'?'srs':'geometry',
           generated:p.generated,sent:p.offensive,cancelled:p.defensive,
           btb:p.btb,combo:p.combo}]}:{}),
-        recoveryActive:node.recoveryActive,recoveryWeight:node.recoveryWeight};
+        recoveryActive:node.recoveryActive,recoveryWeight:node.recoveryWeight,
+        holePenaltyScale:node.holePenaltyScale};
       next.evalScore=next.score+evaluateBoard(next.board,next)*Math.pow(.88,ply+1);
       if(!tacticalPrefixes.has(ply))tacticalPrefixes.set(ply,[]);
       tacticalPrefixes.get(ply).push(next);
@@ -980,7 +984,8 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
             tacticalGoal:node.tacticalGoal??null,
             recoveryActive:node.recoveryActive,
             recoveryWeight:node.recoveryWeight,
-            offenseWeight:node.offenseWeight
+            offenseWeight:node.offenseWeight,
+            holePenaltyScale:node.holePenaltyScale
           };
           const discount=Math.pow(.88,ply+1);
           const relaxHoles=intermediateHoleRelief>0&&ply+1<clamp;
@@ -1276,6 +1281,7 @@ export function chooseMove(visible,{depth=4,beamWidth=24,maxNodes=8000,
     reverseSkippedPressure,reverseThreat,
     recoveryActive,recoveryWeight:garbageRecoveryWeight,
     effectiveDepth:clamp,beamRootReserve,offenseWeight,intermediateHoleRelief,
+    ...(holePenaltyScale!==1?{holePenaltyScale}:{}),
     ...(optionFrontierSlots>0?{optionFrontierSlots,
       optionFrontierMaxScoreGap,optionFrontierStats,
       ...(optionFrontierLanes!=='all'?{optionFrontierLanes}:{}),
