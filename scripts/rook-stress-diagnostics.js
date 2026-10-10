@@ -105,7 +105,7 @@ for(let i=0;i<records.length;i++){
     const horizon=chooseMove(v,{...options,garbageBelief:true,
       beliefProbes:3,beliefMaxOutcomes:10,beliefRiskWeight:.2,
       beliefReachableStates:300,beliefCommonHorizon:true,
-      beliefHorizonNodes:140,beliefHorizonBeam:3});
+      beliefHorizonNodes:900,beliefHorizonBeam:2});
     const horizonKey=actionSignature(horizon);
     pressureHorizon={key:horizonKey,
       matchesKiwi:horizonKey===ref.kiwi.key,
@@ -118,6 +118,7 @@ for(let i=0;i<records.length;i++){
       beliefOverBudget:horizon.diagnostics.beliefOverBudget,
       horizonEvaluated:horizon.diagnostics.beliefHorizonEvaluated,
       horizonAborted:horizon.diagnostics.beliefHorizonAborted,
+      horizonAbortReasons:horizon.diagnostics.beliefHorizonAbortReasons,
       selectedUnresolvedGarbage:horizon.diagnostics.selectedUnresolvedGarbage};
     if(JSON.stringify(v)!==frozen)
       throw Error('Common-horizon variant mutated a public snapshot');
@@ -187,6 +188,9 @@ const result={format:'rook-real-kiwi-public-stress-triage/1',
     agreesWithKiwi:rows.filter(r=>r.pressureHorizon?.matchesKiwi).length,
     horizonAborted:rows.reduce((n,r)=>n+(r.pressureHorizon?.horizonAborted??0),0),
     extraEvaluated:rows.reduce((n,r)=>n+(r.pressureHorizon?.horizonEvaluated??0),0),
+    abortReasons:Object.fromEntries(['budget','secondGarbage','publicNext']
+      .map(reason=>[reason,rows.reduce((n,r)=>n+
+        (r.pressureHorizon?.horizonAbortReasons?.[reason]??0),0)])),
     scenariosOverBudget:rows.reduce((n,r)=>n+(r.pressureHorizon?.beliefOverBudget??0),0),
     details:rows.filter(r=>r.pressureHorizon!==null).map(r=>({
       seed:r.seed,turn:r.turn,owner:r.owner,
