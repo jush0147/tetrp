@@ -1,0 +1,120 @@
+name: ROOK multi-objective option frontier match gate
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-option-frontier-ko.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  public-choice-screen:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    outputs:
+      changed: ${{ steps.gate.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test true legal roots and exact legacy opt-out policy
+        run: node --test test/rook-option-frontier.test.js test/rook-beam.test.js test/rook-root-scores.test.js
+      - name: Screen public same-seed genuine engine decisions
+        env:
+          SEEDS: 67310,67311
+          MAX_LOCKS: '32'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_FRONTIER: '1'
+          FRONTIER_SHADOW: '1'
+          FRONTIER_SLOTS: '3'
+          FRONTIER_SCORE_GAP: '70'
+        run: node scripts/rook-vs-rook.js > frontier-screen.jsonl
+      - name: Gate true full-length KO on verified changed policy actions
+        id: gate
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('frontier-screen.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==2||rows.some(r=>r.error||r.cap!==32||
+            r.sameSeed!==true||r.swapRoles!=='0'||r.slots?.length!==2))
+            throw Error('Invalid public independent-seed screen');
+          const candidates=rows.map(r=>r.slots.find(s=>s.kind==='option-frontier'));
+          if(candidates.some(x=>!x||x.searches!==x.frontierShadowChecks))
+            throw Error('Missing public baseline shadow for a frontier choice');
+          const sum=k=>candidates.reduce((n,c)=>n+(c[k]??0),0);
+          const output={phase:'unscored-public-choices-only',independentSeeds:2,
+            cap:32,shadowChecks:sum('frontierShadowChecks'),
+            changed:sum('frontierChanged'),considered:sum('frontierConsidered'),
+            inserted:sum('frontierInserted'),
+            extraShadowMs:sum('frontierShadowMs')};
+          writeFileSync('frontier-gate.json',JSON.stringify(output,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,
+            'changed='+(output.changed>0?'true':'false')+'\n');
+          console.log(JSON.stringify(output));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-option-frontier-short-screen
+          path: |
+            frontier-screen.jsonl
+            frontier-gate.json
+          retention-days: 30
+  independent-ko:
+    needs: public-choice-screen
+    if: needs.public-choice-screen.outputs.changed == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        seed: [67312,67313]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Genuine Tetrp 2000-lock frontier vs baseline KO, not short screen
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_FRONTIER: '1'
+          FRONTIER_SHADOW: '0'
+          FRONTIER_SLOTS: '3'
+          FRONTIER_SCORE_GAP: '70'
+        run: |
+          node scripts/rook-vs-rook.js > frontier-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('frontier-ko.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Expected one true seed');
+          const r=rows[0];
+          const trial=r.slots.find(x=>x.kind==='option-frontier');
+          const baseline=r.slots.find(x=>x.kind==='baseline');
+          if(r.error||r.cap!==2000||r.sameSeed!==true||
+            r.swapRoles!=='0'||r.seed!==Number(process.env.SEEDS)||
+            !trial||!baseline)throw Error('Invalid authentic KO test');
+          console.log(JSON.stringify({seed:r.seed,
+            termination:r.termination,scored:r.scored,winner:r.winner,
+            cap:r.cap,turns:r.turns,frontierSent:trial.sent,
+            baselineSent:baseline.sent,frontierCPU:trial.ms,
+            baselineCPU:baseline.ms,frontierInserted:trial.frontierInserted}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-option-frontier-ko-${{ matrix.seed }}
+          path: frontier-ko.jsonl
+          retention-days: 30
