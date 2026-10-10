@@ -27,8 +27,19 @@ const settings={depth:4,beamWidth:24,maxNodes:nodes,maxStates:1200,
   maxSteps:42,includeRanked:true};
 const makeDemo=()=>new BotDemo(new Engine({
   mode:'tl',seed,rules,handling}),{placementMode:'atomic'});
-const clone=d=>new BotDemo(Engine.restore(d.engine.serialize()),
-  {placementMode:'atomic'});
+// Clone the actual authority branch engine WITHOUT BotDemo's constructor,
+// which intentionally reseeds hidden hole RNG for ordinary new demos.
+// A counterfactual must preserve the *same* opaque private future in both
+// forks and must not re-seed, replay or leak it to either choosing policy.
+const clone=d=>{
+  const c=Object.create(BotDemo.prototype);
+  c.placementMode=d.placementMode;
+  c.EngineType=d.EngineType;
+  c.engine=d.EngineType.restore(d.engine.serialize());
+  c.history=[c.engine.serialize()];
+  c.metadata=[null];c.index=0;c.revision=0;c.pending=null;
+  return c;
+};
 
 function choosePrepared(d,forced=null){
   let computeMs=0,nodesEvaluated=0,holdCount=0;
