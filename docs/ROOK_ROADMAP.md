@@ -539,3 +539,17 @@ PR 事件觸發。對 main 的 push 與非 Draft PR，
 仍維持正式測試，ROOK acceptance 仍會在 feature branch
 上的 src/test/scripts 相關變動時自動驗收。
 此措施旨在降低重複 CI 成本，不取代正式測試。
+
+
+### 2026-10-10 P0 continuation: common-horizon public garbage rollout
+
+**Experimental feature (opt-in only; PR #6 remains Draft; main untouched)**:
+- src/analysis/rook.js supports beliefCommonHorizon=true. Each public possible garbage-hole outcome gets its own bounded SRS+ continuation through the ordinary beam's target depth. An incomplete final ply, another hidden-hole event, or NEXT exhaustion cannot be treated as an equal-depth leaf; failed revalues retain the old candidate rank.
+- Separate cost accounting: beliefHorizonEvaluated (including abandoned evaluations), beliefHorizonAborted, beliefHorizonAbortReasons (budget / secondGarbage / publicNext). Configured beliefHorizonNodes is per scenario and separate from the main search maxNodes. Default behavior remains unchanged.
+- New regressions in test/rook-belief.test.js check the default policy, private-information exclusion, budget validation and rejected partial depth. The current acceptance result must be verified before claiming the new commits are green.
+
+**VERIFIED FIRST PUBLIC-STATE RESULT**: [Action #38021068515](https://github.com/jush0147/tetrp/actions/runs/38021068515) succeeded. On 22 archived public positions from 2 independent seeds (3 pending-garbage positions), at horizonNodes=140 the opt-in policy changed 0/3 choices, matched Kiwi 0/3, incurred 1,260 extra evaluated moves, and all 9 attempted uncertain-root revaluations aborted. Legacy belief also changed 0/3. This did not exercise a successful matched-horizon comparison, let alone any full-match KO.
+
+**SECOND CONTROLLED STRESS RUN SUBMITTED**: increase only conditional budget to 900 evaluations per scenario and beam=2, retaining ordinary 4x24/6K and the same archived public positions. New CI asserts the total cost envelope and posts abort causes, per-position time and decisions to Issue #8 on success. Commits c732494, 99c4a9a, d97d697, d875997, afb79e5, 2587652, ee127a3 and follow-up CI fixes.
+
+**Next P0 gate:** read the second run's abort counts by cause and whether any complete scenario made a different decision. If still all abort, stop increasing budget blindly and work on the public-conditional search architecture. If it completes and changes moves, use 2,000-lock full-KO ROOK self-play on fresh independent seeds; only test against Kiwi after a genuine strength gain. No opt-in policy promotion, APP claim or KO claim without scored evidence.
