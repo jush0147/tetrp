@@ -43,7 +43,9 @@ jobs:
             r.slots.length!==2||r.slots.some(s=>s.firstComparable<20||
               s.firstMismatch!==0||s.pairedWindows<1||
               s.divergentInCalm+s.divergentUnderPressure!==s.divergentPlans||
-              s.exactFourPlyPlans+s.divergentPlans!==s.pairedWindows)||
+              s.exactFourPlyPlans+s.divergentPlans!==s.pairedWindows||
+              s.firstDivergenceGeometry+s.firstDivergenceSrs!==s.divergentPlans||
+              s.futureProofedLocks+s.futureGeometryOnlyLocks!==3*s.pairedWindows)||
             r.slots.every(s=>s.counters.received===0||s.counters.tanked===0)))
             throw Error('Live forecast experiment had invalid authority coverage');
           const slots=reports.flatMap(r=>r.slots);
@@ -68,6 +70,12 @@ jobs:
               ', spin='+slots.reduce((n,x)=>n+x.divergenceFields.spin,0)+
               ', B2B='+slots.reduce((n,x)=>n+x.divergenceFields.btb,0)+
               '. Tags overlap: a single first divergence may affect several fields.',
+            '- Future chosen-leaf continuations: '+
+              total('futureProofedLocks')+' with executable SRS paths; '+
+              total('futureGeometryOnlyLocks')+' geometry-only proposals.',
+            '- At first plan divergence: '+
+              total('firstDivergenceSrs')+' had an SRS path and '+
+              total('firstDivergenceGeometry')+' were geometry-only.',
             '- This is a diagnosis, no scored KO. Do not infer Kiwi win rate from these counts.'
           ].join('\n')+'\n';
           writeFileSync('live-summary.md',text);
