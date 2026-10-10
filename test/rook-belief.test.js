@@ -80,3 +80,37 @@ test('public-garbage belief value actually changes beam rank, preserving interme
   assert.deepEqual(fallback,{evalScore:11,beamScore:11});
   assert.throws(()=>revalueBeliefCandidate(control,Infinity),/invalid belief revaluation/);
 });
+
+
+test('common-horizon belief is opt-in, budget bounded and public-only',()=>{
+  const e=attacked(),v=visibleState(e.state),before=structuredClone(v);
+  const cfg={depth:3,beamWidth:5,maxNodes:320,maxStates:180,
+    futureReachable:false,spinForecast:false,tsdTacticalProbes:0,
+    garbageBelief:true,beliefProbes:2,beliefMaxOutcomes:10,
+    beliefReachableStates:90};
+  const legacy=chooseMove(v,cfg);
+  const explicitLegacy=chooseMove(v,{...cfg,beliefCommonHorizon:false});
+  assert.deepEqual(legacy,explicitLegacy);
+  const experimental=chooseMove(v,{...cfg,beliefCommonHorizon:true,
+    beliefHorizonNodes:120,beliefHorizonBeam:2});
+  assert.equal(experimental.diagnostics.beliefCommonHorizon,true);
+  assert.ok(experimental.diagnostics.beliefHorizonEvaluated<=
+    cfg.beliefProbes*v.board.width*120);
+  assert.ok(experimental.diagnostics.beliefHorizonAborted>=0);
+  assert.ok(experimental.diagnostics.evaluated<=cfg.maxNodes);
+  assert.deepEqual(v,before);
+  assert.deepEqual(chooseMove({...v,privateHole:3,futureBag:['t']},
+    {...cfg,beliefCommonHorizon:true,beliefHorizonNodes:120,beliefHorizonBeam:2}),
+    experimental);
+});
+
+test('common-horizon rejects invalid budgets before planning',()=>{
+  const v=visibleState(attacked().state);
+  const base={depth:2,beamWidth:4,maxNodes:180};
+  assert.throws(()=>chooseMove(v,{...base,beliefCommonHorizon:'yes'}),
+    /invalid search budget/);
+  assert.throws(()=>chooseMove(v,{...base,beliefHorizonNodes:0}),
+    /invalid search budget/);
+  assert.throws(()=>chooseMove(v,{...base,beliefHorizonBeam:0}),
+    /invalid search budget/);
+});
