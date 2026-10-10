@@ -1551,3 +1551,101 @@ Kiwi gap. Next iteration should propose a qualitatively
 different, measurable search/learning objective rather than
 arbitrary score subtraction. `main`, Kiwi and ordinary
 ROOK default unchanged; PR #6 Draft.
+
+
+### 2026-10-11: P0 pivot from one-feature tweaking to REAL realized multi-lock board value (offline learning data gate)
+
+**Reason for pivot:** ROOK-vs-pinned-Kiwi shared public-state analysis at
+[Actions #37949389406](https://github.com/jush0147/tetrp/actions/runs/37949389406)
+showed **14/22 different first actions, all 14 Kiwi choices were already
+ROOT candidates within ROOK**. ROOK's selected candidate had on average
++18.49 of ROOK's own model score vs Kiwi's first-action branch; the raw
+holes-term difference was +13.38, but simple experimental half-hole scoring
+yielded **0/22 changed on historical boards** and **0/101 actual
+same-public-choice changes** on two new short seed games.
+[Counterfactual 14 frozen finalist gap analysis #38078637263](https://github.com/jush0147/tetrp/actions/runs/38078637263)
+also reversed 0/14 rankings at half penalty and only 1/14 at
+zero. Previous public forecast calibration #38023750604 observed
+**114/172 overlapping four-lock forecast windows diverged** on
+subsequent real re-search, 73 calm and 41 garbage pressure.
+Importantly a divergence is not inherently harmful, but deterministic
+small proxy adjustments have not improved independent full KO rates.
+
+**New concrete learning-data foundation, OFFLINE ONLY:**
+
+1. [`scripts/rook-vs-kiwi.js`](../scripts/rook-vs-kiwi.js)
+   optional `ROOK_PUBLIC_LOCK_TRACE_PATH` now includes
+   *post-authority-lock* realized cumulative `generated/sent/cancelled/
+   tanked/received`, plus *pre-lock* baseline totals, attached
+   **outside** the `visible` object. Neither Kiwi nor ROOK sees
+   any post-label; choice input remains allowlisted
+   CURRENT/HOLD/NEXT5/board/public attack/clock/rules.
+   All hits use original Tetrp SRS+ witnessed lock, synchronous 24
+   frames per lock, real incoming garbage and KO-first protocol.
+   No artificial winner when capped.
+2. [`src/analysis/rook-realized-value-data.js`](../src/analysis/rook-realized-value-data.js)
+   converts ONLY publicly visible boards and attack status into
+   12 deterministic features (height, roughness, holes, covered
+   cells, real garbage occupancy, row transitions, well,
+   occupancy, public B2B/combo/pending). Each 8-lock
+   FUTURE LABEL is a verified delta of the engine's actual
+   cumulative attack counters, never a conjectured T-Spin or
+   simulated private hole. Windows missing the entire
+   8-lock horizon are **censored** with explicit difference
+   between real KO and cap, not assigned zero reward.
+3. [`scripts/rook-train-realized-value.js`](../scripts/rook-train-realized-value.js)
+   fits **fixed ridge lambda=10** separately to two
+   observational targets, realized 8-lock `sent` and
+   realized 8-lock `tanked`, with train-only means/std,
+   fixed 12 public features and no validation-time model
+   tuning. Paired `rook` and `kiwi` trajectories
+   may appear in the TRAIN cohort; train and test are
+   STRICTLY disjoint by entire original game seed, never
+   by adjacent overlapping windows nor by side.
+   Evaluation reports whole-seed held-out MAE/MSE
+   versus training-mean constant baselines plus per-seed
+   breakdown. A model that is not predictive remains a
+   **recorded negative result**.
+4. [`rook-realized-value-dataset.yml`](../.github/workflows/rook-realized-value-dataset.yml)
+   launches genuine pinned-Kiwi matches at new seed
+   67610, 67611 (train) and 67612, 67613 (holdout),
+   one non-mirrored match per seed, up to 2000
+   synchronized locks, Kiwi=200000 vs ROOK=6000
+   configured search nodes, **not equal compute**.
+   Each job exports both public-lock data and
+   independent authority KO/cap result. Dedicated
+   [three unit tests](../test/rook-realized-value-data.test.js)
+   cover public-only invariants, correct future
+   post-authority label arithmetic and KO-vs-cap
+   censoring; model job runs ONLY if all four
+   real authority matches and label checks succeed.
+   [Live CI #38079234687](https://github.com/jush0147/tetrp/actions/runs/38079234687)
+   was executing the first two data jobs when this
+   paragraph was written. **No held-out performance
+   outcome is yet known.**
+5. ALL learned coefficients remain **OFFLINE**.
+   They are NOT attached to `chooseMove` or
+   promoted to a policy just because a regression
+   explains training trajectories. If held-out
+   prediction improves, NEXT do opt-in
+   `learnedValue` root-leaf scoring on public boards
+   and demonstrate actual different SRS+ legal first
+   actions; only then fresh independent 2000-lock
+   KO-vs-ROOK and KO-vs-Kiwi full-match gates,
+   comparing CPU and attack efficiency.
+
+**Fundamental limit:** A future label on Kiwi's actual
+route is not the counterfactual return of a ROOK
+candidate it never played, and vice versa.
+Conditional opponent, Hold, B2B and board-path choices
+make offline observational data non-identifiable for
+unplayed actions. A low held-out prediction error can
+mean learning the behavioral policy, not a stronger
+decision policy. This approach provides an empirical
+feasibility gate for joint long-horizon sent-attack
+and survival signals, NOT a licensed claim of
+increased win probability or solved credit assignment.
+Default ROOK, pinned Kiwi and `main` unchanged,
+PR #6 Draft; long-term sole target remains genuine
+full-match KO rate at comparable CPU and public
+information.
