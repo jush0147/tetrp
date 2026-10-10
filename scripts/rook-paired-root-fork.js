@@ -43,31 +43,44 @@ const clone=d=>{
 
 function choosePrepared(d,forced=null){
   let computeMs=0,nodesEvaluated=0,holdCount=0;
-  for(let step=0;step<2;step++){
+  decisionLoop:for(let step=0;step<2;step++){
     const view=d.view();
     if(!view.visible.playing)throw Error('Attempted to place after KO');
     const t=performance.now();
-    const report=forced&&step===0
-      ?null:chooseMove(view.visible,settings);
+    const report=forced&&step===0?null:
+      chooseMove(view.visible,settings);
     computeMs+=performance.now()-t;
     if(report)nodesEvaluated+=report.diagnostics.evaluated;
-    const action=forced&&step===0?forced:report;
-    if(action.kind==='place'){
-      if(!validatePlacement(view.visible,{action:{kind:'place'},
-        move:action.move,execution:action.execution}))
-        throw Error('A selected root is not a verified public SRS+ placement');
-      d.prepare({action:{kind:'place'},move:action.move,
-        execution:action.execution},view.revision);
-      return {revision:view.revision,computeMs,nodesEvaluated,holdCount};
+    const ranked=forced&&step===0?[forced]:report.ranked;
+    let lastError=null;
+    for(const action of ranked){
+      try{
+        if(action.kind==='place'){
+          if(!validatePlacement(view.visible,{action:{kind:'place'},
+            move:action.move,execution:action.execution}))
+            throw Error('No public SRS+ path for this root candidate');
+          d.prepare({action:{kind:'place'},move:action.move,
+            execution:action.execution},view.revision);
+          return {revision:view.revision,computeMs,nodesEvaluated,holdCount};
+        }
+        if(action.kind!=='hold'||step!==0)
+          throw Error('Bad or repeated Hold in fork KO');
+        d.prepare({action:{kind:'hold'},mode:action.mode,
+          samePiece:action.samePiece},view.revision);
+        d.commit(view.revision);
+        holdCount++;
+        continue decisionLoop;
+      }catch(e){
+        lastError=e;
+        // An experimentally forced action must NEVER quietly fall back
+        // to a different legal move, or the paired treatment is invalid.
+        if(forced&&step===0)throw e;
+      }
     }
-    if(action.kind!=='hold'||step!==0)
-      throw Error('Bad or repeated Hold in fork KO');
-    d.prepare({action:{kind:'hold'},mode:action.mode,
-      samePiece:action.samePiece},view.revision);
-    d.commit(view.revision);
-    holdCount++;
+    throw Error('No authority-executable ROOK root (after fallback): '+
+      (lastError?.message??'no ranked choices'));
   }
-  throw Error('Hold did not resolve to a valid placement');
+  throw Error('A successful Hold failed to produce a lock');
 }
 
 function deliver(pair,packets){
