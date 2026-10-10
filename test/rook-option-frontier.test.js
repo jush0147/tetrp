@@ -142,3 +142,59 @@ test('safe public boards retain full frontier under optional danger guard',()=>{
   assert.throws(()=>chooseMove(v,{...config,optionFrontierRiskGuard:1}),
     /invalid search budget/);
 });
+
+test('ablation isolates each non-scoring survivor lane without changing defaults',()=>{
+  const base=[node(0,100),node(1,99),node(2,98),node(3,97)];
+  const combat=node(4,96,{realCombat:5});
+  const quad=node(5,95,{quadReadiness:4});
+  const spin=node(6,94,{spinReadiness:3});
+  const candidates=[...base,combat,quad,spin];
+  for(const [lanes,expected,absent] of [
+    ['combat',combat,quad],['quad',quad,combat],
+    ['spin',spin,quad],['no-spin',combat,spin],
+    ['no-quad',combat,quad],['no-combat',quad,combat]
+  ]){
+    const {beam,details}=reservePublicOptionFrontier(candidates,base,{
+      slots:2,maxScoreGap:8,lanes});
+    assert.equal(beam.length,base.length);
+    assert.ok(beam.includes(expected),lanes);
+    assert.ok(!beam.includes(absent),lanes);
+    assert.ok(details.inserted>0);
+    assert.equal(new Set(beam).size,beam.length);
+    assert.ok(beam.includes(base[0])&&beam.includes(base[1]),
+      'highest-valued ordinary ROOK survivor still protected');
+  }
+  assert.deepEqual(reservePublicOptionFrontier(candidates,base,{
+    slots:2,maxScoreGap:8,lanes:'all'}),
+    reservePublicOptionFrontier(candidates,base,{
+      slots:2,maxScoreGap:8}),'default is the original full portfolio');
+  for(const bad of ['unknown','','none','no-tetris','SPIN']){
+    assert.throws(()=>reservePublicOptionFrontier(candidates,base,{
+      slots:2,lanes:bad}),/Invalid option-frontier/);
+  }
+  assert.deepEqual(base,[candidates[0],candidates[1],
+    candidates[2],candidates[3]]);
+});
+test('real NEXT5 lane ablation is opt-in, legal, immutable and no private peek',()=>{
+  const v=visibleState(new Engine({mode:'tl',seed:67310,
+    rules:{g:0}}).state);
+  const original=structuredClone(v);
+  const options={depth:4,beamWidth:12,maxNodes:1300,maxStates:450,
+    maxSteps:42,spinForecast:false,futureReachableProbes:2,
+    optionFrontierSlots:3};
+  const full=chooseMove(v,options);
+  const explicitAll=chooseMove(v,{...options,optionFrontierLanes:'all'});
+  assert.deepEqual(full,explicitAll);
+  for(const lanes of ['no-spin','no-quad','no-combat','combat','quad','spin']){
+    const report=chooseMove(v,{...options,optionFrontierLanes:lanes});
+    assert.equal(report.diagnostics.optionFrontierLanes,lanes);
+    assert.ok(report.diagnostics.optionFrontierStats.inserted>=0);
+    assert.ok(report.diagnostics.evaluated<=options.maxNodes);
+    assert.ok(['place','hold'].includes(report.kind));
+    if(report.kind==='place')assert.ok(validatePlacement(v,{
+      action:{kind:'place'},move:report.move,execution:report.execution}));
+  }
+  assert.deepEqual(v,original);
+  assert.throws(()=>chooseMove(v,{
+    ...options,optionFrontierLanes:'unknown'}),/invalid search budget/);
+});
