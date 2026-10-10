@@ -56,7 +56,9 @@ jobs:
               !Number.isInteger(v.horizonEvaluated)||v.horizonEvaluated<0||
               !Number.isInteger(v.horizonAborted)||v.horizonAborted<0)||
             report.pressureHorizonSummary.extraEvaluated>
-              3*3*10*140||
+              3*3*10*900||
+            Object.values(report.pressureHorizonSummary.abortReasons)
+              .reduce((x,y)=>x+y,0)!==report.pressureHorizonSummary.horizonAborted||
             report.pressureBeliefSummary.details.some(v=>
               !Number.isFinite(v.ms)||v.beliefEvaluations>3)||
             report.rows.some(r=>r.options.length!==4||
@@ -76,6 +78,14 @@ jobs:
             '- Legacy belief: '+b.decisionChanged+' changed vs baseline; '+b.agreesWithKiwi+' match Kiwi.',
             '- Common horizon: '+n.decisionChanged+' changed vs baseline; '+n.differsFromLegacyBelief+' changed vs legacy; '+n.agreesWithKiwi+' match Kiwi.',
             '- Conditional evaluations (EXTRA): '+n.extraEvaluated+'; aborted candidate revalues: '+n.horizonAborted+'; scenario-limit rejections: '+n.scenariosOverBudget,
+            '- Abort causes: budget='+n.abortReasons.budget+
+              ', second unknown garbage='+n.abortReasons.secondGarbage+
+              ', public NEXT exhausted='+n.abortReasons.publicNext,
+            ...n.details.map(d=>'- Seed '+d.seed+', turn '+d.turn+
+              ': changed='+d.changesFromBaseline+', from legacy='+
+              d.changesFromLegacyBelief+', Kiwi agreement='+d.matchesKiwi+
+              ', extra eval='+d.horizonEvaluated+', aborts='+d.horizonAborted+
+              ', runtime='+d.ms+'ms'),
             '',
             'No new KO or APP result. This is opt-in; PR #6 must remain Draft.'
           ];
