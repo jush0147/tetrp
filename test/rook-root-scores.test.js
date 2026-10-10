@@ -37,6 +37,7 @@ test('opt-in root-score explanations preserve original ROOK policy and public in
     for(const lock of leaf.forecastLocks){
       assert.ok(['none','mini','full'].includes(lock.spin));
       assert.ok(['i','j','l','o','s','t','z'].includes(lock.piece));
+      assert.ok(['srs','geometry'].includes(lock.proof));
       assert.ok(['generated','sent','cancelled','btb','combo','lines']
         .every(key=>Number.isFinite(lock[key])));
     }
