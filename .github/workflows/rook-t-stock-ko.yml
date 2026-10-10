@@ -23,6 +23,15 @@ jobs:
           node-version: '22'
       - name: Verify real SRS+ and opt-in policy regressions
         run: node --test test/rook-t-stock.test.js test/rook-forward-attack.test.js
+      - name: Verify upcoming T banking is enabled in the audited portfolio
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const code=readFileSync('src/analysis/rook-t-stock.js','utf8');
+          if(!code.includes("kind:'bank-upcoming-t'")||
+            !code.includes('storeUpcomingT:true'))
+            throw Error('Up-coming T bank mode must be included in audit');
+          JS
       - name: Screen public decisions without claiming capped games as KO
         env:
           SEEDS: 67201,67202
