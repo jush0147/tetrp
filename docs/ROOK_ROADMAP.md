@@ -1007,3 +1007,34 @@ and true KO performance on independent seeds, then run larger trials.
 If no decisions change, consider per-position causal diagnostics
 around where attack-capable lines are dropped rather than adding
 more arbitrary weights to `tspots`.
+
+
+### 2026-10-10 first behavioral screen: frontier CHANGED actual public moves
+
+[Actions #38060342791](https://github.com/jush0147/tetrp/actions/runs/38060342791),
+under exploratory code revision `5dcadae`, passed 8/8
+focus tests and ran two fresh independent seven-bag seeds
+67310 and 67311 with a 32-synchronous-lock **UNSCORED**
+screen (80 public decision shadow comparisons total, including
+real Hold searches): **5 genuinely changed first actions**,
+452 multi-objective alternative survivor insertions, 124076
+eligible survivor evaluations counted across all steps, plus
+25138ms of **separately accounted diagnostic shadow CPU**.
+The gate triggered authentic full-length KO jobs for NEW seeds
+67312 and 67313, using the older `5dcadae` code revision.
+A changed move is only an A/B experimental prerequisite:
+these are not KO results, nor proof of improvement over Kiwi.
+
+IMPORTANT follow-up correctness fix:
+[`812f534`](https://github.com/jush0147/tetrp/commit/812f534b078a9ed2a5bad91aa00f853689679b7d)
+uses only actual Tetrp-projected **sent + cancelled**
+combat packets for the real-combat survivor lane. The older
+screen and queued KO use `generated + cancelled` for the
+candidate-preservation lane and are therefore a distinct,
+not-current version of the experimental strategy; authority
+attack scoring was unchanged either way. The lane now named
+`combat` rather than `delivered`; unit test adjusted in
+[`e66fe1f`](https://github.com/jush0147/tetrp/commit/e66fe1fe17b20b39709b60e947ea8a3240cba9d6).
+Do not attribute the older gate's changed-action count or
+potential KO outcome to the corrected revision without
+a separate real public-state comparison.
