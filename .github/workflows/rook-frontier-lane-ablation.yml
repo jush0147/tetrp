@@ -1,0 +1,128 @@
+name: ROOK attack frontier lane ablation
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-frontier-lane-ablation.yml]
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  screen-no-spin:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    outputs:
+      changed: ${{ steps.gate.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify genuine ROOK SRS+ legality and lane-independent score
+        run: node --test test/rook-option-frontier.test.js test/rook-beam.test.js
+      - name: Same public-state no-spin versus full-frontier action screen
+        env:
+          SEEDS: 67310,67311
+          MAX_LOCKS: '32'
+          SWAP_ROLES: '0'
+          EXPERT_OPEN: '0'
+          EXPERT_FRONTIER: '1'
+          COMPARE_ALL_FRONTIER: '1'
+          FRONTIER_LANES: no-spin
+          FRONTIER_ALL_SHADOW: '1'
+          FRONTIER_SLOTS: '3'
+          FRONTIER_SCORE_GAP: '70'
+          ROOK_NODES: '6000'
+        run: node scripts/rook-vs-rook.js > no-spin-screen.jsonl
+      - name: Gate scored KO on real public move divergence
+        id: gate
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('no-spin-screen.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==2||rows.some(r=>r.error||r.cap!==32||
+            r.swapRoles!=='0'||r.sameSeed!==true||!r.compareAllFrontier))
+            throw Error('Invalid public no-spin comparison');
+          const challengers=rows.map(r=>r.slots.find(x=>
+            x.kind==='option-frontier-no-spin'));
+          if(challengers.some(x=>!x||x.searches!==x.frontierAllShadowChecks))
+            throw Error('Not every no-spin decision was compared to full frontier');
+          const sum=k=>challengers.reduce((n,x)=>n+(x[k]??0),0);
+          const result={phase:'unscored-ablation-decision-screen',
+            seeds:[67310,67311],cap:32,shadowChecks:sum('frontierAllShadowChecks'),
+            changes:sum('frontierAllShadowChanges'),
+            combatInserted:sum('frontierCombatInserted'),
+            quadInserted:sum('frontierQuadInserted'),
+            spinInserted:sum('frontierSpinInserted'),
+            extraShadowMs:sum('frontierAllShadowMs')};
+          writeFileSync('no-spin-gate.json',JSON.stringify(result,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,
+            'changed='+(result.changes>0?'true':'false')+'\n');
+          console.log(JSON.stringify(result));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontier-no-spin-screen
+          path: |
+            no-spin-screen.jsonl
+            no-spin-gate.json
+          retention-days: 30
+  no-spin-vs-all-real-ko:
+    needs: screen-no-spin
+    if: needs.screen-no-spin.outputs.changed == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        seed: [67332,67333]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Independent new seed no-spin versus full frontier genuine KO
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          EXPERT_OPEN: '0'
+          EXPERT_FRONTIER: '1'
+          COMPARE_ALL_FRONTIER: '1'
+          FRONTIER_LANES: no-spin
+          FRONTIER_ALL_SHADOW: '0'
+          FRONTIER_SLOTS: '3'
+          FRONTIER_SCORE_GAP: '70'
+          ROOK_NODES: '6000'
+        run: |
+          node scripts/rook-vs-rook.js > no-spin-real-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('no-spin-real-ko.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Expected one true game');
+          const r=rows[0];
+          const trial=r.slots.find(x=>x.kind==='option-frontier-no-spin');
+          const full=r.slots.find(x=>x.kind==='option-frontier');
+          if(r.error||r.cap!==2000||r.seed!==Number(process.env.SEEDS)||
+            !r.sameSeed||r.swapRoles!=='0'||!r.compareAllFrontier||
+            !trial||!full||trial.configuredNodeBudget!==full.configuredNodeBudget)
+            throw Error('Invalid KO-first lane ablation');
+          console.log(JSON.stringify({seed:r.seed,scored:r.scored,winner:r.winner,
+            termination:r.termination,turns:r.turns,
+            trialSent:trial.sent,fullSent:full.sent,
+            trialCPU:trial.ms,fullCPU:full.ms,
+            trialSpinInserted:trial.frontierSpinInserted,
+            trialQuadInserted:trial.frontierQuadInserted}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: no-spin-real-ko-${{ matrix.seed }}
+          path: no-spin-real-ko.jsonl
+          retention-days: 30
