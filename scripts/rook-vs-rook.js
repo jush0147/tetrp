@@ -42,6 +42,11 @@ const auditHoldPlan=process.env.HOLD_AUDIT==='1';
 const offenseWeight=Number(process.env.EXPERT_OFFENSE_WEIGHT??7.2);
 const beamRootReserve=Number(process.env.EXPERT_BEAM_ROOT_RESERVE??8);
 const futureProbes=Number(process.env.EXPERT_FUTURE_PROBES??24);
+// Comparator-only search settings. The production/default policy is unchanged.
+const baselineFutureProbes=Number(process.env.ROOK_BASELINE_FUTURE_PROBES??9);
+const baselineFutureStates=Number(process.env.ROOK_BASELINE_FUTURE_STATES??800);
+const candidateFutureProbes=Number(process.env.ROOK_CANDIDATE_FUTURE_PROBES??9);
+const candidateFutureStates=Number(process.env.ROOK_CANDIDATE_FUTURE_STATES??800);
 const futureStates=Number(process.env.EXPERT_FUTURE_STATES??800);
 const beliefProbes=Number(process.env.BELIEF_PROBES??3);
 const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
@@ -68,6 +73,10 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(beliefProbes)||beliefProbes<0||beliefProbes>20||
   !Number.isInteger(beliefMaxOutcomes)||beliefMaxOutcomes<1||beliefMaxOutcomes>100||
   !Number.isInteger(futureProbes)||futureProbes<0||futureProbes>100||
+  !Number.isInteger(baselineFutureProbes)||baselineFutureProbes<0||baselineFutureProbes>100||
+  !Number.isInteger(candidateFutureProbes)||candidateFutureProbes<0||candidateFutureProbes>100||
+  !Number.isInteger(baselineFutureStates)||baselineFutureStates<1||baselineFutureStates>10000||
+  !Number.isInteger(candidateFutureStates)||candidateFutureStates<1||candidateFutureStates>10000||
   !Number.isInteger(futureStates)||futureStates<1||futureStates>10000||
   !Number.isInteger(beamRootReserve)||beamRootReserve<1||beamRootReserve>24||
   !Number.isFinite(offenseWeight)||offenseWeight<0||offenseWeight>24||
@@ -160,8 +169,10 @@ function select(demo,open){
       garbageRecovery:open&&expertRecovery,
       garbageRecoveryWeight:recoveryWeight,
       garbageBelief:open&&expertBelief,
-      futureReachableProbes:open&&expertFuture?futureProbes:9,
-      futureReachableStates:open&&expertFuture?futureStates:800,
+      futureReachableProbes:open?(expertFuture?futureProbes:candidateFutureProbes):
+        baselineFutureProbes,
+      futureReachableStates:open?(expertFuture?futureStates:candidateFutureStates):
+        baselineFutureStates,
       beamRootReserve:open&&expertBeam?beamRootReserve:null,
       offenseWeight:open&&expertOffense?offenseWeight:4.8,
       intermediateHoleRelief:open&&expertPruning?intermediateHoleRelief:0,
@@ -334,6 +345,8 @@ function pairedGame(seed,swap){
     expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
     leafExtensionBudget,leafExtensionStates,intermediateHoleRelief,
     auditHoldPlan,offenseWeight,beamRootReserve,futureProbes,futureStates,
+    baselineFutureProbes,baselineFutureStates,candidateFutureProbes,
+    candidateFutureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     turns,cap:limit,scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
@@ -342,7 +355,9 @@ function pairedGame(seed,swap){
       ...summary(d,kinds[i],totals[i]),
       configuredNodeBudget:kinds[i]===expertKind?candidateBudget:baselineBudget,
       configuredDepth:kinds[i]===expertKind?candidateDepth:baselineDepth,
-      configuredBeamWidth:kinds[i]===expertKind?candidateBeamWidth:baselineBeamWidth
+      configuredBeamWidth:kinds[i]===expertKind?candidateBeamWidth:baselineBeamWidth,
+      configuredFutureProbes:kinds[i]===expertKind
+        ?(expertFuture?futureProbes:candidateFutureProbes):baselineFutureProbes
     }))};
 }
 // Independent seeds give distinct games; each seed is repeated with the
