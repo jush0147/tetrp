@@ -946,3 +946,64 @@ No artificial Full TSD bonus, no secret next bag, and no claim that
 an unproved geometry is an actual attack. A new strategy deserves
 scored KO only when it makes legal different choices on multiple
 independent public boards. PR #6 Draft and main unchanged.
+
+
+### 2026-10-10 P0 structural search experiment: multi-objective **survivor** frontier
+
+**Why this exists:** The recent complete public multi-lock Full TSD option
+searches had 0 proved plans / 0 changed first actions despite 22–23
+eligible public T decisions, 1000+ SRS+ proof calls, and 27000+
+evaluated legal placements on two real but short public games.
+Further forcing saved T or simply increasing beam cap is not supported
+by those data. The independent ROOK search must also consider whether
+its **intermediate** board choices retain offense-capable alternatives
+across normal play, while retaining survivability.
+
+**Implemented opt-in, not promoted:** `chooseMove(...,{
+optionFrontierSlots:3,optionFrontierMaxScoreGap:70})` allocates at most
+three of the *weaker tail* slots (never more than half) of an otherwise
+normal 24-wide beam to alternative continuations in three categories:
+actual Tetrp-projected offensive+cancelled lines accrued, a
+**non-scoring geometry hint** for future four-line I-clears, and a
+**non-scoring geometry hint** for later T-Spin setups. Candidates
+outside the normal score gap, unresolved hidden-hole states and
+non-finite states cannot be reserved. The final action still maximizes
+the **unchanged** ROOK attack/survival/board score, including B2B,
+combo, actual garbage defense and downstack. No fake attack credit
+for a pretty slot; no unseen bag, no new T-only expert required.
+The ordinary root search and `main` policy remain byte-for-byte
+unchanged when `optionFrontierSlots=0`.
+Code commit [`260945a`](https://github.com/jush0147/tetrp/commit/260945a9c9a28af3a4c80e048f9f14f52dca06e9).
+
+**Verification:** [`rook-option-frontier.test.js`](https://github.com/jush0147/tetrp/blob/feat/rook-independent-bot/test/rook-option-frontier.test.js)
+tests pure survivor bounds, nonmutating default parity, budget rejects,
+private information invariance, and authority-legal actual root.
+Experimental `EXPERT_FRONTIER=1` and `FRONTIER_SLOTS` /
+`FRONTIER_SCORE_GAP` enable it for the challenger in
+`scripts/rook-vs-rook.js`; `FRONTIER_SHADOW=1` runs an **extra
+unchanged ROOK search on the same public decision** only during
+the short gate to count genuinely different actual first actions,
+excluding fake differences in path spelling or diagnostics. Shadow
+CPU is measured **separately** and must not count as the candidate
+policy runtime. Baseline and candidate still use the same 6000 normal
+evaluation limit, but extra geometry CPU is honestly tracked and
+not implied equal-compute.
+
+**KO rule:** [`rook-option-frontier-ko.yml`](https://github.com/jush0147/tetrp/actions/workflows/rook-option-frontier-ko.yml)
+first screens two fresh independent seeds 67310 and 67311
+for 32 synchronous locks **only as unscored behavior diagnostics**.
+If and only if the public-state shadow comparison finds actual
+root changes, a separate job runs previously untested fresh
+independent seeds 67312 and 67313 to **genuine KO or 2000
+synchronous locks**, not a time-shortened KO proxy. Capped and
+double-KO cannot be called wins. Even two scored independent KO
+trials are smoke tests, not statistical proof or a Kiwi victory.
+At the time this was documented [Actions #38060342791](https://github.com/jush0147/tetrp/actions/runs/38060342791)
+was running; do not hallucinate the results.
+
+**Next stage if there are legal choice changes:** Compare attack/sent,
+cancel/downstack, board hazards, B2B persistence, topouts, total CPU
+and true KO performance on independent seeds, then run larger trials.
+If no decisions change, consider per-position causal diagnostics
+around where attack-capable lines are dropped rather than adding
+more arbitrary weights to `tspots`.
