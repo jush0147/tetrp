@@ -114,3 +114,22 @@ test('common-horizon rejects invalid budgets before planning',()=>{
   assert.throws(()=>chooseMove(v,{...base,beliefHorizonBeam:0}),
     /invalid search budget/);
 });
+
+
+test('aborted same-horizon scenarios count their CPU work and do not become beliefs',()=>{
+  const v=visibleState(attacked().state);
+  const cfg={depth:3,beamWidth:5,maxNodes:320,maxStates:180,
+    futureReachable:false,spinForecast:false,garbageBelief:true,
+    beliefProbes:2,beliefMaxOutcomes:10,beliefReachableStates:90,
+    beliefCommonHorizon:true,beliefHorizonNodes:1,beliefHorizonBeam:2};
+  const out=chooseMove(v,cfg);
+  assert.ok(out.diagnostics.beliefAttempts>0);
+  assert.ok(out.diagnostics.beliefHorizonAborted>0);
+  assert.ok(out.diagnostics.beliefHorizonEvaluated>0,
+    'discarded conditional rollouts still consume compute');
+  assert.ok(out.diagnostics.beliefHorizonEvaluated<=
+    out.diagnostics.beliefAttempts*v.board.width);
+  assert.equal(out.diagnostics.beliefEvaluations,0,
+    'partial-depth outcome must not be used to re-rank a root');
+  assert.ok(out.diagnostics.evaluated<=cfg.maxNodes);
+});
