@@ -13,7 +13,7 @@ permissions:
 jobs:
   screen:
     runs-on: ubuntu-22.04
-    timeout-minutes:35
+    timeout-minutes: 35
     outputs:
       changed: ${{ steps.gate.outputs.changed }}
     steps:
@@ -66,7 +66,7 @@ jobs:
     needs: screen
     if: needs.screen.outputs.changed == 'true'
     runs-on: ubuntu-22.04
-    timeout-minutes:90
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       max-parallel: 1
