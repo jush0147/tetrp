@@ -2418,3 +2418,79 @@ pinned Kiwi are UNTOUCHED; PR #6 remains Draft.
 **Strict unit verification** [`rook-strategic-intent.test.js`](../test/rook-strategic-intent.test.js): independent public signal extraction, 3-lock sticky vs reactive behavioral differences, early emergency interrupt, Hold/piece-clock idempotence, hidden-field immunity, and genuine ROOK search delivering SRS+-legal current-piece placement with new opt-in search settings. Unit tests passed in the public-screen CI; full long-match outcome NOT KNOWN when this was written.
 
 **Go/no-go**: If finite commitment fails to change any same-public-state first action in new authentic seeds, do NOT send it to expensive KO and do NOT promote; if true KO games are equal or worse, no promotion; if real KO benefit exists, test against BASELINE ROOK and pinned Kiwi across NEW independent seed groups at realistic equal CPU. In every case, never infer that simply retaining the attack weight for 3 pieces is a solved strategic planner. No default `chooseMove`, production ROOK, pinned Kiwi or `main` changes. Draft PR #6.
+
+
+### 2026-10-11: first GENUINE persistent-vs-reactive full-KO 2/2 positive, role-swap replication now required
+
+[Validated authentic Tetrp Actions #38109690166](https://github.com/jush0147/tetrp/actions/runs/38109690166)
+completed SUCCESS after fixing a JavaScript **CI VALIDATOR
+SYNTAX ERROR** in [original failure #38108577937](https://github.com/jush0147/tetrp/actions/runs/38108577937).
+The original failure was precisely `SyntaxError: Unexpected token 'throw'`
+from a missing closing parenthesis in the result gate, **not
+a game engine error or KO loss**. Ten unit tests and genuine
+authority short matches had completed. The gate was repaired,
+then extracted into [`scripts/rook-strategic-screen-gate.js`](../scripts/rook-strategic-screen-gate.js)
+and **syntax checked before costly matches** in the new
+workflow [commit f9201a0](https://github.com/jush0147/tetrp/commit/f9201a0c3b993e89bdebedb4b59b7c4a86367687).
+
+**Independent unsCORED short-screen seed 67810/67811**,
+80-lock cap:
+- 110 genuinely matching player-visible root-state checks
+  across the two seeds, **only ONE actually different
+  authority-accepted first-action chain**, on **seed
+  67811 at lock 29**. Seed 67810 showed no difference
+  despite running both controllers and all searches;
+  it is a genuine negative mechanism-control.
+- seed 67811 persistent intent switches 10 times,
+  reactive 13 times; persistent retained a committed
+  mode on 3 locks, vs reactive 0. Actual ROOK sent 20
+  vs reactive 15 and tanked 4 vs 5 by the 80-lock
+  UNSCORED cap; these are *not* wins.
+- seed 67810 both controllers stayed in attack mode
+  all 80 locks (zero switches, 27 sent/0 tanked each).
+- equal configured 3000 search nodes, with separate
+  measured CPU; no secret NEXT6 or hidden holes.
+
+**Two NEW separate seed true-KO matches, no early score or artificial cap win:**
+- Original independent **67812**: persistent controller
+  genuinely **KO'd reactive after 566 synchronized
+  24-frame locks**. Persistent **295 sent / 131 tanked**,
+  reactive **226 sent / 164 tanked**. Computation used
+  persistent **1,791,828 evaluated nodes, 212,186 ms** vs
+  reactive **1,615,637 nodes, 185,695 ms**. Same configured
+  3000-node-per-search cap but not equal total nodes or
+  CPU; raw 14% extra CPU makes this an **UNEQUAL CPU**
+  performance result.
+- Original independent **67813**: persistent genuinely
+  **KO'd reactive after 708 synchronized locks**.
+  Persistent **350 sent / 35 tanked**, reactive
+  **330 sent / 48 tanked**. Computation persistent
+  **2,661,174 nodes, 322,128 ms** vs reactive
+  **2,595,892 nodes, 316,283 ms**. ~2% extra CPU.
+- Exactly **2 independent original match seeds,
+  persistent 2/2 real KOs**, both wins in candidate
+  slot zero, NO ROLE SWAP. These facts support a
+  *worthwhile research hypothesis*, NOT a robust
+  win-rate improvement, matched-compute victory,
+  stock ROOK win or pinned Kiwi win.
+
+**Essential independent role/swap validation launched**:
+[workflow `rook-strategic-intent-replication.yml`](../.github/workflows/rook-strategic-intent-replication.yml),
+[Actions #38111273237](https://github.com/jush0147/tetrp/actions/runs/38111273237)
+predeclares original independent match seeds 67812/67813
+(known, for role-swap reproducibility) and **67814/67815
+fresh, previously unseen independent seeds**; executes
+both contestant player slots on each original seed
+using genuine 24-frame-per-lock public-only Tetrp
+until true KO or cap 2000, identical 3000 configured
+per-search node limit, always reporting both
+actual node totals and measured CPU. Two swapped
+matches from one original seed are CORRELATED,
+not two independent trials, capped games remain
+unscored and double KO is unscored.
+**The role-swap results were NOT yet observed** when
+this section was written. Until verified, absolutely
+no production promotion, no stronger-than-stock
+or Kiwi claim and no post-hoc selector training.
+main, original Kiwi, default ROOK untouched.
+Draft PR #6 still open.
