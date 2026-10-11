@@ -36,6 +36,7 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
     throw Error('Hold fork requires the original rook/kiwi slots');
   if(!Number.isInteger(cap)||cap<1||cap>2000)
     throw Error('Expected a KO-first 2000-lock safety cap');
+  const windowLocks=new Set([1,2,3,4,5,6,8,16,32,64]);
   const startingAuthority=demos.map(d=>JSON.stringify(d.engine.serialize()));
   const run=(forceForecast)=>{
     const copies=demos.map(d=>d.fork());
@@ -43,7 +44,6 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
       startingAuthority[i]))throw Error('Fork initial private state mismatch');
     let inbound=[],round=turn,error=null,forced=false;
     let firstAction=null,firstPublicFingerprint=null;
-    const windowLocks=new Set([1,2,3,4,5,6,8,16,32,64]);
     const windows=[],fingerprints=[],openingActions=[];
     let rookNodes=0,kiwiNodes=0,rookMs=0,kiwiMs=0;
     try{
