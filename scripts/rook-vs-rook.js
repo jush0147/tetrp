@@ -211,6 +211,11 @@ function select(demo,open){
     stats.intentSwitches+=Number(strategic.changed);
     stats.intentRetained+=Number(strategic.retained);
     stats.intentEmergency+=Number(strategic.emergency);
+    stats.intentMode=strategic.mode;
+    stats.intentSignals=strategic.signals;
+    stats.intentRetainedNow=strategic.retained;
+    stats.intentEmergencyNow=strategic.emergency;
+    stats.intentDesired=strategic.desired??null;
   }
   if(open&&expertSticky){
     const next=rememberedPlans.get(demo)?.[0];
@@ -508,6 +513,9 @@ function pairedGame(seed,swap){
   let inbound=[],turns=0,error=null,checkpoints=[];
   let identicalPublicDecisionChecks=0,identicalPublicActionChanges=0,
     firstIdenticalPublicActionDifference=null;
+  let firstSamePublicDivergence=null;
+  const divergenceObservationLocks=[1,4,8,16,32];
+  const divergenceSnapshots=[];
   try{
     while(turns<limit&&demos.every(d=>d.engine.state.playing)){
       for(const packet of inbound){
@@ -534,8 +542,24 @@ function pairedGame(seed,swap){
         identicalPublicDecisionChecks++;
         if(moves[0].actualActionChain!==moves[1].actualActionChain){
           identicalPublicActionChanges++;
-          if(firstIdenticalPublicActionDifference===null)
+          if(firstIdenticalPublicActionDifference===null){
             firstIdenticalPublicActionDifference=turns;
+            firstSamePublicDivergence={originalSeed:seed,turn:turns,
+              before:{publicPiece:viewsBefore[0].current?.type??null,
+                next5:viewsBefore[0].next,hold:viewsBefore[0].hold,
+                frame:turnFrame,pendingPackets:
+                  [...(viewsBefore[0].attack?.pending??[]),
+                    ...(viewsBefore[0].attack?.are??[])].map(x=>x.amt)},
+              pairedChoices:moves.map((decision,i)=>({
+                kind:kinds[i],mode:decision.intentMode,
+                desired:decision.intentDesired,
+                retained:decision.intentRetainedNow,
+                emergency:decision.intentEmergencyNow,
+                signals:decision.intentSignals,
+                legalExecutedActions:decision.actualActionChain,
+                evaluatedNodes:decision.nodes,
+                searchMs:+decision.ms.toFixed(1)}))};
+          }
         }
       }
       // Both decisions are prepared from the SAME tick, before either lock.
@@ -555,6 +579,14 @@ function pairedGame(seed,swap){
         for(const packet of demos[from].engine.state.attack.outbox.splice(0))
           inbound.push({to:1-from,iid:packet.iid,ackiid:packet.ackiid,amt:packet.amt});
       turns++;
+      if(firstSamePublicDivergence&&
+        divergenceObservationLocks.includes(
+          turns-firstSamePublicDivergence.turn)){
+        divergenceSnapshots.push({
+          afterLocks:turns-firstSamePublicDivergence.turn,
+          bothAlive:demos.every(d=>d.engine.state.playing),
+          slots:demos.map(health)});
+      }
       if([6,12,24,48,72,96,120,150,200,250,300,400,500,600,750,1000,1250,1500,1750,2000].includes(turns))
         checkpoints.push({turns,slots:demos.map(health)});
     }
@@ -588,7 +620,8 @@ function pairedGame(seed,swap){
     candidateFutureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
     ...(expertStrategic?{identicalPublicDecisionChecks,
-      identicalPublicActionChanges,firstIdenticalPublicActionDifference}:{}),
+      identicalPublicActionChanges,firstIdenticalPublicActionDifference,
+      firstSamePublicDivergence,divergenceSnapshots}:{}),
     turns,cap:limit,scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
     winner:result.scored?kinds[result.winnerSlot]:null,
