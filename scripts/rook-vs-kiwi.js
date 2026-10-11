@@ -17,6 +17,8 @@ const kiwiBudget=Number(process.env.KIWI_NODES??200000);
 const rookBudget=Number(process.env.ROOK_NODES??6000);
 const rookExactLeaf=process.env.ROOK_EXACT_LEAF==='1';
 const holdFork=process.env.ROOK_HOLD_FORK==='1';
+const holdForkEarlyStop=process.env.ROOK_HOLD_FORK_EARLY_STOP==='1';
+if(holdForkEarlyStop&&!holdFork)throw Error('Early-stop requires Hold fork');
 const forecastAudit=process.env.ROOK_FORECAST_PLAN_AUDIT==='1'||holdFork;
 const forecastAuditCap=Number(process.env.ROOK_FORECAST_AUDIT_SAMPLES??12);
 const rookLeafBudget=Number(process.env.ROOK_LEAF_BUDGET??5000);
@@ -338,6 +340,10 @@ function runPair(seed,order){
           transfers.push({to:1-from,iid:x.iid,ackiid:x.ackiid,amt:x.amt});
       }
       lockSteps++;
+      // An optional fresh-seed research cohort can stop the ORIGINAL game
+      // after the first eligible fork. Both fork arms themselves still
+      // continue to genuine KO or 2000-lock safety cap.
+      if(holdForkEarlyStop&&pairedHoldFork&&order===0)break;
       if(lockSteps%25===0)process.stderr.write(JSON.stringify({
         game:order,lockSteps,stats:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i],combatEvents[i]))})+'\n');
     }
@@ -359,7 +365,9 @@ function runPair(seed,order){
     initialVisibleNext:original.map(v=>v.next),
     ...(diagnosticsEnabled?{diagnostics}: {}),
     ...(holdFork?{holdForkResult:pairedHoldFork,
-      holdForkSelected:!!pairedHoldFork}:{}),
+      holdForkSelected:!!pairedHoldFork,
+      originalStoppedForFork:holdForkEarlyStop&&!!pairedHoldFork,
+      originalUnscoredForFork:holdForkEarlyStop&&!!pairedHoldFork}:{}),
     ...(forecastAudit?{forecastAudit:{
       executedFullGameWithoutChangingSelection:true,
       forecastEligibleOffered,actualNextLockChecks:forecastChecks.length,
