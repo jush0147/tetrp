@@ -5,6 +5,22 @@
 import {readFileSync,writeFileSync} from 'node:fs';
 
 const originalSeeds=[67720,67722,67723];
+// Nonparametric descriptive Pareto check: no learned coefficients,
+// no guessed conversion of attack/holes into a scalar winner.
+// All 4 dimensions are actual authority+public-board results.
+// B=Kiwi root, then ROOK; C=identical Kiwi root then Kiwi locks 2-3.
+export function classifyConditionalPareto(h){
+  if(!h?.complete)return 'censored';
+  if(h.bothAlive!==true)return 'terminal-or-ko-at-horizon';
+  const g=h.firstMinusSecondCombat; // B minus C
+  const values=[g?.sent,-g?.tanked,-h.holesGap,-h.heightGap];
+  if(values.some(v=>!Number.isFinite(v)))
+    throw Error('Missing authority combat or real public board dimensions');
+  if(values.every(v=>v===0))return 'identical-on-four-metrics';
+  if(values.every(v=>v>=0))return 'one-lock-B-Pareto-dominates';
+  if(values.every(v=>v<=0))return 'three-lock-C-Pareto-dominates';
+  return 'tradeoff-or-conflict';
+}
 const rows=originalSeeds.map(seed=>{
   const file=(process.env.PAIRED_ROOT_DIR??'fidelity-traces')+
     '/rook-3lock-fidelity-'+seed+'/fidelity.json';
@@ -67,7 +83,8 @@ const rows=originalSeeds.map(seed=>{
           extraKiwiTankedGap:commit.complete?
             commit.firstMinusSecondCombat.tanked:null,
           extraKiwiBoardMismatch:commit.complete?
-            commit.occupiedCellMismatch:null};
+            commit.occupiedCellMismatch:null,
+          pareto:classifyConditionalPareto(commit)};
       })
     };
   });
@@ -81,7 +98,17 @@ const horizonSummaries=[4,8,16,32].map(h=>{
   const comparisons=eligible.flatMap(r=>r.conditionalScenarios
     .map(s=>({seed:r.seed,...s.horizons.find(x=>x.horizon===h)})));
   const complete=comparisons.filter(r=>r.commitComplete);
-  return {horizon:h,originalSeedsWithAtLeastOneComplete:
+  const paretoCounts=Object.fromEntries([
+    'one-lock-B-Pareto-dominates',
+    'three-lock-C-Pareto-dominates',
+    'identical-on-four-metrics',
+    'tradeoff-or-conflict',
+    'terminal-or-ko-at-horizon',
+    'censored'
+  ].map(type=>[type,comparisons.filter(q=>q.pareto===type).length]));
+  if(Object.values(paretoCounts).reduce((a,v)=>a+v,0)!==comparisons.length)
+    throw Error('Missing paired Pareto disposition');
+  return {horizon:h,paretoCounts,originalSeedsWithAtLeastOneComplete:
     new Set(complete.map(r=>r.seed)).size,
     completedConditionedScenarios:complete.length,
     censoredConditionedScenarios:comparisons.length-complete.length,
