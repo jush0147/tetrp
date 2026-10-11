@@ -41,6 +41,9 @@ jobs:
             x.scoredFullKOs!==0||x.policyPromoted!==false||
             x.originalSeeds.map(s=>s.seed).join(',')!=='67720,67722,67723'||
             x.horizonSummaries?.length!==4||
+            x.horizonSummaries.some(h=>!h.paretoCounts||
+              Object.values(h.paretoCounts).reduce((a,n)=>a+n,0)!==
+              h.completedConditionedScenarios+h.censoredConditionedScenarios)||
             x.originalSeeds.some(s=>s.conditionalScenarios.length!==3||
               s.conditionalScenarios.some(z=>z.horizons.length!==4)))
             throw Error('Strategy audit incorrectly counted correlated forks as independent outcomes');
@@ -50,6 +53,7 @@ jobs:
             positionsWithRealSecondOrThirdDecisionDifference:
               x.originalSeedsWithGenuineExtraActionChanges,
             horizonSummaries:x.horizonSummaries,
+            interpretation:'4D no-weight public Pareto: sent higher, tanked lower, board height/holes lower; no score invention',
             note:'Horizon and conditioned future samples correlated within one original match; no KO scoring or learned-policy promotion'
           },null,2));
           JS
