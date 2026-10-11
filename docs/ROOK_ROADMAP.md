@@ -1978,3 +1978,130 @@ Source commit
 [`e274106`](https://github.com/jush0147/tetrp/commit/e27410636c73ba66bd48ea7110311e2b31b112ba)
 tracks entire protocol; PR #6 Draft; no live
 ROOK policy or Kiwi/main modifications.
+
+
+### 2026-10-11: replace early arbitrary two-root KO forks with naturally pressured strategy divergence PERSISTENCE measurements
+
+**Answer to the one-root question:** An arbitrary early
+single placement can cause widely different ultimate
+KO outcomes, but those are not reliable labels of a
+recurring *strategy* because both bots immediately
+replan. Before collecting thousands of arbitrary
+early-root counterfactuals, quantify whether the
+**public board/attack effects** of a meaningful
+ROOK-vs-Kiwi decision conflict remain, attenuate,
+re-converge, or diverge again over subsequent locks.
+A transient 8-lock APP edge MUST NOT be treated as
+a win; branch outcomes within the same initial seed
+remain correlated and do not estimate population
+win-rate. The prior paired [Kiwi root CI #38097214228](https://github.com/jush0147/tetrp/actions/runs/38097214228)
+had **67628** both ROOK roots lose to Kiwi at 43 vs
+42 locks, and **67629** both lose at 126 vs 39.
+The latter demonstrates strong conditional sensitivity
+to one I placement, not that the higher ranked root
+has generally learned a good strategy.
+
+**New genuine-authority experiment, opt-in to research
+harness only:** `FORK_STRATEGIC_WINDOWS=1` in
+[`scripts/rook-paired-root-fork.js`](../scripts/rook-paired-root-fork.js)
+uses an **actual** ROOK-vs-pinned-Kiwi natural game
+until a player-visible attack/height/garbage pressure
+condition is present. On that same ROOK player-visible
+CURRENT/HOLD/NEXT5 board, independently ask ordinary
+ROOK and original pinned Kiwi WASM for their first
+ranked legal action (screen budget ROOK 3000,
+Kiwi 32768; **not equal CPU and lower than full
+200000-node Kiwi**). Select a checkpoint ONLY IF
+their actual legal roots disagree and the difference
+is material: Hold vs immediate placement; or two
+placements with differing clear count/spin result,
+or >=2 immediate publicly computed buried holes
+or stack-height difference. No attack or future
+garbage is invented; if no such public conflict
+exists before the safe search cutoff (or actual KO),
+return an explicit **NO-ELIGIBLE-CONFLICT** record,
+not fake data.
+
+Two independent authoritative private-engine clones
+start from exactly the SAME opponent/bag/hidden
+garbage RNG checkpoint, verified byte-for-byte.
+Force ROOK's recommended action in one branch and
+Kiwi's recommended action on ROOK's SAME player-visible
+board in the other. Hold is actually executed and
+re-searched at the next step (no fabricated held-piece
+placement). After the first intervention, both
+arms use the original ROOK candidate policy against
+the same pinned Kiwi opponent policy. This tests
+what happens when ROOK follows one Kiwi-like
+root choice **ONCE**, NOT when Kiwi controls
+all future moves. Two branches from one seed
+are CORRELATED potential outcomes.
+No private engine state enters either choosing
+policy. Fork experiment is deliberately
+**UNSCORED at short horizon**, regardless of
+whether an early authority KO occurs.
+
+Capture 4, 8, 16 and 32 true simultaneous
+24-frame locks after the fork:
+- Exact candidate public board rows and opponent
+  board, occupied-cell mismatch, exact candidate
+  board convergence vs *full visible state*
+  convergence, public height and buried-hole gaps.
+- Real generated/sent/cancelled/tanked/received
+  cumulative packet differences from identical
+  original checkpoint, tracked separately per arm.
+- Explicit censor when one fork KOs before
+  a requested time horizon. No fabricated zero
+  reward or assumption of reconvergence; no
+  short-window win percentages.
+- Selection diagnostic funnel and per-independent-original-
+  seed aggregation, rather than treating all horizons
+  as independent observations.
+
+The first experimental [public window CI
+#38100273038](https://github.com/jush0147/tetrp/actions/runs/38100273038)
+used a more restrictive *Current-place-only*
+target selection. By its first three completed
+independent seed jobs:
+- **67710** no eligible public strategy conflict
+  observed before the cutoff, explicitly skipped.
+- **67711** a valid divergence at natural turn 24.
+  Candidate occupied-cell mismatch after +4,
+  +8, +16, +32 locks was **31, 30, 9, 28**;
+  shrinking to 9 at +16 did NOT mean permanent
+  convergence: by +32 it had diverged again.
+  True sent-delta between forks was +4,-1,+3,+8
+  across the four horizons. This is descriptive
+  conditional causal impact, NOT KO result.
+- **67712** natural divergence at turn 8:
+  occupied mismatch **30, 44, 130** after
+  +4,+8,+16; the +32 horizon was
+  **CENSORED**, because at least one branch
+  had ended. The future can't be imputed.
+- Seed **67713** and revised full Hold-inclusive
+  version were PENDING when this handoff was
+  recorded; do not attribute all old results
+  to the new implementation.
+
+The enhanced [Hold-inclusive workflow
+#38100375269](https://github.com/jush0147/tetrp/actions/runs/38100375269)
+is separately tracking original seeds 67710–67713;
+the final aggregation job reports seed count,
+eligible vs skipped contexts and how many
+4/8/16/32 horizon comparisons actually
+completed. Results not known at this handoff.
+Source changes
+[`a621993`](https://github.com/jush0147/tetrp/commit/a621993b61f72caf52b685520b03047509a52029),
+[`1fe7a4b`](https://github.com/jush0147/tetrp/commit/1fe7a4b3ecfb36ecd5bde0bbbf70d41c998a9966),
+[`ff27768`](https://github.com/jush0147/tetrp/commit/ff277680e4026a4f5357ac5ee85aaeddb4c404e3),
+[`cd94b7d`](https://github.com/jush0147/tetrp/commit/cd94b7da1dfc066faaa90b868023429d61aa346e).
+
+**Next decision gate:** The proper next step is to
+evaluate whether candidate effects persist under
+multiple independently conditioned private futures
+and strategy-vs-strategy plans, not scale arbitrary
+turn-12 positional treatment labels as if they
+were intrinsic move quality. If actual independent
+full KO advantage is never demonstrated at
+realistic CPU, KEEP default ROOK and
+pinned Kiwi unchanged, PR #6 Draft.
