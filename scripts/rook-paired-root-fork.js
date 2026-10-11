@@ -228,7 +228,8 @@ function selectStrategicPublicRoots(visible){
   strategicScreen.eligibleStrategicConflicts++;
   if(isHoldConflict)strategicScreen.holdConflicts++;
   return {rookReport,roots:[rookAction,kiwiAction],
-    meta:{kind:'public-ROOK-vs-Kiwi-chosen-CURRENT-placement-conflict',
+    meta:{kind:isHoldConflict?'public-Hold-vs-Place-conflict':
+      'public-ROOK-vs-Kiwi-chosen-CURRENT-placement-conflict',
       originalPublicPending:f.publicPending,originalGarbageCells:f.garbage,
       originalHeight:f.heightMax,
       searchLimits:{rook:nodes,kiwi:kiwiBudget},
