@@ -2200,3 +2200,24 @@ weights or aggregate correlated forks into
 population KO wins. Default ROOK,
 pinned full-budget Kiwi and `main`
 unchanged; PR #6 Draft.
+
+
+### 2026-10-11: conditional private futures + three-lock public-strategy intervention
+
+The [four-seed strategic-persistence experiment #38100375269](https://github.com/jush0147/tetrp/actions/runs/38100375269) found natural ROOK-vs-Kiwi root conflicts, three Hold-vs-Place, and genuine diverging 4/8/16/32 lock continuations. This does **NOT** establish which root is stronger. The four original game seeds, not their eight branches or overlapping time windows, are the sampling units.
+
+We now address two essential identification gaps: (a) variation under ALTERNATIVE authority-only hidden future consistent with an IDENTICAL PUBLIC root, and (b) whether a ONE-TIME Kiwi recommendation is equivalent to COMMITTING to Kiwi's public action policy for three genuine 24-frame locks.
+
+**Actual implemented OFFLINE conditional futures sampling**:
+[`rook-private-future-authority.js`](../src/analysis/rook-private-future-authority.js) is explicitly forbidden from bot selection. Original authority state is restored at the SAME public checkpoint. Scenario 0 retains the entire exact original private continuation. Scenarios 1/2 shuffle only unexposed positions **within individual seven-bag segments**, keeping the already-consumed bag boundary, same original current piece, board, Hold, attack packet and **NEXT5 exactly unchanged**. They also resample future 7-bag generator and hole RNG state without leaking it or mutating existing public incoming packets. All treatments WITHIN one scenario inherit **identical opaque private state** byte-for-byte. No unseen bag tail, hole RNG, checkpoint or alternative future enters ROOK or pinned Kiwi WASM. Unit tests cover real bag-boundary preservation, canonical public structural equality across engine-restore property order, and deterministic identical private authority snapshots within each paired scenario. [First multiverse CI #38101869979](https://github.com/jush0147/tetrp/actions/runs/38101869979) passed public future contract but surfaced a FALSE negative in the live check due to comparing JSON object *property insertion order* rather than equivalent visible state; corrected and regression-locked in commits [`388f070`](https://github.com/jush0147/tetrp/commit/388f0706d286b088a0574ad746074fdfc4001438) and [`5be348a`](https://github.com/jush0147/tetrp/commit/5be348a6005527e77b68d7b6cf938e49db736f6a).
+
+**Three controlled treatments, each from SAME original public ROOK-vs-Kiwi natural strategic conflict**:
+- A: ROOK-selected root, then ordinary ROOK policy every subsequent lock.
+- B: Kiwi-selected legal root (may be genuine Hold), then ordinary ROOK policy.
+- C: exactly the SAME Kiwi-selected legal root as B, then use pinned Kiwi public policy through the THIRD true locked piece, then return to ordinary ROOK.
+All branches face pinned Kiwi opponent with the same authority checkpoint within scenario, and public input only. C vs B is specifically the added multi-step policy commitment, with the root chosen action fixed; B vs A is only the root-choice treatment. Both policies search freshly on each *new player-visible* state: no fake pre-scripted SRS+ moves for hidden NEXT pieces. ROOK 3000 search node budget, pinned Kiwi 32768 in this mechanism experiment (unequal CPU, not a performance head-to-head). Hold remains legal; before-KO trajectories are followed 4,8,16,32 synchronous 24-frame locks. Every terminal-before-horizon snapshot is explicitly CENSORED, not zero-reward; **all window results are deliberately UNSCORED**, even if an actual early KO occurs.
+
+The first experiment runs two NEW original seed contexts **67720/67721**, three different conditioned hidden futures per original context, THREE correlated A/B/C treatments per future, up to **18 branches** total. Only **two original public positions** and multiple conditioned scenarios, NOT 18 independent KO games, win-rate points or true train/test sets.
+[Corrected CI #38101948213](https://github.com/jush0147/tetrp/actions/runs/38101948213) passed future/public-contract unit tests; full 3-future x 3-treatment comparisons were still RUNNING when logged here. Do not claim a reproducible strategy effect until those outputs are available and verified. If no eligible meaningful conflict exists before natural KO, harness returns explicit no-target status, not fabricated success.
+
+**Go/no-go**: First check private sampling actually changes authority continuations after public NEXT5, that A-vs-B and B-vs-C are identifiable on real later board states, and that effects persist or disappear across conditioned futures; do NOT promote a 3-lock Kiwi imitation policy without actual equal-compute full-KO validation on independent seeds. Main/default ROOK/Kiwi unmodified, PR #6 Draft.
