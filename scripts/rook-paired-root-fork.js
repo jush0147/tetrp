@@ -73,13 +73,19 @@ const clone=d=>{
 
 function choosePrepared(d,forced=null,policy='rook'){
   let computeMs=0,nodesEvaluated=0,holdCount=0;
+  const executedActions=[];
   decisionLoop:for(let step=0;step<2;step++){
     const view=d.view();
     if(!view.visible.playing)throw Error('Attempted to place after KO');
     const t=performance.now();
     let ranked;
     if(forced&&step===0)ranked=[forced];
-    else if(policy==='rook'){
+    // If the FORCED first action was Hold, BOTH paired arms MUST use the
+    // SAME post-Hold placement policy for their first actual locked piece.
+    // The three-lock Kiwi commitment begins at lock TWO, not during the
+    // post-Hold continuation of lock ONE. Otherwise the comparison of
+    // 'one Kiwi root' vs 'three Kiwi locks' has different FIRST LOCKS.
+    else if((forced&&step===1?'rook':policy)==='rook'){
       const report=chooseMove(view.visible,settings);
       nodesEvaluated+=report.diagnostics.evaluated;
       ranked=report.ranked;
@@ -115,7 +121,9 @@ function choosePrepared(d,forced=null,policy='rook'){
           if(!validatePlacement(view.visible,request))
             throw Error('No public SRS+ path for this root candidate');
           d.prepare(request,view.revision);
-          return {revision:view.revision,computeMs,nodesEvaluated,holdCount};
+          executedActions.push(actionSignature(action));
+          return {revision:view.revision,computeMs,nodesEvaluated,
+            holdCount,executedActions};
         }
         if(kind!=='hold'||step!==0)
           throw Error('Bad or repeated Hold in fork KO');
@@ -124,6 +132,7 @@ function choosePrepared(d,forced=null,policy='rook'){
           samePiece:hold.samePiece}},view.revision);
         d.commit(view.revision);
         holdCount++;
+        executedActions.push(actionSignature(action));
         continue decisionLoop;
       }catch(e){
         lastError=e;
@@ -403,6 +412,7 @@ for(const futureScenario of futureScenarios){
       pair,nodes:0,searchMs:0,holds:0,
       perSideCpuMs:[0,0],perSideNodes:[0,0],
       locks:beforeFork,transfers:[],firstHorizon:null,
+      first3LockActions:[],firstLockAuthority:null,
       windows:[],committedKiwiLocks:0,error:null});
   }
 }
@@ -423,6 +433,15 @@ for(const v of variants){
         v.locks===beforeFork?v.root:null,
         continueKiwi?'kiwi':'rook');
       if(continueKiwi)v.committedKiwiLocks++;
+      if(v.locks-beforeFork<3){
+        v.first3LockActions.push({lock:v.locks-beforeFork+1,
+          selectedPolicy:continueKiwi?'kiwi':'rook',
+          forcedRoot:v.locks===beforeFork,
+          candidateActions:a.plans[0].executedActions,
+          opponentActions:a.plans[1].executedActions});
+      }
+      if(v.locks===beforeFork)v.firstLockAuthority=
+        v.pair.map(d=>d.engine.serialize());
       v.transfers=a.transfers;
       v.searchMs+=a.plans.reduce((n,p)=>n+p.computeMs,0);
       v.nodes+=a.plans.reduce((n,p)=>n+p.nodesEvaluated,0);
@@ -456,7 +475,8 @@ const results=variants.map(v=>{
     ...(conditionalFutures?{
       futureScenario:v.futureScenario,
       treatment:v.treatment,
-      committedKiwiLocks:v.committedKiwiLocks}:{}),
+      committedKiwiLocks:v.committedKiwiLocks,
+      first3LockActions:v.first3LockActions}:{}),
     rootRankAmongAll:v.rootRank,
     rootSignature:v.rootSignature,
     locked:v.locks,
@@ -490,6 +510,18 @@ const results=variants.map(v=>{
 const identicalContinuation=variants[0].pair.every((d,i)=>
   Buffer.compare(Buffer.from(d.engine.serialize()),
     Buffer.from(variants[1].pair[i].engine.serialize()))===0);
+if(conditionalFutures){
+  for(const scenario of futureScenarios){
+    const [a,b,c]=variants.filter(v=>v.futureScenario===scenario);
+    if(!b.firstLockAuthority||!c.firstLockAuthority||
+      b.firstLockAuthority.some((state,i)=>
+        state!==c.firstLockAuthority[i]))
+      throw Error('FIRST_LOCK_NOT_IDENTICAL: Kiwi-only vs Kiwi-three-lock strategy cannot be compared');
+    if(b.first3LockActions[0]?.candidateActions.join('|')!==
+      c.first3LockActions[0]?.candidateActions.join('|'))
+      throw Error('FIRST_LOCK_ACTION_DIFFERENCE: both arms must execute identical first locked piece');
+  }
+}
 const conditionalReport=conditionalFutures?{
   conditionalPrivateScenarios:futureCount,
   treatmentsPerScenario:treatments.map(x=>x.name),
