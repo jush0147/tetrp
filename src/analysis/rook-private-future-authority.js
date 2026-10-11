@@ -8,7 +8,13 @@ import {seedState,random} from '../random.js';
 import {visibleState} from './visible-state.js';
 
 const BAG=new Set('zlosijt');
-const toKey=v=>JSON.stringify(v);
+// Engine.deserialize canonically orders private-object keys. Objects built
+// by subsequent live moves can have the same values in a different insertion
+// order: never use raw JSON property order as a public-state equality test.
+const canonical=v=>Array.isArray(v)?v.map(canonical):
+  v&&typeof v==='object'?
+    Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
+const toKey=v=>JSON.stringify(canonical(v));
 export function sampleConditionalPrivateFuture(engine,{
   seed,scenario,side=0,visibleBaseline=null}={}){
   if(!Number.isSafeInteger(seed)||!Number.isSafeInteger(scenario)||
