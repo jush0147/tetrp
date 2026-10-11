@@ -9,6 +9,7 @@ import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {publicBoardFeatures} from '../src/analysis/rook-realized-value-data.js';
+import {sampleConditionalPrivateFuture} from '../src/analysis/rook-private-future-authority.js';
 import {chooseMove} from '../src/analysis/rook.js';
 import {actionSignature} from '../src/analysis/rook-disagreement.js';
 import {validatePlacement} from '../src/analysis/placement-authority.js';
@@ -18,6 +19,9 @@ import {assertSimultaneousPair,assertMatchingOpening,scoreKO}
 const seed=Number(process.env.SEED??67620);
 let beforeFork=Number(process.env.FORK_TURN??12);
 const windowed=process.env.FORK_STRATEGIC_WINDOWS==='1';
+const conditionalFutures=process.env.FORK_CONDITIONAL_FUTURES==='1';
+const futureCount=Number(process.env.CONDITIONAL_FUTURE_COUNT??3);
+const strategyCommitLocks=Number(process.env.KIWI_STRATEGY_LOCKS??3);
 const minimumStrategicTurn=Number(process.env.MIN_STRATEGIC_TURN??8);
 const maximumStrategicTurn=Number(process.env.MAX_STRATEGIC_TURN??28);
 const strategicCheckpoints=[4,8,16,32];
@@ -35,7 +39,11 @@ if(!Number.isSafeInteger(seed)||!Number.isInteger(beforeFork)||
   !Number.isInteger(maximumStrategicTurn)||maximumStrategicTurn>100||
   maximumStrategicTurn<minimumStrategicTurn||
   (windowed&&(opponentPolicy!=='kiwi'||identicalControl||
-    cap<maximumStrategicTurn+32)))
+    cap<maximumStrategicTurn+32))||
+  !Number.isInteger(futureCount)||futureCount<1||futureCount>8||
+  !Number.isInteger(strategyCommitLocks)||strategyCommitLocks<1||
+  strategyCommitLocks>8||
+  (conditionalFutures&&(!windowed||identicalControl||futureCount<2)))
   throw Error('Invalid real-KO root fork setup');
 
 if(opponentPolicy==='kiwi')
@@ -139,13 +147,13 @@ function deliver(pair,packets){
   }
   assertSimultaneousPair(pair);
 }
-function lockRound(pair,forced=null){
+function lockRound(pair,forced=null,candidatePolicy='rook'){
   if(!pair.every(d=>d.engine.state.playing))
     throw Error('Tried to lock a KOed pair');
   const startFrame=assertSimultaneousPair(pair);
   // BOTH players pick from their own public snapshot before EITHER locks.
   const plans=pair.map((d,i)=>choosePrepared(d,i===0?forced:null,
-    i===0?'rook':opponentPolicy));
+    i===0?candidatePolicy:opponentPolicy));
   if(assertSimultaneousPair(pair)!==startFrame)
     throw Error('Decisions must not advance synchronized battle frame');
   for(let i=0;i<2;i++)pair[i].commit(plans[i].revision);
@@ -354,20 +362,50 @@ const originSerialized=original.map(d=>d.engine.serialize());
 // If the original private RNG or planner state differs despite identical
 // actions and opponent, any claimed action treatment effect is invalid.
 const roots=identicalControl?[first,first]:[first,second];
-const variants=roots.map((root,index)=>{
-  const pair=original.map(clone);
-  if(pair.some((d,i)=>Buffer.compare(Buffer.from(d.engine.serialize()),
-    Buffer.from(originSerialized[i]))!==0))
-    throw Error('Restored fork authority does not reproduce checkpoint');
-  if(assertSimultaneousPair(pair)!==originFrame)
-    throw Error('Unmatched private authority fork clock');
-  return {index,root,rootSignature:actionSignature(root),
-    rootRank:report.ranked.findIndex(x=>actionSignature(x)===
-      actionSignature(root)),pair,
-    nodes:0,searchMs:0,holds:0,
-    perSideCpuMs:[0,0],perSideNodes:[0,0],locks:beforeFork,
-    transfers:[],firstHorizon:null,windows:[],error:null};
-});
+const treatments=conditionalFutures?[
+  {name:'rook-root-then-rook',root:first},
+  {name:'kiwi-root-then-rook',root:second},
+  {name:'kiwi-root-plus-kiwi-commit',root:second}
+]:roots.map((root,index)=>({name:index===0?'first-place':'second-place',root}));
+const futureScenarios=conditionalFutures?
+  Array.from({length:futureCount},(_,i)=>i):[0];
+const variants=[];
+for(const futureScenario of futureScenarios){
+  let commonPrivate=null;
+  for(const [index,treatment] of treatments.entries()){
+    const pair=original.map(clone);
+    const futureInfo=pair.map((d,side)=>{
+      const sampled=conditionalFutures?
+        sampleConditionalPrivateFuture(d.engine,{
+          seed,scenario:futureScenario,side,
+          visibleBaseline:original[side].view().visible}):
+        {changed:false,scenario:0,publicIdentical:true};
+      // BotDemo uses history[0] when verifying a genuine authority
+      // placement. Keep history consistent with the altered PRIVATE
+      // conditional checkpoint.
+      d.history[0]=d.engine.serialize();
+      return sampled;
+    });
+    const bytes=pair.map(d=>d.engine.serialize());
+    if(conditionalFutures){
+      if(commonPrivate&&bytes.some((v,i)=>v!==commonPrivate[i]))
+        throw Error('FORK_TREATMENTS_HAVE_DIFFERENT_PRIVATE_FUTURES');
+      commonPrivate=bytes;
+    }else if(bytes.some((v,i)=>v!==originSerialized[i]))
+      throw Error('Restored fork does not reproduce original checkpoint');
+    if(assertSimultaneousPair(pair)!==originFrame)
+      throw Error('Unmatched private authority fork clock');
+    variants.push({index,root:treatment.root,treatment:treatment.name,
+      futureScenario,futureInfo,
+      rootSignature:actionSignature(treatment.root),
+      rootRank:report.ranked.findIndex(x=>
+        actionSignature(x)===actionSignature(treatment.root)),
+      pair,nodes:0,searchMs:0,holds:0,
+      perSideCpuMs:[0,0],perSideNodes:[0,0],
+      locks:beforeFork,transfers:[],firstHorizon:null,
+      windows:[],committedKiwiLocks:0,error:null});
+  }
+}
 
 for(const v of variants){
   const baselineCounters=v.pair.map(d=>
@@ -378,8 +416,13 @@ for(const v of variants){
       deliver(v.pair,v.transfers);
       v.transfers=[];
       if(!v.pair.every(d=>d.engine.state.playing))break;
+      const continueKiwi=conditionalFutures&&
+        v.treatment==='kiwi-root-plus-kiwi-commit'&&
+        v.locks-beforeFork<strategyCommitLocks;
       const a=lockRound(v.pair,
-        v.locks===beforeFork?v.root:null);
+        v.locks===beforeFork?v.root:null,
+        continueKiwi?'kiwi':'rook');
+      if(continueKiwi)v.committedKiwiLocks++;
       v.transfers=a.transfers;
       v.searchMs+=a.plans.reduce((n,p)=>n+p.computeMs,0);
       v.nodes+=a.plans.reduce((n,p)=>n+p.nodesEvaluated,0);
@@ -410,13 +453,22 @@ const results=variants.map(v=>{
   const outcome=scoreKO({alive:states.map(s=>s.playing),
     rounds:v.locks,cap:windowed?beforeFork+32:cap,error:v.error});
   return {fork:v.index,
+    ...(conditionalFutures?{
+      futureScenario:v.futureScenario,
+      treatment:v.treatment,
+      committedKiwiLocks:v.committedKiwiLocks}:{}),
     rootRankAmongAll:v.rootRank,
     rootSignature:v.rootSignature,
     locked:v.locks,
     authorityStartFrame:originFrame,
-    termination:outcome.termination,
-    scored:outcome.scored,
-    winner:outcome.scored?outcome.winnerSlot===0?'candidate':'opponent':null,
+    termination:windowed?(
+      v.error?'invalid-window':
+      outcome.termination==='KO'?'KO-before-window':
+      outcome.termination==='double-KO'?'double-KO-before-window':
+      'window-cap'):outcome.termination,
+    scored:!windowed&&outcome.scored,
+    winner:!windowed&&outcome.scored?
+      outcome.winnerSlot===0?'candidate':'opponent':null,
     error:v.error,
     ...(windowed?{windows:v.windows}:{}),
     firstHorizon:v.firstHorizon??{
@@ -438,6 +490,24 @@ const results=variants.map(v=>{
 const identicalContinuation=variants[0].pair.every((d,i)=>
   Buffer.compare(Buffer.from(d.engine.serialize()),
     Buffer.from(variants[1].pair[i].engine.serialize()))===0);
+const conditionalReport=conditionalFutures?{
+  conditionalPrivateScenarios:futureCount,
+  treatmentsPerScenario:treatments.map(x=>x.name),
+  strategyCommitLocks,
+  scenarios:futureScenarios.map(scenario=>{
+    const q=variants.filter(v=>v.futureScenario===scenario);
+    const [a,b,c]=q;
+    return {scenario,
+      privateScenarioConditionedOnOriginalPublic:true,
+      effectiveTreatmentStart:beforeFork,
+      rootOnlyFirstVersusKiwi:compareWindowTrajectories([a,b]),
+      kiwiContinuationEffectGivenSameRoot:
+        compareWindowTrajectories([b,c]),
+      treatmentResults:results.filter(v=>v.futureScenario===scenario)};
+  }),
+  publicFirstChoiceIdenticalAcrossScenarios:true,
+  conditionalNote:'Multiple hidden futures SHARE one public original game position; scenarios are paired conditional robustness samples, not independent match seeds or outcome-value training labels.'
+}:null;
 if(identicalControl&&(!identicalContinuation||
   variants[0].locks!==variants[1].locks))
   throw Error('IDENTICAL_FORK_CONTROL_DRIFT: same root and private state produced different authoritative future');
@@ -455,11 +525,13 @@ const output={format:'rook-authority-paired-root-counterfactual/1',
     'pinned Kiwi WASM, identical authority state at split':
     'original ROOK, identical authority state at split',
   scoredShortGames:false,
-  correlatedForksPerOriginalSeed:2,
+  correlatedForksPerOriginalSeed:conditionalFutures?
+    futureCount*treatments.length:2,
+  ...(conditionalFutures?{conditionalExperiment:conditionalReport}:{}),
   ...(windowed?{strategicWindow:true,strategicSelection:strategicTarget.meta,
     horizons:strategicCheckpoints,strategicScreen,
-    pairedWindowComparisons:
-      compareWindowTrajectories(variants),scoredWindowTrial:false}:{}),
+    pairedWindowComparisons:compareWindowTrajectories(variants),
+    scoredWindowTrial:false}:{}),
   rootChosenByOriginalRook:actionSignature(report)===actionSignature(first)?
     'first-place':'hold-or-different',
   results,
