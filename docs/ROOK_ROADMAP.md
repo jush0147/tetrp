@@ -2285,3 +2285,117 @@ imply the three-lock option is a stronger bot:
 it only repairs causal comparability of
 the experimental interventions. Main/ROOK/Kiwi
 unchanged, PR #6 Draft.
+
+
+### 2026-10-11: three-lock strategy FIRST-LOCK fidelity corrected; seed-level policy-vs-policy vector gate complete
+
+**Completed** [corrected three-strategy / private-future authority fidelity #38103623208](https://github.com/jush0147/tetrp/actions/runs/38103623208):
+all FOUR jobs SUCCESS (1 public/7-bag/private-future contract, and
+3 full research matrices on original independent public seeds
+**67720, 67722, 67723**). All selected genuinely material,
+player-visible **Hold-vs-Place** ROOK-vs-pinned-Kiwi
+conflicts, at natural turns **9, 12, 11**.
+Each seed is **ONE original public position**, sampled under
+three CONDITIONAL legal authority-private futures.
+Each conditional future contains correlated branches
+A=ROOK complete first action then ROOK,
+B=pinned Kiwi complete first action including post-Hold
+placement then ROOK,
+C=IDENTICAL pinned Kiwi first actual locked piece as B
+then pinned Kiwi on actual locks 2/3 before ROOK.
+No future bag/hole/hidden state is used by either bot.
+The authority asserts full PRIVATE serialized engine state
+of BOTH candidate and opponent **byte-identical B-vs-C
+after the first real lock** in ALL 9 paired future samples.
+If actual decisions on locks 2/3 are also the same, any
+complete later board/attack difference is INVALID.
+Thus the first-lock-Hold causal confound of
+[#38101948213](https://github.com/jush0147/tetrp/actions/runs/38101948213)
+is now expressly repaired rather than papered over.
+The old B/C causal numbers should NOT be reused.
+Source commits [`ac9b3c1`](https://github.com/jush0147/tetrp/commit/ac9b3c15f88b874dcb9fba8cd2d9859a96fc7093),
+[`00570ad`](https://github.com/jush0147/tetrp/commit/00570adeb13b0d6c14ba1be9102673f4640bde8c),
+[`a71991b`](https://github.com/jush0147/tetrp/commit/a71991bdcb775e800dfbd14a78f12058b1710228)
+and strict CI [`8df53e3`](https://github.com/jush0147/tetrp/commit/8df53e3e09c69e529fe3d076df6c3fca5bde6797).
+
+**Real action choice divergence was measured, not assumed:**
+- At original seed **67720**, next Kiwi vs ROOK decisions differed
+  in actual locked actions at second and/or third lock in all
+  three conditional future scenarios; 67722 likewise.
+- At original seed **67723**, scenario 0 genuinely differed, but
+  scenario 1 and 2 took EXACT SAME candidate actions in locks
+  2 and 3; there was therefore ZERO following board, public
+  state or actual combat difference through all observed
+  *complete* horizons (4/8/16 and +32 when uncensored).
+  These identical-action scenarios are a meaningful NEGATIVE
+  CONTROL proving a label change alone does not invent effect.
+- Corrected B-minus-C actual **sent** lines at +16:
+  67720 **+4, 0, -3** across conditioned futures;
+  67722 **-6, 0, -5**;
+  67723 **+4, 0, 0**.
+  Positive means B=Kiwi-first-then-ROOK sent more,
+  negative means C=Kiwi-three-then-ROOK sent more.
+  Directions can reverse under legal hidden future.
+  These are NOT independent seed replications nor KO.
+
+**Strict per-original-whole-seed postprocess, immutable
+artifact source**: 
+[`rook-strategy-fidelity-audit.js`](../scripts/rook-strategy-fidelity-audit.js)
+downloads the EXACT 67720/67722/67723 original frozen real
+authority artifacts from the successful #38103623208 run.
+It asserts first B/C actual LOCK equality and
+zero downstream causal effect for all actually identical
+second/third action chains. The artifact
+[whole-seed audit #38105077610](https://github.com/jush0147/tetrp/actions/runs/38105077610)
+PASSED. It never counts nine hidden-future scenarios,
+multiple treatment forks or four correlated time
+horizons as independent games.
+
+**Further vector-Pareto check (NO arbitrary APP weight)**:
+the corrected [Pareto/audit CI #38105146899](https://github.com/jush0147/tetrp/actions/runs/38105146899)
+also PASSED, judging B versus C only in paired, both-alive
+completed windows by actual `sent` (higher preferred),
+`tanked` (lower), player public `heightMax`
+(lower) and real board `holes` (lower).
+Four-dimensional dominance requires no worse on ALL
+features, better on AT LEAST ONE. This is a
+**descriptive board/attack vector**, NOT a reward
+function, win probability or physical account
+of garbage timing. Results across conditioned,
+CORRELATED future scenarios:
+
+| Post-fork +locks | B dominates C | C dominates B | tradeoff/conflict | exact equality | censored |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| 4 | 6 | 0 | 1 | 2 | 0 |
+| 8 | 3 | 3 | 1 | 2 | 0 |
+| 16 | 0 | 1 | 6 | 2 | 0 |
+| 32 | 0 | 1 | 5 | 1 | 2 |
+
+The +32 denominator is only **7 surviving complete
+paired conditioned futures**; two are truly censored
+by an early actual Tetrp KO. These counts must NOT
+be rephrased as 6 wins / 1 win or 9 independent trials;
+the entire experiment rests on just 3 independent
+original game seeds, all preselected for a material
+public Hold-vs-Place conflict at shallow natural
+turn 9-12, with Kiwi 32768 vs ROOK 3000 search
+nodes (NOT matched CPU). The seemingly clear
+B Pareto dominance at +4 disappears at +16,
+where six active futures exhibit genuine multiobjective
+tradeoffs. **Early sent/board advantage does NOT
+identify a stronger long-run strategy.**
+
+**Decision: no promotion and no spurious tiny-sample
+parameter search.** This controlled A/B/C experiment
+is valuable as a sound mechanism and strict negative
+control; it is NOT enough evidence to copy Kiwi for
+3 locks, not enough to train a robust conditional
+strategy switching policy, and cannot show ROOK
+beats Kiwi. The next genuine strategy-level research
+step must choose *why a public state calls for a
+specific sustained intent* (e.g. maintaining attack
+tempo versus defending under actual pending garbage),
+then test that PUBLIC policy against its own ablation
+with new independent full-KO original seeds, hold
+and CPU parity. The production ROOK, main and
+pinned Kiwi are UNTOUCHED; PR #6 remains Draft.
