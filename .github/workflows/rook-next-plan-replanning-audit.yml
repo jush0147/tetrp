@@ -54,6 +54,10 @@ jobs:
             y.stillLegalPlanActuallyChosenByFreshROOK+
               y.stillLegalPlanAbandonedByFreshROOK!==
               y.fullLegalNextMoveWitnesses||
+            y.abandonedHoldModeChange+
+              y.abandonedDifferentPiece+
+              y.abandonedSamePieceDifferentPlacementOrSpin!==
+              y.stillLegalPlanAbandonedByFreshROOK||
             x.independentFullKOWinEvidence!==0||!x.noPolicyPromotion)
             throw Error('Invalid seed-level forecast-vs-actual-choice evidence or inflated independent wins');
           console.log(JSON.stringify({
@@ -61,6 +65,10 @@ jobs:
             correlatedNextPiecePublicForecasts:70,
             fullySrsLegalUnderUnchangedPublicState:57,
             abandonedDespiteFullyLegal:23,
+            abandonedBecauseHoldModeChanged:y.abandonedHoldModeChange,
+            abandonedBecausePieceChanged:y.abandonedDifferentPiece,
+            abandonedOnSamePieceGeometryOrSpin:
+              y.abandonedSamePieceDifferentPlacementOrSpin,
             newlyIncomingGarbageInvalidatedPrerequisites:13,
             validatedKOWins:0,
             conclusion:'Public next-step SRS reachability does not imply ROOK reanalysis prefers same move, still less imply better full KO.'
