@@ -413,6 +413,7 @@ for(const futureScenario of futureScenarios){
       perSideCpuMs:[0,0],perSideNodes:[0,0],
       locks:beforeFork,transfers:[],firstHorizon:null,
       first3LockActions:[],firstLockAuthority:null,
+      thirdLockAuthority:null,
       windows:[],committedKiwiLocks:0,error:null});
   }
 }
@@ -441,6 +442,8 @@ for(const v of variants){
           opponentActions:a.plans[1].executedActions});
       }
       if(v.locks===beforeFork)v.firstLockAuthority=
+        v.pair.map(d=>d.engine.serialize());
+      if(v.locks===beforeFork+2)v.thirdLockAuthority=
         v.pair.map(d=>d.engine.serialize());
       v.transfers=a.transfers;
       v.searchMs+=a.plans.reduce((n,p)=>n+p.computeMs,0);
@@ -520,6 +523,15 @@ if(conditionalFutures){
     if(b.first3LockActions[0]?.candidateActions.join('|')!==
       c.first3LockActions[0]?.candidateActions.join('|'))
       throw Error('FIRST_LOCK_ACTION_DIFFERENCE: both arms must execute identical first locked piece');
+    const exactlySameFirstThree=b.first3LockActions.length===3&&
+      c.first3LockActions.length===3&&
+      b.first3LockActions.every((row,i)=>
+        row.candidateActions.join('|')===
+          c.first3LockActions[i].candidateActions.join('|'));
+    if(exactlySameFirstThree&&b.thirdLockAuthority&&c.thirdLockAuthority&&
+      b.thirdLockAuthority.some((state,i)=>
+        state!==c.thirdLockAuthority[i]))
+      throw Error('STRATEGY_DIVERGED_WITH_IDENTICAL_LOCKS: engine causal attribution invalid');
   }
 }
 const conditionalReport=conditionalFutures?{
@@ -532,6 +544,19 @@ const conditionalReport=conditionalFutures?{
     return {scenario,
       privateScenarioConditionedOnOriginalPublic:true,
       effectiveTreatmentStart:beforeFork,
+      sameFirstLockedPieceAndPrivateAuthority:
+        Boolean(b.firstLockAuthority&&c.firstLockAuthority)&&
+        b.firstLockAuthority.every((state,i)=>
+          state===c.firstLockAuthority[i]),
+      futureTwoLockActionDifferences:[1,2].map(i=>({
+        subsequentLock:i+1,
+        bothReached:Boolean(b.first3LockActions[i]&&
+          c.first3LockActions[i]),
+        differentChoices:Boolean(b.first3LockActions[i]&&
+          c.first3LockActions[i])&&
+          b.first3LockActions[i].candidateActions.join('|')!==
+          c.first3LockActions[i].candidateActions.join('|')
+      })),
       rootOnlyFirstVersusKiwi:compareWindowTrajectories([a,b]),
       kiwiContinuationEffectGivenSameRoot:
         compareWindowTrajectories([b,c]),
