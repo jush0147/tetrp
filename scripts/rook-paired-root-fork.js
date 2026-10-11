@@ -20,6 +20,7 @@ const cap=Number(process.env.MAX_LOCKS??2000);
 const nodes=Number(process.env.ROOK_NODES??6000);
 const opponentPolicy=process.env.FORK_OPPONENT??'rook';
 const kiwiBudget=Number(process.env.KIWI_NODES??200000);
+const identicalControl=process.env.FORK_IDENTICAL_CONTROL==='1';
 if(!Number.isSafeInteger(seed)||!Number.isInteger(beforeFork)||
   beforeFork<0||beforeFork>100||!Number.isInteger(cap)||cap<1||
   cap>2000||cap<=beforeFork||!Number.isInteger(nodes)||nodes<100||
@@ -184,7 +185,11 @@ const originFrame=assertSimultaneousPair(original);
 // IMPORTANT: snapshots of BOTH authorities are identical at the split
 // between forks; the original hidden future is only restored inside Engine.
 const originSerialized=original.map(d=>d.engine.serialize());
-const variants=[first,second].map((root,index)=>{
+// A negative-control pair forces the SAME legal root into both copies.
+// If the original private RNG or planner state differs despite identical
+// actions and opponent, any claimed action treatment effect is invalid.
+const roots=identicalControl?[first,first]:[first,second];
+const variants=roots.map((root,index)=>{
   const pair=original.map(clone);
   if(pair.some((d,i)=>Buffer.compare(Buffer.from(d.engine.serialize()),
     Buffer.from(originSerialized[i]))!==0))
@@ -259,11 +264,19 @@ const results=variants.map(v=>{
       received:s.attack.totals.received
     }))};
 });
+const identicalContinuation=variants[0].pair.every((d,i)=>
+  Buffer.compare(Buffer.from(d.engine.serialize()),
+    Buffer.from(variants[1].pair[i].engine.serialize()))===0);
+if(identicalControl&&(!identicalContinuation||
+  variants[0].locks!==variants[1].locks))
+  throw Error('IDENTICAL_FORK_CONTROL_DRIFT: same root and private state produced different authoritative future');
 const output={format:'rook-authority-paired-root-counterfactual/1',
   independentSeed:seed,forkTurn:beforeFork,
   originalPublicNextCount:publicBefore.next.length,
   identicalAuthorityCheckpoint:true,opaqueHiddenFutureToBots:true,
-  publicRootCandidates:true,distinctRootActions:true,
+  publicRootCandidates:true,distinctRootActions:!identicalControl,
+  identicalRootControl:identicalControl,
+  identicalAuthorityContinuation:identicalControl?identicalContinuation:null,
   opponentKind:opponentPolicy,kiwiNodes:opponentPolicy==='kiwi'?kiwiBudget:null,
   synchronizedBattleFrames:true,pps:2.5,cap,
   candidatePolicy:'original ROOK after an individually forced legal root',
