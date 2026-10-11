@@ -64,6 +64,20 @@ test('the same scenario yields byte-identical private checkpoints for BOTH treat
     assert.equal(bytes[0],bytes[1]);
   }
 });
+test('public equivalence ignores innocuous nested object insertion order',()=>{
+  const d=demo(),before=d.view().visible;
+  const reversed=value=>Array.isArray(value)?value.map(reversed):
+    value&&typeof value==='object'?
+      Object.fromEntries(Object.keys(value).reverse().map(k=>[k,reversed(value[k])])):
+      value;
+  const equivalent=reversed(before);
+  assert.notEqual(JSON.stringify(equivalent),JSON.stringify(before));
+  const target=d.EngineType.restore(d.engine.serialize());
+  const result=sampleConditionalPrivateFuture(target,{
+    seed:67720,scenario:2,side:0,visibleBaseline:equivalent});
+  assert.equal(result.publicIdentical,true);
+  assert.deepEqual(visibleState(target.state),before);
+});
 test('private future sampler rejects invalid scenario and mismatched public views',()=>{
   const d=demo();
   assert.throws(()=>sampleConditionalPrivateFuture(d.engine,{
