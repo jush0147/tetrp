@@ -2907,3 +2907,19 @@ NO measured win improvement yet.
 - Code: `src/analysis/demo.js`, `scripts/rook-hold-counterfactual.js`, `scripts/rook-vs-kiwi.js`; workflow `.github/workflows/rook-hold-counterfactual-ko.yml` at commit `258badc`. Experimental continuation is only executed on opt-in and never changes normal ROOK, Kiwi or main.
 - GitHub connector returned only two unrelated skipped draft PR checks at commit `258badc`, and no verified counterfactual KO workflow result. **Do not claim workflow success or any new KO improvement.** Local clone unavailable in this runtime (DNS unreachable), and the tests were not locally executed.
 - Next P0: inspect whether the explicit workflow started, read first actual paired KO results or fix test/runtime failures; reject invalid forks and report per-seed results without treating correlated fork points as new independent games. If no eligible Hold-to-direct event in 67920–67922, expand fresh original independent seeds, not retrospective cherry-picked turns. Once the harness proves itself, use fresh seeds to compare a *deployable* publicly triggered Hold policy against reactive baseline across complete games. Keep PR #6 Draft.
+
+## 2026-10-11 VERIFIED first paired authority Hold-fork KO results
+
+[GitHub Actions #38126811123](https://github.com/jush0147/tetrp/actions/runs/38126811123) completed successfully at head 258badc: 3/3 seed jobs passed, 11/11 contract tests passed, each selected exactly ONE eligible actual Hold-prediction/direct-replan intervention from the ORIGINAL Kiwi-vs-ROOK game, then continued both paired authoritative arms to real KO. Each original game was intentionally capped at 90 locks and is **not scored**; the fork continuations independently used the full 2000-lock safety cap.
+
+| Original independent seed | Forced fork at original lock | Fresh/direct KO | Retained/forced Hold KO | delta ROOK survival | ROOK sent (fresh -> forced) |
+|---|---:|---|---|---:|---|
+| 67920 | 2 | Kiwi KO at 110 | Kiwi KO at 160 | +50 | 32 -> 90 |
+| 67921 | 2 | Kiwi KO at 165 | Kiwi KO at 52 | -113 | 81 -> 18 |
+| 67922 | 4 | Kiwi KO at 116 | Kiwi KO at 116 | 0 | 45 -> 45 |
+
+**Actual KO policy result:** both counterfactual arms lost all three seed trials to pinned Kiwi (0/3 each); no KO winner flipped, 0 capped, 0 invalid. No demonstrated Hold strategy improvement. These are selected conditional interventions within 3 independent ORIGINAL game seeds, NOT 6 independent new seeds, nor evidence of a deployable full-game policy improvement. The very large but opposite early survival shifts show that local Hold commitment can matter, without a stable positive direction. Kiwi 32768 nodes, ROOK 3000 evaluations, CPU budgets NOT matched.
+
+**Further verification submitted:** commit 71fc95f adds immutable-clone equality assertions, authoritative first-placed-piece action records, post-first-placement public-state fingerprint divergence requirement, and public post-fork health/attack at +1/+4/+8/+16/+32/+64 locks. Commit 3fb7789 updates the experiment workflow to assert branch divergence and print window stats; [new run #38127786975](https://github.com/jush0147/tetrp/actions/runs/38127786975) was **queued at initial inspection**, so these NEW forensic checks were not yet validated at that moment. Earlier verified outcomes remain valid.
+
+**Next P0:** read #38127786975, fix any failure, determine whether the 67922 arms reconverge after the Hold reorder, quantify which early public health/attack differences precede the +50 and -113 outcomes, then define a public-state-only deployable conditional rule (not an oracle using retrospective outcome), and evaluate on NEW independent unselected full-match seeds. Keep PR #6 Draft, no main/default promotion.
