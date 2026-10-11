@@ -25,7 +25,7 @@ jobs:
         run: |
           node --check scripts/rook-vs-kiwi.js
           node --check scripts/rook-hold-counterfactual.js
-          node --test test/rook-authority-fork.test.js test/rook-plan-fidelity.test.js test/rook-ko-protocol.test.js
+          node --test test/rook-authority-fork.test.js test/rook-plan-fidelity.test.js test/rook-ko-protocol.test.js test/rook-hold-counterfactual.test.js
       - name: One original match, first eligible legal Hold-to-direct replanning fork
         env:
           SEEDS: ${{ matrix.seed }}
