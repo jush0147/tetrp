@@ -34,10 +34,24 @@ const rows=originalSeeds.map(seed=>{
       b.first3LockActions[0].candidateActions.join('|')!==
         c.first3LockActions[0].candidateActions.join('|'))
       throw Error('Different Kiwi FIRST lock invalidates continuation contrast');
+    const changed=s.futureTwoLockActionDifferences.some(v=>v.differentChoices);
+    // Strict negative control: if Kiwi and ROOK actually chose the SAME
+    // next two legal actions, and thereafter both arms use ROOK, identical
+    // private futures must continue identically at every complete horizon.
+    if(!changed){
+      for(const h of s.kiwiContinuationEffectGivenSameRoot){
+        if(!h.complete)continue;
+        if(h.identicalCandidateBoard!==true||
+          h.identicalOpponentBoard!==true||
+          h.identicalCandidatePublicState!==true||
+          h.occupiedCellMismatch!==0||
+          Object.values(h.firstMinusSecondCombat).some(value=>value!==0))
+          throw Error('UNEXPLAINED_STRATEGY_LABEL_EFFECT: same action chain unexpectedly diverged');
+      }
+    }
     return {
       scenario:s.scenario,
-      actionDifferenceOnLocks2or3:
-        s.futureTwoLockActionDifferences.some(v=>v.differentChoices),
+      actionDifferenceOnLocks2or3:changed,
       completeExtraDecisions:
         s.futureTwoLockActionDifferences.every(v=>v.bothReached),
       horizons:[4,8,16,32].map(horizon=>{
