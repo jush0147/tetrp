@@ -45,7 +45,7 @@ jobs:
               !['public-strategic-intent','reactive-strategic-intent']
                 .includes(s.kind))||
             r.identicalPublicDecisionChecks<1||
-            r.slots.some(s=>s.intentDecisions<1))
+            r.slots.some(s=>s.intentDecisions<1)))
             throw Error('Invalid true public equal-node strategy comparator');
           const report={
             format:'rook-sticky-vs-reactive-first-choice-screen/1',
