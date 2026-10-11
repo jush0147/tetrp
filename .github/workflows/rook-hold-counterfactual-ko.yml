@@ -55,7 +55,8 @@ jobs:
             if(f.seed!==x.seed||f.independentForkPairs!==1||
               !f.sameAuthorityInitialState||
               !f.hiddenFutureNeverPassedToBot||
-              !f.originalForecastUsesHold||!f.retained.forced||
+              !f.originalForecastUsesHold||!f.verifiedFirstActionDifference||
+              !f.retained.forced||
               f.reactive.forced)
               throw Error('Broken counterfactual fork');
             for(const arm of [f.reactive,f.retained]){
@@ -80,7 +81,17 @@ jobs:
             originalLocks:out.originalLocks,
             reactive:f?.reactive?.termination??null,
             retained:f?.retained?.termination??null,
-            deltaKO:f?.deltaKO??null}));
+            deltaKO:f?.deltaKO??null,
+            reactiveWinner:f?.reactive?.winner??null,
+            retainedWinner:f?.retained?.winner??null,
+            reactiveKOLocks:f?.reactive?.roundsFromStart??null,
+            retainedKOLocks:f?.retained?.roundsFromStart??null,
+            firstActionReactive:f?.reactive?.firstAction??null,
+            firstActionHold:f?.retained?.firstAction??null,
+            reactiveSent:f?.reactive?.slots?.[0]?.sent??null,
+            retainedSent:f?.retained?.slots?.[0]?.sent??null,
+            reactiveWindows:f?.reactive?.windows??null,
+            retainedWindows:f?.retained?.windows??null}));
           JS
       - uses: actions/upload-artifact@v4
         if: always()
