@@ -2221,3 +2221,67 @@ The first experiment runs two NEW original seed contexts **67720/67721**, three 
 [Corrected CI #38101948213](https://github.com/jush0147/tetrp/actions/runs/38101948213) passed future/public-contract unit tests; full 3-future x 3-treatment comparisons were still RUNNING when logged here. Do not claim a reproducible strategy effect until those outputs are available and verified. If no eligible meaningful conflict exists before natural KO, harness returns explicit no-target status, not fabricated success.
 
 **Go/no-go**: First check private sampling actually changes authority continuations after public NEXT5, that A-vs-B and B-vs-C are identifiable on real later board states, and that effects persist or disappear across conditioned futures; do NOT promote a 3-lock Kiwi imitation policy without actual equal-compute full-KO validation on independent seeds. Main/default ROOK/Kiwi unmodified, PR #6 Draft.
+
+
+### 2026-10-11: CRITICAL causal-fidelity correction to multi-future, 3-lock strategy study
+
+[Previous multiverse workflow #38101948213](https://github.com/jush0147/tetrp/actions/runs/38101948213)
+completed its public-only seven-bag tests and two original seed
+(67720, 67721) x three private-future x three treatment windows.
+The initial observations were **not policy-strength evidence**:
+- Root-once first-minus-Kiwi-root sent deltas at +16:
+  67720 +3/-2/+5; 67721 +9/-2/+10.
+- Initially reported B-versus-C extra-Kiwi-policy sent deltas at +16:
+  67720 +4/0/-3; 67721 -10/-2/-11.
+They show highly variable responses across conditioned hidden futures,
+but **the B-vs-C figures CANNOT YET be interpreted as isolated two
+EXTRA locks of Kiwi strategy.** A real audit found that when the
+forced common Kiwi root was HOLD, B's Hold-followup placement was
+selected by ROOK while C's Hold-followup placement was selected by
+Kiwi. So the two arms could have selected DIFFERENT **FIRST ACTUAL
+LOCKED PIECES** despite the same Hold command. Therefore the causal
+strategy-commitment contrast had a premature treatment divergence.
+Do not claim the old data establish that an additional two Kiwi-policy
+locks help or hurt. Root-only A-vs-B observational windows still
+represent valid once-forced-root treatments, with correlated scenarios
+and limited original seed count.
+
+**FIXED comparison** commits
+[`ac9b3c1`](https://github.com/jush0147/tetrp/commit/ac9b3c15f88b874dcb9fba8cd2d9859a96fc7093),
+[`00570ad`](https://github.com/jush0147/tetrp/commit/00570adeb13b0d6c14ba1be9102673f4640bde8c),
+[`a71991b`](https://github.com/jush0147/tetrp/commit/a71991bdcb775e800dfbd14a78f12058b1710228).
+In BOTH Kiwi-root treatment branches, when the first forced
+Kiwi decision is Hold, the rest of that same LOCK is finished
+by the SAME original pinned Kiwi policy. If the root was Place,
+both arms place identically by construction. After this
+complete first locked piece, arm B switches to ROOK,
+whereas C continues pinned Kiwi for locks **2 and 3**
+and only then switches to ROOK. The first lock is
+therefore a complete actual Kiwi decision, not a
+partial Hold followed by one bot's different placement.
+Experiment records per-lock actually executed action
+chains (including Hold and post-Hold Place), which
+policy selected each, and asserts byte-for-byte
+B-vs-C full PRIVATE authority state equality of both
+players after the first real lock. If next two
+candidate action chains match, the full private state
+after 3 locks MUST also match, else fail as
+non-causal/nondeterministic. If one arm dies before
+a requested +4/+8/+16/+32 checkpoint, censor it
+instead of fabricating an outcome.
+
+The strict fixed-fidelity CI
+[Actions #38103623208](https://github.com/jush0147/tetrp/actions/runs/38103623208)
+checks full seven-bag and public-only invariants,
+then repeats one original reference public seed
+67720 plus two NEW untouched original seeds
+**67722/67723**, each with 3 correlated private
+futures x (ROOK root, Kiwi root only,
+Kiwi root + two additional Kiwi locks).
+At this update initial public-future contract PASS,
+paired jobs pending/running; RESULTS UNKNOWN.
+Even a passing paired-fidelity test does not
+imply the three-lock option is a stronger bot:
+it only repairs causal comparability of
+the experimental interventions. Main/ROOK/Kiwi
+unchanged, PR #6 Draft.
