@@ -104,6 +104,7 @@ function prepareUntilPlace(demo,kind){
           holdCount++;break;
         }
         return {revision:view.revision,nodes,holdCount,searchMs,placement:result.move,
+          executionSpin:result.execution.spin,
           leafExtra,leafApplied,leafAborted,
           forecastNextStep:kind==='rook'&&i===0?search.forecastNextStep:null,
           forecastLength:kind==='rook'&&i===0?search.forecastLength:0};
@@ -144,6 +145,10 @@ function runPair(seed,order){
     holdMoves=[0,0],searchMs=[0,0],error=null,diagnostics=[];
   const leafExtra=[0,0],leafApplied=[0,0],leafAborted=[0,0];
   const pendingForecast=[null,null],forecastChecks=[];
+  // Purely offline comparison of each STILL LEGAL second-ply plan against
+  // what a fresh original ROOK public search ACTUALLY selected. Never
+  // alter its choice or force the old proposal.
+  const previousForecastForThisTurn=[null,null];
   let forecastAuditCpuMs=0,forecastEligibleOffered=0;
   // Authority outcomes ONLY; never used as search inputs by either bot.
   const recentPublicViews=[[],[]];
@@ -163,6 +168,7 @@ function runPair(seed,order){
       if(demos.some(d=>!d.engine.state.playing))break;
       const turnFrame=assertSimultaneousPair(demos);
       if(forecastAudit){
+        previousForecastForThisTurn.fill(null);
         for(let i=0;i<2;i++){
           const pending=pendingForecast[i];
           pendingForecast[i]=null;
@@ -183,6 +189,9 @@ function runPair(seed,order){
               'hold-valid-but-placement-unproven';
           }
           forecastAuditCpuMs+=performance.now()-start;
+          previousForecastForThisTurn[i]={
+            sampleIndex:forecastChecks.length,
+            forecastStep:pending.nextStep};
           forecastChecks.push({seed,order,fromTurn:pending.fromTurn,
             atActualTurn:lockSteps,forecastLength:pending.forecastLength,
             targetPiece:pending.nextStep.piece,
@@ -212,6 +221,28 @@ function runPair(seed,order){
       for(let i=0;i<2;i++){
         const plan=prepareUntilPlace(demos[i],kinds[i]);
         plans.push(plan);searchNodes[i]+=plan.nodes;holdMoves[i]+=plan.holdCount;
+        if(forecastAudit){
+          const past=previousForecastForThisTurn[i];
+          if(past){
+            const expected=past.forecastStep;
+            const actual=plan.placement;
+            const signature=cells=>cells.map(([x,y])=>x+','+y)
+              .sort().join(';');
+            const selectedSame=Boolean(actual)&&
+              expected.useHold===(plan.holdCount>0)&&
+              expected.piece===actual.piece&&
+              expected.spin===plan.executionSpin&&
+              signature(expected.cells)===signature(actual.cells);
+            const entry=forecastChecks[past.sampleIndex];
+            entry.replannedActualPiece=actual?.piece??null;
+            entry.replannedActuallyUsedHold=plan.holdCount>0;
+            entry.replannedActuallySamePublicForecast=selectedSame;
+            // If an actual next step is legal yet ROOK re-plans away, that
+            // is a SEARCH PREFERENCE difference, not a legality failure.
+            entry.legalButAbandoned=entry.verifiedPlacement===true&&
+              !selectedSame;
+          }
+        }
         if(forecastAudit&&kinds[i]==='rook'&&
           forecastChecks.length+Number(pendingForecast[i]!==null)<
             forecastAuditCap){
@@ -318,6 +349,11 @@ function runPair(seed,order){
       diagnosticCpuMs:+forecastAuditCpuMs.toFixed(2),
       counts:Object.fromEntries([...new Set(forecastChecks.map(x=>x.status))].map(
         status=>[status,forecastChecks.filter(x=>x.status===status).length])),
+      fullyLegalForecastReusedByFreshRook:forecastChecks.filter(x=>
+        x.verifiedPlacement===true&&
+        x.replannedActuallySamePublicForecast===true).length,
+      fullyLegalForecastAbandonedByFreshRook:forecastChecks.filter(x=>
+        x.legalButAbandoned===true).length,
       samples:forecastChecks,
       reason:'Beam geometric future is a hypothesis; next actual public state and SRS+ determine whether planned 2nd lock is possible.'
     }}:{})};
