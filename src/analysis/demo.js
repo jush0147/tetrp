@@ -83,6 +83,23 @@ export class BotDemo {
     return {state,visible,index:this.index,
     total:this.history.length-1,revision:this.revision,lastPlacement:this.metadata[this.index],
     stopped:!this.engine.state.playing};}
+  // Offline experimental authority checkpoint. Unlike constructing a new
+  // BotDemo, this preserves the EXACT private bag, garbage-hole RNG and
+  // incoming packets. Neither engine nor private state reaches chooseMove.
+  // The fork starts at its current lock, with an independent local history.
+  fork(){
+    if(this.pending)throw new Error('Cannot fork a prepared authority action');
+    const copy=Object.create(BotDemo.prototype);
+    copy.placementMode=this.placementMode;
+    copy.EngineType=this.EngineType;
+    copy.engine=this.EngineType.restore(this.engine.serialize());
+    copy.history=[copy.engine.serialize()];
+    copy.metadata=[null];
+    copy.index=0;
+    copy.revision=0;
+    copy.pending=null;
+    return copy;
+  }
   seek(index){
     if(!Number.isInteger(index)||index<0||index>=this.history.length)throw new Error('示範位置超出範圍。');
     this.engine=this.EngineType.restore(this.history[index]);this.index=index;this.pending=null;this.revision++;
