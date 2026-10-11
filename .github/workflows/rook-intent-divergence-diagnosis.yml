@@ -1,0 +1,84 @@
+name: ROOK first public strategy divergence forensic
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-intent-divergence-diagnosis.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-real-first-strategy-fork:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - seed: '67812'
+            cap: '220'
+          - seed: '67814'
+            cap: '350'
+          - seed: '67815'
+            cap: '450'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify public strategic controller and deterministic legal authority
+        run: |
+          node --check scripts/rook-vs-rook.js
+          node --test test/rook-strategic-intent.test.js test/rook-ko-protocol.test.js
+      - name: Reproduce first true legal action difference from one identical public position
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: ${{ matrix.cap }}
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          EXPERT_OPEN: '0'
+          EXPERT_STRATEGIC_INTENT: '1'
+          COMPARE_REACTIVE_STRATEGY: '1'
+          STRATEGIC_COMMIT_LOCKS: '3'
+        run: node scripts/rook-vs-rook.js > forensic.jsonl
+      - name: Validate and summarize no hidden info and true first public root disagreement
+        env:
+          EXPECT_SEED: ${{ matrix.seed }}
+          EXPECT_CAP: ${{ matrix.cap }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('forensic.jsonl','utf8').trim()
+            .split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Expected one seed with NO duplicate slot swap');
+          const r=rows[0],d=r.firstSamePublicDivergence;
+          if(r.error||r.seed!==Number(process.env.EXPECT_SEED)||
+            r.cap!==Number(process.env.EXPECT_CAP)||
+            !r.sameSeed||!r.simultaneousLocks||
+            r.swapRoles!=='0'||!r.expertStrategic||
+            !r.compareReactiveStrategy||
+            r.candidateNodeBudget!==3000||
+            r.baselineNodeBudget!==3000||
+            (d&&(!Number.isInteger(d.turn)||
+              d.turn>=r.cap||d.pairedChoices.length!==2||
+              d.pairedChoices[0].legalExecutedActions===
+                d.pairedChoices[1].legalExecutedActions))||
+            r.divergenceSnapshots.some(x=>
+              ![1,4,8,16,32].includes(x.afterLocks)||
+              x.slots?.length!==2))
+            throw Error('Invalid public strategic first disagreement evidence');
+          console.log(JSON.stringify({seed:r.seed,cap:r.cap,
+            originalIndependentSeedCount:1,
+            firstActualDifferentLegalActionAtIdenticalPublicState:d,
+            afterRootAuthoritativeHealth:r.divergenceSnapshots,
+            observedWholeResult:{turns:r.turns,
+              termination:r.termination,scored:r.scored,
+              winner:r.winner},
+            interpretation:'The original four-seed study is NOT retrained or rescored; these are explanatory partial replays. No new independent trial from a replay.'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-first-public-strategy-root-forensic-${{ matrix.seed }}
+          path: forensic.jsonl
+          retention-days: 30
