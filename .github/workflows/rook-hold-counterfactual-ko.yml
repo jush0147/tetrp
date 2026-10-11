@@ -1,0 +1,92 @@
+name: ROOK paired abandoned-Hold counterfactual authority KO
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-hold-counterfactual-ko.yml
+permissions:
+  contents: read
+jobs:
+  paired-original-seed-forks:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 115
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67920, 67921, 67922]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify authority fork and forecast contracts
+        run: |
+          node --check scripts/rook-vs-kiwi.js
+          node --check scripts/rook-hold-counterfactual.js
+          node --test test/rook-authority-fork.test.js test/rook-plan-fidelity.test.js test/rook-ko-protocol.test.js
+      - name: One original match, first eligible legal Hold-to-direct replanning fork
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '90'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          KIWI_NODES: '32768'
+          ROOK_FORECAST_AUDIT_SAMPLES: '40'
+          ROOK_HOLD_FORK: '1'
+        run: node scripts/rook-vs-kiwi.js > original-with-paired-fork.jsonl
+      - name: Validate no fabricated winners and paired full KO protocol
+        env:
+          EXPECT_SEED: ${{ matrix.seed }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const rows=readFileSync('original-with-paired-fork.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Must use exactly one original seed');
+          const x=rows[0],f=x.holdForkResult;
+          if(x.seed!==Number(process.env.EXPECT_SEED)||x.error||
+            x.order!==0||!x.sameSeed||!x.simultaneousLocks||
+            x.nodeBudgets.rook!==3000||x.nodeBudgets.kiwi!==32768||
+            x.holdForkSelected!==!!f)
+            throw Error('Wrong original authority conditions');
+          if(f){
+            if(f.seed!==x.seed||f.independentForkPairs!==1||
+              !f.sameAuthorityInitialState||
+              !f.hiddenFutureNeverPassedToBot||
+              !f.originalForecastUsesHold||!f.retained.forced||
+              f.reactive.forced)
+              throw Error('Broken counterfactual fork');
+            for(const arm of [f.reactive,f.retained]){
+              if(arm.error||arm.termination==='invalid-match'||
+                arm.roundsFromStart>2000||
+                (arm.scored!==true&&arm.winner!==null)||
+                (arm.termination==='capped'&&arm.winner!==null))
+                throw Error('Invalid or fabricated KO result');
+            }
+            if(f.deltaKO!==null&&
+              (!f.reactive.scored||!f.retained.scored))
+              throw Error('Invalid paired KO delta');
+          }
+          const out={seed:x.seed,originalLocks:x.lockSteps,
+            originalUnscored:!x.scored,eligibleFork:!!f,
+            counterfactual:f??null,
+            independentOriginalSeeds:1,
+            fullKOEvidence:f&&f.reactive.scored&&f.retained.scored?1:0,
+            noPolicyPromotion:true};
+          writeFileSync('hold-fork-result.json',JSON.stringify(out,null,2)+'\n');
+          console.log(JSON.stringify({seed:out.seed,eligibleFork:out.eligibleFork,
+            originalLocks:out.originalLocks,
+            reactive:f?.reactive?.termination??null,
+            retained:f?.retained?.termination??null,
+            deltaKO:f?.deltaKO??null}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-authority-paired-hold-fork-${{ matrix.seed }}
+          path: |
+            original-with-paired-fork.jsonl
+            hold-fork-result.json
+          retention-days: 30
