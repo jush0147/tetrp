@@ -8,6 +8,7 @@ import {Engine} from '../src/engine.js';
 import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
 import {BotDemo} from '../src/analysis/demo.js';
+import {publicBoardFeatures} from '../src/analysis/rook-realized-value-data.js';
 import {chooseMove} from '../src/analysis/rook.js';
 import {actionSignature} from '../src/analysis/rook-disagreement.js';
 import {validatePlacement} from '../src/analysis/placement-authority.js';
@@ -15,7 +16,11 @@ import {assertSimultaneousPair,assertMatchingOpening,scoreKO}
   from './rook-ko-protocol.js';
 
 const seed=Number(process.env.SEED??67620);
-const beforeFork=Number(process.env.FORK_TURN??12);
+let beforeFork=Number(process.env.FORK_TURN??12);
+const windowed=process.env.FORK_STRATEGIC_WINDOWS==='1';
+const minimumStrategicTurn=Number(process.env.MIN_STRATEGIC_TURN??8);
+const maximumStrategicTurn=Number(process.env.MAX_STRATEGIC_TURN??28);
+const strategicCheckpoints=[4,8,16,32];
 const cap=Number(process.env.MAX_LOCKS??2000);
 const nodes=Number(process.env.ROOK_NODES??6000);
 const opponentPolicy=process.env.FORK_OPPONENT??'rook';
@@ -25,7 +30,12 @@ if(!Number.isSafeInteger(seed)||!Number.isInteger(beforeFork)||
   beforeFork<0||beforeFork>100||!Number.isInteger(cap)||cap<1||
   cap>2000||cap<=beforeFork||!Number.isInteger(nodes)||nodes<100||
   !['rook','kiwi'].includes(opponentPolicy)||
-  !Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000)
+  !Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000||
+  !Number.isInteger(minimumStrategicTurn)||minimumStrategicTurn<0||
+  !Number.isInteger(maximumStrategicTurn)||maximumStrategicTurn>100||
+  maximumStrategicTurn<minimumStrategicTurn||
+  (windowed&&(opponentPolicy!=='kiwi'||identicalControl||
+    cap<maximumStrategicTurn+32)))
   throw Error('Invalid real-KO root fork setup');
 
 if(opponentPolicy==='kiwi')
@@ -150,14 +160,27 @@ function lockRound(pair,forced=null){
 
 let original=[makeDemo(),makeDemo()];
 assertMatchingOpening(original);
-let transfers=[],warmupLocks=0;
-while(warmupLocks<beforeFork&&original.every(d=>d.engine.state.playing)){
+let transfers=[],warmupLocks=0,strategicTarget=null;
+while((windowed?warmupLocks<=maximumStrategicTurn:
+  warmupLocks<beforeFork)&&original.every(d=>d.engine.state.playing)){
   deliver(original,transfers);
   transfers=[];
   if(!original.every(d=>d.engine.state.playing))break;
+  if(windowed&&warmupLocks>=minimumStrategicTurn){
+    const t=selectStrategicPublicRoots(original[0].view().visible);
+    if(t){strategicTarget=t;beforeFork=warmupLocks;break;}
+  }
+  if(windowed&&warmupLocks===maximumStrategicTurn)break;
   const next=lockRound(original);
   transfers=next.transfers;
   warmupLocks++;
+}
+if(windowed&&!strategicTarget){
+  console.log(JSON.stringify({format:'rook-strategic-divergence-windows/1',
+    status:'no-eligible-public-conflict',seed,independentGameSeeds:1,
+    availableWarmupLocks:warmupLocks,scored:false,
+    cause:'No pressured ROOK/Kiwi current-piece disagreement with different public immediate clear/spin outcomes before KO/turn limit.'}));
+  process.exit(0);
 }
 if(warmupLocks!==beforeFork||!original.every(d=>d.engine.state.playing))
   throw Error('FORK_SETUP_KO: chosen real match seed did not survive warmup');
@@ -166,11 +189,11 @@ if(!original.every(d=>d.engine.state.playing))
   throw Error('FORK_SETUP_GARBAGE_KO: no live root choice possible');
 
 const publicBefore=original[0].view().visible;
-const report=chooseMove(publicBefore,settings);
+const report=strategicTarget?.rookReport??chooseMove(publicBefore,settings);
 // The first candidate may be Hold, but compare exactly two REAL place
 // actions on CURRENT instead of inventing a placement for Held/NEXT6.
 const placeCandidates=report.ranked.filter(x=>x.kind==='place');
-const [first,second]=placeCandidates;
+const [first,second]=strategicTarget?.roots??placeCandidates;
 if(!first||!second||actionSignature(first)===actionSignature(second))
   throw Error('No two genuinely different legal public current roots');
 for(const a of [first,second]){
@@ -201,14 +224,15 @@ const variants=roots.map((root,index)=>{
       actionSignature(root)),pair,
     nodes:0,searchMs:0,holds:0,
     perSideCpuMs:[0,0],perSideNodes:[0,0],locks:beforeFork,
-    transfers:[],firstHorizon:null,error:null};
+    transfers:[],firstHorizon:null,windows:[],error:null};
 });
 
 for(const v of variants){
   const baselineCounters=v.pair.map(d=>
     structuredClone(d.engine.state.attack.totals));
   try{
-    while(v.locks<cap&&v.pair.every(d=>d.engine.state.playing)){
+    while(v.locks<(windowed?beforeFork+32:cap)&&
+      v.pair.every(d=>d.engine.state.playing)){
       deliver(v.pair,v.transfers);
       v.transfers=[];
       if(!v.pair.every(d=>d.engine.state.playing))break;
@@ -223,6 +247,9 @@ for(const v of variants){
         v.perSideNodes[i]+=a.plans[i].nodesEvaluated;
       }
       v.locks++;
+      if(windowed&&strategicCheckpoints.includes(v.locks-beforeFork))
+        v.windows.push(publicHorizon(v.pair,v.locks-beforeFork,
+          baselineCounters));
       if(v.locks===beforeFork+8){
         const now=v.pair.map(d=>d.engine.state.attack.totals);
         v.firstHorizon={locks:8,complete:true,
@@ -248,7 +275,9 @@ const results=variants.map(v=>{
     termination:outcome.termination,
     scored:outcome.scored,
     winner:outcome.scored?outcome.winnerSlot===0?'candidate':'opponent':null,
-    error:v.error,firstHorizon:v.firstHorizon??{
+    error:v.error,
+    ...(windowed?{windows:v.windows}:{}),
+    firstHorizon:v.firstHorizon??{
       locks:Math.min(8,v.locks-beforeFork),
       complete:false,censored:true},
     researchCpuMs:+v.searchMs.toFixed(1),evaluatedNodes:v.nodes,
@@ -285,6 +314,9 @@ const output={format:'rook-authority-paired-root-counterfactual/1',
     'original ROOK, identical authority state at split',
   scoredShortGames:false,
   correlatedForksPerOriginalSeed:2,
+  ...(windowed?{strategicWindow:true,strategicSelection:strategicTarget.meta,
+    horizons:strategicCheckpoints,pairedWindowComparisons:
+      compareWindowTrajectories(variants),scoredWindowTrial:false}:{}),
   rootChosenByOriginalRook:actionSignature(report)===actionSignature(first)?
     'first-place':'hold-or-different',
   results,
