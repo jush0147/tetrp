@@ -66,6 +66,13 @@ jobs:
               'bag' in s||'rng' in s||'next6' in s)
               throw Error('Public-only plan fidelity source contaminated');
           }
+          const proved=q.samples.filter(x=>x.verifiedPlacement===true);
+          if(proved.some(x=>
+            typeof x.replannedActuallySamePublicForecast!=='boolean'||
+            typeof x.legalButAbandoned!=='boolean')||
+            q.fullyLegalForecastReusedByFreshRook+
+              q.fullyLegalForecastAbandonedByFreshRook!==proved.length)
+            throw Error('Cannot confuse legal next-ply move with original ROOK actually choosing it');
           const failureTypes={
             incomingPressureChange:q.samples.filter(x=>
               x.status==='public-precondition-changed'&&
@@ -83,6 +90,8 @@ jobs:
             validFullyProvenNextLocks:q.samples.filter(x=>
               x.verifiedPlacement===true).length,
             statusCounts:q.counts,failureTypes,
+            legalForecastsFreshROOKSelected:q.fullyLegalForecastReusedByFreshRook,
+            legalForecastsFreshROOKAbandoned:q.fullyLegalForecastAbandonedByFreshRook,
             actualGame:{synchronizedLocks:x.lockSteps,
               genuineKO:x.scored,winner:x.scored?x.winner:null,
               termination:x.termination},
