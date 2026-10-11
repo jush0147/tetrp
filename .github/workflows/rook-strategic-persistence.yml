@@ -22,6 +22,7 @@ jobs:
           node-version: '22'
       - name: Verify exact public SRS+ / KO protocol first
         run: node --test test/rook-ko-protocol.test.js test/rook-beam.test.js
+      # Include meaningful Hold-vs-Place conflicts, not just two nearby drops.
       - name: Select naturally pressured ROOK-vs-Kiwi disagreement, observe 4-32 locks
         env:
           SEED: ${{ matrix.seed }}
@@ -79,4 +80,68 @@ jobs:
         with:
           name: rook-strategic-persistence-${{ matrix.seed }}
           path: strategic-window.json
+          retention-days: 30
+
+  across-original-seeds:
+    needs: public-strategy-window
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-strategic-persistence-*
+          path: paired-diagnostics
+          merge-multiple: false
+      - name: Analyze per-original-seed mechanism coverage and convergence
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seeds=[67710,67711,67712,67713];
+          const rows=seeds.map(seed=>{
+            const r=JSON.parse(readFileSync(
+              'paired-diagnostics/rook-strategic-persistence-'+seed+
+              '/strategic-window.json','utf8'));
+            if((r.independentSeed??r.seed)!==seed||
+              r.status==='no-eligible-public-conflict'&&r.scored!==false)
+              throw Error('Invalid seeded public match diagnostic '+seed);
+            return r;
+          });
+          const eligible=rows.filter(r=>r.strategicWindow===true);
+          const checkpoints=[4,8,16,32].map(horizon=>{
+            const obs=eligible.map(r=>r.pairedWindowComparisons.find(x=>
+              x.horizon===horizon)).filter(x=>x&&x.complete);
+            return {horizon,completedPairedSeeds:obs.length,
+              boardActuallyIdentical:obs.filter(x=>
+                x.identicalCandidateBoard===true).length,
+              exactPublicStateSame:obs.filter(x=>
+                x.identicalCandidatePublicState===true).length,
+              averageOccupiedCellMismatch:obs.length?
+                obs.reduce((n,x)=>n+x.occupiedCellMismatch,0)/obs.length:null,
+              sentGapFirstMinusSecond:obs.map(x=>
+                x.firstMinusSecondCombat.sent),
+              tankedGapFirstMinusSecond:obs.map(x=>
+                x.firstMinusSecondCombat.tanked)};
+          });
+          const report={
+            format:'rook-seed-level-strategic-persistence/1',
+            originalIndependentSeeds:seeds.length,
+            targetedOriginalSeeds:eligible.length,
+            noEligibleSeeds:rows.length-eligible.length,
+            holdVersusPlace:eligible.filter(x=>
+              x.strategicSelection.roots.some(r=>r.kind==='hold')).length,
+            checkpoints,scored:false,
+            guardrails:'Two treatment forks and four horizons from each seed are correlated observations; no short-window win rate, no private future supplied to bots, and no learned policy yet.'};
+          writeFileSync('strategic-summary.json',
+            JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report,null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-strategic-persistence-across-seeds
+          path: strategic-summary.json
           retention-days: 30
