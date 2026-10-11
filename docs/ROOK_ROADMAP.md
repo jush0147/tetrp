@@ -2105,3 +2105,98 @@ were intrinsic move quality. If actual independent
 full KO advantage is never demonstrated at
 realistic CPU, KEEP default ROOK and
 pinned Kiwi unchanged, PR #6 Draft.
+
+
+### 2026-10-11 FINISHED: naturally selected ROOK/Kiwi strategy-conflict persistence study (4 original seeds)
+
+The corrected full strategic study
+[Actions #38100375269](https://github.com/jush0147/tetrp/actions/runs/38100375269)
+completed **SUCCESS**, 4 original independent game
+seeds (67710,67711,67712,67713), and a
+separate working [per-seed aggregate artifact](https://github.com/jush0147/tetrp/actions/runs/38100375269/artifacts/11688095747).
+All four met the predeclared public strategy conflict
+criterion, on turns 9, 10, 8 and 11 respectively.
+**Three of the four actual conflicts were Hold-vs-Place**
+as verified by selected root types in the resulting
+artifacts; this is a meaningful improvement over the
+prior restricted place-only selection, which skipped
+one of these original seeds. A follow-up diagnostic
+text-only fix [`43e1912`](https://github.com/jush0147/tetrp/commit/43e1912d106425f6d4e04519762b37848c353a78)
+ensures such Hold roots are explicitly labeled
+`public-Hold-vs-Place-conflict`, instead of the
+initial stale all-placement string. The fixed
+label did not change root selection or behavior
+in the measured `cd94b7d` workflow.
+
+**ACTUAL future two-arm public board differences**
+in filled/empty CELL occupancy, not attack
+scores and NEVER match win percentages:
+
+| Original seed | Natural divergence turn | +4 locks | +8 | +16 | +32 |
+| :-- | --: | --: | --: | --: | --: |
+| 67710 | 9 | 8 | 12 | 42 | 69 |
+| 67711 | 10 | 10 | 56 | 84 | 95 |
+| 67712 | 8 | 30 | 44 | 130 | CENSORED (KO before horizon) |
+| 67713 | 11 | 4 | 10 | 51 | 94 |
+
+All four have valid paired public state observations
+after +4,+8,+16 locks. Three pairs remain observable
+after +32 (one KO-censored). **ZERO** pairs
+had identical candidate BOARD or full public
+candidate state at any of the completed
+4/8/16/32 checkpoints. Mean occupancy difference:
+**13, 30.5, 76.75 and 86** cells, with
+last mean over only THREE survivor pairs.
+The conditional fork arm 1 minus arm 2 realized
+SENT-attack deltas at +4 were [0,0,2,1],
++8 [0,0,2,1], +16 [6,10,3,-4],
+and +32 among the three survivors [8,5,-12].
+Interpret the sign **per seed and action**, not
+a general Kiwi-action advantage.
+Seed 67710 had equal realized sent/tanked
+for both treatments at both +4 and +8, but
+by +32 differed by +8 sent and -11 tanked.
+Early equal offense does not imply equal
+latent continuation board value.
+
+**Important scientific limits:** Four independent
+original match seeds is a minuscule sample,
+all have the same fixed policies and one
+private authority future per initial seed;
+the 4 time horizons per seed are correlated
+and not fresh examples. The target-selection
+rule ACTIVELY PICKS pressured/structurally
+distinct ROOT conflicts (3 Hold-vs-Place).
+Thus these differences were selected to be
+potentially material. That does NOT establish
+that arbitrary tiny early moves are persistent
+or that a Kiwi-chosen first move leads to
+better outcomes. Both arms afterwards
+return to original ROOK and Kiwi respectively,
+so the experiment tests one forced initial
+decision, NOT whole competing long-term
+plans. The Kiwi decision/followup used
+32,768-node screening budget (below pinned
+default 200,000), ROOK 3,000, not equal
+compute. A 32-lock cutoff with an early KO
+is not a full-match KO-rate test.
+
+**Decision:** We have direct evidence that
+some meaningful strategies' positional and
+combat consequences survive or grow through
+32 subsequent decisions; the original concern
+that all single moves are quickly erased is
+not universally true. We have NOT proven
+an action-value model or a stronger ROOK.
+Next research: repeat paired forks under
+multiple authority-only hidden futures for
+the SAME player-visible strategic checkpoint,
+and compare actual *option strategy plans*
+rather than only a single forced move.
+Report per original public position
+and original independent game seed with
+proper covariance; do NOT promote learned
+weights or aggregate correlated forks into
+population KO wins. Default ROOK,
+pinned full-budget Kiwi and `main`
+unchanged; PR #6 Draft.
