@@ -1841,3 +1841,100 @@ pieces cannot substitute for full KO. Avoid
 counting two forks or overlapping windows as
 independent trials. No modification to default
 ROOK, `main` or pinned Kiwi; PR #6 stays Draft.
+
+
+### 2026-10-11: ROOT fork genuine KO effects observed; fixed mirror-opponent confound and added deterministic negative control
+
+**Completed authentic paired authority ROOK-vs-ROOK root experiments:**
+[Actions #38083748395](https://github.com/jush0147/tetrp/actions/runs/38083748395)
+passed fork setup/legality tests and both full KO-first
+(up to 2000 locks) seeds:
+- Independent **67624**: original ranked CURRENT place root #1
+  against an identical ROOK opponent => **CAPPED at 2000**,
+  no actual KO, 1284 lines each and both survived.
+  Forced root #2 against cloned identical opponent =>
+  **TRUE KO at 112 locks, candidate wins**.
+  In the eight-lock after-fork **unscored diagnostic** window,
+  first root sent 2 and tanked 0 vs second sent 1,
+  tanked 1. Neither diagnostic window is KO evidence.
+- Independent **67625**: ranked first place =>
+  **double-KO at 177** (unscored), forced second place
+  => **candidate lost a real KO at 103 locks**.
+  First eight locks had 0 sent/tanked in both arms.
+- Those FOUR continuation outcomes arise from exactly TWO
+  original independent seeds, **not four independent
+  game trials**. The original ranked first choice may
+  mirror the identical original ROOK opponent for long
+  periods: the 2000-lock symmetry cap is a clear
+  **opponent-treatment confound**, and its lack of
+  KO must never be called a victory or as proof that
+  the lower ranked root is superior.
+
+**Experimental apparatus repaired/extended to opponent=PINNED KIWI:**
+[`3df0a15`](https://github.com/jush0147/tetrp/commit/3df0a1561a86e189f3f57e0e451b7841aa371e1a)
+added `FORK_OPPONENT=kiwi` and runs the exact pinned
+Kiwi WASM/visible-only public preparation, normalized
+authority-verified candidate, and budget used in
+`rook-vs-kiwi.js`. Both treatment arms start with
+IDENTICAL authoritative private bag/garbage RNG
+(serialization checked before forcing different legal
+SRS+ current-piece roots), and the fixed Kiwi opponent
+also starts from the same authoritative private
+checkpoint. The future naturally diverges after
+different attacks and board states. All future
+lookahead is player-visible CURRENT/HOLD/NEXT5:
+no secret hole, NEXT6 or checkpoint reaches a
+policy. Per-side and per-Kiwi CPU and evaluated
+nodes are now accounted SEPARATELY
+[`314b163`](https://github.com/jush0147/tetrp/commit/314b163ee637e7da0856e8004b9b1a2d17dd2d10).
+
+[Pinned Kiwi fork Actions #38097214228](https://github.com/jush0147/tetrp/actions/runs/38097214228)
+passed 5 rule tests and initial true-engine
+17-lock **UNSCORED** fork smoke on seed **67626**.
+Same piece/rules/private authority checkpoint,
+two legitimate legal L landings:
+the first eight-lock window yielded
+candidate sent 0/tanked 2/cancelled 4 in arm A,
+candidate sent 0/tanked 4/cancelled 2 in arm B,
+while pinned Kiwi sent 7 lines in BOTH arms.
+This is an actual causal behavioral treatment
+difference, NOT two independent wins and certainly
+not an improvement over Kiwi.
+Full **2000-lock true-KO-first** branch tests on new
+independent **67628 and 67629** started under
+the pinned original Kiwi 200000-node and ROOK
+6000-node configured caps. Their final KO outcomes
+were **not yet reported at this handoff**.
+
+**Essential negative control:** If an authority fork
+forces the SAME legal root in both copies, their
+complete authoritative private engine
+serialized state at the END of the continuation
+must match byte-for-byte. `FORK_IDENTICAL_CONTROL=1`
+implements this, with hard failure on RNG,
+private bag, enemy policy or clock drift
+[`683d5cc`](https://github.com/jush0147/tetrp/commit/683d5cc8ed9c1f2e612706eff6507f7176e5256e).
+[Control workflow #38097300563](https://github.com/jush0147/tetrp/actions/runs/38097300563)
+checks both ROOK and pinned Kiwi opponent with
+same initial public and private checkpoint,
+same first forced root and same future 25-lock
+authority simulation. Control was RUNNING when
+this text was committed: **no unverified pass
+claim**. If it fails, do not interpret the
+different-root fork KO causal results as reliable
+until corrected.
+
+**Data and evaluation caveats:** Both arms are
+correlated counterfactual potential outcomes
+conditional on a single authority seed and original
+checkpoint; they do NOT identify the population
+win-rate of any policy. The initial 67624/25
+forks sampled only two CURRENT-piece root actions,
+not Hold alternatives, topological root classes or
+multiple independent pressure-start positions.
+The true goal is to test a candidate LIVE
+decision policy against pinned Kiwi on many
+fresh independent seeds with comparable CPU,
+not maximize 8-lock sent nor count branch
+forks as independent match wins.
+No default ROOK or main modification; PR #6 Draft.
