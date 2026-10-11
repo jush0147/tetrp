@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: '22'
       - name: SRS+ legality, true KO and pinned Kiwi preparation
-        run: node --test test/rook-ko-protocol.test.js test/rook-beam.test.js test/kiwi-compatibility.test.js
+        run: node --test test/rook-ko-protocol.test.js test/rook-beam.test.js test/rook-kiwi-combat-events.test.js
       - name: Unscored matching authority checkpoint vs actual Kiwi WASM
         env:
           SEED: '67626'
