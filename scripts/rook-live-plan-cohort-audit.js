@@ -23,6 +23,7 @@ const rows=sources.map(({seed,path})=>{
     f.samples?.length!==f.actualNextLockChecks)
     throw Error('Not capped one-seed genuine live authority forecast '+seed);
   let direct=0,hold=0,changed=0,invalidProof=0,other=0;
+  let legalReused=0,legalAbandoned=0;
   const mismatchDimensions={board:0,current:0,hold:0,pending:0,
     btb:0,combo:0};
   for(const a of f.samples){
@@ -31,6 +32,14 @@ const rows=sources.map(({seed,path})=>{
       a.postHoldAuthorityProof?.authorityFutureExposed===true||
       'next6' in a||'rng' in a||'privateBag' in a)
       throw Error('Nonpublic or nondeterministic step in source '+seed);
+    if(a.verifiedPlacement){
+      if(typeof a.replannedActuallySamePublicForecast!=='boolean'||
+        typeof a.legalButAbandoned!=='boolean'||
+        a.legalButAbandoned===a.replannedActuallySamePublicForecast)
+        throw Error('Real ROOK re-search did not classify usable forecast '+seed);
+      legalReused+=Number(a.replannedActuallySamePublicForecast);
+      legalAbandoned+=Number(a.legalButAbandoned);
+    }
     if(a.status==='placement-srs-proven'){
       if(!a.verifiedPlacement||!a.all)throw Error('False direct SRS proof');
       direct++;
@@ -48,12 +57,16 @@ const rows=sources.map(({seed,path})=>{
     }else if(a.status==='placement-no-srs-proof')invalidProof++;
     else other++;
   }
+  if(legalReused+legalAbandoned!==direct+hold)
+    throw Error('Missed documented legal public continuation '+seed);
   if(direct+hold+changed+invalidProof+other!==f.actualNextLockChecks)
     throw Error('Not all public correlated observations accounted for');
   return {originalIndependentSeed:seed,
     actualSynchronizedLocks:x.lockSteps,scoredFalse:true,
     correlatedObservationCount:f.actualNextLockChecks,
     fullLegalNextMoveWitnesses:direct+hold,
+    stillLegalPlanActuallyChosenByFreshROOK:legalReused,
+    stillLegalPlanAbandonedByFreshROOK:legalAbandoned,
     directSrsProven:direct,holdPlusSrsProven:hold,
     publicPreconditionChanges:changed,
     failedSrsAtMatchedPublicState:invalidProof,
@@ -62,6 +75,8 @@ const rows=sources.map(({seed,path})=>{
 const totals=Object.fromEntries([
   'correlatedObservationCount','fullLegalNextMoveWitnesses',
   'directSrsProven','holdPlusSrsProven',
+  'stillLegalPlanActuallyChosenByFreshROOK',
+  'stillLegalPlanAbandonedByFreshROOK',
   'publicPreconditionChanges','failedSrsAtMatchedPublicState',
   'otherUnproven'].map(k=>[k,rows.reduce((n,r)=>n+r[k],0)]));
 const mismatchTotals=Object.fromEntries(
