@@ -43,7 +43,8 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
       startingAuthority[i]))throw Error('Fork initial private state mismatch');
     let inbound=[],round=turn,error=null,forced=false;
     let firstAction=null,firstPublicFingerprint=null;
-    const windows=[];const windowLocks=new Set([1,4,8,16,32,64]);
+    const windowLocks=new Set([1,2,3,4,5,6,8,16,32,64]);
+    const windows=[],fingerprints=[],openingActions=[];
     let rookNodes=0,kiwiNodes=0,rookMs=0,kiwiMs=0;
     try{
       while(round<cap&&copies.every(d=>d.engine.state.playing)){
@@ -93,11 +94,32 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
         }
         if(assertSimultaneousPair(copies)!==frame)
           throw Error('Fork did not prepare synchronous decisions');
-        for(let i=0;i<2;i++)copies[i].commit(decisions[i].revision);
+        for(let i=0;i<2;i++){
+          const view=copies[i].commit(decisions[i].revision);
+          if(i===0&&round-turn<8){
+            const p=decisions[i].placement;
+            const opening=round===turn?firstAction:{
+              piece:p?.piece??view.lastPlacement?.piece??null,
+              spin:decisions[i].executionSpin??view.lastPlacement?.spin??null,
+              holdUsed:(decisions[i].holdCount??0)>0,
+              cellKey:cellKey(p?.cells)};
+            openingActions.push({afterLocks:round-turn+1,...opening});
+          }
+        }
         assertSimultaneousPair(copies);
         if(round===turn)
           firstPublicFingerprint=hashVisible(copies[0].view().visible);
         const afterLocks=round-turn+1;
+        const views=copies.map(d=>d.view().visible);
+        if(afterLocks<=64){
+          // Research-only equality fingerprints. Do not return hidden
+          // authority hashes or private RNG. Compare equality in memory.
+          fingerprints.push({afterLocks,
+            publicHash:views.map(hashVisible),
+            rookBoardHash:hashVisible(views[0].board),
+            rookHoldHash:hashVisible(views[0].hold),
+            authorityHash:copies.map(d=>hashVisible(d.engine.serialize()))});
+        }
         if(windowLocks.has(afterLocks))
           windows.push({afterLocks,slots:copies.map(health)});
         for(let i=0;i<2;i++)
@@ -109,7 +131,7 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
     const scored=scoreKO({alive:copies.map(d=>d.engine.state.playing),
       rounds:round,cap,error});
     return {forced,firstAction,firstPublicFingerprint,windows,
-      finalHealth:copies.map(health),
+      fingerprints,openingActions,finalHealth:copies.map(health),
       roundsFromStart:round,continuationLocks:round-turn,
       termination:scored.termination,scored:scored.scored,
       winner:scored.scored?kinds[scored.winnerSlot]:null,error,
@@ -132,7 +154,28 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
     reactive.firstPublicFingerprint!==retained.firstPublicFingerprint);
   if(!verifiedFirstActionDifference)
     throw Error('Paired counterfactual did not produce different first authoritative public states');
-  return {verifiedFirstActionDifference,format:'rook-hold-counterfactual-fork/1',seed,turn,
+  const equality=[];
+  const common=Math.min(reactive.fingerprints.length,retained.fingerprints.length);
+  let firstPublicRookConvergence=null,firstPrivatePairConvergence=null;
+  for(let i=0;i<common;i++){
+    const a=reactive.fingerprints[i],b=retained.fingerprints[i];
+    if(a.afterLocks!==b.afterLocks)throw Error('Fork steps misaligned');
+    const rookPublicEqual=a.publicHash[0]===b.publicHash[0];
+    const kiwiPublicEqual=a.publicHash[1]===b.publicHash[1];
+    const bothPrivateEqual=a.authorityHash.every((h,j)=>h===b.authorityHash[j]);
+    const e={afterLocks:a.afterLocks,rookPublicEqual,kiwiPublicEqual,
+      rookBoardEqual:a.rookBoardHash===b.rookBoardHash,
+      rookHoldEqual:a.rookHoldHash===b.rookHoldHash,
+      bothPrivateEqual};
+    if(firstPublicRookConvergence===null&&rookPublicEqual)
+      firstPublicRookConvergence=a.afterLocks;
+    if(firstPrivatePairConvergence===null&&bothPrivateEqual)
+      firstPrivatePairConvergence=a.afterLocks;
+    if(a.afterLocks<=8||windowLocks.has(a.afterLocks))equality.push(e);
+  }
+  delete reactive.fingerprints;delete retained.fingerprints;
+  return {equality,firstPublicRookConvergence,firstPrivatePairConvergence,
+    verifiedFirstActionDifference,format:'rook-hold-counterfactual-fork/1',seed,turn,
     independentOriginalSeed:seed,independentForkPairs:1,
     sameAuthorityInitialState:true,hiddenFutureNeverPassedToBot:true,
     originalForecastUsesHold:true,continuationPolicy:'fresh-every-lock',
