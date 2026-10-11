@@ -2399,3 +2399,22 @@ then test that PUBLIC policy against its own ablation
 with new independent full-KO original seeds, hold
 and CPU parity. The production ROOK, main and
 pinned Kiwi are UNTOUCHED; PR #6 remains Draft.
+
+
+### 2026-10-11: opt-in PUBLIC multistep attack/protect/balanced intent, isolated persistence experiment
+
+**Motivation:** Corrected [three-lock Kiwi policy intervention #38103623208](https://github.com/jush0147/tetrp/actions/runs/38103623208) and [no-weight Pareto audit #38105146899](https://github.com/jush0147/tetrp/actions/runs/38105146899) show no stable benefit of simply copying Kiwi for two extra locks. Among 3 independent actual source seeds and nine CONDITIONALLY sampled private futures, most +16/+32 continuations had real attack-vs-survival board tradeoffs. This does NOT prove a score weighting or learned decision policy.
+
+**New distinct opt-in policy** [`rook-strategic-intent.js`](../src/analysis/rook-strategic-intent.js) maintains a public-state-only intent across REAL Tetrp locked pieces (not Hold actions) with explicit finite 3-lock dwell:
+- `attack`: on unpressured public states with few holes and low max stack, uses the ALREADY existing, exactly projected sent-attack weight 7.2.
+- `protect`: on real publicly incoming garbage, visibly high stack or existing garbage, uses unchanged offense weight plus existing public garbage recovery objective.
+- `balanced`: default ROOK 4.8 attack/recovery-off scoring.
+- These boundaries are PREDECLARED, exploratory engineering thresholds, not calibrated values or a performance claim; no private bag, unknown hole, opponent hidden future, outcome label, Kiwi oracle or artificial TSD reward enters the strategy decision.
+- A 3-lock objective dwell suppresses transient switches, but a publicly urgent incoming packet (>=5) or extreme stack (>=14) IMMEDIATELY interrupts that dwell into protect. It does not refuse safety indefinitely.
+- Controller owns a tiny explicit state keyed by `visible.piecesPlaced`, so repeatedly searching the SAME post-Hold first lock cannot advance its commitment timer. Every actual placement still passes the same authority SRS+ path and 24-frame synchronization. No action is scripted in advance, so a public unexpected garbage packet can be replanned immediately.
+
+**CAUSAL ABLATION**: Compare persistent 3-lock strategy with the SAME public attack/protect/balanced thresholds and scored-mode weights but **REACTIVE** immediate mode switches; both bot sides use their original 4x24 ROOK search, 3,000 configured nodes per decision, standard Tetrp 24-frame locks and true KO-first before 2000-lock cap. This isolates the long-term commitment itself, NOT the effect of a new offense weight compared to default. The new `EXPERT_STRATEGIC_INTENT=1` mode in [`rook-vs-rook.js`](../scripts/rook-vs-rook.js) tracks real chosen mode, commitment suppressions, public emergency overrides, CPU and nodes. A direct action-chain signature is recorded so distinct action choices are measured ONLY WHEN both sides were fed the SAME publicly visible root. Two short actual authority games seed 67810/67811, cap 80, are **UNSCORED**. Only if ≥1 actual public-first-action divergence occurs, distinct fresh seed 67812/67813 full authentic up-to-2000-lock KO runs are gated in [Actions #38108577937](https://github.com/jush0147/tetrp/actions/runs/38108577937). Scored KO only if real Tetrp KO (caps/double KO unscored). Full-match CPU must be reported separately because equal configured nodes is NOT equal wall/CPU cost.
+
+**Strict unit verification** [`rook-strategic-intent.test.js`](../test/rook-strategic-intent.test.js): independent public signal extraction, 3-lock sticky vs reactive behavioral differences, early emergency interrupt, Hold/piece-clock idempotence, hidden-field immunity, and genuine ROOK search delivering SRS+-legal current-piece placement with new opt-in search settings. Unit tests passed in the public-screen CI; full long-match outcome NOT KNOWN when this was written.
+
+**Go/no-go**: If finite commitment fails to change any same-public-state first action in new authentic seeds, do NOT send it to expensive KO and do NOT promote; if true KO games are equal or worse, no promotion; if real KO benefit exists, test against BASELINE ROOK and pinned Kiwi across NEW independent seed groups at realistic equal CPU. In every case, never infer that simply retaining the attack weight for 3 pieces is a solved strategic planner. No default `chooseMove`, production ROOK, pinned Kiwi or `main` changes. Draft PR #6.
