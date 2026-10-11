@@ -18,6 +18,7 @@ jobs:
       - name: Contract tests BEFORE any expensive Kiwi WASM
         run: |
           node --check scripts/rook-vs-kiwi.js
+          node --check scripts/rook-posthold-authority-proof.js
           node --test test/rook-plan-fidelity.test.js test/rook-ko-protocol.test.js
       - name: Authentic pinned Kiwi vs original ROOK, no diagnostic baseline
         env:
@@ -58,6 +59,15 @@ jobs:
             b.slots.length!==2||b.forecastAudit.actualNextLockChecks<1||
             b.forecastAudit.actualNextLockChecks>10)
             throw Error('Invalid public-only plan fidelity experiment');
+          const actualHold=b.forecastAudit.samples.filter(x=>
+            x.postHoldAuthorityProof);
+          if(actualHold.length<1||
+            actualHold.some(x=>
+              !x.postHoldAuthorityProof.holdAuthorityAccepted||
+              x.postHoldAuthorityProof.authorityFutureExposed!==false||
+              !['hold-plus-placement-srs-proven',
+                'hold-valid-but-placement-unproven'].includes(x.status)))
+            throw Error('Public Hold forecast must verify actual second-piece landing without leaking private NEXT6');
           for(let i=0;i<2;i++)for(const k of [
             'kind','pieces','generated','sent','cancelled','received',
             'tanked','frame','playing','holdMoves','searchNodes',
@@ -73,6 +83,9 @@ jobs:
             unscoredIfCap:!a.scored,
             auditedPublicNextMoves:b.forecastAudit.actualNextLockChecks,
             statusCounts:b.forecastAudit.counts,
+            actualOfflineAuthorityHoldPlusPlacementProbes:actualHold.length,
+            fullySrsProvenHoldPlusPlacement:actualHold.filter(x=>
+              x.postHoldAuthorityProof.placementSrsProven).length,
             examples:b.forecastAudit.samples,
             extraAuditCpuMs:b.forecastAudit.diagnosticCpuMs,
             caution:'Forecasted geometric NEXT placements are not real Tetrp decisions until compared to next actual public state and legal SRS+. Only ONE original independent match seed. This does not estimate improvement over Kiwi.'};
