@@ -43,6 +43,7 @@ const expertOffense=process.env.EXPERT_OFFENSE==='1';
 const expertHoldPlan=process.env.EXPERT_HOLD_PLAN==='1';
 const expertPruning=process.env.EXPERT_PRUNING==='1';
 const expertSticky=process.env.EXPERT_STICKY==='1';
+const expertHoldCommit=process.env.EXPERT_HOLD_COMMIT==='1';
 const expertExactLeaf=process.env.EXPERT_EXACT_LEAF==='1';
 const expertTStock=process.env.EXPERT_T_STOCK==='1';
 const expertFrontier=process.env.EXPERT_FRONTIER==='1';
@@ -82,6 +83,7 @@ const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
   expertBeam?'focused-beam':null,expertOffense?'offense-weight':null,
   expertHoldPlan?'hold-plan':null,expertPruning?'setup-survival':null,
   expertSticky?'sticky-continuation':null,
+  expertHoldCommit?'public-hold-commit':null,
   expertExactLeaf?'verified-fifth-ply':null,
   expertTStock?'public-t-stock':null,
   expertHoleScale?'hole-penalty':null,
@@ -127,6 +129,12 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(frontierSlots)||frontierSlots<1||frontierSlots>32||
   !Number.isFinite(frontierGap)||frontierGap<0||frontierGap>1000)
   throw Error('Invalid ROOK self-play configuration');
+if(expertHoldCommit&&(expertOpen||expertRecovery||expertStrategic||
+  expertBelief||expertFuture||expertBeam||expertOffense||expertHoldPlan||
+  expertPruning||expertSticky||expertExactLeaf||expertTStock||
+  expertFrontier||expertHoleScale||budgetScaling||compareLegacyBelief||
+  compareAllFrontier||compareUnguardedFrontier))
+  throw Error('Hold-commit research requires isolated baseline comparison');
 if(expertStrategic&&(
   expertOpen||expertRecovery||expertBelief||expertFuture||expertBeam||
   expertOffense||expertHoldPlan||expertPruning||expertSticky||
@@ -167,12 +175,20 @@ const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,
     may20g:true,irs:'off',ihs:'off'}}),{placementMode:'atomic'});
 
 const rememberedPlans=new WeakMap();
+const rememberedHoldProposals=new WeakMap();
 const rememberedStrategicIntent=new WeakMap();
 function select(demo,open){
+  // Memory is only a previously published ROOK search proposal. No hidden
+  // future, engine serialization or previous outcome enters this selector.
+  const pendingHold=open&&expertHoldCommit
+    ?rememberedHoldProposals.get(demo)??null:null;
+  if(open&&expertHoldCommit)rememberedHoldProposals.delete(demo);
   const stats={nodes:0,holds:0,ms:0,rejections:0,offers:0,
     selections:0,forwardProbes:0,forwardMoves:0,
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
+    holdCommitOffers:0,holdCommitApplied:0,holdCommitFallback:0,
+    holdCommitRejected:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
     tStockEligible:0,tStockOffers:0,tStockVerified:0,
     tStockCapped:0,tStockProofCalls:0,tStockPlacementEvaluations:0,
@@ -287,7 +303,7 @@ function select(demo,open){
       holePenaltyScale:open&&expertHoleScale?holePenaltyScale:1,
       intermediateHoleRelief:open&&expertPruning?intermediateHoleRelief:0,
       includeHoldPlan:(open&&expertHoldPlan)||auditHoldPlan,
-      includeForecastPlan:open&&expertSticky,
+      includeForecastPlan:open&&(expertSticky||expertHoldCommit),
       exactLeafExtension:open&&expertExactLeaf,leafExtensionBudget,leafExtensionStates,
       beliefProbes,beliefMaxOutcomes,
       optionFrontierSlots:useFrontier?Math.min(frontierSlots,searchBeam-1):0,
@@ -393,6 +409,48 @@ function select(demo,open){
       stats.leafExtensionChanges+=Number(report.diagnostics.leafExtensionChangesRoot);
       stats.leafExtensionWork+=report.diagnostics.leafExtensionEvaluated;
     }
+    // Trial policy: ONLY when the original beam predicted a legal Hold
+    // on this actual public lock, but a NEW search prefers direct Place,
+    // commit the previous public Hold proposal. The current piece
+    // placement is then SRS+ proven after Hold by the ordinary authority.
+    // A failed forecast falls back to a new post-Hold public search.
+    if(open&&expertHoldCommit&&turn===0&&
+      pendingHold?.useHold&&report.ranked[0]?.kind==='place'){
+      const request=plannedHold(view.visible,pendingHold);
+      if(request){
+        stats.holdCommitOffers++;
+        let committed=false;
+        try{
+          demo.prepare(request,view.revision);
+          demo.commit(view.revision);
+          stats.holds++;
+          stats.holdCommitApplied++;
+          committed=true;
+          actualActions.push('hold:'+request.action.mode);
+        }catch(e){stats.holdCommitRejected++;}
+        if(committed){
+          const after=demo.view();
+          const proof=proveForecastPlacement(after.visible,{
+            ...pendingHold,preCurrent:after.visible.current.type
+          },{maxStates:1200,maxSteps:42});
+          if(proof){
+            try{
+              demo.prepare(proof,after.revision);
+              const placement=proof.move;
+              actualActions.push('place:'+placement.piece+':'+
+                proof.execution.spin+':'+
+                placement.cells.map(([x,y])=>x+','+y).sort().join(';'));
+              return {revision:after.revision,
+                actualActionChain:actualActions.join('|'),...stats};
+            }catch(e){stats.holdCommitRejected++;}
+          }
+          stats.holdCommitFallback++;
+          // Do NOT attempt another Hold. Re-search from actual public
+          // state after the authorized Hold.
+          continue;
+        }
+      }
+    }
     let lastError=null,didHold=false;
     for(const a of report.ranked){
       const request=a.kind==='hold'
@@ -431,6 +489,8 @@ function select(demo,open){
         }
         if(open&&expertSticky)rememberedPlans.set(demo,
           a===report.ranked[0]?(report.forecastPlan??[]).slice(1):[]);
+        if(open&&expertHoldCommit&&turn===0&&a===report.ranked[0])
+          rememberedHoldProposals.set(demo,report.forecastPlan?.[1]??null);
         actualActions.push('place:'+a.move.piece+':'+a.execution.spin+
           ':'+a.move.cells.map(([x,y])=>x+','+y).sort().join(';'));
         return {revision:view.revision,actualActionChain:actualActions.join('|'),...stats};
@@ -486,6 +546,8 @@ function pairedGame(seed,swap){
     rejections:0,offers:0,selections:0,forwardProbes:0,forwardMoves:0,
     holdPlanAttempts:0,holdPlanAccepted:0,holdPlanRejected:0,
     holdPlanAudited:0,holdPlanMatched:0,holdPlanDiverged:0,
+    holdCommitOffers:0,holdCommitApplied:0,holdCommitFallback:0,
+    holdCommitRejected:0,
     searches:0,budgetReached:0,searchDepthLimit:0,
     tStockEligible:0,tStockOffers:0,tStockVerified:0,
     tStockCapped:0,tStockProofCalls:0,tStockPlacementEvaluations:0,
@@ -605,7 +667,7 @@ function pairedGame(seed,swap){
     budgetsByKind:{[expertKind]:candidateBudget,baseline:baselineBudget},
     extraOpenerCPU:expertOpen,expertLabel,
     expertOpen,expertRecovery,expertStrategic,compareReactiveStrategy,
-    strategicCommitLocks,expertBelief,expertFuture,expertBeam,expertOffense,
+    expertHoldCommit,strategicCommitLocks,expertBelief,expertFuture,expertBeam,expertOffense,
     expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
     expertFrontier,frontierSlots,frontierGap,frontierShadow,
     expertHoleScale,holePenaltyScale,holeScaleShadow,
