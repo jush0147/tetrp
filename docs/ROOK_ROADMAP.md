@@ -1938,3 +1938,43 @@ fresh independent seeds with comparable CPU,
 not maximize 8-lock sent nor count branch
 forks as independent match wins.
 No default ROOK or main modification; PR #6 Draft.
+
+
+### 2026-10-11 matched private future control PASS, first true Kiwi treatment LOSS in both arms
+
+Final [identical-forced-root negative-control CI #38097300563](https://github.com/jush0147/tetrp/actions/runs/38097300563)
+finished **SUCCESS** for both original ROOK and pinned
+Kiwi opponent branches. Each experiment forced the EXACT SAME
+SRS+ legal root in both clones from an identical original
+private authority checkpoint and continued for 25 locks,
+then compared the fully serialized private state of BOTH
+players byte-for-byte. Both were identical, including
+opponent pieces/garbage/RNG; therefore ordinary
+continuations are deterministic under the tested
+settings, and the original fork control has no accidental
+spontaneous treatment difference. This is not proof for
+all imaginable seeds, but is a strong no-treatment check.
+
+[First full pinned Kiwi fork result #38097196565](https://github.com/jush0147/tetrp/actions/runs/38097196565)
+for independent root-fork seed **67628**:
+- forced legal first root A: **KIWI wins actual KO at 43 locks**,
+  final candidate sent 6 vs Kiwi sent 44;
+  first 8 locks ROOK sent 0, tanked 7; Kiwi sent 7.
+- forced legal first root B: **KIWI wins actual KO at 42 locks**,
+  candidate sent 10 vs Kiwi sent 33;
+  first 8 locks ROOK sent 0, tanked 8; Kiwi sent 7.
+- Both branches are two treatments from ONE seed,
+  not two independent losses. Rank-2 sent MORE
+  lines (10 vs 6) but died one lock EARLIER (42 vs 43);
+  raw APP/sent can never be used as a substitute for
+  actual KO plus survival under matching authority.
+- Kiwi node limit 200000, ROOK node limit 6000,
+  so this is not an equal-CPU strength comparison.
+- Second predeclared independent seed **67629** was
+  STILL RUNNING when recorded. Do not invent its
+  result or assume the pair always loses.
+
+Source commit
+[`e274106`](https://github.com/jush0147/tetrp/commit/e27410636c73ba66bd48ea7110311e2b31b112ba)
+tracks entire protocol; PR #6 Draft; no live
+ROOK policy or Kiwi/main modifications.
