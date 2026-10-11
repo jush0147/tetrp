@@ -5,7 +5,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
-import {auditPublicNextForecast} from '../src/analysis/rook-plan-fidelity.js';
+import {auditPublicNextForecast,sameForecastAsFreshRookChoice} from '../src/analysis/rook-plan-fidelity.js';
 import {verifyAuthorityOnlyPostHoldLanding} from './rook-posthold-authority-proof.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
@@ -226,13 +226,8 @@ function runPair(seed,order){
           if(past){
             const expected=past.forecastStep;
             const actual=plan.placement;
-            const signature=cells=>cells.map(([x,y])=>x+','+y)
-              .sort().join(';');
-            const selectedSame=Boolean(actual)&&
-              expected.useHold===(plan.holdCount>0)&&
-              expected.piece===actual.piece&&
-              expected.spin===plan.executionSpin&&
-              signature(expected.cells)===signature(actual.cells);
+            const selectedSame=sameForecastAsFreshRookChoice(expected,
+              plan);
             const entry=forecastChecks[past.sampleIndex];
             entry.replannedActualPiece=actual?.piece??null;
             entry.replannedActuallyUsedHold=plan.holdCount>0;
