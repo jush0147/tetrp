@@ -6,6 +6,7 @@ import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
 import {auditPublicNextForecast} from '../src/analysis/rook-plan-fidelity.js';
+import {verifyAuthorityOnlyPostHoldLanding} from './rook-posthold-authority-proof.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
@@ -171,6 +172,16 @@ function runPair(seed,order){
           const start=performance.now();
           const measured=auditPublicNextForecast(visible,pending.nextStep,{
             maxStates:1200,maxSteps:42});
+          if(measured.status==='hold-publicly-permitted'){
+            const holdProof=verifyAuthorityOnlyPostHoldLanding(
+              demos[i].engine,visible,pending.nextStep,
+              {maxStates:1200,maxSteps:42});
+            measured.postHoldAuthorityProof=holdProof;
+            measured.verifiedPlacement=holdProof.placementSrsProven;
+            measured.status=holdProof.placementSrsProven?
+              'hold-plus-placement-srs-proven':
+              'hold-valid-but-placement-unproven';
+          }
           forecastAuditCpuMs+=performance.now()-start;
           forecastChecks.push({seed,order,fromTurn:pending.fromTurn,
             atActualTurn:lockSteps,forecastLength:pending.forecastLength,
