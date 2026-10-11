@@ -158,6 +158,118 @@ function lockRound(pair,forced=null){
   return {transfers,plans};
 }
 
+
+function publicImmediateOutcome(visible,root){
+  const request={action:{kind:'place'},move:root.move,
+    execution:root.execution};
+  if(!validatePlacement(visible,request))return null;
+  const H=visible.board.rows.length,W=visible.board.width;
+  const rows=visible.board.rows.map(row=>row.slice());
+  for(const [x,y] of root.move.cells){
+    if(!Number.isInteger(x)||!Number.isInteger(y)||
+      x<0||x>=W||y<0||y>=H)return null;
+    rows[y][x]=root.move.piece;
+  }
+  const surviving=rows.filter(row=>row.some(cell=>cell===null));
+  const clears=H-surviving.length;
+  while(surviving.length<H)surviving.unshift(Array(W).fill(null));
+  const publicAfter={...visible,board:{...visible.board,rows:surviving}};
+  return {clears,spin:root.execution.spin,
+    features:publicBoardFeatures(publicAfter)};
+}
+
+function selectStrategicPublicRoots(visible){
+  // All eligibility and preference selection uses the SAME public position.
+  // This is a restricted CURRENT-piece comparison; if Kiwi or ROOK chooses
+  // Hold, there is no valid head-to-head chosen-action treatment here.
+  if(!visible.playing||visible.next?.length!==5)return null;
+  const f=publicBoardFeatures(visible);
+  const pressured=f.publicPending>=2||f.garbage>0||f.heightMax>=8;
+  if(!pressured)return null;
+  const rookReport=chooseMove(visible,settings);
+  const rookAction=rookReport.ranked[0];
+  if(rookAction?.kind!=='place')return null;
+  const prepared=prepareKiwi(visible);
+  prepared.request.node_budget=kiwiBudget;
+  const analyzed=JSON.parse(analyze_snapshot_json(
+    JSON.stringify(prepared.request)));
+  if(analyzed.nodes>kiwiBudget)throw Error('Kiwi root search exceeded budget');
+  let kiwiAction;
+  try{kiwiAction=normalizeRankedRecommendation(
+    visible,prepared,analyzed,0);}
+  catch(error){return null;}
+  if(kiwiAction.action.kind!=='place'||
+    actionSignature(rookAction)===actionSignature(kiwiAction))
+    return null;
+  const first=publicImmediateOutcome(visible,rookAction);
+  const second=publicImmediateOutcome(visible,kiwiAction);
+  if(!first||!second)return null;
+  const holeGap=Math.abs(first.features.holes-second.features.holes);
+  const heightGap=Math.abs(
+    first.features.heightMax-second.features.heightMax);
+  const tacticalContrast=first.clears!==second.clears||
+    first.spin!==second.spin||holeGap>=2||heightGap>=2;
+  if(!tacticalContrast)return null;
+  return {rookReport,roots:[rookAction,kiwiAction],
+    meta:{kind:'public-ROOK-vs-Kiwi-chosen-CURRENT-placement-conflict',
+      originalPublicPending:f.publicPending,originalGarbageCells:f.garbage,
+      originalHeight:f.heightMax,
+      searchLimits:{rook:nodes,kiwi:kiwiBudget},
+      independentOriginalMatchSeed:seed,
+      roots:[{policy:'rook',...first},{policy:'kiwi',...second}],
+      qualification:'different immediate clears/spin or >=2 holes/height; never hidden next or opponent state'}};
+}
+
+function publicHorizon(pair,locksFromFork,beforeCounters){
+  const states=pair.map(d=>d.engine.state);
+  return {locksFromFork,perSide:pair.map((d,i)=>{
+    const state=states[i],vis=d.view().visible,t=state.attack.totals;
+    const features=vis.current&&vis.next?.length===5
+      ?publicBoardFeatures(vis):null;
+    return {alive:state.playing,
+      boardRows:vis.board.rows.map(row=>row.slice()),
+      publicState:JSON.stringify(vis),
+      features,combat:Object.fromEntries(
+        ['generated','sent','cancelled','tanked','received'].map(k=>
+          [k,t[k]-beforeCounters[i][k]]))};
+  })};
+}
+
+function compareWindowTrajectories(variants){
+  const [a,b]=variants;
+  return strategicCheckpoints.map(horizon=>{
+    const x=a.windows.find(q=>q.locksFromFork===horizon);
+    const y=b.windows.find(q=>q.locksFromFork===horizon);
+    if(!x||!y)return {horizon,complete:false,censored:true,
+      censoredReason:'at least one branch ended before full horizon',
+      reached:{a:Boolean(x),b:Boolean(y)}};
+    const cells=(r,i)=>r.perSide[i].boardRows.flat()
+      .map(cell=>cell===null?'0':'1');
+    const ac=cells(x,0),bc=cells(y,0);
+    const occupiedCellMismatch=ac.reduce(
+      (n,c,i)=>n+(c!==bc[i]),0);
+    const fa=x.perSide[0].features,fb=y.perSide[0].features;
+    return {horizon,complete:true,
+      bothAlive:x.perSide[0].alive&&y.perSide[0].alive,
+      identicalCandidateBoard:JSON.stringify(x.perSide[0].boardRows)===
+        JSON.stringify(y.perSide[0].boardRows),
+      identicalOpponentBoard:JSON.stringify(x.perSide[1].boardRows)===
+        JSON.stringify(y.perSide[1].boardRows),
+      identicalCandidatePublicState:
+        x.perSide[0].publicState===y.perSide[0].publicState,
+      occupiedCellMismatch,
+      heightGap:fa&&fb?fa.heightMax-fb.heightMax:null,
+      holesGap:fa&&fb?fa.holes-fb.holes:null,
+      firstMinusSecondCombat:Object.fromEntries(
+        ['generated','sent','cancelled','tanked','received'].map(k=>
+          [k,x.perSide[0].combat[k]-y.perSide[0].combat[k]])),
+      // The branches are paired treatments under the same ORIGINAL
+      // seed; these numbers describe causal outcomes of one forced root
+      // conditional on that original future, not population win rates.
+    };
+  });
+}
+
 let original=[makeDemo(),makeDemo()];
 assertMatchingOpening(original);
 let transfers=[],warmupLocks=0,strategicTarget=null;
@@ -266,7 +378,7 @@ for(const v of variants){
 const results=variants.map(v=>{
   const states=v.pair.map(d=>d.engine.state);
   const outcome=scoreKO({alive:states.map(s=>s.playing),
-    rounds:v.locks,cap,error:v.error});
+    rounds:v.locks,cap:windowed?beforeFork+32:cap,error:v.error});
   return {fork:v.index,
     rootRankAmongAll:v.rootRank,
     rootSignature:v.rootSignature,
