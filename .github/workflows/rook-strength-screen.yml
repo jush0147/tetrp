@@ -1,0 +1,33 @@
+name: ROOK real-authority strength screen
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-strength-screen.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  screen:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Play deterministic matches against actual Tetrp authority
+        run: |
+          node scripts/rook-strength-screen.js | tee rook-strength-screen.jsonl
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const x=fs.readFileSync("rook-strength-screen.jsonl","utf8").trim().split("\n").map(JSON.parse);
+            if(x.length!==2||x.some(r=>r.type!=="rook-visible-strength-screen"||r.pieces!==120||
+              !r.originalUnchanged||r.stopped||r.rawAPP<0.32))throw Error("ROOK authority strength regression");
+          '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-authority-strength-screen
+          path: rook-strength-screen.jsonl
+          retention-days: 30

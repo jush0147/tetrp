@@ -1,0 +1,49 @@
+name: ROOK genuine-authority controlled garbage pressure triage
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-belief-authority-pressure.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  triage:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Public-hole belief and 24-frame authority regressions
+        run: node --test test/rook-belief.test.js test/rook-garbage.test.js test/rook-clock.test.js
+      - name: Run authentic Engine pressure-state test, no scored match
+        run: node scripts/rook-belief-authority-pressure.js > pressure.json
+      - name: Verify input pressure and print transparent public diagnosis
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const a=JSON.parse(readFileSync('pressure.json','utf8'));
+          if(a.scored!==false||a.ko!==null||
+            a.independentInitialSeeds!==4||a.correlatedSnapshots!==8||
+            a.samples.some(s=>s.pending<s.attack||s.policies.length!==2))
+            throw Error('Invalid controlled-authority public-pressure fixture');
+          if(a.commonAttempts<=0)
+            throw Error('No public garbage conditionals were actually attempted');
+          console.log(JSON.stringify({format:a.format,scored:false,
+            independentInitialSeeds:a.independentInitialSeeds,
+            correlatedSnapshots:a.correlatedSnapshots,
+            changed:a.changed,legacyAttempts:a.legacyAttempts,
+            commonAttempts:a.commonAttempts,
+            commonCompleted:a.commonCompleted,
+            commonAborted:a.commonAborted,
+            commonConditionalNodes:a.commonConditionalNodes,
+            commonOverBudget:a.commonOverBudget,
+            warning:a.warning},null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-real-authority-controlled-pressure
+          path: pressure.json
+          retention-days: 30

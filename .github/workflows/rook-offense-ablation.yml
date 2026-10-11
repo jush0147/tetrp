@@ -1,0 +1,101 @@
+name: ROOK attack reward full KO ablation
+on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-offense-ablation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired-ko:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        seed: [1, 8, 16, 23]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compare full KO with identical seeds and same search cap
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          ROOK_NODES: '6000'
+          EXPERT_OPEN: '0'
+          EXPERT_RECOVERY: '0'
+          EXPERT_BELIEF: '0'
+          EXPERT_FUTURE: '0'
+          EXPERT_BEAM: '0'
+          EXPERT_OFFENSE: '1'
+          EXPERT_OFFENSE_WEIGHT: '7.2'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > "rook-offense-${{ matrix.seed }}.jsonl"
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('rook-offense-${{ matrix.seed }}.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].swap||!rows[1].swap||
+            rows.some(r=>r.error||r.seed!==Number('${{ matrix.seed }}')||
+              r.seeds[0]!==r.seeds[1]||!r.simultaneousLocks||!r.sameSeed||
+              r.nodeBudget!==6000||r.cap!==2000||
+              r.expertLabel!=='offense-weight'||!r.expertOffense||
+              r.offenseWeight!==7.2||r.expertOpen||r.expertRecovery||
+              r.expertBelief||r.expertFuture||r.expertBeam||
+              r.scored!==(r.termination==='KO')||
+              r.slots.some(s=>s.pieces!==r.turns||!Number.isFinite(s.ms))))
+            throw Error('Invalid offense ablation or KO protocol');
+          console.log(JSON.stringify(rows.map(r=>({
+            seed:r.seed,swap:r.swap,turns:r.turns,termination:r.termination,winner:r.winner,
+            slots:r.slots.map(s=>({kind:s.kind,ms:s.ms,sentAPP:s.sentAPP,rawAPP:s.rawAPP,holds:s.holds,tsd:s.tsd}))}))));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-offense-${{ matrix.seed }}
+          path: rook-offense-${{ matrix.seed }}.jsonl
+          retention-days: 30
+  report:
+    needs: paired-ko
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-offense-*
+          merge-multiple: true
+      - name: Summarize scored KO, draw caps, APP and CPU
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seeds=[1,8,16,23],rows=seeds.flatMap(seed=>
+            readFileSync('rook-offense-'+seed+'.jsonl','utf8').trim().split('\n').map(JSON.parse));
+          if(rows.length!==8||rows.some(r=>r.error))
+            throw Error('Invalid paired full KO set');
+          const ko=rows.filter(r=>r.scored);
+          const total=(kind,key)=>rows.reduce((sum,r)=>
+            sum+(r.slots.find(s=>s.kind===kind)?.[key]??0),0);
+          const result={protocol:'rook-offense-weight-ko-v1',
+            matches:rows.length,independentSeeds:seeds.length,cap:2000,
+            scoredKO:ko.length,capped:rows.filter(r=>r.termination==='capped').length,
+            doubleKO:rows.filter(r=>r.termination==='double-KO').length,
+            offenseWins:ko.filter(r=>r.winner==='offense-weight').length,
+            baselineWins:ko.filter(r=>r.winner==='baseline').length,
+            offenseSent:total('offense-weight','sent'),
+            baselineSent:total('baseline','sent'),
+            offenseTotalMs:total('offense-weight','ms'),
+            baselineTotalMs:total('baseline','ms'),games:rows};
+          writeFileSync('rook-offense-summary.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify({...result,games:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-offense-summary
+          path: rook-offense-summary.json
+          retention-days: 30

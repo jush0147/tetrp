@@ -1,0 +1,281 @@
+// Synchronous authority-side ROOK vs pinned Kiwi experiment.
+// Both bots see only per-turn Tetrp.visibleState and exactly NEXT5.
+// Tetrp runs the moves and owns queue RNG, incoming packets and KO.
+import {readFileSync,writeFileSync} from 'node:fs';
+import {Engine} from '../src/engine.js';
+import {BotDemo} from '../src/analysis/demo.js';
+import {chooseMove} from '../src/analysis/rook.js';
+import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
+import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
+import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
+import {diagnosePublicChoice} from './rook-choice-diagnostics.js';
+
+const kiwiBudget=Number(process.env.KIWI_NODES??200000);
+const rookBudget=Number(process.env.ROOK_NODES??6000);
+const rookExactLeaf=process.env.ROOK_EXACT_LEAF==='1';
+const rookLeafBudget=Number(process.env.ROOK_LEAF_BUDGET??5000);
+const rookLeafStates=Number(process.env.ROOK_LEAF_STATES??800);
+const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
+const swapRoles=process.env.SWAP_ROLES??'1';
+if(!['0','1'].includes(swapRoles))throw Error('Invalid SWAP_ROLES (expected 0 or 1)');
+const diagnosticsEnabled=process.env.ROOK_DIAG==='1';
+const diagnosticTurns=(process.env.ROOK_DIAG_TURNS??'0,4,8,12,20,30')
+  .split(',').map(Number);
+const diagnosticSet=new Set(diagnosticTurns);
+const seeds=parseMatchSeeds({...process.env,
+  SEED_A:process.env.SEED_A??'67000',SEED_B:process.env.SEED_B??'67001'});
+if(!Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000||
+  !Number.isInteger(rookLeafBudget)||rookLeafBudget<1||rookLeafBudget>100000||
+  !Number.isInteger(rookLeafStates)||rookLeafStates<1||rookLeafStates>10000||
+  !Number.isSafeInteger(rookBudget)||rookBudget<1||
+  !Number.isSafeInteger(limit)||limit<1||limit>10000||
+  diagnosticTurns.some(n=>!Number.isSafeInteger(n)||n<0)||
+  diagnosticSet.size!==diagnosticTurns.length)
+  throw Error('invalid KO configuration');
+
+await init({module_or_path:readFileSync(new URL('../vendor/kiwi-v1/pkg/cold_clear_2_bg.wasm',import.meta.url))});
+
+const botOptions={depth:4,beamWidth:24,maxNodes:rookBudget,maxStates:1200,maxSteps:42,
+  exactLeafExtension:rookExactLeaf,leafExtensionBudget:rookLeafBudget,
+  leafExtensionStates:rookLeafStates};
+const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,rules:{g:0,gincrease:0,b2bcharge_base:3},
+  handling:{arr:0,das:1,dcd:0,sdf:20,safelock:false,cancel:false,may20g:true,irs:'off',ihs:'off'}}),{placementMode:'atomic'});
+
+function candidates(kind,visible){
+  // Only one deeply ranked ROOK search or Kiwi snapshot search per decision.
+  if(kind==='rook'){
+    const report=chooseMove(visible,{...botOptions,includeRanked:true});
+    return {nodes:report.diagnostics.evaluated,limit:rookBudget,
+      extraEvaluated:report.diagnostics.leafExtensionEvaluated??0,
+      leafApplied:Number(!!report.diagnostics.leafExtensionApplied),
+      leafAborted:Number(!!report.diagnostics.leafExtensionAbort),
+      count:report.ranked.length,
+      at(index){
+        const x=report.ranked[index];
+        if(!x)return null;
+        return x.kind==='hold'
+          ?{action:{kind:'hold',mode:x.mode,samePiece:x.samePiece,requiresReanalysis:true}}
+          :{action:{kind:'place'},move:x.move,execution:x.execution};
+      }};
+  }
+  const prepared=prepareKiwi(visible);
+  prepared.request.node_budget=kiwiBudget;
+  const report=JSON.parse(analyze_snapshot_json(JSON.stringify(prepared.request)));
+  if(report.nodes>kiwiBudget)throw Error('Kiwi search exceeded node limit');
+  return {nodes:report.nodes,limit:kiwiBudget,count:report.candidates.length,
+    at(index){
+      if(index>=report.candidates.length)return null;
+      return normalizeRankedRecommendation(visible,prepared,report,index);
+    }};
+}
+
+function prepareUntilPlace(demo,kind){
+  let nodes=0,holdCount=0,searchMs=0,leafExtra=0,leafApplied=0,leafAborted=0;
+  for(let decision=0;decision<2;decision++){
+    const view=demo.view();
+    const start=performance.now();
+    const search=candidates(kind,view.visible);
+    searchMs+=performance.now()-start;
+    nodes+=search.nodes;
+    leafExtra+=search.extraEvaluated??0;
+    leafApplied+=search.leafApplied??0;
+    leafAborted+=search.leafAborted??0;
+    let lastError=null;
+    for(let i=0;i<search.count;){
+      let result;
+      try{result=search.at(i)}
+      catch(error){lastError=error;break}
+      if(!result)break;
+      try{
+        demo.prepare(result,view.revision);
+        if(result.action.kind==='hold'){
+          if(decision!==0)throw Error('second Hold in same turn');
+          const next=demo.commit(view.revision);
+          if(!next.visible.hold.locked)throw Error('Hold lock not set');
+          holdCount++;break;
+        }
+        return {revision:view.revision,nodes,holdCount,searchMs,placement:result.move,
+          leafExtra,leafApplied,leafAborted};
+      }catch(error){
+        lastError=error;
+        i=(result.candidateIndex??i)+1;
+      }
+    }
+    if(decision===0&&holdCount===1)continue;
+    throw Error(kind+' no authority-executable recommendation: '+(lastError?.message??'all candidates exhausted'));
+  }
+  throw Error('post-Hold search did not Place');
+}
+
+function asStats(demo,kind,searchNodes,holdMoves,searchMs,combatEvents=null){
+  const s=demo.engine.state,a=s.attack;
+  return {kind,playing:s.playing,reason:s.reason,pieces:s.stats.pieces,frame:s.frame,
+    generated:a.totals.generated,sent:a.totals.sent,cancelled:a.totals.cancelled,
+    tanked:a.totals.tanked,received:a.totals.received,holdMoves,searchNodes,
+    searchMs:Math.round(searchMs),msPerPiece:s.stats.pieces?
+      Number((searchMs/s.stats.pieces).toFixed(3)):0,
+    rawApp:s.stats.pieces?a.totals.generated/s.stats.pieces:0,
+    sentApp:s.stats.pieces?a.totals.sent/s.stats.pieces:0,
+    ...(combatEvents?{combatEvents}: {})};
+}
+// Persist only the same allowlisted public snapshots the policies receive.
+const publicDiagnosticSnapshots=[];
+const publicTsdTraces=[];
+const publicLockTraces=[];
+const traceTsd=!!process.env.ROOK_TSD_TRACE_PATH;
+const traceAllPublicLocks=!!process.env.ROOK_PUBLIC_LOCK_TRACE_PATH;
+function runPair(seed,order){
+  const kinds=order===0?['rook','kiwi']:['kiwi','rook'];
+  const demos=[makeDemo(seed),makeDemo(seed)];
+  assertMatchingOpening(demos);
+  const original=demos.map(d=>d.view().visible);
+  let transfers=[],lockSteps=0,searchNodes=[0,0],
+    holdMoves=[0,0],searchMs=[0,0],error=null,diagnostics=[];
+  const leafExtra=[0,0],leafApplied=[0,0],leafAborted=[0,0];
+  // Authority outcomes ONLY; never used as search inputs by either bot.
+  const recentPublicViews=[[],[]];
+  const beforePublicLock=[null,null];
+  const combatEvents=Array.from({length:2},()=>({fullTss:0,fullTsd:0,
+    fullTst:0,miniClears:0,quads:0,ordinarySingles:0,ordinaryDoubles:0,
+    ordinaryTriples:0,allClears:0,maxBtb:0}));
+  try{
+    while(lockSteps<limit&&demos.every(d=>d.engine.state.playing)){
+      // No side sees the other side's future move or its unrevealed garbage.
+      for(const packet of transfers){
+        const receiver=demos[packet.to].engine;
+        const cid=receiver.receive({from:'P2',iid:packet.iid,ackiid:packet.ackiid,amt:packet.amt});
+        receiver.confirm(cid);
+      }
+      transfers=[];
+      if(demos.some(d=>!d.engine.state.playing))break;
+      const turnFrame=assertSimultaneousPair(demos);
+      if(diagnosticsEnabled&&order===0&&diagnosticSet.has(lockSteps)){
+        // Compare BOTH policies against the SAME public state from a live
+        // authority match. No hidden opponent queue or checkpoint provided.
+        const slots=lockSteps===0?[0]:[0,1];
+        for(const slot of slots)
+          {
+            const state=demos[slot].view().visible;
+            diagnostics.push(diagnosePublicChoice(state,{
+              rookOptions:botOptions,kiwiBudget,analyzeSnapshot:analyze_snapshot_json,
+              seed,turn:lockSteps,owner:kinds[slot]}));
+            if(process.env.ROOK_DIAG_SNAPSHOTS_PATH)
+              publicDiagnosticSnapshots.push({seed,turn:lockSteps,
+                owner:kinds[slot],visible:state});
+          }
+      }
+      const plans=[];
+      for(let i=0;i<2;i++){
+        const plan=prepareUntilPlace(demos[i],kinds[i]);
+        plans.push(plan);searchNodes[i]+=plan.nodes;holdMoves[i]+=plan.holdCount;
+        searchMs[i]+=plan.searchMs;
+        if(traceTsd||traceAllPublicLocks){
+          // Only player-visible state AFTER optional Hold and BEFORE lock.
+          // Never save authority-private bag/RNG or Kiwi search internals.
+          const v=demos[i].view().visible;
+          if(v.next.length!==5||'bag' in v||'rng' in v||'holes' in v)
+            throw Error('TSD trace would violate public NEXT5 contract');
+          const allowlisted={playing:v.playing,board:v.board,current:v.current,
+            hold:v.hold,next:v.next,attack:v.attack,frame:v.frame,
+            piecesPlaced:v.piecesPlaced,rules:v.rules};
+          const snapshot={turn:lockSteps,visible:structuredClone(allowlisted),
+            // Offline supervision metadata, not included in 'visible' and
+            // never passed to either candidate-selection function.
+            authorityBeforeTotals:Object.fromEntries(
+              ['generated','sent','cancelled','tanked','received'].map(key=>
+                [key,demos[i].engine.state.attack.totals[key]]))};
+          if(traceAllPublicLocks)beforePublicLock[i]=snapshot;
+          if(traceTsd){
+            recentPublicViews[i].push(snapshot);
+            if(recentPublicViews[i].length>6)recentPublicViews[i].shift();
+          }
+        }
+        leafExtra[i]+=plan.leafExtra;leafApplied[i]+=plan.leafApplied;
+        leafAborted[i]+=plan.leafAborted;
+      }
+      // Both decisions are prepared before either placement commits.
+      if(assertSimultaneousPair(demos)!==turnFrame)
+        throw Error('Decision mutated the synchronous match clock');
+      for(let i=0;i<2;i++){
+        const outcome=demos[i].commit(plans[i].revision);
+        const lock=outcome.lastPlacement;
+        const stats=combatEvents[i];
+        const fullT=lock.piece==='t'&&lock.spin==='full';
+        if(traceAllPublicLocks)publicLockTraces.push({
+          seed,turn:lockSteps,slot:i,kind:kinds[i],
+          ...beforePublicLock[i],
+          // Label is written only AFTER the lock by the authority and is
+          // strictly for offline evaluation, NEVER passed to chooseMove.
+          outcome:{piece:lock.piece,spin:lock.spin,lines:lock.lines,
+            fullTsd:fullT&&lock.lines===2,
+            btb:demos[i].engine.state.attack.btb,
+            // Post-authority-lock OBSERVED LABELS ONLY. Never passed back
+            // to either policy. These totals identify realized future attack
+            // under the ACTUAL behavioral policy, not hypothetical futures.
+            combatTotals:Object.fromEntries(
+              ['generated','sent','cancelled','tanked','received'].map(key=>
+                [key,demos[i].engine.state.attack.totals[key]])),
+            alive:demos[i].engine.state.playing}
+        });
+        if(fullT&&lock.lines===1)stats.fullTss++;
+        if(fullT&&lock.lines===2){
+          stats.fullTsd++;
+          if(traceTsd)publicTsdTraces.push({seed,turn:lockSteps,slot:i,
+            kind:kinds[i],history:structuredClone(recentPublicViews[i]),
+            outcome:{piece:lock.piece,spin:lock.spin,lines:lock.lines,
+              btb:demos[i].engine.state.attack.btb}});
+        }
+        if(fullT&&lock.lines===3)stats.fullTst++;
+        if(lock.spin==='mini'&&lock.lines>0)stats.miniClears++;
+        if(lock.lines===4)stats.quads++;
+        if(lock.allClear)stats.allClears++;
+        if(lock.spin==='none'&&lock.lines===1)stats.ordinarySingles++;
+        if(lock.spin==='none'&&lock.lines===2)stats.ordinaryDoubles++;
+        if(lock.spin==='none'&&lock.lines===3)stats.ordinaryTriples++;
+        stats.maxBtb=Math.max(stats.maxBtb,demos[i].engine.state.attack.btb);
+      }
+      assertSimultaneousPair(demos);
+      for(let from=0;from<2;from++){
+        for(const x of demos[from].engine.state.attack.outbox.splice(0))
+          transfers.push({to:1-from,iid:x.iid,ackiid:x.ackiid,amt:x.amt});
+      }
+      lockSteps++;
+      if(lockSteps%25===0)process.stderr.write(JSON.stringify({
+        game:order,lockSteps,stats:demos.map((d,i)=>asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i],combatEvents[i]))})+'\n');
+    }
+  }catch(e){error=e instanceof Error?e.message:String(e)}
+  const alive=demos.map(d=>d.engine.state.playing);
+  const result=scoreKO({alive,rounds:lockSteps,cap:limit,error});
+  return {format:'tetrp-visible-ko/2',order,seed,seeds:[seed,seed],kinds,
+    sameSeed:true,simultaneousLocks:true,pps:2.5,
+    source:'Tetrp TL authority with source RNG private, no replay future',
+    nodeBudgets:{rook:rookBudget,kiwi:kiwiBudget},
+    ...(rookExactLeaf?{rookExactLeaf,rookLeafBudget,rookLeafStates}:{}),
+    lockSteps,cap:limit,
+    scored:result.scored,termination:result.termination,
+    error,winnerSlot:result.winnerSlot,
+    winner:result.scored?kinds[result.winnerSlot]:null,
+    slots:demos.map((d,i)=>({...asStats(d,kinds[i],searchNodes[i],holdMoves[i],searchMs[i],combatEvents[i]),
+      ...(kinds[i]==='rook'&&rookExactLeaf?{leafExtraEvaluated:leafExtra[i],
+        leafApplied:leafApplied[i],leafAborted:leafAborted[i]}:{})})),
+    initialVisibleNext:original.map(v=>v.next),
+    ...(diagnosticsEnabled?{diagnostics}: {})};
+}
+// An independent seed is played twice, with ROOK / Kiwi swapping slots.
+const results=seeds.flatMap(seed=>swapRoles==='1'
+  ?[runPair(seed,0),runPair(seed,1)]
+  :[runPair(seed,0)]);
+for(const result of results)process.stdout.write(JSON.stringify(result)+'\n');
+if(diagnosticsEnabled&&process.env.ROOK_DIAG_PATH)
+  writeFileSync(process.env.ROOK_DIAG_PATH,
+    results.flatMap(r=>r.diagnostics).map(r=>JSON.stringify(r)).join('\n')+'\n');
+if(diagnosticsEnabled&&process.env.ROOK_DIAG_SNAPSHOTS_PATH)
+  writeFileSync(process.env.ROOK_DIAG_SNAPSHOTS_PATH,
+    publicDiagnosticSnapshots.map(r=>JSON.stringify(r)).join('\n')+'\n');
+if(process.env.ROOK_TSD_TRACE_PATH)writeFileSync(process.env.ROOK_TSD_TRACE_PATH,
+  publicTsdTraces.map(r=>JSON.stringify(r)).join('\n')+'\n');
+if(process.env.ROOK_PUBLIC_LOCK_TRACE_PATH)
+  writeFileSync(process.env.ROOK_PUBLIC_LOCK_TRACE_PATH,
+    publicLockTraces.map(r=>JSON.stringify(r)).join('\n')+'\n');
+if(process.env.RESULTS_PATH)writeFileSync(process.env.RESULTS_PATH,JSON.stringify(results,null,2)+'\n');
+// No artificial winner. Invalid/capped games remain explicit and unscored.

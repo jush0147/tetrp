@@ -1,0 +1,85 @@
+name: ROOK verified public two-lock TSD candidate generator
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-tsd-two-lock-proof.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  two-lock:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prove real SRS paths and actual authority Full TSD via two locks
+        run: node --test test/rook-tsd-two-lock.test.js test/rook-tsd.test.js
+      - name: Load prior public-only boards, no Kiwi rerun
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-public-tsd-negative-controls
+          repository: jush0147/tetrp
+          run-id: 38055352753
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Inspect real public two-lock TSD candidates per side
+        env:
+          ROOK_ALL_PUBLIC_TRACE: rook-all-public-locks.jsonl
+          ROOK_TWO_LOCK_OUTPUT: rook-tsd-two-lock-cohort.json
+        run: |
+          set -eu
+          node scripts/rook-tsd-two-lock-cohort.js > rook-tsd-two-lock-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-tsd-two-lock-cohort.json','utf8'));
+          if(r.format!=='rook-real-public-two-lock-tsd-proof/1'||
+            r.total!==132||r.independentSeeds!==1||
+            r.groups.length!==2||r.groups.some(g=>g.states!==66||
+              g.atLeastOneProvedTwoLockTsd>g.publicNextOrHoldT||
+              g.readyGeometryAfterOneLock>g.publicNextOrHoldT||
+              g.truncated>g.publicNextOrHoldT))
+            throw Error('Bounded public TSD two-lock report invalid');
+          const body=[
+            '### ROOK public CURRENT plus known NEXT/Hold T: genuine 2-lock SRS witnesses',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Same previously played seed 67131, 66 public boards owned by each bot.',
+            'An SRS+ path for the initial setup placement AND the hypothetical next Full TSD is required.',
+            ...r.groups.map(g=>'**'+g.kind.toUpperCase()+' boards**: known upcoming/held T '+
+              g.publicNextOrHoldT+'/'+g.states+
+              ', geometry-ready after one legal placement '+
+              g.readyGeometryAfterOneLock+'/'+g.publicNextOrHoldT+
+              ', genuinely SRS-proven TSD after two placements '+
+              g.atLeastOneProvedTwoLockTsd+'/'+g.publicNextOrHoldT+
+              ', proof searches '+g.totalSecondSrsCalls+
+              ', candidate-cap truncations '+g.truncated+'.'),
+            '',
+            'This is not a KO or general win-rate sample. Incoming garbage',
+            'could invalidate a hypothetical intermediate board, and a two-lock',
+            'path does not guarantee that choosing it is strategically best.',
+            'No strategy default changed or hidden Kiwi data read.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-tsd-two-lock-issue.md',body);
+          console.log(body);
+          JS
+      - name: Save two-lock SRS proof results in Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-tsd-two-lock-issue.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-public-two-lock-tsd-witnesses
+          path: |
+            rook-tsd-two-lock-cohort.json
+            rook-tsd-two-lock-summary.json
+            rook-tsd-two-lock-issue.md
+          retention-days: 30

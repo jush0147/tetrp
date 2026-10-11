@@ -1,0 +1,131 @@
+name: ROOK public garbage common-horizon causal gate
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-common-horizon-belief-ko.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-screen:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    outputs:
+      changed: ${{ steps.gate.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify no hidden bag or garbage hole, true authority decisions
+        run: node --test test/rook-belief.test.js test/rook-clock.test.js
+      - name: Common-horizon belief versus identical legacy belief, unscored screen
+        env:
+          SEEDS: 67410,67411
+          MAX_LOCKS: '48'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          EXPERT_OPEN: '0'
+          EXPERT_BELIEF: '1'
+          EXPERT_BELIEF_COMMON_HORIZON: '1'
+          COMPARE_LEGACY_BELIEF: '1'
+          BELIEF_PROBES: '2'
+          BELIEF_MAX_OUTCOMES: '10'
+          BELIEF_HORIZON_NODES: '75'
+          BELIEF_HORIZON_BEAM: '2'
+        run: node scripts/rook-vs-rook.js > common-horizon-screen.jsonl
+      - name: Gate full KO on actually different legal action
+        id: gate
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('common-horizon-screen.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==2||rows.some(r=>r.error||!r.sameSeed||
+            r.cap!==48||r.swapRoles!=='0'||!r.compareLegacyBelief||
+            r.slots?.length!==2))
+            throw Error('Invalid same-bag public belief screen');
+          const ch=rows.map(r=>r.slots.find(s=>
+            s.kind==='common-horizon-belief'));
+          const bl=rows.map(r=>r.slots.find(s=>s.kind==='belief'));
+          if(ch.some(x=>!x)||bl.some(x=>!x))
+            throw Error('Missing correct legacy public belief comparator');
+          const sum=k=>ch.reduce((n,x)=>n+(x[k]??0),0);
+          const output={format:'public-garbage-common-horizon-screen/1',
+            independentSeeds:2,cap:48,scored:false,
+            realSameStateChangedActions:sum('beliefCommonChanged'),
+            beliefAttempts:sum('beliefCommonAttempts'),
+            conditionalNodes:sum('beliefCommonEvaluated'),
+            abortedIncompleteHorizon:sum('beliefCommonAborted'),
+            separatelyAccountedShadowCpuMs:sum('beliefCommonShadowMs')};
+          writeFileSync('belief-gate.json',JSON.stringify(output,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,
+            'changed='+(output.realSameStateChangedActions>0?'true':'false')+'\n');
+          console.log(JSON.stringify(output));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-belief-common-horizon-screen
+          path: |
+            common-horizon-screen.jsonl
+            belief-gate.json
+          retention-days: 30
+  fresh-ko:
+    needs: public-screen
+    if: needs.public-screen.outputs.changed == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        seed: [67412,67413]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Public belief genuinely matched-seed KO-first 2000 lock cap
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          EXPERT_OPEN: '0'
+          EXPERT_BELIEF: '1'
+          EXPERT_BELIEF_COMMON_HORIZON: '1'
+          COMPARE_LEGACY_BELIEF: '1'
+          BELIEF_PROBES: '2'
+          BELIEF_MAX_OUTCOMES: '10'
+          BELIEF_HORIZON_NODES: '75'
+          BELIEF_HORIZON_BEAM: '2'
+        run: |
+          node scripts/rook-vs-rook.js > belief-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('belief-ko.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Missing true KO game');
+          const r=rows[0];
+          const trial=r.slots.find(x=>x.kind==='common-horizon-belief');
+          const baseline=r.slots.find(x=>x.kind==='belief');
+          if(r.error||r.seed!==Number(process.env.SEEDS)||
+            r.cap!==2000||r.swapRoles!=='0'||!r.sameSeed||
+            !r.compareLegacyBelief||!trial||!baseline||
+            trial.configuredNodeBudget!==baseline.configuredNodeBudget)
+            throw Error('Invalid public known information contract');
+          console.log(JSON.stringify({seed:r.seed,termination:r.termination,
+            scored:r.scored,winner:r.winner,turns:r.turns,
+            commonSent:trial.sent,legacySent:baseline.sent,
+            commonCpu:trial.ms,legacyCpu:baseline.ms,
+            commonBeliefAttempts:trial.beliefCommonAttempts,
+            commonConditionalNodes:trial.beliefCommonEvaluated,
+            incompleteBeliefPaths:trial.beliefCommonAborted}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: public-belief-common-horizon-ko-${{ matrix.seed }}
+          path: belief-ko.jsonl
+          retention-days: 30

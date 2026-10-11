@@ -1,0 +1,72 @@
+name: ROOK complementary frontier lane screens
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-frontier-lane-screen.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ablate:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        lane: [no-combat, no-quad]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Genuine engine, same publicly known seeds, UNSCORED capped behavior
+        env:
+          SEEDS: 67310,67311
+          MAX_LOCKS: '32'
+          SWAP_ROLES: '0'
+          EXPERT_OPEN: '0'
+          EXPERT_FRONTIER: '1'
+          COMPARE_ALL_FRONTIER: '1'
+          FRONTIER_LANES: ${{ matrix.lane }}
+          FRONTIER_ALL_SHADOW: '1'
+          FRONTIER_SLOTS: '3'
+          FRONTIER_SCORE_GAP: '70'
+          ROOK_NODES: '6000'
+        run: node scripts/rook-vs-rook.js > lane-screen.jsonl
+      - name: Summarize public first-action differences, not win rates
+        env:
+          LANE: ${{ matrix.lane }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const rows=readFileSync('lane-screen.jsonl','utf8').trim()
+            .split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==2||rows.some(r=>r.error||r.cap!==32||
+            !r.sameSeed||r.swapRoles!=='0'||!r.compareAllFrontier))
+            throw Error('Invalid screen result');
+          const short=rows.map(r=>r.slots.find(x=>x.kind===
+            'option-frontier-'+process.env.LANE));
+          if(short.some(x=>!x||x.frontierAllShadowChecks!==x.searches))
+            throw Error('Missing same-public-snapshot comparator');
+          const sum=k=>short.reduce((n,x)=>n+(x[k]??0),0);
+          const report={format:'rook-portfolio-lane-unscored/1',
+            lane:process.env.LANE,seedCount:2,cap:32,
+            publicChoices:sum('frontierAllShadowChecks'),
+            changedVsFull:sum('frontierAllShadowChanges'),
+            combatInserted:sum('frontierCombatInserted'),
+            quadInserted:sum('frontierQuadInserted'),
+            spinInserted:sum('frontierSpinInserted'),
+            shadowCpuMs:sum('frontierAllShadowMs')};
+          writeFileSync('lane-screen-summary.json',
+            JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontier-lane-screen-${{ matrix.lane }}
+          path: |
+            lane-screen.jsonl
+            lane-screen-summary.json
+          retention-days: 30

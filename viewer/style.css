@@ -142,3 +142,11 @@ main{width:100%;max-width:1440px;margin:0 auto;flex:1;min-height:0;display:flex;
 @media(orientation:landscape) and (max-height:500px){.playback-position{flex:0 1 115px;width:115px}}
 
 @media(orientation:landscape){#analysis-panel{padding:5px 50px 5px 10px}#analysis-status{display:inline-block;margin:0 14px 0 0}#analysis-panel details{display:inline-block}#analysis-panel details[open]{display:block}#clear-analysis{top:0;height:44px}}
+
+/* ROOK is optional. Keep the replay transport footprint unchanged on phones. */
+.file-menu-panel .bot-choice{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:7px 12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);white-space:nowrap}
+#bot-mode{height:36px;padding:0 6px;font-size:13px;min-width:105px;max-width:125px}
+#rook-mark{font-size:29px;font-weight:900;line-height:1;letter-spacing:-2px;color:var(--accent)}
+#analyze[data-bot="rook"]{border-color:var(--accent);background:#082c30}
+#analyze[data-bot="rook"] #rook-mark{display:block}
+#analyze[data-bot="rook"] #kiwi-mark{display:none}

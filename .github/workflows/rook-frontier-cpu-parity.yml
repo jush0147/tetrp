@@ -1,0 +1,52 @@
+name: ROOK frontier exact value parity and CPU check
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - '.github/workflows/rook-frontier-cpu-parity.yml'
+      - 'scripts/rook-frontier-perf-check.js'
+      - 'src/analysis/rook.js'
+      - 'test/rook-option-frontier.test.js'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  parity:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit regressions and unchanged baseline
+        run: node --test test/rook-option-frontier.test.js test/rook-beam.test.js test/rook-root-scores.test.js
+      - name: Materialize pre-optimization code for strict comparison
+        run: git worktree add --detach "$RUNNER_TEMP/rook-prior" 062af59db74356eedb3c74b47c6da5bf1d367d0e
+      - name: Compare exact policy and numeric diagnostics under equal public states
+        env:
+          ROOK_COMPARE_BASE: ${{ runner.temp }}/rook-prior
+        run: node scripts/rook-frontier-perf-check.js > frontier-cpu-parity.json
+      - name: Expose correctness and CPU accounting
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const v=JSON.parse(readFileSync('frontier-cpu-parity.json','utf8'));
+          if(v.totalIdenticalReports!==24||v.independentInitialSeeds!==4||
+            v.comparisons.length!==2||v.comparisons.some(x=>
+              x.identicalReports!==12||x.cpuRatio<=0||
+              !Number.isFinite(x.optimizedMs)))
+            throw Error('Incomplete verified CPU or policy parity');
+          console.log(JSON.stringify(v,null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-frontier-cpu-parity
+          path: frontier-cpu-parity.json
+          retention-days: 30

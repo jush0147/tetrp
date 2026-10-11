@@ -1,0 +1,87 @@
+name: ROOK versus Kiwi all-public TSD opportunity coverage
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-tsd-full-public-coverage.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  compare-public-boards:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Retrieve all already saved public Kiwi/ROOK lock boards
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-public-tsd-negative-controls
+          repository: jush0147/tetrp
+          run-id: 38055352753
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Ask same unchanged ROOK search about both policies' board trajectories
+        env:
+          ROOK_ALL_PUBLIC_TRACE: rook-all-public-locks.jsonl
+          ROOK_FULL_TSD_COVERAGE_OUTPUT: rook-all-public-tsd-coverage.json
+        run: |
+          set -eu
+          node scripts/rook-tsd-full-public-coverage.js > rook-all-public-tsd-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-all-public-tsd-coverage.json','utf8'));
+          if(r.format!=='rook-full-match-public-tsd-coverage/1'||
+            r.independentSeeds!==1||r.observations!==132||
+            r.byKind.length!==2||
+            r.byKind.some(x=>x.states!==66||
+              x.anyBeamRootContainsFullTsd<x.bestBeamContainsFullTsd||
+              x.bestBeamFullyWitnessedTsd>x.bestBeamContainsFullTsd||
+              x.next4Comparable!==62)||
+            r.byKind.reduce((a,x)=>a+x.realizedFullTsdLocks,0)!==8)
+            throw Error('Incomplete public-trajectory TSD opportunity audit');
+          const report=[
+            '### Full match public boards: comparing TSD opportunities (NOT KO)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'A replay of prior reference seed 67131: 66 ROOK and 66 Kiwi player-visible pre-lock boards.',
+            'The SAME ROOK 4x24/6K policy scores both types. No Kiwi private search or bag.',
+            ...r.byKind.map(x=>'**'+x.kind.toUpperCase()+'-owned boards**: geometric scaffold '+
+              x.publicScaffoldPositive+'/'+x.states+
+              ', complete geometry '+x.fullGeometry+'/'+x.states+
+              ', selected surviving ROOT with predicted Full TSD '+
+              x.bestBeamContainsFullTsd+'/'+x.states+
+              ', all-prefix SRS-witnessed predicted TSD '+
+              x.bestBeamFullyWitnessedTsd+'/'+x.states+
+              ', authority TSDs actually played '+x.realizedFullTsdLocks+
+              ', next-four actual TSD '+x.next4RealizedTsd+'/'+x.next4Comparable+
+              '.'),
+            '',
+            'A predicted future TSD is not guaranteed to happen: both live players',
+            'replan each lock; a public-position forecast is not a multi-ply authority rollout.',
+            'One independent source seed and strongly correlated observations.',
+            'Neither policy nor pinned Kiwi is changed; no newly scored KO is counted.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-all-public-tsd-coverage.md',report);
+          console.log(report);
+          JS
+      - name: Record grounded full-board distributions on Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-all-public-tsd-coverage.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-all-public-tsd-coverage
+          path: |
+            rook-all-public-tsd-coverage.json
+            rook-all-public-tsd-summary.json
+            rook-all-public-tsd-coverage.md
+          retention-days: 30

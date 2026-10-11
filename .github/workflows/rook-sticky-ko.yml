@@ -1,0 +1,87 @@
+name: ROOK sticky continuation genuine KO gate
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-sticky-ko.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  issues: write
+jobs:
+  ko:
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        seed: [67101, 67102]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate legal public plan gate
+        run: node --test test/rook-plan-continuation.test.js test/rook-ko-protocol.test.js
+      - name: Genuine same-seed synchronized KO-first match, up to 2000 locks
+        id: match
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          EXPERT_OPEN: '0'
+          EXPERT_STICKY: '1'
+          ROOK_NODES: '6000'
+          ROOK_CANDIDATE_NODES: '6000'
+          ROOK_BASELINE_NODES: '6000'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > sticky-ko-${{ matrix.seed }}.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seed=Number(process.env.SEEDS);
+          const records=readFileSync('sticky-ko-'+seed+'.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(records.length!==1||records[0].seed!==seed||
+             !records[0].sameSeed||!records[0].simultaneousLocks||
+             records[0].cap!==2000||records[0].error||
+             records[0].slots.length!==2||
+             records[0].expertLabel!=='sticky-continuation')
+            throw Error('Invalid genuine KO protocol or comparison record');
+          const r=records[0];
+          const scored=r.termination==='KO';
+          if(scored!==r.scored)throw Error('KO vs cap misclassified');
+          const report=[
+            '### ROOK opt-in sticky continuation KO-first pilot',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Seed: '+seed+' (both authorities use this exact same bag seed)',
+            'Synchronous placements: '+r.turns+'; safety cap: 2000',
+            'Termination: '+r.termination+'; winner: '+(r.winner??'NONE (not scored)'),
+            'Sticky plan accepted: '+r.slots.find(x=>x.kind==='sticky-continuation').stickyAccepted+
+              ' / '+r.slots.find(x=>x.kind==='sticky-continuation').stickyAttempts,
+            'Candidate attack sent: '+r.slots.find(x=>x.kind==='sticky-continuation').sent,
+            'Baseline attack sent: '+r.slots.find(x=>x.kind==='baseline').sent,
+            '',
+            'One result is not sufficient evidence to beat Kiwi. Capped and double-KO results are NOT wins. No policy promotion.'
+          ].join('\n')+'\n';
+          writeFileSync('sticky-ko-summary-'+seed+'.md',report);
+          console.log(report);
+          JS
+      - name: Post real result to Issue 8 only after verified match
+        if: steps.match.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file sticky-ko-summary-${{ matrix.seed }}.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-sticky-ko-${{ matrix.seed }}
+          path: |
+            sticky-ko-${{ matrix.seed }}.jsonl
+            sticky-ko-summary-${{ matrix.seed }}.md
+          retention-days: 30

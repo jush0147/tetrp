@@ -1,0 +1,113 @@
+name: ROOK paired counterfactual ROOT actions vs PINNED Kiwi
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-root-vs-kiwi-counterfactual.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pinned-kiwi-clone-smoke:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: SRS+ legality, true KO and pinned Kiwi preparation
+        run: node --test test/rook-ko-protocol.test.js test/rook-beam.test.js test/rook-kiwi-combat-events.test.js
+      - name: Unscored matching authority checkpoint vs actual Kiwi WASM
+        env:
+          SEED: '67626'
+          FORK_TURN: '6'
+          MAX_LOCKS: '17'
+          ROOK_NODES: '1500'
+          KIWI_NODES: '32768'
+          FORK_OPPONENT: kiwi
+        run: node scripts/rook-paired-root-fork.js > root-kiwi-smoke.json
+      - name: Validate same private future + opponent was genuinely pinned Kiwi
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('root-kiwi-smoke.json','utf8'));
+          if(r.format!=='rook-authority-paired-root-counterfactual/1'||
+            r.independentSeed!==67626||r.cap!==17||r.forkTurn!==6||
+            r.opponentKind!=='kiwi'||r.kiwiNodes!==32768||
+            !r.identicalAuthorityCheckpoint||!r.opaqueHiddenFutureToBots||
+            r.originalPublicNextCount!==5||!r.distinctRootActions||
+            r.results?.length!==2||r.results.some(x=>
+              x.error||x.authorityStartFrame!==6*24||
+              x.perSideCpuMs.length!==2||
+              x.perSideEvaluatedNodes.length!==2||
+              !['KO','capped','double-KO'].includes(x.termination))||
+            r.results[0].rootSignature===r.results[1].rootSignature)
+            throw Error('Not two valid frozen-Kiwi root treatments');
+          console.log(JSON.stringify({seed:r.independentSeed,
+            opponent:'PINNED KIWI',rootSignatures:r.results.map(x=>x.rootSignature),
+            perFork:r.results.map(x=>({termination:x.termination,
+              placed:x.locked,firstEight:x.firstHorizon,
+              cpu:x.perSideCpuMs})),
+            warning:'17-lock capped demo is UNSCORED and never a win'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-kiwi-identical-checkpoint-smoke
+          path: root-kiwi-smoke.json
+          retention-days: 30
+  full-authority-ko:
+    needs: pinned-kiwi-clone-smoke
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67628,67629]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run two causal branches against the SAME pinned Kiwi starting state until genuine KO
+        env:
+          SEED: ${{ matrix.seed }}
+          FORK_TURN: '12'
+          MAX_LOCKS: '2000'
+          ROOK_NODES: '6000'
+          KIWI_NODES: '200000'
+          FORK_OPPONENT: kiwi
+        run: |
+          node scripts/rook-paired-root-fork.js > rook-kiwi-root-ko.json
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-kiwi-root-ko.json','utf8'));
+          if(r.independentSeed!==Number(process.env.SEED)||
+            r.cap!==2000||r.forkTurn!==12||r.opponentKind!=='kiwi'||
+            r.kiwiNodes!==200000||!r.opaqueHiddenFutureToBots||
+            !r.identicalAuthorityCheckpoint||r.results?.length!==2||
+            r.correlatedForksPerOriginalSeed!==2||
+            r.results.some(x=>x.error||
+              x.perSideCpuMs?.length!==2||
+              x.perSideEvaluatedNodes?.length!==2||
+              !['KO','capped','double-KO'].includes(x.termination)||
+              (x.scored!==(x.termination==='KO'))))
+            throw Error('Invalid actual independent paired-Kiwi authority KO');
+          console.log(JSON.stringify({seed:r.independentSeed,
+            independentPairedTrials:1,
+            roots:r.results.map(x=>x.rootSignature),
+            actualFullOutcomes:r.results.map(x=>({
+              scored:x.scored,winner:x.winner,termination:x.termination,
+              locks:x.locked,first8:x.firstHorizon,
+              playerVsKiwiCpu:x.perSideCpuMs,
+              playerVsKiwiNodes:x.perSideEvaluatedNodes,
+              combat:x.finalCombat})),
+            warning:'No counterfactual fork is an independent second seed, no capped match is a win, Kiwi is pinned and no future info enters either policy.'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-vs-kiwi-root-action-counterfactual-${{ matrix.seed }}
+          path: rook-kiwi-root-ko.json
+          retention-days: 30

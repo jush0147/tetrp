@@ -1,0 +1,166 @@
+name: ROOK budget scaling profile and true KO pilot
+on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-budget-scaling.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    outputs:
+      useful: ${{ steps.analyze.outputs.useful }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify strict search-evaluation budget and public NEXT5
+        run: node --test test/rook-budget-protocol.test.js
+      - name: Profile 6K, 12K, 24K, 48K on the same player-visible positions
+        env:
+          SEEDS: '1,8,16,23'
+          SAMPLE_TURNS: '0,4,12'
+          BUDGETS: '6000,12000,24000,48000'
+        run: node scripts/rook-budget-profile.js > rook-budget-profile.jsonl
+      - name: Report real search growth and decide if 12K vs 6K KO is worth running
+        id: analyze
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('rook-budget-profile.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          if(rows.length<8||rows.some(r=>r.format!=='rook-budget-public-position-response/1'||
+            r.samples.length!==4||r.samples.map(s=>s.budget).join(',')!=='6000,12000,24000,48000'||
+            r.samples.some(s=>s.evaluated>s.budget||s.evaluated<1)))
+            throw Error('Invalid public-state budget scaling profile');
+          const summary={format:'rook-budget-scaling-profile/1',positionCount:rows.length,
+            byBudget:[6000,12000,24000,48000].map((budget,i)=>{
+              const samples=rows.map(r=>r.samples[i]);
+              const times=samples.map(s=>s.ms).sort((a,b)=>a-b);
+              return {budget,meanEvaluated:samples.reduce((n,s)=>n+s.evaluated,0)/samples.length,
+                hitBound:samples.filter(s=>s.reachedBudget).length,
+                medianMs:times[Math.floor(times.length/2)],
+                p95Ms:times[Math.ceil(times.length*.95)-1],
+                differentFrom6K:samples.filter((s,j)=>s.choice!==rows[j].samples[0].choice).length};
+            }),positionDetails:rows.map(r=>({seed:r.seed,turn:r.turn,
+              evaluated:r.samples.map(s=>s.evaluated),
+              choiceChanges:r.samples.map(s=>s.choice!==r.samples[0].choice)}))};
+          const useful=rows.some(r=>r.samples[1].evaluated>r.samples[0].evaluated);
+          summary.pilot12K=useful?'go':'skip-saturated';
+          writeFileSync('rook-budget-summary.json',JSON.stringify(summary,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,'useful='+useful+'\n');
+          console.log(JSON.stringify({...summary,positionDetails:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-budget-response-profile
+          path: |
+            rook-budget-profile.jsonl
+            rook-budget-summary.json
+          retention-days: 30
+  paired-ko:
+    needs: profile
+    if: needs.profile.outputs.useful == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        seed: [1,8,16,23]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Complete 12K candidate vs 6K baseline Tetrp KO, same seed, swapped
+        env:
+          SEEDS: ${{ matrix.seed }}
+          ROOK_NODES: '6000'
+          ROOK_CANDIDATE_NODES: '12000'
+          ROOK_BASELINE_NODES: '6000'
+          BUDGET_SCALING: '1'
+          EXPERT_OPEN: '0'
+          EXPERT_RECOVERY: '0'
+          EXPERT_BELIEF: '0'
+          EXPERT_FUTURE: '0'
+          EXPERT_BEAM: '0'
+          EXPERT_OFFENSE: '0'
+          EXPERT_HOLD_PLAN: '0'
+          MAX_LOCKS: '2000'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > "rook-budget-ko-${{ matrix.seed }}.jsonl"
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const seed=Number('${{ matrix.seed }}');
+          const rows=readFileSync('rook-budget-ko-'+seed+'.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].swap!==false||rows[1].swap!==true||
+            rows.some(r=>r.seed!==seed||r.seeds[0]!==r.seeds[1]||r.error||
+              !r.sameSeed||!r.simultaneousLocks||r.cap!==2000||
+              r.candidateNodeBudget!==12000||r.baselineNodeBudget!==6000||
+              r.nodeBudget!==null||!r.budgetScaling||
+              r.kinds.filter(x=>x==='budget-scale').length!==1||
+              r.kinds.filter(x=>x==='baseline').length!==1||
+              r.scored!==(r.termination==='KO')||
+              r.slots.some(s=>s.pieces!==r.turns||!Number.isFinite(s.ms)||
+                s.configuredNodeBudget!==(s.kind==='budget-scale'?12000:6000))))
+            throw Error('Invalid 12K/6K matched-seed 2000-lock KO protocol');
+          console.log(JSON.stringify(rows.map(r=>({seed:r.seed,swap:r.swap,turns:r.turns,
+            termination:r.termination,winner:r.winner,
+            slots:r.slots.map(s=>({kind:s.kind,evalBudget:s.configuredNodeBudget,
+              actualEvaluated:s.nodes,searches:s.searches,budgetReached:s.budgetReached,
+              sentAPP:s.sentAPP,ms:s.ms}))}))));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-budget-ko-${{ matrix.seed }}
+          path: rook-budget-ko-${{ matrix.seed }}.jsonl
+          retention-days: 30
+  report:
+    needs: [profile,paired-ko]
+    if: needs.paired-ko.result == 'success'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-budget-ko-*
+          merge-multiple: true
+      - name: Report only actual KO, distinct seeds, CPU and capped outcomes
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seeds=[1,8,16,23],games=seeds.flatMap(seed=>
+            readFileSync('rook-budget-ko-'+seed+'.jsonl','utf8').trim().split('\n').map(JSON.parse));
+          if(games.length!==seeds.length*2||games.some(r=>r.error))
+            throw Error('Incomplete budget KO match report');
+          const ko=games.filter(r=>r.scored);
+          const sum=(name,key)=>games.reduce((t,g)=>t+
+            (g.slots.find(s=>s.kind===name)?.[key]??0),0);
+          const report={format:'rook-budget-KO-pilot/1',
+            candidateNodes:12000,baselineNodes:6000,cap:2000,
+            independentSeeds:seeds.length,games:games.length,scoredKO:ko.length,
+            candidateWins:ko.filter(r=>r.winner==='budget-scale').length,
+            baselineWins:ko.filter(r=>r.winner==='baseline').length,
+            capped:games.filter(r=>r.termination==='capped').length,
+            doubleKO:games.filter(r=>r.termination==='double-KO').length,
+            candidateSearchMs:sum('budget-scale','ms'),
+            baselineSearchMs:sum('baseline','ms'),
+            candidateEvaluated:sum('budget-scale','nodes'),
+            baselineEvaluated:sum('baseline','nodes'),
+            matches:games};
+          writeFileSync('rook-budget-KO-summary.json',JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify({...report,matches:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-budget-KO-summary
+          path: rook-budget-KO-summary.json
+          retention-days: 30

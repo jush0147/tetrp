@@ -1,0 +1,172 @@
+name: ROOK search-width and depth capacity full KO ablation
+on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-capacity-ablation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    outputs:
+      useful: ${{ steps.report.outputs.useful }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Independent budgets, strict caps, swapped identities
+        run: node --test test/rook-budget-config.test.js test/rook-budget-protocol.test.js
+      - name: Profile 4x24, width-only, depth-only, and combined search capacity
+        env:
+          SEEDS: '1,8,16,23'
+          SAMPLE_TURNS: '0,4,12'
+        run: node scripts/rook-capacity-profile.js > rook-capacity-profile.jsonl
+      - name: Count actual work, choice changes, and CPU; gate full KO
+        id: report
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+          const rows=readFileSync('rook-capacity-profile.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          const variants=['baseline-4x24-6k','width-4x48-12k',
+            'depth-5x24-12k','capacity-5x48-24k','capacity-5x96-48k'];
+          if(rows.length!==12||rows.some(r=>
+            r.format!=='rook-search-capacity-position-response/1'||
+            r.samples.length!==5||r.samples.map(s=>s.variant).join('|')!==variants.join('|')||
+            r.samples.some(s=>!Number.isSafeInteger(s.evaluated)||s.evaluated<1||
+              s.evaluated>s.budget||s.beamRootsByPly.length<1||
+              !Number.isFinite(s.ms)||s.ms<0)))
+            throw Error('Malformed or incomplete public search-capacity profile');
+          const byVariant=variants.map((variant,i)=>{
+            const samples=rows.map(r=>r.samples[i]);
+            const times=samples.map(s=>s.ms).sort((a,b)=>a-b);
+            return {variant,budget:samples[0].budget,depth:samples[0].depth,
+              beamWidth:samples[0].beamWidth,
+              meanEvaluated:samples.reduce((v,s)=>v+s.evaluated,0)/samples.length,
+              maxEvaluated:Math.max(...samples.map(s=>s.evaluated)),
+              boundHit:samples.filter(s=>s.reachedBudget).length,
+              choiceChangesVsBaseline:samples.filter((s,j)=>s.choice!==rows[j].samples[0].choice).length,
+              medianMs:times[Math.floor(times.length/2)],
+              p95Ms:times[Math.ceil(times.length*.95)-1]};
+          });
+          const useful=rows.some(r=>r.samples[3].evaluated>r.samples[0].evaluated&&
+            r.samples[3].choice!==r.samples[0].choice);
+          const summary={format:'rook-capacity-profile/1',independentSeeds:4,
+            publicPositions:rows.length,byVariant,koPilot:useful?'go':'skip',
+            note:'Expanded compute and a different move do not imply a stronger bot'};
+          writeFileSync('rook-capacity-summary.json',JSON.stringify(summary,null,2)+'\n');
+          appendFileSync(process.env.GITHUB_OUTPUT,'useful='+useful+'\n');
+          console.log(JSON.stringify(summary));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-capacity-public-state-profile
+          path: |
+            rook-capacity-profile.jsonl
+            rook-capacity-summary.json
+          retention-days: 30
+  paired-ko:
+    needs: profile
+    if: needs.profile.outputs.useful == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        seed: [1,8,16,23]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Candidate 5 ply, beam 48, 24K vs baseline 4 ply, beam 24, 6K
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          ROOK_NODES: '6000'
+          ROOK_CANDIDATE_NODES: '24000'
+          ROOK_BASELINE_NODES: '6000'
+          ROOK_CANDIDATE_DEPTH: '5'
+          ROOK_BASELINE_DEPTH: '4'
+          ROOK_CANDIDATE_BEAM: '48'
+          ROOK_BASELINE_BEAM: '24'
+          BUDGET_SCALING: '1'
+          EXPERT_OPEN: '0'
+          EXPERT_RECOVERY: '0'
+          EXPERT_BELIEF: '0'
+          EXPERT_FUTURE: '0'
+          EXPERT_BEAM: '0'
+          EXPERT_OFFENSE: '0'
+          EXPERT_HOLD_PLAN: '0'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > "rook-capacity-ko-${{ matrix.seed }}.jsonl"
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const seed=Number('${{ matrix.seed }}');
+          const rows=readFileSync('rook-capacity-ko-'+seed+'.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          if(rows.length!==2||rows[0].swap||!rows[1].swap||rows.some(r=>
+            r.seed!==seed||r.error||!r.sameSeed||!r.simultaneousLocks||
+            r.seeds[0]!==r.seeds[1]||r.cap!==2000||r.nodeBudget!==null||
+            !r.budgetScaling||r.expertLabel!=='budget-scale'||
+            r.scored!==(r.termination==='KO')||
+            r.slots.some(s=>s.pieces!==r.turns||
+              s.configuredNodeBudget!==(s.kind==='budget-scale'?24000:6000)||
+              s.configuredDepth!==(s.kind==='budget-scale'?5:4)||
+              s.configuredBeamWidth!==(s.kind==='budget-scale'?48:24)||
+              !Number.isFinite(s.ms)||s.nodes>s.searches*s.configuredNodeBudget)))
+            throw Error('Invalid capacity pilot or synchronized KO authority');
+          console.log(JSON.stringify(rows.map(r=>({seed,swap:r.swap,termination:r.termination,
+            turns:r.turns,winner:r.winner,slots:r.slots.map(s=>({
+              kind:s.kind,ms:s.ms,nodes:s.nodes,searches:s.searches,sentAPP:s.sentAPP}))}))));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-capacity-ko-${{ matrix.seed }}
+          path: rook-capacity-ko-${{ matrix.seed }}.jsonl
+          retention-days: 30
+  report:
+    needs: [profile,paired-ko]
+    if: needs.paired-ko.result == 'success'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-capacity-ko-*
+          merge-multiple: true
+      - name: Report true KO separately from capped/double-KO and search CPU
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seeds=[1,8,16,23],games=seeds.flatMap(seed=>
+            readFileSync('rook-capacity-ko-'+seed+'.jsonl','utf8').trim().split('\n').map(JSON.parse));
+          if(games.length!==8||games.some(r=>r.error))throw Error('Missing capacity KO games');
+          const scored=games.filter(r=>r.scored);
+          const sum=(who,k)=>games.reduce((v,r)=>v+(r.slots.find(s=>s.kind===who)?.[k]??0),0);
+          const summary={format:'rook-search-capacity-KO-pilot/1',
+            candidate:'depth5-beam48-maxNodes24000',baseline:'depth4-beam24-maxNodes6000',
+            distinctSeeds:seeds.length,swappedGames:games.length,cap:2000,
+            scoredKO:scored.length,candidateWins:scored.filter(r=>r.winner==='budget-scale').length,
+            baselineWins:scored.filter(r=>r.winner==='baseline').length,
+            capped:games.filter(r=>r.termination==='capped').length,
+            doubleKO:games.filter(r=>r.termination==='double-KO').length,
+            candidateMs:sum('budget-scale','ms'),baselineMs:sum('baseline','ms'),
+            candidateEvaluated:sum('budget-scale','nodes'),baselineEvaluated:sum('baseline','nodes'),
+            candidateSent:sum('budget-scale','sent'),baselineSent:sum('baseline','sent'),
+            games};
+          writeFileSync('rook-capacity-KO-summary.json',JSON.stringify(summary,null,2)+'\n');
+          console.log(JSON.stringify({...summary,games:undefined}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-capacity-KO-summary
+          path: rook-capacity-KO-summary.json
+          retention-days: 30

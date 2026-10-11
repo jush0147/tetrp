@@ -1,0 +1,98 @@
+name: ROOK public TSD signal negative-control audit
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-tsd-negative-controls.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  issues: write
+jobs:
+  tsd-controls:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Regression tests for genuine SRS TSD and public information
+        run: node --test test/rook-tsd.test.js test/rook-bfs-parent.test.js test/rook-kiwi-fifth.test.js
+      - name: Replay known Kiwi win, record EVERY public pre-lock state
+        env:
+          SEEDS: '67131'
+          SWAP_ROLES: '0'
+          KIWI_NODES: '200000'
+          ROOK_NODES: '6000'
+          ROOK_EXACT_LEAF: '1'
+          ROOK_LEAF_BUDGET: '5000'
+          ROOK_LEAF_STATES: '800'
+          MAX_LOCKS: '2000'
+          ROOK_PUBLIC_LOCK_TRACE_PATH: rook-all-public-locks.jsonl
+        run: |
+          set -eu
+          node scripts/rook-vs-kiwi.js > rook-reference-ko.jsonl
+          ROOK_LOCK_TRACE_INPUT=rook-all-public-locks.jsonl             ROOK_LOCK_AUDIT_OUTPUT=rook-tsd-negative-controls.json             node scripts/rook-tsd-negative-controls.js > rook-negative-control-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-reference-ko.jsonl','utf8').trim());
+          const a=JSON.parse(readFileSync('rook-tsd-negative-controls.json','utf8'));
+          if(r.seed!==67131||r.error||r.termination!=='KO'||
+            r.winner!=='kiwi'||!r.sameSeed||!r.simultaneousLocks||
+            r.rookExactLeaf!==true||a.format!=='rook-tsd-positive-negative-control/1'||
+            a.independentSeeds!==1||a.locks!==2*r.lockSteps||
+            a.authorityEvents!==
+              r.slots.reduce((n,s)=>n+s.combatEvents.fullTsd,0)||
+            a.summaries.some(x=>x.tp+x.fp+x.fn+x.tn!==x.samples||
+              x.samples<=0||x.horizon<1||x.horizon>3))
+            throw Error('Bad public-only sensitivity/specificity comparison');
+          const report=[];
+          report.push('### Public TSD precursor: false-positive controls (NOT new KO)');
+          report.push('');
+          report.push('Replay: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID);
+          report.push('Seed 67131, same known reference outcome Kiwi KO, '+r.lockSteps+
+            ' synchronized locks. NOT a new independent KO trial.');
+          report.push('Observed authority Full TSD events: '+a.authorityEvents+
+            ', all player-visible lock states: '+a.locks+'.');
+          report.push('Full geometric TSD slots in '+a.geometricFullCount+
+            ' pre-lock views, but '+a.geometryWithoutImmediateSrsProof+
+            ' of those lack an immediately proved SRS+ TSD using Current T.');
+          for(const kind of ['kiwi','rook']){
+            report.push('');
+            report.push('**'+kind.toUpperCase()+'** (predict actual Full TSD within next 2 locks):');
+            const group=a.summaries.filter(x=>x.kind===kind&&x.horizon===2);
+            for(const key of ['anyScaffold','missingAtMostOne','fullSpinGeometry',
+              'verifiedImmediateTsd']){
+              const c=group.find(x=>x.feature===key);
+              report.push('- '+key+': TP='+c.tp+' FP='+c.fp+' FN='+c.fn+
+                ' TN='+c.tn+'; precision='+c.precision+' recall='+c.recall+
+                ' baseRate='+c.baseRate);
+            }
+          }
+          report.push('');
+          report.push('False positives and low specificity prevent simply adding this shape score to ROOK. '+
+            'All observations overlap and come from only one deterministic source seed.');
+          report.push('Only publicly visible board/Current/Hold/NEXT5/rules/garbage are scored;'+
+            ' future actual TSD is a retrospective label, NEVER passed to either bot.');
+          writeFileSync('rook-tsd-negative-controls.md',report.join('\n')+'\n');
+          console.log(report.join('\n'));
+          JS
+      - name: Record honest true/false positive rates on Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-tsd-negative-controls.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-public-tsd-negative-controls
+          path: |
+            rook-reference-ko.jsonl
+            rook-all-public-locks.jsonl
+            rook-tsd-negative-controls.json
+            rook-negative-control-summary.json
+            rook-tsd-negative-controls.md
+          retention-days: 30
