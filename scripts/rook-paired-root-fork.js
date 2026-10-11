@@ -71,7 +71,8 @@ const clone=d=>{
   return c;
 };
 
-function choosePrepared(d,forced=null,policy='rook'){
+function choosePrepared(d,forced=null,policy='rook',
+  forcedHoldFollowupPolicy='rook'){
   let computeMs=0,nodesEvaluated=0,holdCount=0;
   const executedActions=[];
   decisionLoop:for(let step=0;step<2;step++){
@@ -80,12 +81,11 @@ function choosePrepared(d,forced=null,policy='rook'){
     const t=performance.now();
     let ranked;
     if(forced&&step===0)ranked=[forced];
-    // If the FORCED first action was Hold, BOTH paired arms MUST use the
-    // SAME post-Hold placement policy for their first actual locked piece.
-    // The three-lock Kiwi commitment begins at lock TWO, not during the
-    // post-Hold continuation of lock ONE. Otherwise the comparison of
-    // 'one Kiwi root' vs 'three Kiwi locks' has different FIRST LOCKS.
-    else if((forced&&step===1?'rook':policy)==='rook'){
+    // A forced Hold is only half of the first LOCK's decision. Both
+    // Kiwi-root treatments must use the SAME Kiwi policy after Hold to
+    // complete the actual first lock. ROOK-root Hold uses ROOK after Hold.
+    // After the first lock, only the 3-lock arm retains Kiwi policy.
+    else if((forced&&step===1?forcedHoldFollowupPolicy:policy)==='rook'){
       const report=chooseMove(view.visible,settings);
       nodesEvaluated+=report.diagnostics.evaluated;
       ranked=report.ranked;
@@ -156,13 +156,15 @@ function deliver(pair,packets){
   }
   assertSimultaneousPair(pair);
 }
-function lockRound(pair,forced=null,candidatePolicy='rook'){
+function lockRound(pair,forced=null,candidatePolicy='rook',
+  forcedHoldFollowupPolicy='rook'){
   if(!pair.every(d=>d.engine.state.playing))
     throw Error('Tried to lock a KOed pair');
   const startFrame=assertSimultaneousPair(pair);
   // BOTH players pick from their own public snapshot before EITHER locks.
   const plans=pair.map((d,i)=>choosePrepared(d,i===0?forced:null,
-    i===0?candidatePolicy:opponentPolicy));
+    i===0?candidatePolicy:opponentPolicy,
+    i===0?forcedHoldFollowupPolicy:'rook'));
   if(assertSimultaneousPair(pair)!==startFrame)
     throw Error('Decisions must not advance synchronized battle frame');
   for(let i=0;i<2;i++)pair[i].commit(plans[i].revision);
@@ -432,7 +434,9 @@ for(const v of variants){
         v.locks-beforeFork<strategyCommitLocks;
       const a=lockRound(v.pair,
         v.locks===beforeFork?v.root:null,
-        continueKiwi?'kiwi':'rook');
+        continueKiwi?'kiwi':'rook',
+        conditionalFutures&&v.treatment.startsWith('kiwi-root')?
+          'kiwi':'rook');
       if(continueKiwi)v.committedKiwiLocks++;
       if(v.locks-beforeFork<3){
         v.first3LockActions.push({lock:v.locks-beforeFork+1,
