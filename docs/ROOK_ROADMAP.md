@@ -2575,3 +2575,74 @@ predeclared, independent true-KO seeds and
 real measured CPU against original ROOK,
 followed by pinned Kiwi. Main/pinned Kiwi
 unchanged; PR #6 Draft.
+
+
+### 2026-10-11: first divergent-public-action forensic shows opposite effects of identical-mode HOLDOVER
+
+The short [first public-action forensic workflow #38114823390](https://github.com/jush0147/tetrp/actions/runs/38114823390)
+replays already-scored originals only, not additional independent
+matches. Each comparator has identical PUBLIC board/Hold/
+CURRENT/NEXT5/pending packets at the first distinct actual
+legal authority-accepted move. It records both objective
+modes and public surface, followed by real authority health
+at +1,+4,+8,+16,+32 locks, with any missing horizon marked
+censored. This is MECHANISTIC, not a population action
+effect estimate or optimized model.
+
+**Already verified positive 67812 forensic (short replay PASSED):**
+- Root divergence at synchronized lock **46**, public
+  `CURRENT=I`, NEXT5 `[S,T,O,L,I]`,
+  held L, pending 0, max stack 3, holes 0, btb 3.
+- Both policies' public immediate desired objective
+  was `attack`, but persistent had `balanced`
+  **retained=true** from an earlier commitment.
+  Reactive immediately switched to `attack`.
+- Persistent legal I landing HORIZONTAL on cells
+  (5,36)..(8,36) vs reactive VERTICAL at x=9,
+  y=36..39. Both actual ROOK searches spent the
+  configured 3000 evaluated nodes and used the
+  same public position.
+- The reactive branch had 1 MORE cumulative sent
+  after +1 lock (15 vs 14), but by +16 the original
+  persistent arm cumulatively sent **23 vs 16**
+  with lower suffered garbage (tanked 2 vs 8).
+  This is conditional on the original seed's
+  subsequent policy and garbage packets, NOT a
+  general horizontal-I preference.
+
+**Already verified losing 67814 forensic (short replay PASSED):**
+- Root divergence at lock **44**, public
+  `CURRENT=Z`, NEXT5 `[T,L,J,T,L]`,
+  held O, pending 0, stack max 4, holes 0, btb 5.
+- Both immediately desired `attack`. Persistent
+  `balanced` **retained=true**, reactive switched
+  to `attack`.
+- Both legal Z landings had the same y shape;
+  persistent x=0..2, reactive x=1..3, i.e. one
+  horizontal cell shift. Equal measured 3000
+  evaluated nodes in both searches.
+- At +4, persistent had smaller stack and no
+  garbage (max height 3/holes 0/tanked 0),
+  while reactive was height 6/holes 4/tanked 4.
+  Nevertheless by +16 cumulative real outgoing
+  attack was persistent **19**, reactive **25**;
+  by +32 **24 vs 29**. The original full match
+  ended in reactive's true KO victory at lock
+  **319**. Even locally safer short-term board
+  conditions can precede loss of attack tempo.
+- Hence a fixed 3-lock `balanced` holdover in
+  otherwise safe positions is NOT consistently
+  good or bad. The original 2-win/2-loss
+  experiment is exactly what we should expect
+  if action values depend on structure beyond
+  simple height/pending thresholds.
+
+**Original losing 67815 forensic** is still running
+at this documentation commit. Do not invent its
+first root, mode, or progress. [Forensic analysis
+script](../scripts/rook-intent-divergence-audit.js)
+will check that all root comparisons truly shared
+public signals, and count no new independent games.
+No changes to the production policy, no retuning
+the attack/defense thresholds on these seen seeds,
+and no new Kiwi winner claims.
