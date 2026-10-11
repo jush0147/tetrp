@@ -1,8 +1,34 @@
 // Authority-only research fork. The policy receives public view() alone;
 // hidden bag/hole RNG is preserved ONLY within paired authoritative engines.
 // One original-match seed may produce at most ONE selected fork.
+import {createHash} from 'node:crypto';
 import {plannedHold,proveForecastPlacement} from '../src/analysis/rook-plan.js';
 import {assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
+
+const hashVisible=visible=>createHash('sha256')
+  .update(JSON.stringify(visible)).digest('hex').slice(0,16);
+const cellKey=cells=>cells?.map(([x,y])=>x+','+y).sort().join(';')??null;
+function health(demo){
+  const s=demo.engine.state,b=s.board,H=b.rows.length;
+  let height=0,holes=0,garbage=0;
+  for(let x=0;x<b.width;x++){
+    let covered=false;
+    for(let y=0;y<H;y++){
+      const v=b.rows[y][x];
+      if(v!==null){
+        if(!covered)height=Math.max(height,H-y);
+        covered=true;
+        if(v==='gb'||v==='gbd')garbage++;
+      }else if(covered)holes++;
+    }
+  }
+  return {alive:s.playing,height,holes,garbage,btb:s.attack.btb,
+    sent:s.attack.totals.sent,generated:s.attack.totals.generated,
+    tanked:s.attack.totals.tanked,cancelled:s.attack.totals.cancelled,
+    pending:[...(s.attack.pending??[]),...(s.attack.are??[])]
+      .reduce((n,p)=>n+p.amt,0)};
+}
+
 
 export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
   prepareUntilPlace,cap=2000}){
@@ -10,9 +36,14 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
     throw Error('Hold fork requires the original rook/kiwi slots');
   if(!Number.isInteger(cap)||cap<1||cap>2000)
     throw Error('Expected a KO-first 2000-lock safety cap');
+  const startingAuthority=demos.map(d=>JSON.stringify(d.engine.serialize()));
   const run=(forceForecast)=>{
     const copies=demos.map(d=>d.fork());
+    if(copies.some((d,i)=>JSON.stringify(d.engine.serialize())!==
+      startingAuthority[i]))throw Error('Fork initial private state mismatch');
     let inbound=[],round=turn,error=null,forced=false;
+    let firstAction=null,firstPublicFingerprint=null;
+    const windows=[];const windowLocks=new Set([1,4,8,16,32,64]);
     let rookNodes=0,kiwiNodes=0,rookMs=0,kiwiMs=0;
     try{
       while(round<cap&&copies.every(d=>d.engine.state.playing)){
@@ -43,11 +74,20 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
             if(!proof)throw Error('Forecast Hold+placement lacks SRS proof');
             copies[0].prepare(proof,after.revision);
             decisions.push({revision:after.revision,nodes:0,searchMs:0});
+            firstAction={piece:proof.move.piece,spin:proof.execution.spin,
+              holdUsed:true,cellKey:cellKey(proof.move.cells)};
             forced=true;
           }else{
             const decision=prepareUntilPlace(copies[i],kinds[i]);
             decisions.push(decision);
-            if(i===0){rookNodes+=decision.nodes;rookMs+=decision.searchMs;}
+            if(i===0){
+              if(round===turn)firstAction={
+                piece:decision.placement?.piece??null,
+                spin:decision.executionSpin??null,
+                holdUsed:decision.holdCount>0,
+                cellKey:cellKey(decision.placement?.cells)};
+              rookNodes+=decision.nodes;rookMs+=decision.searchMs;
+            }
             else {kiwiNodes+=decision.nodes;kiwiMs+=decision.searchMs;}
           }
         }
@@ -55,6 +95,11 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
           throw Error('Fork did not prepare synchronous decisions');
         for(let i=0;i<2;i++)copies[i].commit(decisions[i].revision);
         assertSimultaneousPair(copies);
+        if(round===turn)
+          firstPublicFingerprint=hashVisible(copies[0].view().visible);
+        const afterLocks=round-turn+1;
+        if(windowLocks.has(afterLocks))
+          windows.push({afterLocks,slots:copies.map(health)});
         for(let i=0;i<2;i++)
           for(const x of copies[i].engine.state.attack.outbox.splice(0))
             inbound.push({to:1-i,iid:x.iid,ackiid:x.ackiid,amt:x.amt});
@@ -63,7 +108,9 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
     }catch(e){error=e instanceof Error?e.message:String(e)}
     const scored=scoreKO({alive:copies.map(d=>d.engine.state.playing),
       rounds:round,cap,error});
-    return {forced,roundsFromStart:round,continuationLocks:round-turn,
+    return {forced,firstAction,firstPublicFingerprint,windows,
+      finalHealth:copies.map(health),
+      roundsFromStart:round,continuationLocks:round-turn,
       termination:scored.termination,scored:scored.scored,
       winner:scored.scored?kinds[scored.winnerSlot]:null,error,
       rookNodes,kiwiNodes,rookMs:+rookMs.toFixed(2),
@@ -77,7 +124,15 @@ export function runHoldCounterfactual({demos,kinds,forecast,seed,turn,
   };
   const reactive=run(false);
   const retained=run(true);
-  return {format:'rook-hold-counterfactual-fork/1',seed,turn,
+  const verifiedFirstActionDifference=Boolean(reactive.firstAction&&
+    retained.firstAction&&
+    reactive.firstAction.holdUsed===false&&
+    retained.firstAction.holdUsed===true&&
+    reactive.firstPublicFingerprint&&retained.firstPublicFingerprint&&
+    reactive.firstPublicFingerprint!==retained.firstPublicFingerprint);
+  if(!verifiedFirstActionDifference)
+    throw Error('Paired counterfactual did not produce different first authoritative public states');
+  return {verifiedFirstActionDifference,format:'rook-hold-counterfactual-fork/1',seed,turn,
     independentOriginalSeed:seed,independentForkPairs:1,
     sameAuthorityInitialState:true,hiddenFutureNeverPassedToBot:true,
     originalForecastUsesHold:true,continuationPolicy:'fresh-every-lock',
