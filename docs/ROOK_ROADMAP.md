@@ -2646,3 +2646,112 @@ public signals, and count no new independent games.
 No changes to the production policy, no retuning
 the attack/defense thresholds on these seen seeds,
 and no new Kiwi winner claims.
+
+
+### 2026-10-11 follow-up: third losing-seed forensic and test of PUBLIC multi-lock plan feasibility
+
+**Complete** [forensic authority replays #38114823390](https://github.com/jush0147/tetrp/actions/runs/38114823390),
+all 3 jobs SUCCESS, and [frozen original-seed audit #38124544341](https://github.com/jush0147/tetrp/actions/runs/38124544341)
+also SUCCESS. These are diagnostic REPLAYS of previous
+scored original seeds 67812/67814/67815, **ZERO new
+independent scored games**. All three first actual
+legal strategy differences occurred when both
+candidates saw EXACT same public CURRENT/HOLD/NEXT5,
+zero pending public garbage, low maximum column
+height (3 or 4), zero holes, and both public
+desired modes said ATTACK, but persistent still
+held BALANCED from earlier commitment. However
+the full-match results split one genuine win
+(67812) and two genuine defeats (67814,67815).
+This is NOT evidence that always switching into
+attack in safe positions improves real KO; switching
+would invert the 67812 observed choice too.
+
+**Newly verified 67815 genuine losing-seed first fork:**
+- Locked piece 169, public T, NEXT5 [I,O,S,J,Z],
+  held Z, no pending, max height 4, holes 0,
+  B2B3. Persistent BALANCED (desired ATTACK,
+  retained=true) selects REAL legal Hold swap
+  of T for held Z, then lands Z at
+  (1,38),(1,39),(2,37),(2,38); reactive
+  ATTACK lands current T at
+  (0,36),(0,37),(0,38),(1,37).
+  Both roots are legal authority actions; note
+  actual persistent total evaluation work 4584
+  nodes due post-Hold re-search vs reactive 2213.
+- +1 lock both had 70 cumulative sent/tanked0.
+  +8: persistent sent75, tanked0, reactive
+  sent73/tanked0, so simplistic 8-lock sent
+  predicts the WRONG ultimate KO sign.
+- +16: persistent sent **75**, tanked **7**,
+  stack height **12** / holes **7** vs reactive
+  sent **81**, tanked **5**, height **5** /
+  holes **1**.
+- +32: persistent sent **78**, tanked **12**,
+  stack height **14** / holes **10** vs
+  reactive sent **89**, tanked **6**,
+  stack height **4** / holes **0**. Prior
+  original complete game had reactive KO WIN
+  at turn 611. These are conditional original
+  trajectory outcomes; not causal population values.
+
+**Investigate a deeper search/strategy limitation
+WITHOUT tweaking those same-seed mode thresholds:**
+ROOK already emits a candidate beam
+`forecastPlan` for several CURRENT/NEXT5 pieces.
+Its steps are geometrical/model projections, NOT
+automatically genuine Tetrp SRS+-legal future
+placements under authentic opponent garbage.
+To measure whether ROOK has any viable multi-lock
+planned intent before building a strategy switcher:
+- Add offline [`rook-plan-fidelity.js`](../src/analysis/rook-plan-fidelity.js)
+  to evaluate each predicted NEXT planned step only
+  on the **next ACTUAL public ROOK board** after
+  authentic opponent packet transfer; classify
+  board, current, Hold, public pending/BTB/combo
+  mismatches separately.
+- Even if predicted prerequisites match, re-enumerate
+  real SRS+ via `proveForecastPlacement`;
+  a public Hold forecast can confirm Hold permitted
+  but must NOT be reported as pre-proving its
+  post-Hold landing.
+- In the [live pinned-Kiwi ROOK harness](../scripts/rook-vs-kiwi.js)
+  add opt-in `ROOK_FORECAST_PLAN_AUDIT=1`.
+  Record at most 10 naturally sampled forecast
+  next steps and their actual public validity;
+  do not change ranked choices, bot parameters,
+  Kiwi WASM, or authority outcomes. Take baseline
+  and instrumented replays of SAME original
+  seed **67920**, max 65 locks, node limits
+  ROOK3000 vs Kiwi32768 (unequal compute
+  by design; diagnostics NOT a performance claim).
+  CI MUST prove per-bot genuine sent/tanked,
+  piece count, KO termination and search nodes
+  are exactly unchanged by the probe, and report
+  extra diagnostic CPU separately.
+- Unit negative controls for public garbage,
+  current, board and B2B changes,
+  actual SRS+ legal placement, fake/unreachable
+  spin, and Hold not pre-proving post-Hold
+  placement in [`rook-plan-fidelity.test.js`](../test/rook-plan-fidelity.test.js).
+- [Live plan fidelity CI #38124531643](https://github.com/jush0147/tetrp/actions/runs/38124531643)
+  was RUNNING when this was recorded. Test
+  contract PASSED, exact real match status
+  PENDING, no numeric percentages can yet
+  be claimed.
+
+**Next decision gate:** If public NEXT5 2nd-lock
+forecasts often fail on actual public ROOK vs
+Kiwi boards, a fixed-length `balanced/attack`
+mode is unlikely to solve long-horizon planning
+alone. Identify whether the failure is unseen
+opponent garbage, post-Hold replanning or
+model/geometric legality. Only then consider
+a public, SRS-verified, interruption-safe
+multi-piece *option* maintained while its
+proof and objective remain valid, rather
+than blindly fixing reward weights for 3
+pieces. Validate against original ROOK and
+pinned Kiwi on NEW independent true-KO seeds
+with separate measured CPU parity. Original
+ROOK, Kiwi, main unchanged; PR #6 Draft.
