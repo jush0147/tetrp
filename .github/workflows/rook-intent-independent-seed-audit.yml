@@ -1,0 +1,57 @@
+name: ROOK full-match strategy original seed outcome audit
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-intent-independent-seed-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  archived-real-ko-audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax verify genuine-KO original-seed audit BEFORE reading data
+        run: node --check scripts/rook-intent-replication-audit.js
+      - uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38111273237
+          pattern: rook-intent-role-swap-original-seed-*
+          path: replication-artifacts
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Four original seed results only; prove role swap deterministic rather than counting 8 wins
+        run: node scripts/rook-intent-replication-audit.js
+      - name: Validate genuine outcome and distinct predeclared original seeds
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const a=JSON.parse(readFileSync('role-swap-audit.json','utf8'));
+          if(a.originalIndependentSeedCount!==4||
+            a.correlatedSwappedGames!==8||
+            a.originalSeedRows.length!==4||
+            a.originalSeedRows.map(x=>x.seed).join(',')!==
+              '67812,67813,67814,67815'||
+            a.originalSeedRows.some(x=>
+              !x.symmetricRoleSwapVerified||x.correlatedGames!==2||
+              !x.scored||x.termination!=='KO')||
+            a.defaultRookChanged!==false||a.notAnEqualCpuClaim!==true)
+            throw Error('Cannot treat role swap repeats as new independent games');
+          console.log(JSON.stringify({
+            independentOriginalSeeds:a.originalIndependentSeedCount,
+            trueKOWins:a.genuineOriginalSeedWins,
+            noFalseWinsFromRoleSwap:true,
+            noProductionPromotion:true
+          }));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-real-ko-independent-original-seed-audit
+          path: role-swap-audit.json
+          retention-days: 30
