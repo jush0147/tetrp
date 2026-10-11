@@ -4,6 +4,7 @@ import {writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
+import {advanceStrategicIntent} from '../src/analysis/rook-strategic-intent.js';
 import {chooseMoveWithPublicTStock} from '../src/analysis/rook-t-stock.js';
 import {publicPlanStillApplicable,proveForecastPlacement,plannedHold} from '../src/analysis/rook-plan.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
@@ -28,6 +29,9 @@ const seeds=parseMatchSeeds();
 const openTiles=Number(process.env.OPEN_TILE_NODES??1200);
 const expertOpen=process.env.EXPERT_OPEN!=='0';
 const expertRecovery=process.env.EXPERT_RECOVERY==='1';
+const expertStrategic=process.env.EXPERT_STRATEGIC_INTENT==='1';
+const compareReactiveStrategy=process.env.COMPARE_REACTIVE_STRATEGY==='1';
+const strategicCommitLocks=Number(process.env.STRATEGIC_COMMIT_LOCKS??3);
 const expertBelief=process.env.EXPERT_BELIEF==='1';
 const expertBeliefCommonHorizon=process.env.EXPERT_BELIEF_COMMON_HORIZON==='1';
 const compareLegacyBelief=process.env.COMPARE_LEGACY_BELIEF==='1';
@@ -73,6 +77,7 @@ const beliefProbes=Number(process.env.BELIEF_PROBES??3);
 const beliefMaxOutcomes=Number(process.env.BELIEF_MAX_OUTCOMES??10);
 const recoveryWeight=Number(process.env.RECOVERY_WEIGHT??1);
 const expertLabel=[expertOpen?'opener':null,expertRecovery?'recovery':null,
+  expertStrategic?'public-strategic-intent':null,
   expertBelief?(expertBeliefCommonHorizon?'common-horizon-belief':'belief'):null,expertFuture?'future-srs':null,
   expertBeam?'focused-beam':null,expertOffense?'offense-weight':null,
   expertHoldPlan?'hold-plan':null,expertPruning?'setup-survival':null,
@@ -89,6 +94,8 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isSafeInteger(budget)||budget<1||
   !Number.isSafeInteger(candidateBudget)||candidateBudget<1||candidateBudget>2000000||
   !Number.isSafeInteger(baselineBudget)||baselineBudget<1||baselineBudget>2000000||
+  !Number.isInteger(strategicCommitLocks)||strategicCommitLocks<1||
+  strategicCommitLocks>8||
   !Number.isInteger(candidateDepth)||candidateDepth<1||candidateDepth>5||
   !Number.isInteger(baselineDepth)||baselineDepth<1||baselineDepth>5||
   !Number.isInteger(candidateBeamWidth)||candidateBeamWidth<1||candidateBeamWidth>128||
@@ -120,6 +127,15 @@ if(!Number.isSafeInteger(limit)||limit<1||limit>10000||
   !Number.isInteger(frontierSlots)||frontierSlots<1||frontierSlots>32||
   !Number.isFinite(frontierGap)||frontierGap<0||frontierGap>1000)
   throw Error('Invalid ROOK self-play configuration');
+if(expertStrategic&&(
+  expertOpen||expertRecovery||expertBelief||expertFuture||expertBeam||
+  expertOffense||expertHoldPlan||expertPruning||expertSticky||
+  expertExactLeaf||expertTStock||expertFrontier||expertHoleScale||
+  budgetScaling||compareLegacyBelief||compareAllFrontier||
+  compareUnguardedFrontier))
+  throw Error('Public strategic intent comparison must be isolated');
+if(compareReactiveStrategy&&!expertStrategic)
+  throw Error('Reactive comparison requires isolated strategic intent');
 if((expertBeliefCommonHorizon&&!expertBelief)||
   (compareLegacyBelief&&(!expertBeliefCommonHorizon||!expertBelief||
     expertFrontier||expertOpen||budgetScaling||expertTStock)))
@@ -151,6 +167,7 @@ const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,
     may20g:true,irs:'off',ihs:'off'}}),{placementMode:'atomic'});
 
 const rememberedPlans=new WeakMap();
+const rememberedStrategicIntent=new WeakMap();
 function select(demo,open){
   const stats={nodes:0,holds:0,ms:0,rejections:0,offers:0,
     selections:0,forwardProbes:0,forwardMoves:0,
@@ -175,8 +192,25 @@ function select(demo,open){
     frontierGuardShadowChanges:0,frontierGuardShadowMs:0,
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,
     stickyHoldSkipped:0,leafExtensionAttempts:0,leafExtensionApplied:0,
+    intentAttack:0,intentProtect:0,intentBalanced:0,intentSwitches:0,
+    intentRetained:0,intentEmergency:0,intentDecisions:0,
     leafExtensionAborts:0,leafExtensionChanges:0,leafExtensionWork:0};
   let expectedAfterHold=null,usedStickyHold=false;
+  const strategic=expertStrategic?
+    advanceStrategicIntent(demo.view().visible,
+      rememberedStrategicIntent.get(demo)??null,{
+        minCommitLocks:strategicCommitLocks,
+        reactive:!open&&compareReactiveStrategy}):null;
+  if(strategic){
+    rememberedStrategicIntent.set(demo,strategic.state);
+    stats.intentDecisions+=Number(strategic.newLock);
+    stats.intentAttack+=Number(strategic.newLock&&strategic.mode==='attack');
+    stats.intentProtect+=Number(strategic.newLock&&strategic.mode==='protect');
+    stats.intentBalanced+=Number(strategic.newLock&&strategic.mode==='balanced');
+    stats.intentSwitches+=Number(strategic.changed);
+    stats.intentRetained+=Number(strategic.retained);
+    stats.intentEmergency+=Number(strategic.emergency);
+  }
   if(open&&expertSticky){
     const next=rememberedPlans.get(demo)?.[0];
     if(next){
@@ -240,7 +274,10 @@ function select(demo,open){
       futureReachableStates:open?(expertFuture?futureStates:candidateFutureStates):
         baselineFutureStates,
       beamRootReserve:open&&expertBeam?beamRootReserve:null,
-      offenseWeight:open&&expertOffense?offenseWeight:4.8,
+      offenseWeight:strategic?strategic.searchOptions.offenseWeight:
+        open&&expertOffense?offenseWeight:4.8,
+      ...(strategic?{garbageRecovery:strategic.searchOptions.garbageRecovery,
+        garbageRecoveryWeight:strategic.searchOptions.garbageRecoveryWeight??1}:{}),
       holePenaltyScale:open&&expertHoleScale?holePenaltyScale:1,
       intermediateHoleRelief:open&&expertPruning?intermediateHoleRelief:0,
       includeHoldPlan:(open&&expertHoldPlan)||auditHoldPlan,
@@ -427,7 +464,8 @@ function health(demo){
     received:s.attack.totals.received,tanked:s.attack.totals.tanked};
 }
 function pairedGame(seed,swap){
-  const comparatorKind=compareLegacyBelief?'belief':
+  const comparatorKind=compareReactiveStrategy?'reactive-strategic-intent':
+    compareLegacyBelief?'belief':
     compareUnguardedFrontier||compareAllFrontier
     ?'option-frontier':'baseline';
   const kinds=swap?[comparatorKind,expertKind]:[expertKind,comparatorKind];
@@ -514,7 +552,8 @@ function pairedGame(seed,swap){
     candidateBeamWidth,baselineBeamWidth,
     budgetsByKind:{[expertKind]:candidateBudget,baseline:baselineBudget},
     extraOpenerCPU:expertOpen,expertLabel,
-    expertOpen,expertRecovery,expertBelief,expertFuture,expertBeam,expertOffense,
+    expertOpen,expertRecovery,expertStrategic,compareReactiveStrategy,
+    strategicCommitLocks,expertBelief,expertFuture,expertBeam,expertOffense,
     expertHoldPlan,expertPruning,expertSticky,expertExactLeaf,
     expertFrontier,frontierSlots,frontierGap,frontierShadow,
     expertHoleScale,holePenaltyScale,holeScaleShadow,
