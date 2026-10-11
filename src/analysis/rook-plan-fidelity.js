@@ -45,3 +45,19 @@ export function auditPublicNextForecast(visible,step,{
     // Different SRS+ paths to same cells/spin can be equivalent.
     provenKind:proof?.action?.kind??null};
 }
+
+
+// This is a comparison of two actual public/legal action choices, NOT a
+// projected reward score. Canonical cells ignore equivalent SRS+ path strings.
+export function sameForecastAsFreshRookChoice(forecast,{
+  placement,executionSpin,holdCount
+}={}){
+  if(!forecast||!placement)return false;
+  const cells=c=>Array.isArray(c)?c.map(([x,y])=>x+','+y)
+    .sort().join(';'):null;
+  return Boolean(forecast.useHold)===(holdCount>0)&&
+    forecast.piece===placement.piece&&
+    forecast.spin===executionSpin&&
+    cells(forecast.cells)!==null&&
+    cells(forecast.cells)===cells(placement.cells);
+}
