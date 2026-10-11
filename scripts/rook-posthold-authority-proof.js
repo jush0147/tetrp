@@ -3,6 +3,7 @@
 // A restored authority engine may contain private bag RNG but the only
 // output is proof of actual SRS+ landing of a known PUBLIC next/held piece.
 // No unseen NEXT6, opponent queue, garbage hole or RNG enters ROOK/Kiwi.
+import {isDeepStrictEqual} from 'node:util';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {plannedHold,proveForecastPlacement} from '../src/analysis/rook-plan.js';
@@ -17,7 +18,7 @@ export function verifyAuthorityOnlyPostHoldLanding(engine,publicBefore,step,{
   const clone=new BotDemo(Engine.restore(engine.serialize()),
     {placementMode:'atomic'});
   const before=clone.view();
-  if(JSON.stringify(before.visible)!==JSON.stringify(publicBefore))
+  if(!isDeepStrictEqual(before.visible,publicBefore))
     throw Error('OFFLINE_HOLD_AUDIT_CLONE_DIFFERS_FROM_REAL_VISIBLE_STATE');
   try{
     clone.prepare(request,before.revision);
