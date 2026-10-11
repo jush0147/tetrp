@@ -3,7 +3,10 @@
 // checkpoint including (opaque to bots) the same private bag and garbage RNG.
 // Both sides' future choices use ONLY BotDemo.view().visible CURRENT/HOLD/NEXT5.
 // A fork pair is ONE experimental original seed, not 2 independent KO trials.
+import {readFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
+import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
+import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
 import {actionSignature} from '../src/analysis/rook-disagreement.js';
@@ -15,10 +18,18 @@ const seed=Number(process.env.SEED??67620);
 const beforeFork=Number(process.env.FORK_TURN??12);
 const cap=Number(process.env.MAX_LOCKS??2000);
 const nodes=Number(process.env.ROOK_NODES??6000);
+const opponentPolicy=process.env.FORK_OPPONENT??'rook';
+const kiwiBudget=Number(process.env.KIWI_NODES??200000);
 if(!Number.isSafeInteger(seed)||!Number.isInteger(beforeFork)||
   beforeFork<0||beforeFork>100||!Number.isInteger(cap)||cap<1||
-  cap>2000||cap<=beforeFork||!Number.isInteger(nodes)||nodes<100)
+  cap>2000||cap<=beforeFork||!Number.isInteger(nodes)||nodes<100||
+  !['rook','kiwi'].includes(opponentPolicy)||
+  !Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000)
   throw Error('Invalid real-KO root fork setup');
+
+if(opponentPolicy==='kiwi')
+  await init({module_or_path:readFileSync(new URL(
+    '../vendor/kiwi-v1/pkg/cold_clear_2_bg.wasm',import.meta.url))});
 
 const rules={g:0,gincrease:0,b2bcharge_base:3};
 const handling={arr:0,das:1,dcd:0,sdf:20,safelock:false,cancel:false,
@@ -41,32 +52,57 @@ const clone=d=>{
   return c;
 };
 
-function choosePrepared(d,forced=null){
+function choosePrepared(d,forced=null,policy='rook'){
   let computeMs=0,nodesEvaluated=0,holdCount=0;
   decisionLoop:for(let step=0;step<2;step++){
     const view=d.view();
     if(!view.visible.playing)throw Error('Attempted to place after KO');
     const t=performance.now();
-    const report=forced&&step===0?null:
-      chooseMove(view.visible,settings);
+    let ranked;
+    if(forced&&step===0)ranked=[forced];
+    else if(policy==='rook'){
+      const report=chooseMove(view.visible,settings);
+      nodesEvaluated+=report.diagnostics.evaluated;
+      ranked=report.ranked;
+    }else{
+      // Same pinned Kiwi WASM search and normalization as rook-vs-kiwi.js.
+      // Only the current PLAYER-VISIBLE snapshot is sent to Kiwi, not a
+      // branch checkpoint, private queue or opponents' secret future.
+      const prepared=prepareKiwi(view.visible);
+      prepared.request.node_budget=kiwiBudget;
+      const report=JSON.parse(analyze_snapshot_json(
+        JSON.stringify(prepared.request)));
+      if(report.nodes>kiwiBudget)throw Error('Pinned Kiwi exceeded node cap');
+      nodesEvaluated+=report.nodes;
+      ranked=[];
+      for(let i=0;i<report.candidates.length;i++){
+        try{
+          ranked.push(normalizeRankedRecommendation(
+            view.visible,prepared,report,i));
+        }catch(error){
+          // Failed Kiwi normalization must NEVER become an executable action.
+          // Other officially ranked recommendations may remain legal.
+        }
+      }
+    }
     computeMs+=performance.now()-t;
-    if(report)nodesEvaluated+=report.diagnostics.evaluated;
-    const ranked=forced&&step===0?[forced]:report.ranked;
     let lastError=null;
     for(const action of ranked){
       try{
-        if(action.kind==='place'){
-          if(!validatePlacement(view.visible,{action:{kind:'place'},
-            move:action.move,execution:action.execution}))
+        const kind=action.action?.kind??action.kind;
+        if(kind==='place'){
+          const request={action:{kind:'place'},move:action.move,
+            execution:action.execution};
+          if(!validatePlacement(view.visible,request))
             throw Error('No public SRS+ path for this root candidate');
-          d.prepare({action:{kind:'place'},move:action.move,
-            execution:action.execution},view.revision);
+          d.prepare(request,view.revision);
           return {revision:view.revision,computeMs,nodesEvaluated,holdCount};
         }
-        if(action.kind!=='hold'||step!==0)
+        if(kind!=='hold'||step!==0)
           throw Error('Bad or repeated Hold in fork KO');
-        d.prepare({action:{kind:'hold'},mode:action.mode,
-          samePiece:action.samePiece},view.revision);
+        const hold=action.action??action;
+        d.prepare({action:{kind:'hold',mode:hold.mode,
+          samePiece:hold.samePiece}},view.revision);
         d.commit(view.revision);
         holdCount++;
         continue decisionLoop;
@@ -97,7 +133,8 @@ function lockRound(pair,forced=null){
     throw Error('Tried to lock a KOed pair');
   const startFrame=assertSimultaneousPair(pair);
   // BOTH players pick from their own public snapshot before EITHER locks.
-  const plans=pair.map((d,i)=>choosePrepared(d,i===0?forced:null));
+  const plans=pair.map((d,i)=>choosePrepared(d,i===0?forced:null,
+    i===0?'rook':opponentPolicy));
   if(assertSimultaneousPair(pair)!==startFrame)
     throw Error('Decisions must not advance synchronized battle frame');
   for(let i=0;i<2;i++)pair[i].commit(plans[i].revision);
@@ -220,9 +257,12 @@ const output={format:'rook-authority-paired-root-counterfactual/1',
   originalPublicNextCount:publicBefore.next.length,
   identicalAuthorityCheckpoint:true,opaqueHiddenFutureToBots:true,
   publicRootCandidates:true,distinctRootActions:true,
+  opponentKind:opponentPolicy,kiwiNodes:opponentPolicy==='kiwi'?kiwiBudget:null,
   synchronizedBattleFrames:true,pps:2.5,cap,
   candidatePolicy:'original ROOK after an individually forced legal root',
-  opponentPolicy:'original ROOK, identical authority state at split',
+  opponentPolicy:opponentPolicy==='kiwi'?
+    'pinned Kiwi WASM, identical authority state at split':
+    'original ROOK, identical authority state at split',
   scoredShortGames:false,
   correlatedForksPerOriginalSeed:2,
   rootChosenByOriginalRook:actionSignature(report)===actionSignature(first)?
