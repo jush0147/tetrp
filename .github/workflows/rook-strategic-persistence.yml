@@ -52,7 +52,7 @@ jobs:
           }else{
             if(x.format!=='rook-authority-paired-root-counterfactual/1'||
               !x.strategicWindow||x.opponentKind!=='kiwi'||
-              !x.scoredWindowTrial||x.distinctRootActions!==true||
+              x.scoredWindowTrial!==false||x.distinctRootActions!==true||
               x.correlatedForksPerOriginalSeed!==2||
               x.results.length!==2||
               x.results.some(r=>r.error||r.windows.length>4)||
