@@ -35,6 +35,7 @@ jobs:
           KIWI_NODES: '32768'
           ROOK_FORECAST_AUDIT_SAMPLES: '40'
           ROOK_HOLD_FORK: '1'
+          ROOK_HOLD_FORK_EARLY_STOP: '1'
         run: node scripts/rook-vs-kiwi.js > original-with-paired-fork.jsonl
       - name: Validate no fabricated winners and paired full KO protocol
         env:
@@ -49,7 +50,9 @@ jobs:
           if(x.seed!==Number(process.env.EXPECT_SEED)||x.error||
             x.order!==0||!x.sameSeed||!x.simultaneousLocks||
             x.nodeBudgets.rook!==3000||x.nodeBudgets.kiwi!==32768||
-            x.holdForkSelected!==!!f)
+            x.holdForkSelected!==!!f||
+            (f&&(!x.originalStoppedForFork||x.scored||
+              x.termination!=='unresolved')))
             throw Error('Wrong original authority conditions');
           if(f){
             if(f.seed!==x.seed||f.independentForkPairs!==1||
@@ -91,7 +94,12 @@ jobs:
             reactiveSent:f?.reactive?.slots?.[0]?.sent??null,
             retainedSent:f?.retained?.slots?.[0]?.sent??null,
             reactiveWindows:f?.reactive?.windows??null,
-            retainedWindows:f?.retained?.windows??null}));
+            retainedWindows:f?.retained?.windows??null,
+            firstPublicRookConvergence:f?.firstPublicRookConvergence??null,
+            firstPrivatePairConvergence:f?.firstPrivatePairConvergence??null,
+            equality:f?.equality??null,
+            reactiveOpening:f?.reactive?.openingActions??null,
+            retainedOpening:f?.retained?.openingActions??null}));
           JS
       - uses: actions/upload-artifact@v4
         if: always()
