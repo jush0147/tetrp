@@ -440,7 +440,10 @@ for(const v of variants){
       if(continueKiwi)v.committedKiwiLocks++;
       if(v.locks-beforeFork<3){
         v.first3LockActions.push({lock:v.locks-beforeFork+1,
-          selectedPolicy:continueKiwi?'kiwi':'rook',
+          selectedPolicy:v.locks===beforeFork?
+            (conditionalFutures&&v.treatment.startsWith('kiwi-root')?
+              'forced-Kiwi-root-and-Kiwi-post-Hold':'forced-ROOK-root-and-ROOK-post-Hold'):
+            (continueKiwi?'kiwi':'rook'),
           forcedRoot:v.locks===beforeFork,
           candidateActions:a.plans[0].executedActions,
           opponentActions:a.plans[1].executedActions});
@@ -581,7 +584,9 @@ const output={format:'rook-authority-paired-root-counterfactual/1',
   identicalAuthorityContinuation:identicalControl?identicalContinuation:null,
   opponentKind:opponentPolicy,kiwiNodes:opponentPolicy==='kiwi'?kiwiBudget:null,
   synchronizedBattleFrames:true,pps:2.5,cap,
-  candidatePolicy:'original ROOK after an individually forced legal root',
+  candidatePolicy:conditionalFutures?
+    'ROOK after first lock, except treatment C keeps Kiwi for locks 2-3':
+    'original ROOK after an individually forced legal root',
   opponentPolicy:opponentPolicy==='kiwi'?
     'pinned Kiwi WASM, identical authority state at split':
     'original ROOK, identical authority state at split',
