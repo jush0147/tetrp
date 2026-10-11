@@ -2755,3 +2755,113 @@ pieces. Validate against original ROOK and
 pinned Kiwi on NEW independent true-KO seeds
 with separate measured CPU parity. Original
 ROOK, Kiwi, main unchanged; PR #6 Draft.
+
+
+### 2026-10-11: PASSIVE second-lock forecast check vs real Kiwi completed once; now proving true post-Hold next placement
+
+The FIRST [authentic pinned Kiwi shadow-only
+forecast CI #38124531643](https://github.com/jush0147/tetrp/actions/runs/38124531643)
+COMPLETED SUCCESS, with exact same independently
+seeded original game **67920** replayed with
+and without optional ROOK forecast inspection.
+Tetrp authority outcome, all actual player piece
+counts, attack generated/sent/cancelled/tanked,
+Kiwi WASM actions and evaluated search nodes
+were ASSERTED exactly unchanged by diagnosis.
+The 65-lock cap had **NO GENUINE KO WINNER**
+and MUST stay unscored; baseline vs
+shadow are two CORRELATED replays, not two
+independent games. The extra probe CPU was
+133.62 ms in that sampled original run,
+not included in ROOK policy search CPU.
+
+Of TEN naturally observed ROOK forecasted
+NEXT-piece steps:
+- **4** predicted plain placement steps
+  matched all actual public preconditions AND
+  were independently SRS+-PROVEN reachable.
+- **4** predicted Hold steps had actual
+  public Hold permitted, BUT this first
+  version only checked Hold itself and
+  explicitly did **NOT yet prove the
+  post-Hold landing**. Do not call those
+  four fully proven multi-lock routes.
+- **2** forecasts were CANCELLED by a newly
+  changed, real PUBLIC incoming-garbage
+  amount before the next move, with 4 and
+  5 public garbage lines. In both cases
+  board/current/held piece/B2B/combo
+  still matched the forecast; `pending`
+  was the mismatched field, so these are
+  well-identified PUBLIC attack-timing
+  interruptions, NOT fake SRS+ path
+  failures or newly secret pieces.
+- No sample was a proven (full) multi-lock
+  strategy, and none asserts any KO
+  performance improvement over pinned Kiwi.
+
+**New stricter Hold-complete authority proof**:
+[`scripts/rook-posthold-authority-proof.js`](../scripts/rook-posthold-authority-proof.js)
+restores an authority engine into an **OFFLINE
+diagnostic-only clone**, authentic Hold is
+authority committed in this clone (without
+advancing the actual competition), and
+the SAME publicly known held/next[0]
+replacement piece's requested landing is
+verified with genuine SRS+ from the actual
+post-Hold spawn. This NEVER makes the
+future NEXT6 a bot input, NEVER passes
+private RNG to any chooser, and returns
+ONLY Hold acceptance, known-piece
+consistency and a yes/no legal SRS+ proof,
+without returning newly revealed NEXT5
+or checkpoint. A Hold that is legal but
+followed by an impossible requested
+landing is correctly **unproven**.
+The original live contestant engines,
+ranked actions, combat transfer and
+game outcomes remain untouched. New
+strict regression asserts actual Hold+
+legal placement, no future exposure,
+and fake Spin rejected. Full Hold-plus-
+placement proof verification [Actions
+#38124796667](https://github.com/jush0147/tetrp/actions/runs/38124796667)
+passed its expanded SRS+/Hold unit contract
+and was running the same-seed live original
+match noninterference A/B when logged here;
+no verified new Hold figures yet.
+
+**New predeclared pressure cohort** for
+original independent unseen seeds **67921
+and 67922** [Actions #38124866165](https://github.com/jush0147/tetrp/actions/runs/38124866165):
+each is ONE actual live synchronized ROOK3000
+vs pinned Kiwi32768 match, max90 locks,
+at most30 correlated public plan checks,
+diagnostic-only. Report concrete public
+precondition failure types (including
+new garbage), public Hold + real full
+landing proofs and SRS path fails; cap
+is unscored. This expands beyond only
+ten very early samples from one seed,
+but time points within a seed remain
+strongly correlated. Results PENDING.
+NO production/default policy changes,
+no reward thresholds fit against the
+previous 4 original seed outcomes,
+main/Kiwi/ROOK untouched, PR #6 Draft.
+
+**Strategic implication:** ROOK's raw
+`forecastPlan` is *some* useful public
+multi-step geometric information, but
+even the next step needs fresh real
+garbage / SRS+ validation before a
+multi-piece intention can legitimately
+be followed. A genuinely useful next
+experiment is to maintain an option
+ONLY while its publicly verified
+action, attack timing and safety remain
+applicable, and then measure actual
+FULL-MATCH KO on NEW independent
+predeclared seed groups at honest CPU
+relative to ordinary ROOK/Kiwi. There is
+NO measured win improvement yet.
