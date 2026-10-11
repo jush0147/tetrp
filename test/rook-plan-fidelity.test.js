@@ -4,7 +4,8 @@ import {Engine} from '../src/engine.js';
 import {verifyAuthorityOnlyPostHoldLanding} from '../scripts/rook-posthold-authority-proof.js';
 import {visibleState} from '../src/analysis/visible-state.js';
 import {chooseMove,rookBoardKey} from '../src/analysis/rook.js';
-import {auditPublicNextForecast,comparePublicForecastPrerequisites}
+import {auditPublicNextForecast,comparePublicForecastPrerequisites,
+  sameForecastAsFreshRookChoice}
   from '../src/analysis/rook-plan-fidelity.js';
 
 const v=()=>visibleState(new Engine({
@@ -120,4 +121,24 @@ test('OFFLINE genuine authority Hold confirms actual SRS+ landed next piece with
   assert.equal(bad.authorityFutureExposed,false);
   assert.equal(engine.state.hold.piece,null,
     'offline proof cannot mutate live authority checkpoint');
+});
+
+test('public actual decision comparison distinguishes legal-but-abandoned forecast and Hold',()=>{
+  const planned={useHold:false,piece:'t',spin:'full',
+    cells:[[4,19],[5,19],[5,18],[5,20]]};
+  const actual={placement:{piece:'t',
+    cells:[[5,20],[5,18],[4,19],[5,19]]},
+    executionSpin:'full',holdCount:0};
+  assert.equal(sameForecastAsFreshRookChoice(planned,actual),true);
+  assert.equal(sameForecastAsFreshRookChoice(planned,
+    {...actual,holdCount:1}),false);
+  assert.equal(sameForecastAsFreshRookChoice(planned,
+    {...actual,executionSpin:'mini'}),false);
+  assert.equal(sameForecastAsFreshRookChoice(planned,
+    {...actual,placement:{piece:'t',
+      cells:[[5,20],[5,18],[4,19],[4,20]]}}),false);
+  assert.equal(sameForecastAsFreshRookChoice({...planned,useHold:true},
+    {...actual,holdCount:1}),true);
+  assert.equal(sameForecastAsFreshRookChoice(planned,
+    {placement:null,holdCount:0}),false);
 });
