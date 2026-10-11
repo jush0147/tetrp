@@ -1,0 +1,92 @@
+name: ROOK persistent objective independent-seed KO replication and role swap
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-strategic-intent-replication.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-ko-original-seed-role-swap:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67812,67813,67814,67815]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify production-safe public intent and real KO protocol
+        run: node --test test/rook-strategic-intent.test.js test/rook-ko-protocol.test.js
+      - name: Two TRUE-KO first comparisons per original seed, opposite player slots
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '1'
+          ROOK_NODES: '3000'
+          ROOK_CANDIDATE_NODES: '3000'
+          ROOK_BASELINE_NODES: '3000'
+          EXPERT_OPEN: '0'
+          EXPERT_STRATEGIC_INTENT: '1'
+          COMPARE_REACTIVE_STRATEGY: '1'
+          STRATEGIC_COMMIT_LOCKS: '3'
+        run: node scripts/rook-vs-rook.js > replication.jsonl
+      - name: Both slot assignments and genuine authority KO audit, count independent seeds honestly
+        env:
+          EXPECT_SEED: ${{ matrix.seed }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('replication.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==2||
+            rows.some(r=>r.seed!==Number(process.env.EXPECT_SEED)||
+              r.error||r.cap!==2000||r.swapRoles!=='1'||
+              !r.sameSeed||!r.simultaneousLocks||
+              !['KO','capped','double-KO'].includes(r.termination)||
+              r.scored!==(r.termination==='KO')||
+              r.slots.length!==2||
+              r.slots.some(s=>s.configuredNodeBudget!==3000||
+                s.intentDecisions<1))||
+            rows[0].swap!==false||rows[1].swap!==true||
+            rows[0].kinds.join(',')!==
+              'public-strategic-intent,reactive-strategic-intent'||
+            rows[1].kinds.join(',')!==
+              'reactive-strategic-intent,public-strategic-intent')
+            throw Error('Invalid genuine paired role-swap authority KO');
+          const verdicts=rows.map(r=>{
+            const persistent=r.slots.find(s=>
+              s.kind==='public-strategic-intent');
+            const reactive=r.slots.find(s=>
+              s.kind==='reactive-strategic-intent');
+            return {persistentSlot:r.kinds.indexOf('public-strategic-intent'),
+              turns:r.turns,termination:r.termination,scored:r.scored,
+              winner:r.winner,matchedFirstPublicStates:
+                r.identicalPublicDecisionChecks,
+              actionChangesOnSamePublic:r.identicalPublicActionChanges,
+              persistent:{sent:persistent.sent,tanked:persistent.tanked,
+                totalCpuMs:persistent.ms,nodes:persistent.nodes,
+                searches:persistent.searches,modeSwitches:
+                  persistent.intentSwitches,retained:
+                  persistent.intentRetained},
+              reactive:{sent:reactive.sent,tanked:reactive.tanked,
+                totalCpuMs:reactive.ms,nodes:reactive.nodes,
+                searches:reactive.searches,modeSwitches:
+                  reactive.intentSwitches}}});
+          console.log(JSON.stringify({originalIndependentSeed:
+            Number(process.env.EXPECT_SEED),
+            correlatedRoleSwapGames:2,
+            trueKOOnlyWins:verdicts.filter(v=>v.scored).length,
+            results:verdicts,
+            caveat:'Two correlated slot-swap games = ONE original independent seed, not two independent wins. Equal configured nodes but CPU and actual node totals differ. Never award a capped game as a win.'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-intent-role-swap-original-seed-${{ matrix.seed }}
+          path: replication.jsonl
+          retention-days: 30

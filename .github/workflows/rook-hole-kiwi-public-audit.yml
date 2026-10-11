@@ -1,0 +1,71 @@
+name: ROOK hole penalty historical Kiwi move diagnosis
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-hole-kiwi-public-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  historical:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Retrieve ONLY player-visible public snapshots and archived decisions
+        uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 37949389406
+          name: rook-kiwi-shared-position-diagnostic
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Audit fixed hole penalty alternative on SAME historical boards
+        run: node scripts/rook-hole-kiwi-public-audit.js > hole-historical.json
+      - name: Decompose OLD fixed finalist gap analytically without changing search
+        run: node scripts/rook-hole-gap-counterfactual.js > hole-frozen-finalist.json
+      - name: Verify no disguised wins or unseen pieces in report
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const j=JSON.parse(readFileSync('hole-historical.json','utf8'));
+          if(j.format!=='rook-hole-penalty-public-kiwi-discovery/1'||
+            j.correlatedSnapshots!==22||j.independentHistoricalMatchSeeds!==2||
+            j.holeScale!==.5||j.beforeMatchesKiwi!==8||
+            j.rows.some(r=>r.choices.length!==2||
+              !Number.isFinite(r.choices[0].ms)||!Number.isFinite(r.choices[1].ms)))
+            throw Error('Historical public belief/score audit invalid');
+          const frozen=JSON.parse(readFileSync('hole-frozen-finalist.json','utf8'));
+          if(frozen.format!=='rook-hole-gap-fixed-finalists/1'||
+            frozen.correlatedPositions!==14||
+            frozen.historicalIndependentSeeds!==2||
+            !Number.isFinite(frozen.meanBaselineGap)||
+            frozen.cases.some(x=>!Number.isFinite(x.noHolesGap)))
+            throw Error('Counterfactual score breakdown invalid');
+          console.log(JSON.stringify({frozenCounterfactual:{
+            positions:frozen.correlatedPositions,
+            rankingFlipsHalf:frozen.halfPenaltyRankingFlips,
+            rankingFlipsAtZero:frozen.zeroPenaltyRankingFlips,
+            warning:frozen.note}}));
+          console.log(JSON.stringify({format:j.format,
+            historicalSeeds:j.independentHistoricalMatchSeeds,
+            correlatedSnapshots:j.correlatedSnapshots,
+            beforeMatchesKiwi:j.beforeMatchesKiwi,
+            afterMatchesKiwi:j.afterMatchesKiwi,
+            changedRoots:j.changedRoots,
+            changesThatMatchKiwi:j.changesThatMatchKiwi,
+            baselineCpuMs:j.totalBaselineMs,
+            halfHoleCpuMs:j.totalTrialMs,
+            caution:j.note},null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-hole-weight-public-kiwi-discovery
+          path: |
+            hole-historical.json
+            hole-frozen-finalist.json
+          retention-days: 30

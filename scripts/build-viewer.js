@@ -7,7 +7,7 @@ import {verifyKiwi} from './verify-kiwi.js';
 await verifyKiwi();
 // Only explicit viewer entrypoints are emitted: no replay, checkpoints or source tree copy.
 await mkdir('dist',{recursive:true});
-await build({entryPoints:{app:'viewer/app.js',worker:'viewer/worker.js','kiwi-worker':'viewer/kiwi-worker.js'},outdir:'dist',bundle:true,
+await build({entryPoints:{app:'viewer/app.js',worker:'viewer/worker.js','kiwi-worker':'viewer/kiwi-worker.js','rook-worker':'viewer/rook-worker.js'},outdir:'dist',bundle:true,
   format:'esm',platform:'browser',target:['safari16','chrome110','firefox115'],minify:true,legalComments:'none'});
 await copyFile('viewer/index.html','dist/index.html');
 await copyFile('viewer/style.css','dist/app.css');
@@ -22,7 +22,7 @@ await writeFile('dist/manifest.webmanifest',JSON.stringify({name:'Tetrp Replay V
 const kiwiAssets={'cold_clear_2_bg.wasm':'pkg/cold_clear_2_bg.wasm','kiwi-build.json':'kiwi-build.json','kiwi-artifact-lock.json':'artifact-lock.json','kiwi-LICENSE-MIT':'LICENSE-MIT','kiwi-LICENSE-APACHE':'LICENSE-APACHE'};
 for(const [dest,source] of Object.entries(kiwiAssets))await copyFile('vendor/kiwi-v1/'+source,'dist/'+dest);
 await copyFile('third-party/kiwi-notices.md','dist/kiwi-NOTICES');
-const assets=['kiwi-button.jpg','kiwi-worker.js','kiwi-NOTICES',...Object.keys(kiwiAssets),'index.html','app.css','app.js','worker.js','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
+const assets=['kiwi-button.jpg','kiwi-worker.js','rook-worker.js','kiwi-NOTICES',...Object.keys(kiwiAssets),'index.html','app.css','app.js','worker.js','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 const sw=await readFile('viewer/sw.js','utf8');
 const hash=createHash('sha256').update(sw);
 for(const name of assets)hash.update(name).update(await readFile(`dist/${name}`));

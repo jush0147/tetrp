@@ -1,7 +1,7 @@
 import {BotAdapter} from './bot-adapter.js';
 export class DemoController {
-  constructor({rpc,onView,onThinking,onRecommendation,onResult,onError,delay=350,bot=new BotAdapter()}){
-    Object.assign(this,{rpc,onView,onThinking,onRecommendation,onResult,onError,delay,bot});
+  constructor({rpc,onView,onThinking,onRecommendation,onResult,onError,delay=350,bot=new BotAdapter(),placementMode=()=> 'timed'}){
+    Object.assign(this,{rpc,onView,onThinking,onRecommendation,onResult,onError,delay,bot,placementMode});
     this.generation=0;this.view=null;this.busy=false;this.timer=null;this.release=null;
   }
   cancel(){
@@ -10,7 +10,7 @@ export class DemoController {
   }
   async begin(){
     this.cancel();const g=this.generation;this.busy=true;this.onThinking();
-    try{const view=await this.rpc('demo-start');if(g!==this.generation)return;
+    try{const view=await this.rpc('demo-start',{placementMode:this.placementMode()});if(g!==this.generation)return;
       this.view=view;this.onView(view);this.busy=false;await this.next();
     }catch(e){if(g===this.generation){this.busy=false;this.onError(e);}}
   }

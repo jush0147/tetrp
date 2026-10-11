@@ -1,0 +1,110 @@
+name: ROOK real Kiwi public 2nd-lock attack-pressure plan cohort
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-public-plan-stress-cohort.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  actual-public-plan-pressure:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67921,67922]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Independent original seven-bag public forecast and Hold authority proof unit tests
+        run: |
+          node --check scripts/rook-vs-kiwi.js
+          node --check scripts/rook-posthold-authority-proof.js
+          node --test test/rook-plan-fidelity.test.js
+      - name: Independent genuine ROOK-vs-Kiwi natural garbage pressure
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '90'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          KIWI_NODES: '32768'
+          ROOK_FORECAST_PLAN_AUDIT: '1'
+          ROOK_FORECAST_AUDIT_SAMPLES: '30'
+        run: node scripts/rook-vs-kiwi.js > original-game.jsonl
+      - name: One original match seed, serially dependent plan observations, NO inflated KO score
+        env:
+          EXPECT_SEED: ${{ matrix.seed }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const lines=readFileSync('original-game.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(lines.length!==1)throw Error('Exactly one original match allowed');
+          const x=lines[0],q=x.forecastAudit;
+          if(x.seed!==Number(process.env.EXPECT_SEED)||
+            x.order!==0||x.cap!==90||x.error||
+            x.nodeBudgets.rook!==3000||x.nodeBudgets.kiwi!==32768||
+            !x.simultaneousLocks||!x.sameSeed||!q||
+            !q.executedFullGameWithoutChangingSelection||
+            q.actualNextLockChecks<0||q.actualNextLockChecks>30||
+            q.samples.length!==q.actualNextLockChecks)
+            throw Error('Not genuine natural one-seed next-public-step plan probe');
+          const allowed=new Set([
+            'placement-srs-proven','placement-no-srs-proof',
+            'public-precondition-changed',
+            'hold-plus-placement-srs-proven',
+            'hold-valid-but-placement-unproven',
+            'hold-not-permitted']);
+          for(const s of q.samples){
+            if(!allowed.has(s.status)||s.seed!==x.seed||
+              s.atActualTurn!==s.fromTurn+1||
+              s.postHoldAuthorityProof?.authorityFutureExposed===true||
+              'bag' in s||'rng' in s||'next6' in s)
+              throw Error('Public-only plan fidelity source contaminated');
+          }
+          const proved=q.samples.filter(x=>x.verifiedPlacement===true);
+          if(proved.some(x=>
+            typeof x.replannedActuallySamePublicForecast!=='boolean'||
+            typeof x.legalButAbandoned!=='boolean')||
+            q.fullyLegalForecastReusedByFreshRook+
+              q.fullyLegalForecastAbandonedByFreshRook!==proved.length)
+            throw Error('Cannot confuse legal next-ply move with original ROOK actually choosing it');
+          const failureTypes={
+            incomingPressureChange:q.samples.filter(x=>
+              x.status==='public-precondition-changed'&&
+              x.matched.pending===false).length,
+            boardChange:q.samples.filter(x=>
+              x.status==='public-precondition-changed'&&
+              x.matched.board===false).length,
+            postHoldUnproven:q.samples.filter(x=>
+              x.status==='hold-valid-but-placement-unproven').length,
+            placementNoSrs:q.samples.filter(x=>
+              x.status==='placement-no-srs-proof').length};
+          const report={format:'rook-original-seed-public-forecast-pressure/1',
+            independentOriginalGameSeed:x.seed,
+            correlatedForecastChecks:q.actualNextLockChecks,
+            validFullyProvenNextLocks:q.samples.filter(x=>
+              x.verifiedPlacement===true).length,
+            statusCounts:q.counts,failureTypes,
+            legalForecastsFreshROOKSelected:q.fullyLegalForecastReusedByFreshRook,
+            legalForecastsFreshROOKAbandoned:q.fullyLegalForecastAbandonedByFreshRook,
+            actualGame:{synchronizedLocks:x.lockSteps,
+              genuineKO:x.scored,winner:x.scored?x.winner:null,
+              termination:x.termination},
+            limitations:'The checkpoints are CORRELATED within ONE original original seed and are selected early. Proved reachable NEXT-piece placement is not a guarantee the route improves full-match KO.'};
+          writeFileSync('public-forecast-pressure-summary.json',
+            JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-real-pressure-forecast-original-seed-${{ matrix.seed }}
+          path: |
+            original-game.jsonl
+            public-forecast-pressure-summary.json
+          retention-days: 30

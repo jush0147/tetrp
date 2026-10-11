@@ -1,0 +1,78 @@
+name: ROOK real-public immediate attack opportunity audit
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-immediate-attack-audit.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check score-safe authority attack-event telemetry
+        run: node --test test/rook-kiwi-combat-events.test.js
+      - name: Fetch only pinned public observations, no Kiwi search
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-kiwi-shared-position-diagnostic
+          repository: jush0147/tetrp
+          run-id: 37949389406
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Count genuine SRS+ immediate attack opportunities and selected ROOK roots
+        env:
+          ROOK_PUBLIC_SNAPSHOTS: rook-public-observations.jsonl
+          ROOK_ATTACK_AUDIT_OUTPUT: rook-immediate-attack-report.json
+        run: |
+          set -eu
+          node scripts/rook-immediate-attack-audit.js > rook-immediate-attack-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-immediate-attack-report.json','utf8'));
+          if(r.format!=='rook-real-public-immediate-attack-gap/1'||
+            r.publicPositions!==22||r.independentSeeds!==2||
+            r.placeChosen+r.holdChosen!==22||
+            r.hasImmediateAttack<1||r.hasImmediateAttack>22||
+            r.directPlaceBelowMax>r.placeChosen||
+            r.rows.some(x=>!Number.isInteger(x.reachableMoves)||x.reachableMoves<1))
+            throw Error('Invalid published-public immediate attack audit');
+          const text=[
+            '### ROOK actual immediate attack opportunities in real public states (NOT KO)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Commit: '+process.env.GITHUB_SHA,
+            'Public states: '+r.publicPositions+' from ONLY '+r.independentSeeds+' distinct KO seeds.',
+            'Positions with >=1 SRS-reachable, immediate attack-sending action: '+r.hasImmediateAttack,
+            'ROOK first action Place: '+r.placeChosen+'; Hold: '+r.holdChosen+
+              ' (Hold follow-up choice is deliberately not guessed).',
+            'Direct Place first choices below max attainable immediate attack: '+r.directPlaceBelowMax+'.',
+            'Root attack opportunities use Tetrp public combat projection and actual reachable SRS+ actions. No private RNG or opponent queue.',
+            'This does NOT prove boosting immediate attacks is the optimal strategy. It points toward future attack construction as a P0 hypothesis, not a win.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-immediate-attack-issue.md',text);
+          console.log(text);
+          JS
+      - name: Record confirmed public opportunity counts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-immediate-attack-issue.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-immediate-attack-public-audit
+          path: |
+            rook-immediate-attack-report.json
+            rook-immediate-attack-summary.json
+            rook-immediate-attack-issue.md
+          retention-days: 30

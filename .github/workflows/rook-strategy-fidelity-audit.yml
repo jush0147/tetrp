@@ -1,0 +1,64 @@
+name: ROOK whole-original-seed strategy fidelity audit
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-strategy-fidelity-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify-original-frozen-authority-data:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download EXACT successful authoritative 67720, 67722, 67723 records, not rerun strategy models
+        uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38103623208
+          pattern: rook-3lock-fidelity-*
+          path: fidelity-traces
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Complete independent-original-seed aggregation and identical-action negative control
+        env:
+          PAIRED_ROOT_DIR: fidelity-traces
+          STRATEGY_AUDIT_OUT: strategy-audit.json
+        run: node scripts/rook-strategy-fidelity-audit.js
+      - name: Validate seed-level denominators, evidence of actual choices, and no scores
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('strategy-audit.json','utf8'));
+          if(x.format!=='rook-whole-seed-causal-strategy-fidelity/1'||
+            x.originalSeedCount!==3||x.eligibleSeedCount!==3||
+            x.conditionalFuturesPerEligibleOriginal!==3||
+            x.scoredFullKOs!==0||x.policyPromoted!==false||
+            x.originalSeeds.map(s=>s.seed).join(',')!=='67720,67722,67723'||
+            x.horizonSummaries?.length!==4||
+            x.horizonSummaries.some(h=>!h.paretoCounts||
+              Object.values(h.paretoCounts).reduce((a,n)=>a+n,0)!==
+              h.completedConditionedScenarios+h.censoredConditionedScenarios)||
+            x.originalSeeds.some(s=>s.conditionalScenarios.length!==3||
+              s.conditionalScenarios.some(z=>z.horizons.length!==4)))
+            throw Error('Strategy audit incorrectly counted correlated forks as independent outcomes');
+          console.log(JSON.stringify({
+            originalIndependentPositions:x.originalSeedCount,
+            scenarioCountPerPosition:x.conditionalFuturesPerEligibleOriginal,
+            positionsWithRealSecondOrThirdDecisionDifference:
+              x.originalSeedsWithGenuineExtraActionChanges,
+            horizonSummaries:x.horizonSummaries,
+            interpretation:'4D no-weight public Pareto: sent higher, tanked lower, board height/holes lower; no score invention',
+            note:'Horizon and conditioned future samples correlated within one original match; no KO scoring or learned-policy promotion'
+          },null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-whole-seed-strategy-fidelity-audit
+          path: strategy-audit.json
+          retention-days: 30

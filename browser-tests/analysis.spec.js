@@ -84,3 +84,47 @@ test('empty Hold executes and reanalyzes before placement; all assets stay local
     const b=await page.locator('#'+id).boundingBox();expect(b.x).toBeGreaterThanOrEqual(0);expect(b.x+b.width).toBeLessThanOrEqual(667);expect(b.y+b.height).toBeLessThanOrEqual(280);
   }
 });
+
+test('ROOK mode runs in isolated browser Worker, keeps NEXT 5, and exits without modifying replay',async({page})=>{
+  page.on('console',msg=>{if(msg.type()==='error')console.log('ROOK_BROWSER_CONSOLE',msg.text());});
+  page.on('pageerror',error=>console.log('ROOK_PAGE_ERROR',error.message));
+  page.on('requestfailed',request=>console.log('ROOK_REQUEST_FAILED',request.url(),request.failure()));
+  page.on('response',response=>{if(response.url().includes('rook-worker'))console.log('ROOK_WORKER_HTTP',response.status(),response.url());});
+  page.on('worker',worker=>console.log('ROOK_WORKER_STARTED',worker.url()));
+  await page.addInitScript(()=>document.addEventListener('tetrp:demo',e=>window.demo=e.detail));
+  await open(page,replay(42));
+  const original=await page.evaluate(()=>JSON.stringify(window.position));
+  await page.locator('details.file-menu > summary').click();
+  await page.locator('#bot-mode').selectOption('rook');
+  await expect(page.locator('#analyze')).toHaveAttribute('data-bot','rook');
+  await expect(page.locator('#rook-mark')).toBeVisible();
+  for(let i=1;i<=3;i++){
+    await page.evaluate(()=>window.analysis=null);
+    await page.locator('#analyze').click();
+    try{
+      await expect.poll(()=>page.evaluate(()=>Boolean(window.analysis)),{timeout:25000}).toBe(true);
+    }catch(error){
+      const state=await page.evaluate(()=>({
+        status:document.querySelector('#analysis-status')?.textContent,
+        details:document.querySelector('#analysis-details')?.textContent,
+        busy:document.querySelector('#analyze')?.getAttribute('aria-busy'),
+        position:document.querySelector('#playback-position')?.textContent,
+      }));
+      throw new Error('ROOK Worker/browser failure: '+JSON.stringify(state),{cause:error});
+    }
+    const r=await page.evaluate(()=>window.analysis);
+    expect(r.bot).toBe('rook');
+    expect(r.action.kind).toBe('place');
+    expect(r.nodeBudget).toBe(6000);
+    expect(r.nodes).toBeLessThanOrEqual(6000);
+    expect(await page.evaluate(()=>window.demo.index)).toBe(i);
+    expect(await page.evaluate(()=>window.demo.state.next.length)).toBe(5);
+  }
+  expect(await page.evaluate(()=>JSON.stringify(window.position))).toBe(original);
+  await page.locator('#clear-analysis').click();
+  expect(await page.evaluate(()=>JSON.stringify(window.position))).toBe(original);
+  await page.locator('details.file-menu > summary').click();
+  await page.locator('#bot-mode').selectOption('kiwi');
+  await expect(page.locator('#analyze')).toHaveAttribute('data-bot','kiwi');
+  await expect(page.locator('#kiwi-mark')).toBeVisible();
+});

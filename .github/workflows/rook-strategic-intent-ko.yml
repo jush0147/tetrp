@@ -1,0 +1,106 @@
+name: ROOK persistent public objective vs reactive objective real KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-strategic-intent-ko.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-screen:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    outputs:
+      changed: ${{ steps.gate.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test real SRS+, Hold idempotence, public-only intent and KO clock
+        run: node --test test/rook-strategic-intent.test.js test/rook-ko-protocol.test.js test/rook-beam.test.js
+      - name: Parse-check BOTH gate scripts before costly real matches
+        run: |
+          node --check scripts/rook-strategic-screen-gate.js
+          node --check scripts/rook-vs-rook.js
+      - name: Genuine authority, equal-node public first-action divergence screen
+        env:
+          SEEDS: 67810,67811
+          MAX_LOCKS: '80'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          EXPERT_OPEN: '0'
+          EXPERT_STRATEGIC_INTENT: '1'
+          COMPARE_REACTIVE_STRATEGY: '1'
+          STRATEGIC_COMMIT_LOCKS: '3'
+        run: node scripts/rook-vs-rook.js > strategic-screen.jsonl
+      - name: Only fund expensive KO if actual same-public-state decisions differ
+        id: gate
+        run: node scripts/rook-strategic-screen-gate.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-public-strategic-intent-screen
+          path: |
+            strategic-screen.jsonl
+            strategic-screen-summary.json
+          retention-days: 30
+  true-ko:
+    needs: public-screen
+    if: needs.public-screen.outputs.changed == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    strategy:
+      max-parallel: 2
+      fail-fast: false
+      matrix:
+        seed: [67812,67813]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Up to 2000 real synchronized locks, real KO before cap, same node limits
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          EXPERT_OPEN: '0'
+          EXPERT_STRATEGIC_INTENT: '1'
+          COMPARE_REACTIVE_STRATEGY: '1'
+          STRATEGIC_COMMIT_LOCKS: '3'
+        run: |
+          node scripts/rook-vs-rook.js > strategic-real-ko.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const rows=readFileSync('strategic-real-ko.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Expected only one independent game');
+          const r=rows[0],s=r.slots.find(x=>
+            x.kind==='public-strategic-intent'),b=r.slots.find(x=>
+            x.kind==='reactive-strategic-intent');
+          if(r.seed!==Number(process.env.SEEDS)||r.error||
+            r.cap!==2000||!r.sameSeed||r.swapRoles!=='0'||
+            !r.simultaneousLocks||!s||!b||
+            s.configuredNodeBudget!==b.configuredNodeBudget||
+            !['KO','double-KO','capped'].includes(r.termination)||
+            r.scored!==(r.termination==='KO'))
+            throw Error('Not valid independent genuine equal-node full KO');
+          console.log(JSON.stringify({seed:r.seed,
+            scored:r.scored,winner:r.winner,
+            turns:r.turns,termination:r.termination,
+            persistent:{sent:s.sent,tanked:s.tanked,
+              cpuMs:s.ms,nodes:s.nodes,changes:s.intentSwitches,
+              held:s.intentRetained},
+            reactive:{sent:b.sent,tanked:b.tanked,
+              cpuMs:b.ms,nodes:b.nodes,changes:b.intentSwitches},
+            comparableCPU:false,
+            WARNING:'Configured NODE limits match, but measured CPU may differ. Caps and double KO are NEVER wins.'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-intent-equal-node-full-ko-${{ matrix.seed }}
+          path: strategic-real-ko.jsonl
+          retention-days: 30

@@ -1,0 +1,130 @@
+name: ROOK fifth-ply versus deeper search CPU-control KOs
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-fifth-cpu-control.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  issues: write
+jobs:
+  cpu-control:
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        seed: [67121, 67122]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Two-lock isolated public and outcome protocol smoke
+        env:
+          SEEDS: '67119'
+          MAX_LOCKS: '2'
+          SWAP_ROLES: '0'
+          EXPERT_OPEN: '0'
+          EXPERT_EXACT_LEAF: '1'
+          ROOK_CANDIDATE_NODES: '6000'
+          ROOK_CANDIDATE_DEPTH: '4'
+          ROOK_CANDIDATE_BEAM: '24'
+          ROOK_BASELINE_NODES: '120000'
+          ROOK_BASELINE_DEPTH: '5'
+          ROOK_BASELINE_BEAM: '128'
+          ROOK_BASELINE_FUTURE_PROBES: '15'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > smoke.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('smoke.jsonl','utf8').trim());
+          if(r.termination!=='capped'||r.scored||!r.sameSeed||
+            !r.simultaneousLocks||r.turns!==2||r.slots.length!==2||
+            r.baselineDepth!==5||r.baselineBeamWidth!==128||
+            r.baselineFutureProbes!==15||r.candidateDepth!==4||
+            r.slots.find(x=>x.kind==='baseline')?.configuredFutureProbes!==15||
+            r.slots.find(x=>x.kind==='verified-fifth-ply')?.leafExtensionAttempts<1)
+            throw Error('Invalid CPU-control smoke');
+          JS
+      - name: New independent same-seed 2000-lock KO-first test
+        id: match
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          EXPERT_OPEN: '0'
+          EXPERT_EXACT_LEAF: '1'
+          ROOK_CANDIDATE_NODES: '6000'
+          ROOK_CANDIDATE_DEPTH: '4'
+          ROOK_CANDIDATE_BEAM: '24'
+          ROOK_CANDIDATE_FUTURE_PROBES: '9'
+          ROOK_BASELINE_NODES: '120000'
+          ROOK_BASELINE_DEPTH: '5'
+          ROOK_BASELINE_BEAM: '128'
+          ROOK_BASELINE_FUTURE_PROBES: '15'
+          LEAF_EXTENSION_BUDGET: '5000'
+          LEAF_EXTENSION_STATES: '800'
+        run: |
+          set -eu
+          node scripts/rook-vs-rook.js > cpu-control-${{ matrix.seed }}.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seed=Number(process.env.SEEDS);
+          const lines=readFileSync('cpu-control-'+seed+'.jsonl','utf8').trim().split('\n');
+          if(lines.length!==1)throw Error('Unexpected mirrored or missing match');
+          const r=JSON.parse(lines[0]);
+          const fifth=r.slots.find(x=>x.kind==='verified-fifth-ply');
+          const deep=r.slots.find(x=>x.kind==='baseline');
+          if(r.seed!==seed||!r.sameSeed||!r.simultaneousLocks||
+            r.cap!==2000||r.error||r.slots.length!==2||!fifth||!deep||
+            r.scored!==(r.termination==='KO')||
+            r.baselineDepth!==5||r.baselineBeamWidth!==128||
+            r.baselineFutureProbes!==15||r.candidateDepth!==4||
+            deep.configuredFutureProbes!==15||
+            fifth.leafExtensionAttempts<1)
+            throw Error('Invalid scored KO or CPU control');
+          const ratio=deep.ms>0?Number((fifth.ms/deep.ms).toFixed(3)):null;
+          const summary=[
+            '### ROOK fifth-ply vs deeper baseline: nearer-CPU KO control',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Independent seed: '+seed+' (both bots share this seed; one game only)',
+            'Real synchronized locks: '+r.turns+' / 2000.',
+            'Termination: '+r.termination+'; scored='+r.scored+
+              '; winner='+(r.winner??'NONE'),
+            'Fifth-ply 4x24/6K + up-to-5K genuine SRS per call: sent='+
+              fifth.sent+', sentAPP='+fifth.sentAPP+', CPUms='+fifth.ms+
+              ', actual evaluated='+fifth.nodes+
+              ', extra certified='+fifth.leafExtensionWork+
+              ', changed roots='+fifth.leafExtensionChanges,
+            'Deeper 5x128/up-to-120K and 15 real future probes: sent='+
+              deep.sent+', sentAPP='+deep.sentAPP+', CPUms='+deep.ms+
+              ', actual evaluated='+deep.nodes,
+            'Measured candidate/deeper CPU ratio='+ratio+
+              ' (NOT guaranteed equal CPU; labels count different work units).',
+            'No Kiwi in this match. Capped/double KO are unscored.',
+            'Do not promote from two seeds alone.'
+          ].join('\n')+'\n';
+          writeFileSync('cpu-control-summary-'+seed+'.md',summary);
+          console.log(summary);
+          JS
+      - name: Report only verified match
+        if: steps.match.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file cpu-control-summary-${{ matrix.seed }}.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-fifth-cpu-control-${{ matrix.seed }}
+          path: |
+            cpu-control-${{ matrix.seed }}.jsonl
+            cpu-control-summary-${{ matrix.seed }}.md
+          retention-days: 30

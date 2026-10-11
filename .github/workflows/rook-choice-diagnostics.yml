@@ -1,0 +1,92 @@
+name: ROOK vs Kiwi shared-position decision diagnosis
+on:
+  # Historical research: run only if this experiment definition is deliberately edited.
+  # Common bot/source changes must not launch a new expensive matrix.
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-choice-diagnostics.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  classify:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test exact action identity and cause classifications
+        run: node --test test/rook-disagreement.test.js test/rook-root-scores.test.js
+      - name: Compare both bots on identical public states sampled inside full KO
+        env:
+          SEEDS: '67020,67023'
+          KIWI_NODES: '200000'
+          ROOK_NODES: '6000'
+          MAX_LOCKS: '2000'
+          ROOK_DIAG: '1'
+          ROOK_DIAG_TURNS: '0,4,8,12,20,30'
+          ROOK_DIAG_PATH: 'rook-choice-diff.jsonl'
+          ROOK_DIAG_SNAPSHOTS_PATH: 'rook-public-observations.jsonl'
+        run: |
+          set -eu
+          node scripts/rook-vs-kiwi.js > rook-diagnostic-matches.jsonl 2> rook-diagnostic-progress.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const matches=readFileSync('rook-diagnostic-matches.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          const rows=readFileSync('rook-choice-diff.jsonl','utf8').trim().split('\n').map(JSON.parse);
+          const snapshots=readFileSync('rook-public-observations.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(snapshots.length!==rows.length||snapshots.some((s,i)=>
+            s.seed!==rows[i].seed||s.turn!==rows[i].turn||
+            s.owner!==rows[i].owner||s.visible.next.length!==5||
+            'bag' in s.visible||'holes' in s.visible))
+            throw Error('Diagnostics include hidden game information or mismatch public samples');
+          if(matches.length!==4||matches.some(m=>m.error||!m.sameSeed||!m.simultaneousLocks||
+            m.seeds[0]!==m.seeds[1]||m.cap!==2000||m.scored!==(m.termination==='KO')))
+            throw Error('Invalid authoritative synchronized KO diagnostics');
+          if(rows.length<8||rows.some(r=>r.format!=='rook-kiwi-public-choice-diff/1'||
+             !['rook','kiwi'].includes(r.owner)||!Number.isFinite(r.rook.nodes)||
+             !Number.isFinite(r.kiwi.nodes)||!r.classification))
+            throw Error('Missing public-state comparisons');
+          const categories=Object.fromEntries([...new Set(rows.map(r=>r.classification))]
+            .map(kind=>[kind,rows.filter(r=>r.classification===kind).length]));
+          const paired=rows.filter(r=>r.rootComparison?.kiwi&&
+            r.rootComparison?.chosen&&r.classification!=='agreement');
+          const mean=(f)=>paired.length?paired.reduce((s,r)=>s+f(r),0)/paired.length:null;
+          const gapByTerm={};
+          for(const key of Object.keys(paired[0]?.rootComparison?.chosen?.terms??{})){
+            gapByTerm[key]=mean(r=>
+              r.rootComparison.chosen.terms[key]-r.rootComparison.kiwi.terms[key]);
+          }
+          const report={format:'rook-kiwi-shared-position-diagnostic/2',
+            matchSeeds:[67020,67023],positions:rows.length,categories,
+            same:rows.filter(r=>r.classification==='agreement').length,
+            decomposedPositions:paired.length,
+            meanChosenMinusKiwiScore:mean(r=>r.rootComparison.scoreGap),
+            meanChosenMinusKiwiBoard:mean(r=>
+              r.rootComparison.chosen.discountedBoard-
+              r.rootComparison.kiwi.discountedBoard),
+            meanChosenMinusKiwiCumulativeRewards:mean(r=>
+              r.rootComparison.chosen.rewards-r.rootComparison.kiwi.rewards),
+            meanBoardTermGap:gapByTerm,
+            mismatch:rows.filter(r=>r.classification!=='agreement').length,
+            games:matches.map(m=>({seed:m.seed,order:m.order,termination:m.termination,
+              winner:m.winner,locks:m.lockSteps})),
+            warning:'This diagnoses action availability/ranking, not equivalent CPU, attack gain, or KO strength'};
+          writeFileSync('rook-choice-summary.json',JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-kiwi-shared-position-diagnostic
+          path: |
+            rook-choice-diff.jsonl
+            rook-public-observations.jsonl
+            rook-choice-summary.json
+            rook-diagnostic-matches.jsonl
+            rook-diagnostic-progress.jsonl
+          retention-days: 30

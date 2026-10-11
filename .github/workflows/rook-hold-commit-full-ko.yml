@@ -1,0 +1,86 @@
+name: ROOK opt-in public Hold commitment full selfplay KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-hold-commit-full-ko.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fresh-full-ko:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 115
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67940, 67941, 67942, 67943]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify unchanged protocol and legal public forecast
+        run: |
+          node --check scripts/rook-vs-rook.js
+          node --test test/rook-plan-continuation.test.js test/rook-ko-protocol.test.js test/rook-authority-fork.test.js
+      - name: Candidate Hold-only commitment vs ordinary ROOK, to genuine KO
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '2000'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          EXPERT_OPEN: '0'
+          EXPERT_HOLD_COMMIT: '1'
+        run: node scripts/rook-vs-rook.js > hold-commit-vs-baseline.jsonl
+      - name: Score ONLY genuine authority KO and actual interventions
+        env:
+          EXPECT_SEED: ${{ matrix.seed }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const rows=readFileSync('hold-commit-vs-baseline.jsonl','utf8')
+            .trim().split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('One independent original seven-bag seed only');
+          const x=rows[0];
+          if(x.seed!==Number(process.env.EXPECT_SEED)||
+            x.swapRoles!=='0'||x.swap!==false||
+            x.error||x.cap!==2000||!x.sameSeed||
+            !x.simultaneousLocks||!x.expertHoldCommit||
+            x.candidateNodeBudget!==3000||x.baselineNodeBudget!==3000||
+            x.slots?.[0]?.kind!=='public-hold-commit'||
+            x.slots?.[1]?.kind!=='baseline')
+            throw Error('Not isolated same-budget authority Hold-vs-baseline match');
+          const c=x.slots[0];
+          if(!Number.isInteger(c.holdCommitOffers)||
+            !Number.isInteger(c.holdCommitApplied)||
+            !Number.isInteger(c.holdCommitFallback)||
+            c.holdCommitOffers<c.holdCommitApplied||
+            c.holdCommitApplied<c.holdCommitFallback||
+            c.holdCommitApplied<0||
+            (x.scored&&x.termination!=='KO')||
+            (!x.scored&&x.winner!==null)||
+            (x.termination==='capped'&&x.turns!==2000))
+            throw Error('Bogus intervention count or fabricated winner');
+          const result={seed:x.seed,turns:x.turns,
+            termination:x.termination,winner:x.scored?x.winner:null,
+            genuineKO:x.scored,holdCommitOffers:c.holdCommitOffers,
+            holdCommitApplied:c.holdCommitApplied,
+            holdCommitFallback:c.holdCommitFallback,
+            holdCommitRejected:c.holdCommitRejected,
+            candidateSent:c.sent,baselineSent:x.slots[1].sent,
+            candidateSearchMs:c.ms,baselineSearchMs:x.slots[1].ms,
+            eligibleForPolicyComparison:c.holdCommitApplied>0,
+            noPolicyPromotion:true,
+            independentOriginalSeeds:1};
+          writeFileSync('summary.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify(result));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-hold-commit-full-ko-${{ matrix.seed }}
+          path: |
+            hold-commit-vs-baseline.jsonl
+            summary.json
+          retention-days: 30

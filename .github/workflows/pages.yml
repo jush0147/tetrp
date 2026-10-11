@@ -3,6 +3,13 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'viewer/**'
+      - 'src/**'
+      - 'test/**'
+      - 'package*.json'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,6 +18,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    # Do not rebuild Playwright browsers for every draft-bot research commit.
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

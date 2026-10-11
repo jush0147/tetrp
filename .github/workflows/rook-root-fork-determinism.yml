@@ -1,0 +1,62 @@
+name: ROOK private authority fork deterministic negative control
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-root-fork-determinism.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  identical-treated-roots:
+    strategy:
+      fail-fast: false
+      matrix:
+        opponent: [rook, kiwi]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Negative control with EXACT SAME legitimate forced move against same opponent
+        env:
+          SEED: '67626'
+          FORK_TURN: '6'
+          MAX_LOCKS: '25'
+          ROOK_NODES: '1500'
+          KIWI_NODES: '32768'
+          FORK_OPPONENT: ${{ matrix.opponent }}
+          FORK_IDENTICAL_CONTROL: '1'
+        run: node scripts/rook-paired-root-fork.js > identical-control.json
+      - name: Compare authority state after both branches, not just at root
+        env:
+          EXPECTED_OPPONENT: ${{ matrix.opponent }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('identical-control.json','utf8'));
+          if(x.identicalRootControl!==true||
+            x.identicalAuthorityContinuation!==true||
+            x.distinctRootActions!==false||
+            x.opponentKind!==process.env.EXPECTED_OPPONENT||
+            !x.identicalAuthorityCheckpoint||
+            x.results?.length!==2||
+            x.results[0].rootSignature!==x.results[1].rootSignature||
+            x.results[0].locked!==x.results[1].locked||
+            x.results.some(r=>r.error)||
+            JSON.stringify(x.results[0].finalCombat)!==
+              JSON.stringify(x.results[1].finalCombat))
+            throw Error('Private RNG or policy continuation is not deterministic');
+          console.log(JSON.stringify({opponent:x.opponentKind,
+            independentGameSeeds:1,controlledSameFirstAction:true,
+            identicalFinalPrivateEngine:true,
+            actualLockCount:x.results[0].locked,
+            note:'Negative control is unscored and has ZERO treatment effect by construction.'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: identical-root-negative-control-${{ matrix.opponent }}
+          path: identical-control.json
+          retention-days: 30

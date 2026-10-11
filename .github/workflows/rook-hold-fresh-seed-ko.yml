@@ -1,0 +1,97 @@
+name: ROOK fresh-seed Hold counterfactual KO screen
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-hold-fresh-seed-ko.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fresh-authority-hold-forks:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67930, 67931, 67932, 67933]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static syntax and authority fork regressions
+        run: |
+          node --check scripts/rook-vs-kiwi.js
+          node --check scripts/rook-hold-counterfactual.js
+          node --test test/rook-authority-fork.test.js test/rook-plan-fidelity.test.js test/rook-ko-protocol.test.js test/rook-hold-counterfactual.test.js
+      - name: Fresh original seed, FIRST eligible public-legal abandoned Hold ONLY
+        env:
+          SEEDS: ${{ matrix.seed }}
+          MAX_LOCKS: '90'
+          SWAP_ROLES: '0'
+          ROOK_NODES: '3000'
+          KIWI_NODES: '32768'
+          ROOK_FORECAST_AUDIT_SAMPLES: '60'
+          ROOK_HOLD_FORK: '1'
+          ROOK_HOLD_FORK_EARLY_STOP: '1'
+        run: node scripts/rook-vs-kiwi.js > result.jsonl
+      - name: Verify full KO, nonselective seed reporting, and no private oracle
+        env:
+          EXPECT_SEED: ${{ matrix.seed }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const rows=readFileSync('result.jsonl','utf8').trim()
+            .split('\n').filter(Boolean).map(JSON.parse);
+          if(rows.length!==1)throw Error('Exactly one original game per independent seed');
+          const x=rows[0],f=x.holdForkResult;
+          if(x.error||x.order!==0||x.seed!==Number(process.env.EXPECT_SEED)||
+            x.nodeBudgets.rook!==3000||x.nodeBudgets.kiwi!==32768||
+            !x.sameSeed||!x.simultaneousLocks||
+            x.holdForkSelected!==Boolean(f))
+            throw Error('Invalid original-seed protocol');
+          if(f){
+            if(!x.originalStoppedForFork||x.scored||x.termination!=='unresolved'||
+              !f.verifiedFirstActionDifference||
+              f.seed!==x.seed||f.independentForkPairs!==1||
+              !f.sameAuthorityInitialState||!f.hiddenFutureNeverPassedToBot||
+              !f.retained.forced||f.reactive.forced)
+              throw Error('Original not stopped at first genuine paired fork');
+            for(const a of [f.reactive,f.retained]){
+              if(a.error||a.termination==='invalid-match'||
+                a.roundsFromStart>2000||
+                a.scored!==(a.termination==='KO')||
+                (a.scored&&!['rook','kiwi'].includes(a.winner))||
+                (!a.scored&&a.winner!==null))
+                throw Error('Fork arm fabricated winner or failed true KO contract');
+            }
+          }else if(x.originalStoppedForFork){
+            throw Error('No fork selected but original match was stopped');
+          }
+          const result={seed:x.seed,eligibleFork:!!f,
+            originalLocks:x.lockSteps,originalTermination:x.termination,
+            selectedForkTurn:f?.turn??null,
+            arms:f?{reactive:{ko:f.reactive.termination==='KO',
+              winner:f.reactive.winner,at:f.reactive.roundsFromStart,
+              sent:f.reactive.slots[0].sent},
+              retained:{ko:f.retained.termination==='KO',
+                winner:f.retained.winner,at:f.retained.roundsFromStart,
+                sent:f.retained.slots[0].sent},
+              deltaKO:f.deltaKO,
+              firstPublicRookConvergence:f.firstPublicRookConvergence,
+              firstPrivatePairConvergence:f.firstPrivatePairConvergence,
+              equality:f.equality}:null,
+            independentOriginalSeeds:1,policyPromotion:false,
+            evidence:'First eligible Hold fork; not a full-game deployed policy win-rate experiment'};
+          writeFileSync('summary.json',JSON.stringify(result,null,2)+'\n');
+          console.log(JSON.stringify(result));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-fresh-hold-fork-${{ matrix.seed }}
+          path: |
+            result.jsonl
+            summary.json
+          retention-days: 30

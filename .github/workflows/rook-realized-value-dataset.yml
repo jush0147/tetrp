@@ -1,0 +1,117 @@
+name: ROOK held-out actual attack-value data
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-realized-value-dataset.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  real-authority-matches:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67610, 67611, 67612, 67613]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Capped rows stay alive; only a genuine engine KO supplies a death label.
+      - name: Check offline label boundaries and public-state invariants
+        run: node --test test/rook-realized-value-data.test.js
+      - name: Genuine full Tetrp KO until real result or 2000 lock cap
+        env:
+          SEEDS: ${{ matrix.seed }}
+          SWAP_ROLES: '0'
+          MAX_LOCKS: '2000'
+          ROOK_NODES: '6000'
+          KIWI_NODES: '200000'
+          ROOK_PUBLIC_LOCK_TRACE_PATH: public-locks.jsonl
+        run: |
+          node scripts/rook-vs-kiwi.js > match.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const m=readFileSync('match.jsonl','utf8').trim()
+            .split('\n').map(JSON.parse);
+          const t=readFileSync('public-locks.jsonl','utf8').trim()
+            .split('\n').map(JSON.parse);
+          if(m.length!==1||m[0].error||!m[0].sameSeed||
+            !m[0].simultaneousLocks||m[0].cap!==2000||
+            m[0].order!==0||m[0].seed!==Number(process.env.SEEDS)||
+            !['KO','capped','double-KO'].includes(m[0].termination)||
+            t.length!==2*m[0].lockSteps||
+            t.some(x=>x.visible?.next?.length!==5||
+              !x.authorityBeforeTotals||!x.outcome?.combatTotals||
+              'bag' in x.visible||'rng' in x.visible||
+              'holes' in x.visible))
+            throw Error('Not a genuine complete KO/cap with public NEXT5 labels');
+          console.log(JSON.stringify({seed:m[0].seed,
+            termination:m[0].termination,scored:m[0].scored,
+            winner:m[0].winner,turns:m[0].lockSteps,
+            publicTracedLocks:t.length,
+            WARNING:'Behavioral outcomes only; NO offline evaluation of alternative candidate actions'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-value-traces-${{ matrix.seed }}
+          path: |
+            public-locks.jsonl
+            match.jsonl
+          retention-days: 30
+  seed-held-out-model:
+    needs: real-authority-matches
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rook-value-traces-*
+          merge-multiple: false
+      - name: Fit OFFLINE fixed-ridge baseline only on train seeds
+        env:
+          DATA_FILES: rook-value-traces-67610,rook-value-traces-67611,rook-value-traces-67612,rook-value-traces-67613
+          TRAIN_SEEDS: 67610,67611
+          TEST_SEEDS: 67612,67613
+          MODEL_OUT: rook-realized-value-ridge.json
+        run: node scripts/rook-train-realized-value.js
+      - name: Verify no test-label leakage or accidental live-policy promotion
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const v=JSON.parse(readFileSync('rook-realized-value-ridge.json','utf8'));
+          if(v.format!=='rook-realized-value-ridge-experiment/1'||
+            v.status!=='OFFLINE_PROTOTYPE_NO_LIVE_POLICY'||
+            !v.noHiddenInputs||!v.noOutcomeLabelsAtDecisionTime||
+            v.horizon!==8||v.trainSeeds.join(',')!=='67610,67611'||
+            v.testSeeds.join(',')!=='67612,67613'||
+            v.trainingExamples<25||v.testExamples<25||
+            Object.values(v.validation).some(x=>
+              !Number.isFinite(x.modelMae)||!Number.isFinite(x.modelMse)))
+            throw Error('Invalid holdout modeling contract');
+          console.log(JSON.stringify({model:'OFFLINE ONLY',
+            trainSeeds:v.trainSeeds,holdoutSeeds:v.testSeeds,
+            trainingWindows:v.trainingExamples,
+            testWindows:v.testExamples,censored:v.censored,
+            validation:v.validation,byTestSeed:v.byTestSeed,
+            limitation:v.fundamentalLimitation},null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-realized-value-heldout-report
+          path: rook-realized-value-ridge.json
+          retention-days: 30

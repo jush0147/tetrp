@@ -1,0 +1,72 @@
+name: ROOK three-independent-original-seed next-plan authority audit
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-public-next-plan-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  archive-source-plan-proof:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate offline original-seed analyzer syntax before data access
+        run: node --check scripts/rook-live-plan-cohort-audit.js
+      - uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38124796667
+          pattern: rook-true-kiwi-public-next-plan-fidelity-*
+          path: plan-source
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38124866165
+          pattern: rook-real-pressure-forecast-original-seed-*
+          path: stress-source
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Audit three original seven-bag seeds, don't mistake correlated locks for games
+        run: node scripts/rook-live-plan-cohort-audit.js
+      - name: Require all source data accounted for with no fabricated 3D future
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('real-public-next-plan-audit.json','utf8'));
+          const t=x.descriptiveTotalsAcrossCorrelatedLocks;
+          const m=x.mismatchTotalsAcrossCorrelatedLocks;
+          if(x.independentOriginalGameSeeds!==3||
+            x.originalSeeds.map(x=>x.originalIndependentSeed).join(',')!==
+              '67920,67921,67922'||
+            t.correlatedObservationCount!==70||
+            t.fullLegalNextMoveWitnesses!==57||
+            t.directSrsProven!==31||
+            t.holdPlusSrsProven!==26||
+            t.publicPreconditionChanges!==13||
+            t.failedSrsAtMatchedPublicState!==0||
+            t.otherUnproven!==0||
+            m.pending!==13||Object.entries(m).some(([k,v])=>
+              k!=='pending'&&v!==0)||
+            x.independentFullKOWinEvidence!==0||x.noPolicyPromotion!==true)
+            throw Error('Cannot label next-lock proof as long-horizon KO strategy evidence');
+          console.log(JSON.stringify({independentGameSeeds:3,
+            observationsWithinGames:70,
+            fullyLegallyProvedNextPiece:57,
+            incomingGarbagePreconditionMismatches:13,
+            proofFailuresWhenSamePublicInputs:0,
+            bonaFideKOWinEvidence:0,
+            scope:'SRS+ legal next-step, NOT multistep win or action value'}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-3-original-seed-next-public-piece-proof-audit
+          path: real-public-next-plan-audit.json
+          retention-days: 30

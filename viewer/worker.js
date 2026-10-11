@@ -13,7 +13,7 @@ self.onmessage=async({data:m})=>{
         const primary=sessions.find(s=>s.player===focus);
         if(!primary?.session)throw new Error('請先選擇支援的 replay。');
         if(primary.session.state?.recording)throw new Error('Arena 落點回放不支援 Bot Mode。');
-        demo=new BotDemo(primary.session.session.engine);
+        demo=new BotDemo(primary.session.session.engine,{placementMode:m.placementMode??'timed'});
       }else if(m.type==='demo-exit'){demo=null;return;}
       else if(!demo)throw new Error('示範已關閉。');
       let result;

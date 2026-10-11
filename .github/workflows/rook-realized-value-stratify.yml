@@ -1,0 +1,70 @@
+name: ROOK learned long-horizon value policy-stratified holdout audit
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-realized-value-stratify.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  stratified-audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reuse immutable four-seed FULL KO public trace artifacts
+        uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38079234687
+          pattern: rook-value-traces-*
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Retrieve FROZEN pretrained model, no refit
+        uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38079234687
+          name: rook-realized-value-heldout-report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Score by bot identity, independent seed, pressure and 8-lock non-overlap
+        run: node scripts/rook-stratify-realized-value.js > stratification-summary.json
+      - name: Enforce no leakage and show separate policy baseline
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('rook-value-stratified.json','utf8'));
+          if(x.format!=='rook-heldout-stratified-prediction-audit/1'||
+            x.modelStatus!=='FROZEN_OFFLINE_NO_LIVE_POLICY'||
+            x.meaningfulStrengthClaim!==false||
+            x.trainSeeds.join(',')!=='67610,67611'||
+            x.holdoutSeeds.join(',')!=='67612,67613'||
+            x.all.count!==454||x.nonOverlapping.count<=0||
+            x.nonOverlapping.count>=x.all.count||
+            x.byKind.rook.count<=0||x.byKind.kiwi.count<=0||
+            x.byKind.rook.count+x.byKind.kiwi.count!==x.all.count||
+            Object.values(x.bySeedKind).some(z=>
+              z.rook.count<=0||z.kiwi.count<=0))
+            throw Error('Invalid real seed-stratified holdout audit');
+          const succinct={
+            holdoutSeedCount:x.holdoutSeeds.length,
+            independentGameSeedUnit:true,
+            windows:x.all.count,nonOverlapping:x.nonOverlapping.count,
+            all:x.all,byKind:x.byKind,
+            bySeedKind:x.bySeedKind,pressure:x.pressure,
+            nonOverlappingScores:x.nonOverlapping,
+            caveat:x.caveat};
+          console.log(JSON.stringify(succinct,null,2));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-value-stratified-historical-holdout
+          path: |
+            rook-value-stratified.json
+            stratification-summary.json
+          retention-days: 30

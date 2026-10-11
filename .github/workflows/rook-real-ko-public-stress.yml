@@ -1,0 +1,108 @@
+name: ROOK real Kiwi KO public-state stress triage
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - scripts/rook-stress-diagnostics.js
+      # Re-run stored-state diagnostics when the diagnostic tool changes,
+      # not after every unrelated core search or documentation update.
+      - .github/workflows/rook-real-ko-public-stress.yml
+  workflow_dispatch:
+# Only the newest queued trial of a workflow/branch needs CPU.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  triage:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download only archived player-visible snapshots from real Kiwi KO
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-kiwi-shared-position-diagnostic
+          repository: jush0147/tetrp
+          run-id: 37949389406
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compare identical published NEXT5 observations at original and deeper search
+        env:
+          ROOK_PUBLIC_SNAPSHOTS: rook-public-observations.jsonl
+          ROOK_PREVIOUS_DIFF: rook-choice-diff.jsonl
+          ROOK_STRESS_OUTPUT: rook-public-stress-report.json
+        run: |
+          set -eu
+          node scripts/rook-stress-diagnostics.js > rook-public-stress-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const report=JSON.parse(readFileSync('rook-public-stress-report.json','utf8'));
+          if(report.format!=='rook-real-kiwi-public-stress-triage/1'||
+            report.rows.length!==22||report.statistics.all.positions!==22||
+            report.statistics.all.baselineMatchesKiwi!==8||
+            report.rows.some(r=>r.options.some(o=>
+              !Array.isArray(o.futureProofsByPly)||
+              !Number.isInteger(o.actualFutureSpinClears)))||
+            report.pressureBeliefSummary.sampled!==3||
+            report.pressureHorizonSummary?.sampled!==3||
+            report.pressureHorizonSummary.details.some(v=>
+              !Number.isFinite(v.ms)||v.beliefEvaluations>3||
+              !Number.isInteger(v.horizonEvaluated)||v.horizonEvaluated<0||
+              !Number.isInteger(v.horizonAborted)||v.horizonAborted<0)||
+            report.pressureHorizonSummary.extraEvaluated>
+              3*3*10*900||
+            Object.values(report.pressureHorizonSummary.abortReasons)
+              .reduce((x,y)=>x+y,0)!==report.pressureHorizonSummary.horizonAborted||
+            report.pressureBeliefSummary.details.some(v=>
+              !Number.isFinite(v.ms)||v.beliefEvaluations>3)||
+            report.rows.some(r=>r.options.length!==4||
+              r.options.some(o=>!Number.isFinite(o.ms)||o.ms<0||
+                !Number.isFinite(o.evaluated)||o.evaluated<=0)))
+            throw Error('Invalid real KO public-state stress triage');
+          console.log(readFileSync('rook-public-stress-summary.json','utf8'));
+          const n=report.pressureHorizonSummary,b=report.pressureBeliefSummary;
+          const markdown=[
+            '### ROOK public-hole common-horizon diagnostic (automated, not KO)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Commit: '+process.env.GITHUB_SHA,
+            '',
+            '- Public positions: '+report.rows.length+' from '+report.matchSeeds.length+' independent seeds.',
+            '- Pending-garbage positions: '+n.sampled,
+            '- Legacy belief: '+b.decisionChanged+' changed vs baseline; '+b.agreesWithKiwi+' match Kiwi.',
+            '- Common horizon: '+n.decisionChanged+' changed vs baseline; '+n.differsFromLegacyBelief+' changed vs legacy; '+n.agreesWithKiwi+' match Kiwi.',
+            '- Conditional evaluations (EXTRA): '+n.extraEvaluated+'; aborted candidate revalues: '+n.horizonAborted+'; scenario-limit rejections: '+n.scenariosOverBudget,
+            '- Abort causes: budget='+n.abortReasons.budget+
+              ', second unknown garbage='+n.abortReasons.secondGarbage+
+              ', public NEXT exhausted='+n.abortReasons.publicNext,
+            ...n.details.map(d=>'- Seed '+d.seed+', turn '+d.turn+
+              ': changed='+d.changesFromBaseline+', from legacy='+
+              d.changesFromLegacyBelief+', Kiwi agreement='+d.matchesKiwi+
+              ', extra eval='+d.horizonEvaluated+', aborts='+d.horizonAborted+
+              ', runtime='+d.ms+'ms'),
+            '',
+            'No new KO or APP result. This is opt-in; PR #6 must remain Draft.'
+          ];
+          const body=markdown.join('\n')+'\n';
+          writeFileSync('rook-stress-issue-comment.md',body);
+          JS
+      - name: Record public-state diagnosis in Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-stress-issue-comment.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-real-ko-public-stress-diagnosis
+          path: |
+            rook-public-stress-summary.json
+            rook-public-stress-report.json
+            rook-public-observations.jsonl
+            rook-choice-diff.jsonl
+          retention-days: 30

@@ -1,0 +1,81 @@
+name: ROOK 3-seed public SRS legal plan vs fresh search preference audit
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-next-plan-replanning-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  frozen-3-seed-plan-versus-fresh-rook:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax-check archive analyzer before fetching evidence
+        run: node --check scripts/rook-live-plan-cohort-audit.js
+      - uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38125141665
+          pattern: rook-true-kiwi-public-next-plan-fidelity-*
+          path: plan-source
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38125154005
+          pattern: rook-real-pressure-forecast-original-seed-*
+          path: stress-source
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Quantify abandon-vs-follow across THREE independent original public matches
+        run: node scripts/rook-live-plan-cohort-audit.js
+      - name: Ensure true legality is not confused with actual re-search preference or KO
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('real-public-next-plan-audit.json','utf8'));
+          const y=x.descriptiveTotalsAcrossCorrelatedLocks;
+          if(x.independentOriginalGameSeeds!==3||
+            x.originalSeeds.map(r=>r.originalIndependentSeed).join(',')!==
+              '67920,67921,67922'||
+            y.correlatedObservationCount!==70||
+            y.fullLegalNextMoveWitnesses!==57||
+            y.publicPreconditionChanges!==13||
+            y.failedSrsAtMatchedPublicState!==0||
+            y.stillLegalPlanActuallyChosenByFreshROOK!==34||
+            y.stillLegalPlanAbandonedByFreshROOK!==23||
+            y.stillLegalPlanActuallyChosenByFreshROOK+
+              y.stillLegalPlanAbandonedByFreshROOK!==
+              y.fullLegalNextMoveWitnesses||
+            y.abandonedHoldModeChange+
+              y.abandonedDifferentPiece+
+              y.abandonedSamePieceDifferentPlacementOrSpin!==
+              y.stillLegalPlanAbandonedByFreshROOK||
+            x.independentFullKOWinEvidence!==0||!x.noPolicyPromotion)
+            throw Error('Invalid seed-level forecast-vs-actual-choice evidence or inflated independent wins');
+          console.log(JSON.stringify({
+            independentOriginalGameSeeds:3,
+            correlatedNextPiecePublicForecasts:70,
+            fullySrsLegalUnderUnchangedPublicState:57,
+            abandonedDespiteFullyLegal:23,
+            abandonedBecauseHoldModeChanged:y.abandonedHoldModeChange,
+            abandonedBecausePieceChanged:y.abandonedDifferentPiece,
+            abandonedOnSamePieceGeometryOrSpin:
+              y.abandonedSamePieceDifferentPlacementOrSpin,
+            newlyIncomingGarbageInvalidatedPrerequisites:13,
+            validatedKOWins:0,
+            conclusion:'Public next-step SRS reachability does not imply ROOK reanalysis prefers same move, still less imply better full KO.'
+          }));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-3-original-seed-legal-but-abandoned-next-piece-audit
+          path: real-public-next-plan-audit.json
+          retention-days: 30

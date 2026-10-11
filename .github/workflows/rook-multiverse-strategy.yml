@@ -1,0 +1,102 @@
+name: ROOK conditional private futures and 3-lock strategy persistence
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-multiverse-strategy.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-future-contract:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Canonical public comparison tolerates engine checkpoint key reordering.
+      - name: Check real seven-bag future sampling and unchanged CURRENT NEXT5
+        run: node --test test/rook-private-future-authority.test.js test/rook-ko-protocol.test.js
+  paired-strategic-futures:
+    needs: public-future-contract
+    runs-on: ubuntu-22.04
+    timeout-minutes: 85
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67720, 67721]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Same legal public strategic state, 3 private futures, 3 candidate strategies each
+        env:
+          SEED: ${{ matrix.seed }}
+          MIN_STRATEGIC_TURN: '8'
+          MAX_STRATEGIC_TURN: '28'
+          MAX_LOCKS: '64'
+          FORK_STRATEGIC_WINDOWS: '1'
+          FORK_CONDITIONAL_FUTURES: '1'
+          CONDITIONAL_FUTURE_COUNT: '3'
+          KIWI_STRATEGY_LOCKS: '3'
+          FORK_OPPONENT: kiwi
+          ROOK_NODES: '3000'
+          KIWI_NODES: '32768'
+        run: node scripts/rook-paired-root-fork.js > conditional-strategy.json
+      - name: Verify conditional matching with no fabricated short-match KO
+        env:
+          EXPECTED_SEED: ${{ matrix.seed }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('conditional-strategy.json','utf8'));
+          if(x.status==='no-eligible-public-conflict'){
+            if(x.seed!==Number(process.env.EXPECTED_SEED)||
+              x.scored!==false||x.format!=='rook-strategic-divergence-windows/1')
+              throw Error('Invalid honest missing-public-conflict case');
+            console.log(JSON.stringify({seed:x.seed,
+              eligible:false,screen:x.screen,note:'No manufactured policy evaluation'}));
+          }else{
+            const c=x.conditionalExperiment;
+            if(x.independentSeed!==Number(process.env.EXPECTED_SEED)||
+              !x.strategicWindow||x.opponentKind!=='kiwi'||
+              !x.identicalAuthorityCheckpoint||!x.opaqueHiddenFutureToBots||
+              x.originalPublicNextCount!==5||!c||
+              x.scoredWindowTrial!==false||
+              c.conditionalPrivateScenarios!==3||
+              c.strategyCommitLocks!==3||c.scenarios.length!==3||
+              x.results.length!==9||
+              c.scenarios.some(s=>s.treatmentResults.length!==3||
+                s.treatmentResults.some(z=>z.scored!==false||z.error||
+                  z.windows.length>4||z.futureScenario!==s.scenario)||
+                s.rootOnlyFirstVersusKiwi.length!==4||
+                s.kiwiContinuationEffectGivenSameRoot.length!==4))
+              throw Error('Not legitimate conditioned private-future strategic fork');
+            console.log(JSON.stringify({seed:x.independentSeed,eligible:true,
+              naturalTurn:x.forkTurn,selection:x.strategicSelection.kind,
+              independentPublicPositions:1,correlatedPrivateScenarios:3,
+              treatments:c.treatmentsPerScenario,
+              measurements:c.scenarios.map(s=>({scenario:s.scenario,
+                rootOnly:s.rootOnlyFirstVersusKiwi.map(x=>({
+                  horizon:x.horizon,complete:x.complete,
+                  cellDiff:x.occupiedCellMismatch??null,
+                  sentDifference:x.firstMinusSecondCombat?.sent??null
+                })),
+                extraKiwiDecisions:s.treatmentResults[2].committedKiwiLocks,
+                commitEffect:s.kiwiContinuationEffectGivenSameRoot.map(x=>({
+                  horizon:x.horizon,complete:x.complete,
+                  cellDiff:x.occupiedCellMismatch??null,
+                  sentDifference:x.firstMinusSecondCombat?.sent??null
+                }))})),
+              caution:c.conditionalNote}));
+          }
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-conditioned-strategy-${{ matrix.seed }}
+          path: conditional-strategy.json
+          retention-days: 30

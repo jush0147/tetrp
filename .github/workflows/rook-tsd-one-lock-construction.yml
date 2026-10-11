@@ -1,0 +1,88 @@
+name: ROOK public-board TSD one-lock construction alternatives
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-tsd-one-lock-construction.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: read
+  issues: write
+jobs:
+  audit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test legitimate TSD boards and permanent-garbage rejection
+        run: node --test test/rook-tsd.test.js
+      - name: Load previous real public lock states, without a new Kiwi match
+        uses: actions/download-artifact@v4
+        with:
+          name: rook-public-tsd-negative-controls
+          repository: jush0147/tetrp
+          run-id: 38055352753
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compare legal current-piece TSD scaffold construction options
+        env:
+          ROOK_ALL_PUBLIC_TRACE: rook-all-public-locks.jsonl
+          ROOK_ONE_LOCK_TSD_OUTPUT: rook-tsd-one-lock-report.json
+        run: |
+          set -eu
+          node scripts/rook-tsd-one-lock-construction.js > rook-tsd-one-lock-summary.json
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('rook-tsd-one-lock-report.json','utf8'));
+          if(r.format!=='rook-tsd-one-lock-construction-audit/1'||
+            r.independentSeeds!==1||r.observations!==132||
+            r.groups.length!==2||r.groups.some(g=>g.states!==66||
+              g.placeChosen>g.states||
+              g.choseBelowMaxGeometricScaffold>g.placeChosen||
+              g.canBuildFullGeometryInOneMove>g.states)||
+            r.rows.some(x=>x.reachable<=0||
+              (x.kind==='place'&&x.selectedPotential===null)))
+            throw Error('Invalid public one-lock SRS+ construction analysis');
+          const text=[
+            '### SRS-reachable TSD construction: what first placements were available? (NOT KO)',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Same previous one-seed reference match: 66 public boards per bot.',
+            'The SAME 4x24/6K ROOK policy and bounded SRS+ root enumerator inspect both kinds.',
+            ...r.groups.map(g=>'**'+g.owner.toUpperCase()+' boards**: '+g.states+
+              ' states; root can increase geometric TSD readiness in '+
+              g.hasPositiveConstructiveMove+'/'+g.states+
+              ', can create complete geometric slot in one legal placement '+
+              g.canBuildFullGeometryInOneMove+'/'+g.states+
+              ', low-signal boards where one placement could improve '+
+              g.lowToBetterInOneMove+
+              ', ROOK-selected direct placements below max reachable potential '+
+              g.choseBelowMaxGeometricScaffold+'/'+g.placeChosen+'.'),
+            '',
+            'A geometric scaffold is not an SRS-certified future TSD or an attack.',
+            'The inspection omits Hold reanalysis and all multi-lock opportunities; this is',
+            'a deliberately narrow generation-versus-selection diagnostic, NOT strength.',
+            'Observations overlap heavily from just ONE previously played seed.'
+          ].join('\n')+'\n';
+          writeFileSync('rook-tsd-one-lock-issue.md',text);
+          console.log(text);
+          JS
+      - name: Document one-lock construction gap on Issue 8
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file rook-tsd-one-lock-issue.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-tsd-one-lock-constructive-choices
+          path: |
+            rook-tsd-one-lock-report.json
+            rook-tsd-one-lock-summary.json
+            rook-tsd-one-lock-issue.md
+          retention-days: 30

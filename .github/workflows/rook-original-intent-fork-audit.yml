@@ -1,0 +1,57 @@
+name: ROOK original three public fork mechanism frozen audit
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-original-intent-fork-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  frozen-first-root-forensic:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax gate before fetching genuine already-completed source traces
+        run: node --check scripts/rook-intent-divergence-audit.js
+      - uses: actions/download-artifact@v4
+        with:
+          repository: jush0147/tetrp
+          run-id: 38114823390
+          pattern: rook-first-public-strategy-root-forensic-*
+          path: forensic-artifacts
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify original win and both losses differ in real first action on SAME public state
+        run: node scripts/rook-intent-divergence-audit.js
+      - name: Check zero extra independent game seeds and all true public fork proofs
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('first-divergence-audit.json','utf8'));
+          if(x.format!=='rook-original-seed-first-public-intent-fork-forensics/1'||
+            x.originalIndependentSeeds!==3||x.additionalIndependentGames!==0||
+            x.rows.map(x=>x.originalSeed).join(',')!=='67812,67814,67815'||
+            x.rows.some(r=>r.replayOnly!==true||
+              r.persisted.retained!==true||r.persisted.mode!=='balanced'||
+              r.reactive.mode!=='attack'||
+              r.persisted.immediateDesired!=='attack'||
+              r.observationWindows.length!==5))
+            throw Error('Invalid same-public first root forensic record');
+          console.log(JSON.stringify({originalPublicSeeds:3,
+            newIndependentGames:0,
+            observedKinds:x.rows.map(r=>({seed:r.originalSeed,
+              originalWinner:r.previousGenuineKOResult,
+              firstDivergenceLock:r.originalPublicFirstDivergenceLock,
+              candidateActual:r.persisted.actualMove,
+              comparatorActual:r.reactive.actualMove}))}));
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rook-first-strategic-root-frozen-all-three-original-seeds
+          path: first-divergence-audit.json
+          retention-days: 30

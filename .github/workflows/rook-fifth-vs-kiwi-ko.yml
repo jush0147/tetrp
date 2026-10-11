@@ -1,0 +1,101 @@
+name: ROOK fifth-ply versus pinned Kiwi full KO
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths:
+      - .github/workflows/rook-fifth-vs-kiwi-ko.yml
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  issues: write
+jobs:
+  full-ko:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67131, 67132, 67133, 67134]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: No-fake-KO plus authority fifth-ply switch smoke
+        run: node --test test/rook-kiwi-fifth.test.js test/rook-diverse-probes.test.js test/rook-ko-protocol.test.js
+      - name: Pinned Kiwi 200K versus independent ROOK fifth-ply, KO-first
+        id: match
+        env:
+          SEEDS: ${{ matrix.seed }}
+          SWAP_ROLES: '0'
+          KIWI_NODES: '200000'
+          ROOK_NODES: '6000'
+          ROOK_EXACT_LEAF: '1'
+          ROOK_LEAF_BUDGET: '5000'
+          ROOK_LEAF_STATES: '800'
+          MAX_LOCKS: '2000'
+        run: |
+          set -eu
+          node scripts/rook-vs-kiwi.js > fifth-kiwi-${{ matrix.seed }}.jsonl
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const seed=Number(process.env.SEEDS);
+          const rows=readFileSync('fifth-kiwi-'+seed+'.jsonl','utf8')
+            .trim().split('\n').map(JSON.parse);
+          if(rows.length!==1)throw Error('Expected exactly one nonmirrored game');
+          const r=rows[0],rook=r.slots?.find(x=>x.kind==='rook');
+          const kiwi=r.slots?.find(x=>x.kind==='kiwi');
+          if(r.seed!==seed||!r.sameSeed||!r.simultaneousLocks||
+            r.pps!==2.5||r.cap!==2000||r.error||
+            r.scored!==(r.termination==='KO')||
+            r.nodeBudgets.rook!==6000||r.nodeBudgets.kiwi!==200000||
+            r.rookExactLeaf!==true||r.rookLeafBudget!==5000||
+            !rook||!kiwi||rook.leafExtraEvaluated<=0||
+            rook.leafApplied<1||rook.searchMs<=0||kiwi.searchMs<=0)
+            throw Error('Invalid pinned-Kiwi KO-fifth protocol');
+          const text=[
+            '### ROOK fifth-ply versus pinned Kiwi 200K: actual KO-first result',
+            '',
+            'Run: https://github.com/jush0147/tetrp/actions/runs/'+process.env.GITHUB_RUN_ID,
+            'Independent seed: '+seed+' (same bag seed on both sides, no mirror duplicate)',
+            'Synchronized 24-frame locks: '+r.lockSteps+' / 2000 safety cap.',
+            'Termination: '+r.termination+'; scored='+r.scored+
+              '; winner='+(r.winner??'NONE (unscored)'),
+            'ROOK 4x24/6K plus bounded 5K genuine fifth-piece SRS+: sent='+
+              rook.sent+', sent APP='+rook.sentApp.toFixed(4)+
+              ', CPU ms='+rook.searchMs+
+              ', main evaluated='+rook.searchNodes+
+              ', EXTRA fifth evaluations='+rook.leafExtraEvaluated+
+              ', completed re-ranks='+rook.leafApplied+
+              ', abandoned re-ranks='+rook.leafAborted,
+            'Pinned Kiwi 200K: sent='+kiwi.sent+', sent APP='+
+              kiwi.sentApp.toFixed(4)+', CPU ms='+kiwi.searchMs+
+              ', Kiwi nodes='+kiwi.searchNodes,
+            'CPU ratio ROOK/Kiwi='+(rook.searchMs/kiwi.searchMs).toFixed(3)+
+              ' (not matched CPU or equivalent node units).',
+            'ROOK real authority clear events: '+JSON.stringify(rook.combatEvents),
+            'Kiwi real authority clear events: '+JSON.stringify(kiwi.combatEvents),
+            '',
+            'Only an actual single KO is scored. Cap/double KO are not victories.',
+            'No model is declared Kiwi-superior on these few seeds; no main merge.'
+          ].join('\n')+'\n';
+          writeFileSync('fifth-kiwi-summary-'+seed+'.md',text);
+          console.log(text);
+          JS
+      - name: Record scored result on Issue 8
+        if: steps.match.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue comment 8 --repo jush0147/tetrp --body-file fifth-kiwi-summary-${{ matrix.seed }}.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-fifth-kiwi-${{ matrix.seed }}
+          path: |
+            fifth-kiwi-${{ matrix.seed }}.jsonl
+            fifth-kiwi-summary-${{ matrix.seed }}.md
+          retention-days: 30
