@@ -2494,3 +2494,84 @@ no production promotion, no stronger-than-stock
 or Kiwi claim and no post-hoc selector training.
 main, original Kiwi, default ROOK untouched.
 Draft PR #6 still open.
+
+
+### 2026-10-11: Four-original-seed persistent-vs-reactive KO replication **NEGATIVE (2 wins / 2 losses)**
+
+**Completed** genuine KO-first [role-swap workflow #38111273237](https://github.com/jush0147/tetrp/actions/runs/38111273237):
+four INDEPENDENT original Tetrp bag seeds, 67812, 67813,
+67814, 67815. ALL eight player-slot matches were bona
+fide scored KOs before 2000 synchronized locks, but
+**two swapped games sharing the same original seed ARE
+CORRELATED and yielded byte-for-byte equivalent
+authoritative policy outcome counts**, not two
+independent observations. The workflow succeeded.
+Frozen, source-verified
+[independent-original-seed audit #38114868241](https://github.com/jush0147/tetrp/actions/runs/38114868241)
+also PASSED, requiring identical winner/KO turn,
+actual policy sent/tanked and evaluated search nodes
+across the swapped roles for every original seed.
+Thus no alleged player-slot effect can account for
+the outcome direction; slot swapping contributes
+**zero extra independent win-rate sample size**.
+
+| Original seed | Persistent public intent | Real KO turn | Persistent sent/tanked | Reactive sent/tanked | Persistent actual total nodes vs reactive | Persistent measured CPU / reactive |
+| :--- | :--- | ---: | :--- | :--- | :--- | ---: |
+| 67812 (previous positive) | **wins** | 566 | 295 / 131 | 226 / 164 | 1,791,828 vs 1,615,637 | ~1.14x |
+| 67813 (previous positive) | **wins** | 708 | 350 / 35 | 330 / 48 | 2,661,174 vs 2,595,892 | ~1.02x |
+| 67814 (fresh) | **LOSES** | 319 | 114 / 97 | 175 / 66 | 922,163 vs 1,040,241 | ~0.92x |
+| 67815 (fresh) | **LOSES** | 611 | 256 / 113 | 260 / 109 | 1,955,447 vs 2,009,628 | ~0.97x |
+
+**Final actual independent-seed outcome: 2/4 persistent wins,
+2/4 reactive wins.** Equal *per-search* configured
+3000-node caps, UNequal total evaluated work or CPU.
+Even the original 2/2 apparent advantage occurred
+with MORE actual computation by the persistent arm.
+Therefore **there is NO VALIDATED STRENGTH
+IMPROVEMENT and the mode persistence heuristic
+must NOT be promoted**, nor can the 4 fixed original
+seeds be used post hoc to optimize thresholds.
+
+Across each original full match, persistent and
+reactive policies differed in only **one actual
+authority-accepted action** while still viewing
+an identical public board+CURRENT/HOLD/NEXT5;
+the subsequent live-match state and attack outcomes
+could then diverge arbitrarily. This is NOT four
+independent proofs of a robust strategic option.
+The policy controller in
+[`rook-strategic-intent.js`](../src/analysis/rook-strategic-intent.js)
+remains an **opt-in research-only controller**,
+not production/default `chooseMove`.
+
+**New mechanism/forensic reproducibility instrument**:
+[`rook-vs-rook.js`](../scripts/rook-vs-rook.js)
+now optionally logs FIRST different authority-
+accepted Hold/Place ACTION CHAIN on exactly
+matching PUBLIC board+CURRENT+NEXT5, both
+public requested/retained attack/protect/balanced
+objective modes, actual current incoming garbage,
+stack/holes, per-search CPU and nodes, plus true
+authority board/attack/tanking snapshots after
++1,+4,+8,+16,+32 locks. The dedicated
+[forensic workflow #38114823390](https://github.com/jush0147/tetrp/actions/runs/38114823390)
+replays existing reference seed 67812 and the
+two fresh LOSS seeds 67814/67815 as bounded
+diagnostics only, **not new scored independent
+matches**, with explicit censoring if a horizon
+is not reached. Results PENDING at this writing.
+The extra requested `desired` mode is exposed
+for telemetry only; mode inputs remain public.
+No cost balancing/threshold retuning yet.
+
+**Strategy-level decision**: With only 2/4 actual
+KOs and one real differing root in each first
+equal-visible state, STOP claiming sticky
+objectives are a stronger game bot. Analyze
+specific failed pressure/attack paths, then
+design strategies with genuine legal multi-lock
+attack-defense intent and compare on NEW,
+predeclared, independent true-KO seeds and
+real measured CPU against original ROOK,
+followed by pinned Kiwi. Main/pinned Kiwi
+unchanged; PR #6 Draft.
