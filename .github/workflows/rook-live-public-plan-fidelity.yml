@@ -59,6 +59,15 @@ jobs:
             b.slots.length!==2||b.forecastAudit.actualNextLockChecks<1||
             b.forecastAudit.actualNextLockChecks>10)
             throw Error('Invalid public-only plan fidelity experiment');
+          const actuallyProved=b.forecastAudit.samples.filter(x=>
+            x.verifiedPlacement===true);
+          if(actuallyProved.some(x=>
+            typeof x.replannedActuallySamePublicForecast!=='boolean'||
+            typeof x.legalButAbandoned!=='boolean')||
+            b.forecastAudit.fullyLegalForecastReusedByFreshRook+
+              b.forecastAudit.fullyLegalForecastAbandonedByFreshRook!==
+              actuallyProved.length)
+            throw Error('Fresh ROOK selected action not classified against verified public planned second lock');
           const actualHold=b.forecastAudit.samples.filter(x=>
             x.postHoldAuthorityProof);
           if(actualHold.length<1||
@@ -86,6 +95,10 @@ jobs:
             actualOfflineAuthorityHoldPlusPlacementProbes:actualHold.length,
             fullySrsProvenHoldPlusPlacement:actualHold.filter(x=>
               x.postHoldAuthorityProof.placementSrsProven).length,
+            fullyLegalFollowedByActualFreshRook:
+              b.forecastAudit.fullyLegalForecastReusedByFreshRook,
+            fullyLegalAbandonedByActualFreshRook:
+              b.forecastAudit.fullyLegalForecastAbandonedByFreshRook,
             examples:b.forecastAudit.samples,
             extraAuditCpuMs:b.forecastAudit.diagnosticCpuMs,
             caution:'Forecasted geometric NEXT placements are not real Tetrp decisions until compared to next actual public state and legal SRS+. Only ONE original independent match seed. This does not estimate improvement over Kiwi.'};
