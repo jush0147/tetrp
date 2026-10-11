@@ -5,6 +5,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {Engine} from '../src/engine.js';
 import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
+import {auditPublicNextForecast} from '../src/analysis/rook-plan-fidelity.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
@@ -13,6 +14,8 @@ import {diagnosePublicChoice} from './rook-choice-diagnostics.js';
 const kiwiBudget=Number(process.env.KIWI_NODES??200000);
 const rookBudget=Number(process.env.ROOK_NODES??6000);
 const rookExactLeaf=process.env.ROOK_EXACT_LEAF==='1';
+const forecastAudit=process.env.ROOK_FORECAST_PLAN_AUDIT==='1';
+const forecastAuditCap=Number(process.env.ROOK_FORECAST_AUDIT_SAMPLES??12);
 const rookLeafBudget=Number(process.env.ROOK_LEAF_BUDGET??5000);
 const rookLeafStates=Number(process.env.ROOK_LEAF_STATES??800);
 const limit=Number(process.env.MAX_LOCKS??DEFAULT_KO_LOCK_CAP);
@@ -27,6 +30,8 @@ const seeds=parseMatchSeeds({...process.env,
 if(!Number.isSafeInteger(kiwiBudget)||kiwiBudget<2000||
   !Number.isInteger(rookLeafBudget)||rookLeafBudget<1||rookLeafBudget>100000||
   !Number.isInteger(rookLeafStates)||rookLeafStates<1||rookLeafStates>10000||
+  !Number.isInteger(forecastAuditCap)||forecastAuditCap<0||
+  forecastAuditCap>100||
   !Number.isSafeInteger(rookBudget)||rookBudget<1||
   !Number.isSafeInteger(limit)||limit<1||limit>10000||
   diagnosticTurns.some(n=>!Number.isSafeInteger(n)||n<0)||
@@ -44,12 +49,15 @@ const makeDemo=seed=>new BotDemo(new Engine({mode:'tl',seed,rules:{g:0,gincrease
 function candidates(kind,visible){
   // Only one deeply ranked ROOK search or Kiwi snapshot search per decision.
   if(kind==='rook'){
-    const report=chooseMove(visible,{...botOptions,includeRanked:true});
+    const report=chooseMove(visible,{...botOptions,includeRanked:true,
+      includeForecastPlan:forecastAudit});
     return {nodes:report.diagnostics.evaluated,limit:rookBudget,
       extraEvaluated:report.diagnostics.leafExtensionEvaluated??0,
       leafApplied:Number(!!report.diagnostics.leafExtensionApplied),
       leafAborted:Number(!!report.diagnostics.leafExtensionAbort),
       count:report.ranked.length,
+      forecastNextStep:forecastAudit?report.forecastPlan?.[1]??null:null,
+      forecastLength:forecastAudit?report.forecastPlan?.length??0:0,
       at(index){
         const x=report.ranked[index];
         if(!x)return null;
@@ -95,7 +103,9 @@ function prepareUntilPlace(demo,kind){
           holdCount++;break;
         }
         return {revision:view.revision,nodes,holdCount,searchMs,placement:result.move,
-          leafExtra,leafApplied,leafAborted};
+          leafExtra,leafApplied,leafAborted,
+          forecastNextStep:kind==='rook'&&i===0?search.forecastNextStep:null,
+          forecastLength:kind==='rook'&&i===0?search.forecastLength:0};
       }catch(error){
         lastError=error;
         i=(result.candidateIndex??i)+1;
@@ -132,6 +142,8 @@ function runPair(seed,order){
   let transfers=[],lockSteps=0,searchNodes=[0,0],
     holdMoves=[0,0],searchMs=[0,0],error=null,diagnostics=[];
   const leafExtra=[0,0],leafApplied=[0,0],leafAborted=[0,0];
+  const pendingForecast=[null,null],forecastChecks=[];
+  let forecastAuditCpuMs=0,forecastEligibleOffered=0;
   // Authority outcomes ONLY; never used as search inputs by either bot.
   const recentPublicViews=[[],[]];
   const beforePublicLock=[null,null];
@@ -149,6 +161,27 @@ function runPair(seed,order){
       transfers=[];
       if(demos.some(d=>!d.engine.state.playing))break;
       const turnFrame=assertSimultaneousPair(demos);
+      if(forecastAudit){
+        for(let i=0;i<2;i++){
+          const pending=pendingForecast[i];
+          pendingForecast[i]=null;
+          if(!pending||forecastChecks.length>=forecastAuditCap)continue;
+          if(kinds[i]!=='rook')throw Error('Forecast audit leaked to Kiwi');
+          const visible=demos[i].view().visible;
+          const start=performance.now();
+          const measured=auditPublicNextForecast(visible,pending.nextStep,{
+            maxStates:1200,maxSteps:42});
+          forecastAuditCpuMs+=performance.now()-start;
+          forecastChecks.push({seed,order,fromTurn:pending.fromTurn,
+            atActualTurn:lockSteps,forecastLength:pending.forecastLength,
+            targetPiece:pending.nextStep.piece,
+            predictedUseHold:pending.nextStep.useHold,
+            currentPublicPiece:visible.current.type,
+            publicIncoming:[...(visible.attack?.pending??[]),
+              ...(visible.attack?.are??[])].reduce((n,p)=>n+p.amt,0),
+            ...measured});
+        }
+      }
       if(diagnosticsEnabled&&order===0&&diagnosticSet.has(lockSteps)){
         // Compare BOTH policies against the SAME public state from a live
         // authority match. No hidden opponent queue or checkpoint provided.
@@ -168,6 +201,14 @@ function runPair(seed,order){
       for(let i=0;i<2;i++){
         const plan=prepareUntilPlace(demos[i],kinds[i]);
         plans.push(plan);searchNodes[i]+=plan.nodes;holdMoves[i]+=plan.holdCount;
+        if(forecastAudit&&kinds[i]==='rook'&&
+          forecastChecks.length+Number(pendingForecast[i]!==null)<
+            forecastAuditCap){
+          pendingForecast[i]=plan.forecastNextStep?
+            {fromTurn:lockSteps,nextStep:plan.forecastNextStep,
+              forecastLength:plan.forecastLength}:null;
+          forecastEligibleOffered+=Number(!!plan.forecastNextStep);
+        }
         searchMs[i]+=plan.searchMs;
         if(traceTsd||traceAllPublicLocks){
           // Only player-visible state AFTER optional Hold and BEFORE lock.
@@ -259,7 +300,16 @@ function runPair(seed,order){
       ...(kinds[i]==='rook'&&rookExactLeaf?{leafExtraEvaluated:leafExtra[i],
         leafApplied:leafApplied[i],leafAborted:leafAborted[i]}:{})})),
     initialVisibleNext:original.map(v=>v.next),
-    ...(diagnosticsEnabled?{diagnostics}: {})};
+    ...(diagnosticsEnabled?{diagnostics}: {}),
+    ...(forecastAudit?{forecastAudit:{
+      executedFullGameWithoutChangingSelection:true,
+      forecastEligibleOffered,actualNextLockChecks:forecastChecks.length,
+      diagnosticCpuMs:+forecastAuditCpuMs.toFixed(2),
+      counts:Object.fromEntries([...new Set(forecastChecks.map(x=>x.status))].map(
+        status=>[status,forecastChecks.filter(x=>x.status===status).length])),
+      samples:forecastChecks,
+      reason:'Beam geometric future is a hypothesis; next actual public state and SRS+ determine whether planned 2nd lock is possible.'
+    }}:{})};
 }
 // An independent seed is played twice, with ROOK / Kiwi swapping slots.
 const results=seeds.flatMap(seed=>swapRoles==='1'
