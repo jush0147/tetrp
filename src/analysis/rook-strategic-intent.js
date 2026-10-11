@@ -53,7 +53,7 @@ export function advanceStrategicIntent(visible,previous=null,{
     throw Error('Invalid or future-peeking intent state');
   if(previous?.lastPiece===signals.placed)
     return {state:previous,mode:previous.mode,signals,
-      newLock:false,changed:false,retained:false,emergency:false,
+      desired:desiredMode(signals),newLock:false,changed:false,retained:false,emergency:false,
       // Calling from a post-Hold reanalysis cannot consume another lock.
       searchOptions:optionsFor(previous.mode)};
   const desired=desiredMode(signals);
@@ -68,7 +68,7 @@ export function advanceStrategicIntent(visible,previous=null,{
   const changed=Boolean(previous&&mode!==previous.mode);
   const state={mode,since:changed||!previous?signals.placed:
     previous.since,lastPiece:signals.placed};
-  return {state,mode,signals,newLock:true,changed,retained,
+  return {state,mode,signals,desired,newLock:true,changed,retained,
     emergency:Boolean(emergency&&previous&&previous.mode!=='protect'),
     searchOptions:optionsFor(mode)};
 }
