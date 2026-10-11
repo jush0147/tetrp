@@ -7,6 +7,7 @@ import {BotDemo} from '../src/analysis/demo.js';
 import {chooseMove} from '../src/analysis/rook.js';
 import {auditPublicNextForecast,sameForecastAsFreshRookChoice} from '../src/analysis/rook-plan-fidelity.js';
 import {verifyAuthorityOnlyPostHoldLanding} from './rook-posthold-authority-proof.js';
+import {runHoldCounterfactual} from './rook-hold-counterfactual.js';
 import {DEFAULT_KO_LOCK_CAP,parseMatchSeeds,assertMatchingOpening,assertSimultaneousPair,scoreKO} from './rook-ko-protocol.js';
 import {prepareKiwi,normalizeRankedRecommendation} from '../src/analysis/kiwi.js';
 import init,{analyze_snapshot_json} from '../vendor/kiwi-v1/pkg/cold_clear_2.js';
@@ -15,7 +16,8 @@ import {diagnosePublicChoice} from './rook-choice-diagnostics.js';
 const kiwiBudget=Number(process.env.KIWI_NODES??200000);
 const rookBudget=Number(process.env.ROOK_NODES??6000);
 const rookExactLeaf=process.env.ROOK_EXACT_LEAF==='1';
-const forecastAudit=process.env.ROOK_FORECAST_PLAN_AUDIT==='1';
+const holdFork=process.env.ROOK_HOLD_FORK==='1';
+const forecastAudit=process.env.ROOK_FORECAST_PLAN_AUDIT==='1'||holdFork;
 const forecastAuditCap=Number(process.env.ROOK_FORECAST_AUDIT_SAMPLES??12);
 const rookLeafBudget=Number(process.env.ROOK_LEAF_BUDGET??5000);
 const rookLeafStates=Number(process.env.ROOK_LEAF_STATES??800);
@@ -145,6 +147,7 @@ function runPair(seed,order){
     holdMoves=[0,0],searchMs=[0,0],error=null,diagnostics=[];
   const leafExtra=[0,0],leafApplied=[0,0],leafAborted=[0,0];
   const pendingForecast=[null,null],forecastChecks=[];
+  let pairedHoldFork=null;
   // Purely offline comparison of each STILL LEGAL second-ply plan against
   // what a fresh original ROOK public search ACTUALLY selected. Never
   // alter its choice or force the old proposal.
@@ -217,6 +220,11 @@ function runPair(seed,order){
                 owner:kinds[slot],visible:state});
           }
       }
+      // Preserve one exact paired PRIVATE authority snapshot solely inside
+      // the researcher, never inside a policy or a JSON diagnostic.
+      const forkStart=holdFork&&!pairedHoldFork&&order===0&&
+        kinds[0]==='rook'&&previousForecastForThisTurn[0]
+        ?demos.map(d=>d.fork()):null;
       const plans=[];
       for(let i=0;i<2;i++){
         const plan=prepareUntilPlace(demos[i],kinds[i]);
@@ -236,6 +244,18 @@ function runPair(seed,order){
             // is a SEARCH PREFERENCE difference, not a legality failure.
             entry.legalButAbandoned=entry.verifiedPlacement===true&&
               !selectedSame;
+          }
+        }
+        if(holdFork&&i===0&&forkStart&&!pairedHoldFork){
+          const past=previousForecastForThisTurn[0];
+          const entry=past?forecastChecks[past.sampleIndex]:null;
+          if(entry?.verifiedPlacement===true&&
+            entry.predictedUseHold===true&&
+            entry.replannedActuallyUsedHold===false&&
+            entry.legalButAbandoned===true){
+            pairedHoldFork=runHoldCounterfactual({demos:forkStart,kinds,
+              forecast:past.forecastStep,seed,turn:lockSteps,
+              prepareUntilPlace,cap:2000});
           }
         }
         if(forecastAudit&&kinds[i]==='rook'&&
@@ -338,6 +358,8 @@ function runPair(seed,order){
         leafApplied:leafApplied[i],leafAborted:leafAborted[i]}:{})})),
     initialVisibleNext:original.map(v=>v.next),
     ...(diagnosticsEnabled?{diagnostics}: {}),
+    ...(holdFork?{holdForkResult:pairedHoldFork,
+      holdForkSelected:!!pairedHoldFork}:{}),
     ...(forecastAudit?{forecastAudit:{
       executedFullGameWithoutChangingSelection:true,
       forecastEligibleOffered,actualNextLockChecks:forecastChecks.length,
