@@ -194,7 +194,8 @@ const variants=[first,second].map((root,index)=>{
   return {index,root,rootSignature:actionSignature(root),
     rootRank:report.ranked.findIndex(x=>actionSignature(x)===
       actionSignature(root)),pair,
-    nodes:0,searchMs:0,holds:0,locks:beforeFork,
+    nodes:0,searchMs:0,holds:0,
+    perSideCpuMs:[0,0],perSideNodes:[0,0],locks:beforeFork,
     transfers:[],firstHorizon:null,error:null};
 });
 
@@ -212,6 +213,10 @@ for(const v of variants){
       v.searchMs+=a.plans.reduce((n,p)=>n+p.computeMs,0);
       v.nodes+=a.plans.reduce((n,p)=>n+p.nodesEvaluated,0);
       v.holds+=a.plans.reduce((n,p)=>n+p.holdCount,0);
+      for(let i=0;i<2;i++){
+        v.perSideCpuMs[i]+=a.plans[i].computeMs;
+        v.perSideNodes[i]+=a.plans[i].nodesEvaluated;
+      }
       v.locks++;
       if(v.locks===beforeFork+8){
         const now=v.pair.map(d=>d.engine.state.attack.totals);
@@ -242,6 +247,8 @@ const results=variants.map(v=>{
       locks:Math.min(8,v.locks-beforeFork),
       complete:false,censored:true},
     researchCpuMs:+v.searchMs.toFixed(1),evaluatedNodes:v.nodes,
+    perSideCpuMs:v.perSideCpuMs.map(n=>+n.toFixed(1)),
+    perSideEvaluatedNodes:v.perSideNodes,
     realHolds:v.holds,
     finalCombat:states.map(s=>({
       alive:s.playing,pieces:s.stats.pieces,
