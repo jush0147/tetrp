@@ -196,6 +196,7 @@ function select(demo,open){
     intentRetained:0,intentEmergency:0,intentDecisions:0,
     leafExtensionAborts:0,leafExtensionChanges:0,leafExtensionWork:0};
   let expectedAfterHold=null,usedStickyHold=false;
+  const actualActions=[];
   const strategic=expertStrategic?
     advanceStrategicIntent(demo.view().visible,
       rememberedStrategicIntent.get(demo)??null,{
@@ -397,6 +398,7 @@ function select(demo,open){
         if(a.kind==='hold'){
           if(turn!==0)throw Error('second Hold is forbidden');
           demo.commit(view.revision);stats.holds++;didHold=true;
+          actualActions.push('hold:'+a.mode);
           if(turn===0&&a===report.ranked[0])
             expectedAfterHold=report.holdPlan??null;
           // This is only a hypothesis: the planned post-Hold placement
@@ -424,7 +426,9 @@ function select(demo,open){
         }
         if(open&&expertSticky)rememberedPlans.set(demo,
           a===report.ranked[0]?(report.forecastPlan??[]).slice(1):[]);
-        return {revision:view.revision,...stats};
+        actualActions.push('place:'+a.move.piece+':'+a.execution.spin+
+          ':'+a.move.cells.map(([x,y])=>x+','+y).sort().join(';'));
+        return {revision:view.revision,actualActionChain:actualActions.join('|'),...stats};
       }catch(e){lastError=e;stats.rejections++}
     }
     if(turn===0&&didHold)continue;
@@ -497,8 +501,13 @@ function pairedGame(seed,swap){
     stickyAttempts:0,stickyAccepted:0,stickyRejected:0,stickyHoldSkipped:0,
     leafExtensionAttempts:0,leafExtensionApplied:0,leafExtensionAborts:0,
     leafExtensionChanges:0,leafExtensionWork:0,
+    intentAttack:0,intentProtect:0,intentBalanced:0,
+    intentSwitches:0,intentRetained:0,intentEmergency:0,
+    intentDecisions:0,
     tsd:0,tss:0,mini:0,quad:0,maxBtb:0}));
   let inbound=[],turns=0,error=null,checkpoints=[];
+  let identicalPublicDecisionChecks=0,identicalPublicActionChanges=0,
+    firstIdenticalPublicActionDifference=null;
   try{
     while(turns<limit&&demos.every(d=>d.engine.state.playing)){
       for(const packet of inbound){
@@ -509,6 +518,9 @@ function pairedGame(seed,swap){
       inbound=[];
       if(demos.some(d=>!d.engine.state.playing))break;
       const turnFrame=assertSimultaneousPair(demos);
+      const viewsBefore=demos.map(d=>d.view().visible);
+      const samePublicView=JSON.stringify(viewsBefore[0])===
+        JSON.stringify(viewsBefore[1]);
       const moves=[];
       for(let i=0;i<2;i++){
         const decision=select(demos[i],kinds[i]===expertKind);
@@ -517,6 +529,14 @@ function pairedGame(seed,swap){
           if(key==='searchDepthLimit')
             totals[i][key]=Math.max(totals[i][key],decision[key]??0);
           else totals[i][key]+=decision[key]??0;
+      }
+      if(expertStrategic&&samePublicView){
+        identicalPublicDecisionChecks++;
+        if(moves[0].actualActionChain!==moves[1].actualActionChain){
+          identicalPublicActionChanges++;
+          if(firstIdenticalPublicActionDifference===null)
+            firstIdenticalPublicActionDifference=turns;
+        }
       }
       // Both decisions are prepared from the SAME tick, before either lock.
       if(assertSimultaneousPair(demos)!==turnFrame)
@@ -567,6 +587,8 @@ function pairedGame(seed,swap){
     baselineFutureProbes,baselineFutureStates,candidateFutureProbes,
     candidateFutureStates,
     beliefProbes,beliefMaxOutcomes,recoveryWeight,
+    ...(expertStrategic?{identicalPublicDecisionChecks,
+      identicalPublicActionChanges,firstIdenticalPublicActionDifference}:{}),
     turns,cap:limit,scored:result.scored,termination:result.termination,
     error,winnerSlot:result.winnerSlot,
     winner:result.scored?kinds[result.winnerSlot]:null,
