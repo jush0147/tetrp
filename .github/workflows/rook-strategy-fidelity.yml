@@ -1,0 +1,102 @@
+name: ROOK paired strategy fidelity after forced Hold
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-strategy-fidelity.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-futures-contract:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Public-only, legal seven-bag, paired private RNG invariant
+        run: node --test test/rook-private-future-authority.test.js test/rook-ko-protocol.test.js
+  paired:
+    needs: public-futures-contract
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        seed: [67720, 67722, 67723]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Paired official Kiwi vs ordinary ROOK, three private futures, identical FIRST locked piece
+        env:
+          SEED: ${{ matrix.seed }}
+          MIN_STRATEGIC_TURN: '8'
+          MAX_STRATEGIC_TURN: '28'
+          MAX_LOCKS: '64'
+          FORK_STRATEGIC_WINDOWS: '1'
+          FORK_CONDITIONAL_FUTURES: '1'
+          CONDITIONAL_FUTURE_COUNT: '3'
+          KIWI_STRATEGY_LOCKS: '3'
+          FORK_OPPONENT: kiwi
+          ROOK_NODES: '3000'
+          KIWI_NODES: '32768'
+        run: node scripts/rook-paired-root-fork.js > fidelity.json
+      - name: Fail if treatment 'extra two Kiwi locks' started with a different first LOCK
+        env:
+          SEED: ${{ matrix.seed }}
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('fidelity.json','utf8'));
+          if(x.status==='no-eligible-public-conflict'){
+            if(x.seed!==Number(process.env.SEED)||x.scored!==false)
+              throw Error('Invalid no-conflict record');
+            console.log(JSON.stringify({seed:x.seed,eligible:false}));
+          }else{
+            if(x.independentSeed!==Number(process.env.SEED)||
+              !x.opaqueHiddenFutureToBots||!x.identicalAuthorityCheckpoint||
+              !x.strategicWindow||x.scoredWindowTrial!==false||
+              x.conditionalExperiment?.scenarios?.length!==3||
+              x.results?.length!==9||x.results.some(r=>r.error||
+                r.scored!==false||r.first3LockActions?.length<1))
+              throw Error('Invalid paired strategic future experiment');
+            const scenarios=x.conditionalExperiment.scenarios;
+            for(const s of scenarios){
+              if(s.sameFirstLockedPieceAndPrivateAuthority!==true||
+                s.futureTwoLockActionDifferences.length!==2||
+                s.treatmentResults.length!==3||
+                s.treatmentResults[1].first3LockActions[0]
+                  .candidateActions.join('|')!==
+                s.treatmentResults[2].first3LockActions[0]
+                  .candidateActions.join('|'))
+                throw Error('Causal strategy commitment failed FIRST LOCK parity');
+            }
+            console.log(JSON.stringify({seed:x.independentSeed,
+              independentPublicPositions:1,
+              correlatedPrivateFutures:3,
+              strategyConflict:x.strategicSelection.kind,
+              forkTurn:x.forkTurn,
+              perScenario:scenarios.map(s=>({
+                scenario:s.scenario,identicalFirstLockedState:
+                  s.sameFirstLockedPieceAndPrivateAuthority,
+                secondThirdActionDifferences:s.futureTwoLockActionDifferences,
+                horizons:s.kiwiContinuationEffectGivenSameRoot.map(h=>({
+                  locks:h.horizon,complete:h.complete,
+                  sentDelta:h.firstMinusSecondCombat?.sent??null,
+                  tankedDelta:h.firstMinusSecondCombat?.tanked??null,
+                  occupancyDifference:h.occupiedCellMismatch??null
+                }))
+              })),
+              caveat:'3 private futures from ONE original real public game context, NOT three independent game seeds or Kiwi wins'}));
+          }
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-3lock-fidelity-${{ matrix.seed }}
+          path: fidelity.json
+          retention-days: 30
