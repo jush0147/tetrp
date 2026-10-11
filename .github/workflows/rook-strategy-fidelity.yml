@@ -31,6 +31,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      # Forced Kiwi Hold includes its Kiwi-selected first actual piece landing
+      # in BOTH arms, so only locks 2-3 test extra strategy commitment.
       - name: Paired official Kiwi vs ordinary ROOK, three private futures, identical FIRST locked piece
         env:
           SEED: ${{ matrix.seed }}
