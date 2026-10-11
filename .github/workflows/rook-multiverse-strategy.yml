@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      # Canonical public comparison tolerates engine checkpoint key reordering.
       - name: Check real seven-bag future sampling and unchanged CURRENT NEXT5
         run: node --test test/rook-private-future-authority.test.js test/rook-ko-protocol.test.js
   paired-strategic-futures:
