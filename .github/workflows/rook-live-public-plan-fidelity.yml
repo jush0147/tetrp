@@ -1,0 +1,91 @@
+name: ROOK live public next-lock plan fidelity vs pinned Kiwi
+on:
+  push:
+    branches: [feat/rook-independent-bot]
+    paths: [.github/workflows/rook-live-public-plan-fidelity.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  forecast-fidelity-real-authority:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Contract tests BEFORE any expensive Kiwi WASM
+        run: |
+          node --check scripts/rook-vs-kiwi.js
+          node --test test/rook-plan-fidelity.test.js test/rook-ko-protocol.test.js
+      - name: Authentic pinned Kiwi vs original ROOK, no diagnostic baseline
+        env:
+          SEEDS: '67920'
+          MAX_LOCKS: '65'
+          SWAP_ROLES: '0'
+          KIWI_NODES: '32768'
+          ROOK_NODES: '3000'
+          ROOK_FORECAST_PLAN_AUDIT: '0'
+        run: node scripts/rook-vs-kiwi.js > no-audit.jsonl
+      - name: Re-run same original seed with public next-lock forecast observation only
+        env:
+          SEEDS: '67920'
+          MAX_LOCKS: '65'
+          SWAP_ROLES: '0'
+          KIWI_NODES: '32768'
+          ROOK_NODES: '3000'
+          ROOK_FORECAST_PLAN_AUDIT: '1'
+          ROOK_FORECAST_AUDIT_SAMPLES: '10'
+        run: node scripts/rook-vs-kiwi.js > with-audit.jsonl
+      - name: Assert NEVER changing ordinary ROOK choices, pinned Kiwi or KO via observation
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,writeFileSync} from 'node:fs';
+          const one=file=>{
+            const text=readFileSync(file,'utf8').trim().split('\n').filter(Boolean);
+            if(text.length!==1)throw Error('Expected one original authority match');
+            return JSON.parse(text[0]);
+          };
+          const a=one('no-audit.jsonl'),b=one('with-audit.jsonl');
+          for(const k of ['seed','order','lockSteps','cap','scored',
+            'termination','error','winner','winnerSlot','sameSeed']){
+            if(JSON.stringify(a[k])!==JSON.stringify(b[k]))
+              throw Error('Forecast observation changed authority outcome '+k);
+          }
+          if(a.seed!==67920||a.cap!==65||b.forecastAudit==null||
+            a.forecastAudit!==undefined||a.slots.length!==2||
+            b.slots.length!==2||b.forecastAudit.actualNextLockChecks<1||
+            b.forecastAudit.actualNextLockChecks>10)
+            throw Error('Invalid public-only plan fidelity experiment');
+          for(let i=0;i<2;i++)for(const k of [
+            'kind','pieces','generated','sent','cancelled','received',
+            'tanked','frame','playing','holdMoves','searchNodes',
+            'combatEvents'
+          ])if(JSON.stringify(a.slots[i][k])!==JSON.stringify(b.slots[i][k]))
+            throw Error('Shadow instrumentation changed actual player '+i+' '+k);
+          const report={format:'rook-actual-next-piece-forecast-fidelity/1',
+            independentOriginalMatchSeeds:1,
+            correlatedShadowReplays:2,
+            authorityMatchUnchanged:true,
+            actualSynchronizedLocks:a.lockSteps,
+            koiWinner:a.scored?a.winner:null,
+            unscoredIfCap:!a.scored,
+            auditedPublicNextMoves:b.forecastAudit.actualNextLockChecks,
+            statusCounts:b.forecastAudit.counts,
+            examples:b.forecastAudit.samples,
+            extraAuditCpuMs:b.forecastAudit.diagnosticCpuMs,
+            caution:'Forecasted geometric NEXT placements are not real Tetrp decisions until compared to next actual public state and legal SRS+. Only ONE original independent match seed. This does not estimate improvement over Kiwi.'};
+          writeFileSync('forecast-fidelity-summary.json',
+            JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report));
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rook-true-kiwi-public-next-plan-fidelity-67920
+          path: |
+            no-audit.jsonl
+            with-audit.jsonl
+            forecast-fidelity-summary.json
+          retention-days: 30
