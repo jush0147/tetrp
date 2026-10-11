@@ -159,6 +159,9 @@ function lockRound(pair,forced=null){
 }
 
 
+const strategicScreen={inspected:0,pressured:0,actionDisagreements:0,
+  eligibleStrategicConflicts:0,holdConflicts:0};
+
 function publicImmediateOutcome(visible,root){
   const request={action:{kind:'place'},move:root.move,
     execution:root.execution};
@@ -182,13 +185,15 @@ function selectStrategicPublicRoots(visible){
   // All eligibility and preference selection uses the SAME public position.
   // This is a restricted CURRENT-piece comparison; if Kiwi or ROOK chooses
   // Hold, there is no valid head-to-head chosen-action treatment here.
+  strategicScreen.inspected++;
   if(!visible.playing||visible.next?.length!==5)return null;
   const f=publicBoardFeatures(visible);
-  const pressured=f.publicPending>=2||f.garbage>0||f.heightMax>=8;
+  const pressured=f.publicPending>=1||f.garbage>0||f.heightMax>=7;
   if(!pressured)return null;
+  strategicScreen.pressured++;
   const rookReport=chooseMove(visible,settings);
   const rookAction=rookReport.ranked[0];
-  if(rookAction?.kind!=='place')return null;
+  if(!rookAction)return null;
   const prepared=prepareKiwi(visible);
   prepared.request.node_budget=kiwiBudget;
   const analyzed=JSON.parse(analyze_snapshot_json(
@@ -198,18 +203,30 @@ function selectStrategicPublicRoots(visible){
   try{kiwiAction=normalizeRankedRecommendation(
     visible,prepared,analyzed,0);}
   catch(error){return null;}
-  if(kiwiAction.action.kind!=='place'||
-    actionSignature(rookAction)===actionSignature(kiwiAction))
+  if(actionSignature(rookAction)===actionSignature(kiwiAction))
     return null;
-  const first=publicImmediateOutcome(visible,rookAction);
-  const second=publicImmediateOutcome(visible,kiwiAction);
+  strategicScreen.actionDisagreements++;
+  const rootKind=a=>a.action?.kind??a.kind;
+  const kindA=rootKind(rookAction),kindB=rootKind(kiwiAction);
+  const first=kindA==='place'?
+    publicImmediateOutcome(visible,rookAction):
+    {kind:'hold',mode:rookAction.mode,defersPlacement:true};
+  const second=kindB==='place'?
+    publicImmediateOutcome(visible,kiwiAction):
+    {kind:'hold',mode:kiwiAction.action.mode,defersPlacement:true};
   if(!first||!second)return null;
-  const holeGap=Math.abs(first.features.holes-second.features.holes);
-  const heightGap=Math.abs(
-    first.features.heightMax-second.features.heightMax);
-  const tacticalContrast=first.clears!==second.clears||
-    first.spin!==second.spin||holeGap>=2||heightGap>=2;
+  const isHoldConflict=kindA!==kindB;
+  const holeGap=first.features&&second.features?
+    Math.abs(first.features.holes-second.features.holes):0;
+  const heightGap=first.features&&second.features?
+    Math.abs(first.features.heightMax-second.features.heightMax):0;
+  const tacticalContrast=isHoldConflict||
+    (kindA==='place'&&kindB==='place'&&(
+      first.clears!==second.clears||first.spin!==second.spin||
+      holeGap>=2||heightGap>=2));
   if(!tacticalContrast)return null;
+  strategicScreen.eligibleStrategicConflicts++;
+  if(isHoldConflict)strategicScreen.holdConflicts++;
   return {rookReport,roots:[rookAction,kiwiAction],
     meta:{kind:'public-ROOK-vs-Kiwi-chosen-CURRENT-placement-conflict',
       originalPublicPending:f.publicPending,originalGarbageCells:f.garbage,
@@ -217,7 +234,7 @@ function selectStrategicPublicRoots(visible){
       searchLimits:{rook:nodes,kiwi:kiwiBudget},
       independentOriginalMatchSeed:seed,
       roots:[{policy:'rook',...first},{policy:'kiwi',...second}],
-      qualification:'different immediate clears/spin or >=2 holes/height; never hidden next or opponent state'}};
+      qualification:'different hold/use, immediate clears/spin or >=2 holes/height; never hidden next or opponent state'}};
 }
 
 function publicHorizon(pair,locksFromFork,beforeCounters){
@@ -291,7 +308,8 @@ if(windowed&&!strategicTarget){
   console.log(JSON.stringify({format:'rook-strategic-divergence-windows/1',
     status:'no-eligible-public-conflict',seed,independentGameSeeds:1,
     availableWarmupLocks:warmupLocks,scored:false,
-    cause:'No pressured ROOK/Kiwi current-piece disagreement with different public immediate clear/spin outcomes before KO/turn limit.'}));
+    screen:strategicScreen,
+    cause:'No public pressured ROOK/Kiwi action conflict (Hold or material placement differences) before KO/turn limit.'}));
   process.exit(0);
 }
 if(warmupLocks!==beforeFork||!original.every(d=>d.engine.state.playing))
@@ -302,16 +320,27 @@ if(!original.every(d=>d.engine.state.playing))
 
 const publicBefore=original[0].view().visible;
 const report=strategicTarget?.rookReport??chooseMove(publicBefore,settings);
-// The first candidate may be Hold, but compare exactly two REAL place
-// actions on CURRENT instead of inventing a placement for Held/NEXT6.
+// Normal modes retain their legacy current-piece place-only comparison.
+// In strategic-window mode, use the actual top PUBLIC ROOK/Kiwi root,
+// including legal Hold-vs-Place disagreements; Hold is replayed and
+// reanalyzed normally, never converted to a fictional piece landing.
 const placeCandidates=report.ranked.filter(x=>x.kind==='place');
 const [first,second]=strategicTarget?.roots??placeCandidates;
 if(!first||!second||actionSignature(first)===actionSignature(second))
   throw Error('No two genuinely different legal public current roots');
 for(const a of [first,second]){
-  if(!validatePlacement(publicBefore,{action:{kind:'place'},
-    move:a.move,execution:a.execution}))
-    throw Error('Unverified SRS+ root cannot enter fork');
+  const kind=a.action?.kind??a.kind;
+  if(kind==='hold'){
+    const expected=publicBefore.hold?.piece==null?'empty':'occupied';
+    const actual=a.action??a;
+    if(publicBefore.hold?.locked||actual.mode!==expected||
+      !publicBefore.rules.hold)
+      throw Error('Illegal public Hold root in fork');
+  }else if(kind==='place'){
+    if(!validatePlacement(publicBefore,{action:{kind:'place'},
+      move:a.move,execution:a.execution}))
+      throw Error('Unverified SRS+ root cannot enter fork');
+  }else throw Error('Unknown fork root action');
 }
 if(publicBefore.next.length!==5||
   'bag' in publicBefore||'rng' in publicBefore||'holes' in publicBefore)
@@ -427,7 +456,8 @@ const output={format:'rook-authority-paired-root-counterfactual/1',
   scoredShortGames:false,
   correlatedForksPerOriginalSeed:2,
   ...(windowed?{strategicWindow:true,strategicSelection:strategicTarget.meta,
-    horizons:strategicCheckpoints,pairedWindowComparisons:
+    horizons:strategicCheckpoints,strategicScreen,
+    pairedWindowComparisons:
       compareWindowTrajectories(variants),scoredWindowTrial:false}:{}),
   rootChosenByOriginalRook:actionSignature(report)===actionSignature(first)?
     'first-place':'hold-or-different',
